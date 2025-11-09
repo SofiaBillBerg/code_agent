@@ -1,0 +1,3 @@
+# constraints.txt
+# Optional dependency constraints for reproducible builds
+# (kept empty for now – add specific version pins if needed)

@@ -1,0 +1,32 @@
+# .github/workflows/llm-review.yml
+name: LLM Code Review
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  review:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          uv pip install --upgrade pip
+          uv pip install -r requirements.txt
+          # Ollama will run on the host; make sure the container image or host has it
+
+      - name: Run coding agent
+        run: |
+          uv run python ci/run_agent.py
+
+      - name: Sanity check
+        run: |
+          uv run python ci/check_output.py

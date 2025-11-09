@@ -1,0 +1,68 @@
+---
+title: "Code Agent"
+author: "Sofia Billger Bergström"
+date: "`r Sys.Date()`"
+format: html
+output: "../README.md"
+---
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Code Agent
+
+<!-- badges: start -->
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent/main/HEAD?urlpath=%2Fdoc%2Ftree%2Fdocs%2FREADME.qmd)
+<!-- badges: end -->
+
+
+> A lightweight, LLM‑driven assistant that can scaffold projects, edit files, generate documentation, and operate as an
+interactive chatbot.
+
+## Quick start
+
+```bash
+# Install dependencies (uv is recommended)
+uv venv .venv
+source .venv/bin/activate
+uv pip install -e .
+
+# Run the interactive agent
+code-agent
+```
+
+You can now type queries, e.g.:
+
+```
+> Show me a simple project scaffold
+> Add a new function to utils.py
+```
+
+## Architecture
+
+```mermaid
+flowchart LR
+  CLI(Typer CLI) --\u003e Main(Main driver)
+  Main --\u003e Graph(LangGraph)
+  Graph --\u003e Tools
+  Graph --\u003e Memory(Chroma vector store)
+  Main --\u003e LLM(LLM wrapper)
+```
+
+For a deeper dive, see the following sections:
+
+- **[CODE_AGENT](CODE_AGENT.qmd)** – Core components and internals.
+- **[USAGE](USAGE.qmd)** – Detailed usage patterns.
+- **[FILES](FILES.qmd)** – File‑level overview of the repo.
+- **[FAQ & Troubleshooting](FAQ.qmd)** – Common questions and solutions.
+- **[CONTRIBUTING](CONTRIBUTING.qmd)** – Guidelines for contributing to the project.
+- **[LICENSE](../LICENSE)** – Project licensing information.
+- **[ROADMAP](ROADMAP.qmd)** – Future plans and development.
+- **[CHANGELOG](CHANGELOG.qmd)** – Version history and changes.
+- **[Agent Workflow](AGENT_WORKFLOW.qmd)**

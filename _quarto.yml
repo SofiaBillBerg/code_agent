@@ -1,0 +1,111 @@
+project:
+  type: website
+  output-dir: docs/docs_web
+  render:
+    - "*.qmd"
+    - "*.md"
+    - "*.rmd"
+    - "*.ipynb"
+    - "!tools/cleanup_instructions.qmd"
+    - "!docs_backup/*.*"
+    - "!*_backup.qmd"
+    - "Notes.md"
+website:
+  title: "Code Agent"
+  navbar:
+    left:
+      - text: "Home"
+        href: docs/README.qmd
+      - text: "Quick Start"
+        href: docs/QUICKSTART.qmd
+      - text: "Reference"
+        href: docs/API.qmd
+      - text: "Community"
+        href: docs/CONTRIBUTING.qmd
+    right:
+      - icon: github
+        href: "https://github.com/SofiaBillBerg/descision_making"
+        text: "GitHub"
+  sidebar:
+    - title: "Introduction"
+      style: "docked"
+      contents:
+        - text: "Quick Start"
+          href: docs/QUICKSTART.qmd
+        - text: "Installation"
+          href: docs/INSTALLATION.qmd
+        - text: "Code Agent"
+          href: docs/CODE_AGENT.qmd
+        - text: "Features"
+          href: docs/FEATURES.qmd
+    - title: "Guides"
+      contents:
+        - text: "Agent Workflow"
+          href: docs/AGENT_WORKFLOW.qmd
+        - text: "Example Usage"
+          href: docs/USAGE.qmd
+        - text: "Tools"
+          href: docs/TOOLS.qmd
+    - title: "Reference"
+      contents:
+        - text: "API Reference"
+          href: docs/API.qmd
+        - text: "Files"
+          href: docs/FILES.qmd
+        - text: "Configuration"
+          href: docs/CONFIGURATION.qmd
+        - text: "Roadmap"
+          href: docs/ROADMAP.qmd
+    - title: "Community"
+      contents:
+        - text: "Contributing"
+          href: docs/CONTRIBUTING.qmd
+        - text: "News & Changelog"
+          href: docs/CHANGELOG.qmd
+        - text: "FAQ & Troubleshooting"
+          href: docs/FAQ.qmd
+
+format:
+  html:
+    theme:
+      - docs/styles/custom.css
+    css:
+      - docs/styles/quartz-contrast.css
+      - docs/styles/dt-wrap.css
+    highlight-style: pygments
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-tools: true
+    code-overflow: wrap
+    code-annotations: select
+    code-copy: true
+    toc-title: "On this page"
+    lightbox: true
+    citations-hover: true
+    self-contained: true
+    code-summary: "Show/Hide Code"
+    date: "2025-11-02"
+    date-format: "iso"
+    code-links: true
+    author: "Sofia Billger Bergström"
+    date-modified: last-modified
+    embed-resources: true
+    fig-cap-location: bottom
+    tbl-cap-location: top
+    subtitle: "Documentation for The code_agent - an interactive, locally maintained LLM-powered assistant"
+    description: "The code_agent is a local, LLM‑driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
+
+fig-env: figure
+includesource: true
+wrap: auto
+touch: true
+search: false
+fig-responsive: true
+resources:
+  #  - docs/styles/
+  #  - code_agent/
+  #  - tests/
+  #  - examples/
+  - docs/
+  - LICENCE

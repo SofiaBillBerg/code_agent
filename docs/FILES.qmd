@@ -1,0 +1,28 @@
+---
+title: "Files Overview"
+author: "Sofia Billger Bergström"
+format: html
+---
+
+# File-level Overview
+
+This document provides a high-level summary of the key files and directories in the `code-agent` repository.
+
+| File / Directory               | Purpose                                              | Key Functions / Components          |
+|--------------------------------|------------------------------------------------------|-------------------------------------|
+| `code_agent/main.py`           | Main application entry point for interactive chat.   | `main()`, `_main_loop()`            |
+| `code_agent/cli.py`            | Typer-based command-line interface.                  | `app` (Typer app)                   |
+| `code_agent/graph.py`          | LangGraph implementation for the agent's logic.      | `build_graph()`                     |
+| `code_agent/agents/`           | Agent-related classes and factories.                 | `build_agent`, `PersistentAgent`    |
+| `code_agent/tools/`            | Directory containing all agent tools.                | `NewFileTool`, `EditFileTool`, etc. |
+| `code_agent/scaffold.py`       | Project scaffolding logic.                           | `create_project_scaffold()`         |
+| `code_agent/docs_generator.py` | Quarto documentation generation.                     | `generate_quarto_docs()`            |
+| `code_agent/file_generator.py` | Low-level file writing utilities.                    | `write_file()`, `py_to_ipynb()`     |
+| `code_agent/exceptions.py`     | Custom exception types for the application.          | `CodeAgentError`                    |
+| `docs/`                        | Quarto documentation source files.                   | -                                   |
+| `tests/`                       | Pytest unit and integration tests.                   | -                                   |
+| `pyproject.toml`               | Build system and dependency configuration (PEP 621). | -                                   |
+| `_quarto.yml`                  | Quarto project configuration for the docs website.   | -                                   |
+| `requirements.txt`             | Core runtime dependencies.                           | -                                   |
+
+Each module is documented in its own file header. For more details, see the **[CODE_AGENT](CODE_AGENT.qmd)** document.

@@ -1,0 +1,52 @@
+---
+title: "code_agent"
+format: html
+---
+
+# code_agent
+
+A local, LLM-driven code assistant for scaffolding projects, editing files, and generating documentation.
+
+Built on **LangChain** with **local Ollama** backend.
+
+## Features
+
+- File operations (create, edit, scaffold)
+- LLM-powered code generation
+- Project scaffolding
+- Cross-platform support
+
+## Installation
+
+```bash
+pip install -e .[dev]
+```
+
+## Quick Start
+
+```bash
+# Interactive CLI
+python -m code_agent.cli chat
+
+# Create a file
+python -m code_agent.cli create myfile.txt --content="Hello World"
+
+# Generate project scaffold
+python -m code_agent.cli scaffold myproject --name=myproject
+```
+
+## Documentation
+
+- See the main [README (source)](../docs/README.qmd) and [Project Quickstart (source)](../docs/QUICKSTART.qmd) for
+  detailed
+  documentation.
+
+## Testing
+
+```bash
+pytest
+```
+
+## Configuration
+
+Edit `code_agent/config/llm_config.json` for LLM settings. Default model: `gpt-oss:20b-cloud`
