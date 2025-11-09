@@ -27,7 +27,9 @@ def dummy_llm() -> BaseChatModel:
         def _generate(
                 self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any, ) -> ChatResult:
             return ChatResult(
-                    generations = [ChatGeneration(message = AIMessage(content = "Hello from DummyLLM"))]
+                    generations = [ChatGeneration(
+                            message = AIMessage(content = "Hello from DummyLLM")
+                            )]
                     )
 
         def bind_tools(
@@ -105,9 +107,9 @@ def test_convert_py_to_nb(tmp_path: Path) -> None:
     script_path = tmp_path / "script.py"
     script = textwrap.dedent(
             """
-                def greet():
-                    return "hello"
-                """
+                    def greet():
+                        return "hello"
+                    """
             )
     script_path.write_text(script)
     notebook_path = py_to_ipynb(script_path, tmp_path / "greet.ipynb")

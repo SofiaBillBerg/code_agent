@@ -2,14 +2,13 @@ project:
   type: website
   output-dir: docs/docs_web
   render:
-    - "*.qmd"
-    - "*.md"
-    - "*.rmd"
-    - "*.ipynb"
-    - "!tools/cleanup_instructions.qmd"
-    - "!docs_backup/*.*"
-    - "!*_backup.qmd"
-    - "Notes.md"
+    - "docs/*.qmd"
+    - "!pdf_docs/*.*"
+    - "!docs/web_docs/*.qmd"
+    - "!docs/tools/cleanup_instructions.qmd"
+    - "!docs/docs_backup/*.*"
+    - "!docs/*_backup.qmd"
+    - "!docs/Notes.md"
 website:
   title: "Code Agent"
   navbar:
@@ -24,7 +23,7 @@ website:
         href: docs/CONTRIBUTING.qmd
     right:
       - icon: github
-        href: "https://github.com/SofiaBillBerg/descision_making"
+        href: "https://github.com/SofiaBillBerg/code_agent"
         text: "GitHub"
   sidebar:
     - title: "Introduction"
@@ -103,9 +102,5 @@ touch: true
 search: false
 fig-responsive: true
 resources:
-  #  - docs/styles/
-  #  - code_agent/
-  #  - tests/
-  #  - examples/
   - docs/
-  - LICENCE
+  - LICENSE

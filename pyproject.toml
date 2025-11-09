@@ -123,6 +123,7 @@ skip-magic-trailing-comma = false
 members = [
     ".",
     ".",
+    ".",
 ]
 
 [tool.uv.sources]

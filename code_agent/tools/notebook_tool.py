@@ -12,7 +12,9 @@ from .edit_file_tool import FileObject
 
 
 class NotebookArgs(BaseModel):
-    file_path: str = Field(..., description = "Path to the notebook to create or edit")
+    file_path: str = Field(
+            ..., description = "Path to the notebook to create or edit"
+            )
     content: str = Field("", description = "Markdown or code content to insert")
     mode: str = Field("create", description = "Mode: create|append|replace")
 
@@ -51,8 +53,9 @@ class NotebookTool(BaseTool):
                 nb.cells.append(nbformat.v4.new_markdown_cell(content))
                 nb_path.parent.mkdir(parents = True, exist_ok = True)
                 nbformat.write(nb, str(nb_path))
-                return (f"✅ Created notebook {nb_path}",
-                        FileObject(path = nb_path, contents = content, status = "created"),)
+                return (f"✅ Created notebook {nb_path}", FileObject(
+                        path = nb_path, contents = content, status = "created"
+                        ),)
             elif mode == "append":
                 if not nb_path.exists():
                     return (f"❌ Notebook not found: {nb_path}",
@@ -60,8 +63,9 @@ class NotebookTool(BaseTool):
                 nb = nbformat.read(str(nb_path), as_version = 4)
                 nb.cells.append(nbformat.v4.new_markdown_cell(content))
                 nbformat.write(nb, str(nb_path))
-                return (f"✅ Appended notebook {nb_path}",
-                        FileObject(path = nb_path, contents = content, status = "appended"),)
+                return (f"✅ Appended notebook {nb_path}", FileObject(
+                        path = nb_path, contents = content, status = "appended"
+                        ),)
             elif mode == "replace":
                 # Interpret content as raw notebook JSON or as a markdown cell
                 try:
@@ -72,8 +76,9 @@ class NotebookTool(BaseTool):
                     nb.cells.append(nbformat.v4.new_markdown_cell(content))
                     nb_path.parent.mkdir(parents = True, exist_ok = True)
                     nbformat.write(nb, str(nb_path))
-                return (f"✅ Replaced notebook {nb_path}",
-                        FileObject(path = nb_path, contents = content, status = "replaced"),)
+                return (f"✅ Replaced notebook {nb_path}", FileObject(
+                        path = nb_path, contents = content, status = "replaced"
+                        ),)
             else:
                 return (f"❌ Unknown mode: {mode}", FileObject(path = nb_path, contents = "", status = "error"),)
         except Exception as e:

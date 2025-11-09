@@ -51,7 +51,9 @@ def preview_file_edit(
     else:
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    diff = generate_diff(old_content, new_content, str(path), f"(proposed) {path}")
+    diff = generate_diff(
+            old_content, new_content, str(path), f"(proposed) {path}"
+            )
     return diff, file_exists
 
 

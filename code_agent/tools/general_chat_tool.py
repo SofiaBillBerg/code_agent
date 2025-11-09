@@ -32,7 +32,7 @@ class GeneralChatTool(BaseTool):
     def _run(self, query: str) -> str:
         """Sends the query directly to the LLM for a conversational response."""
 
-        prompt = f"""You are a helpful and knowledgeable AI assistant. A user has asked a question that does not fit 
+        prompt = f"""You are a helpful and knowledgeable AI assistant. A user has asked a question that does not fit
         any of the specialized tools. Provide a direct, helpful, and conversational answer to their query.
 
 User's query: "{query}"

@@ -44,7 +44,8 @@ def mock_llm() -> MagicMock:
 
     mock = MagicMock()
 
-    def _invoke(messages: list[BaseMessage]) -> BaseMessage:  # type: ignore[override]
+    # type: ignore[override]
+    def _invoke(messages: list[BaseMessage]) -> BaseMessage:
         prompt = messages[-1].content
         if "tool" in prompt.lower():
             return AIMessage(

@@ -96,7 +96,9 @@ def test_create_project_scaffold(tmp_path: Path) -> None:
 
 def test_cli_create(runner: CliRunner, tmp_path: Path) -> None:
     file_path = tmp_path / "new.txt"
-    result = runner.invoke(cli_app, ["create", str(file_path), "--content", "Hello"])
+    result = runner.invoke(
+            cli_app, ["create", str(file_path), "--content", "Hello"]
+            )
     assert result.exit_code == 0
     assert file_path.read_text() == "Hello"
 
@@ -104,13 +106,17 @@ def test_cli_create(runner: CliRunner, tmp_path: Path) -> None:
 def test_cli_append(runner: CliRunner, tmp_path: Path) -> None:
     file_path = tmp_path / "out.txt"
     write_file(file_path, "first\n")
-    result = runner.invoke(cli_app, ["append", str(file_path), "--content", "second\n"])
+    result = runner.invoke(
+            cli_app, ["append", str(file_path), "--content", "second\n"]
+            )
     assert result.exit_code == 0
     assert file_path.read_text() == "first\nsecond\n"
 
 
 def test_cli_scaffold(runner: CliRunner, tmp_path: Path) -> None:
-    result = runner.invoke(cli_app, ["scaffold", str(tmp_path), "--name", "demo"])
+    result = runner.invoke(
+            cli_app, ["scaffold", str(tmp_path), "--name", "demo"]
+            )
     assert result.exit_code == 0
     assert (tmp_path / "src" / "demo").exists()
     assert (tmp_path / "tests").exists()
@@ -136,7 +142,9 @@ def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
     (output_dir / "README.qmd").write_text("Test content")
 
     # Run the command
-    result = runner.invoke(cli_app, ["docs", f"--output-dir={str(output_dir)}"])
+    result = runner.invoke(
+            cli_app, ["docs", f"--output-dir={str(output_dir)}"]
+            )
 
     # Check results
     assert result.exit_code == 0
@@ -154,7 +162,9 @@ class DummyLLM(BaseChatModel):
     def _generate(
             self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any, ) -> ChatResult:
         return ChatResult(
-                generations = [ChatGeneration(message = AIMessage(content = "Hello from DummyLLM"))]
+                generations = [ChatGeneration(
+                        message = AIMessage(content = "Hello from DummyLLM")
+                        )]
                 )
 
     def bind_tools(
@@ -172,11 +182,15 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
     dummy_llm_instance = DummyLLM()
     # No tools needed for this basic test
     agent_runnable = build_agent(dummy_llm_instance, [])
-    assert isinstance(agent_runnable, Runnable), "build_agent should return a Runnable"
+    assert isinstance(
+            agent_runnable, Runnable
+            ), "build_agent should return a Runnable"
     assert agent_runnable is not None, "Agent Runnable should not be None"
 
     # Test a basic invocation
-    result = agent_runnable.invoke({"messages": [HumanMessage(content = "test")]})
+    result = agent_runnable.invoke(
+            {"messages": [HumanMessage(content = "test")]}
+            )
     final_message = result["messages"][-1]
     assert isinstance(final_message, AIMessage)
     assert final_message.content == "Hello from DummyLLM"

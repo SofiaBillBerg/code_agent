@@ -56,7 +56,9 @@ class EditFileTool(BaseTool):
             log.info(f"Backup created: {backup_path}")
             return "backup_created"
         except Exception as e:
-            log.error(f"Failed to create backup for {path}: {e}", exc_info = True)
+            log.error(
+                    f"Failed to create backup for {path}: {e}", exc_info = True
+                    )
             return "backup_failed"
 
     def _edit_replace(self, path: Path, content: str) -> None:
@@ -73,7 +75,7 @@ class EditFileTool(BaseTool):
         if start_marker in original_content and end_marker in original_content:
             pre, rest = original_content.split(start_marker, 1)
             _, post = rest.split(end_marker, 1)
-            new_full = pre + start_marker + "\n" + content + "\n" + end_marker + post
+            new_full = (pre + start_marker + "\n" + content + "\n" + end_marker + post)
         else:
             new_full = original_content + "\n" + content
         path.write_text(new_full, encoding = "utf-8")
@@ -102,7 +104,9 @@ class EditFileTool(BaseTool):
             if backup_status == "backup_failed":
                 message += " (⚠️ Backup failed!)"
 
-            return (message, FileObject(path = full_path, contents = final_contents, status = status),)
+            return (message, FileObject(
+                    path = full_path, contents = final_contents, status = status
+                    ),)
         except Exception as e:
             log.error(
                     f"Error during file edit operation for {full_path}: {e}", exc_info = True, )

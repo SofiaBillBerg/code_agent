@@ -118,8 +118,11 @@ def scaffold(
 
 @app.command(help = "Convert a Python script to a Jupyter notebook.")
 def py2ipynb(
-        src: Path = typer.Argument(..., exists = True, help = "Python script to convert."),
-        dst: Path = typer.Argument(..., exists = False, help = "Target notebook path."), ):
+        src: Path = typer.Argument(
+                ..., exists = True, help = "Python script to convert."
+                ), dst: Path = typer.Argument(
+                ..., exists = False, help = "Target notebook path."
+                ), ):
     """Create a minimal Jupyter notebook from a Python file.
 
     The notebook contains a single code cell with the full source
@@ -135,7 +138,9 @@ def py2ipynb(
 
 @app.command(help = "Generate and render Quarto documentation.")
 def docs(
-        output_dir: str = typer.Option("docs", help = "Directory to write docs into."), overwrite: bool = typer.Option(
+        output_dir: str = typer.Option(
+                "docs", help = "Directory to write docs into."
+                ), overwrite: bool = typer.Option(
                 True, help = "Overwrite existing files in the output directory."
                 ), ):
     """Generate a minimal set of QMD files and render the Quarto site."""

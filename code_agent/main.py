@@ -22,6 +22,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import (AIMessage, BaseMessage, HumanMessage, )
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
+from langchain_core.tools import BaseTool  # Added import for BaseTool
 
 # Local imports
 from code_agent.agents.base_agent import create_default_tools
@@ -60,7 +61,9 @@ def load_config(
         if alt.exists():
             cfg_file = alt
         else:
-            raise FileNotFoundError(f"Config file not found: {config_path} or {alt}")
+            raise FileNotFoundError(
+                    f"Config file not found: {config_path} or {alt}"
+                    )
 
     with cfg_file.open("r", encoding = "utf-8") as f:
         return json.load(f)
@@ -89,39 +92,26 @@ def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
     try:
         from langchain_ollama import ChatOllama
 
-        return ChatOllama(model = model, base_url = base_url, temperature = temperature)
+        return ChatOllama(
+                model = model, base_url = base_url, temperature = temperature
+                )
     except Exception as exc:  # pragma: no cover – fallback path
 
         class _FallbackLLM(BaseChatModel):
-            def __init__(self, err: Exception, base_url: str):
-                """
-                :type err: Exception
-                :type base_url: str
-                """
-                super().__init__()
+            _err: Exception
+            _base_url: str
+
+            def __init__(self, err: Exception, base_url: str, **kwargs: Any):
+                super().__init__(**kwargs)
                 self._err = err
-                self.base_url = base_url
+                self._base_url = base_url
 
             def _generate(
                     self, messages: list, stop: list | None = None, **kwargs: Any
                     ) -> ChatResult:
-                """
-                Generate a response indicating that the LLM is unavailable.
-
-                This function is used as a fallback when the real LLM cannot be
-                initialised.
-
-                Args:
-                    messages (list): List of messages from the user.
-                    stop (list | None, optional): List of stop words. Defaults to None.
-                    **kwargs (Any): Additional keyword arguments.
-
-                Returns:
-                    ChatResult: A response indicating that the LLM is unavailable.
-                """
                 content = json.dumps(
                         {"error": "LLM unavailable", "details": (f"Failed to initialise ChatOllama. Error: {self._err}"
-                                                                 f". Base URL: {self.base_url}."), }
+                                                                 f". Base URL: {self._base_url}."), }
                         )
                 return ChatResult(
                         generations = [ChatGeneration(message = AIMessage(content = content))]
@@ -130,6 +120,11 @@ def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
             @property
             def _llm_type(self) -> str:
                 return "fallback"
+
+            def bind_tools(
+                    self, tools: list[BaseTool], **kwargs: Any
+                    ) -> Runnable[Any, BaseMessage]:
+                return self  # Simply return self for fallback LLM
 
         return _FallbackLLM(exc, base_url)
 
@@ -157,7 +152,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(
             prog = "code_agent", description = "An interactive agent for code manipulation.", )
-    parser.add_argument("--debug", action = "store_true", help = "Enable DEBUG logs.")
+    parser.add_argument(
+            "--debug", action = "store_true", help = "Enable DEBUG logs."
+            )
     return parser.parse_args(argv)
 
 
@@ -223,7 +220,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         log.info(f"Persistent memory initialized at: {memory_dir}")
         print(f"Available tools: {[t.name for t in tools]}\n")
     except Exception as e:
-        log.critical("Error loading or initializing agent: %s", e, exc_info = True)
+        log.critical(
+                "Error loading or initializing agent: %s", e, exc_info = True
+                )
         print(f"❌ Critical Error: {e}")
         sys.exit(1)
 
@@ -258,7 +257,9 @@ def _process_agent_event(event: dict) -> AIMessage | None:
             agent_response = output.get("messages", [])[0]
             if getattr(agent_response, "tool_calls", None):
                 for tool_call in agent_response.tool_calls:
-                    print(f"🛠️  Agent decided to use tool: **{tool_call['name']}**")
+                    print(
+                            f"🛠️  Agent decided to use tool: **{tool_call['name']}**"
+                            )
                     print(f"   With arguments: {tool_call['args']}")
             else:
                 final_response = agent_response

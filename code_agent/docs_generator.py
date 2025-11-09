@@ -56,10 +56,10 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         String containing the README.qmd content
     """
     lines = ["---", 'title: "Project overview"', "format:", "  markdown_docs:", "    css: docs/styles/custom.css",
-             "---\n", "# Project overview\n",
-             "This project contains an automated pipeline and a small code agent used to create ",
-             "and edit files and documentation locally (Quarto).", "\n## Contents\n",
-             "* Top-level Python modules and scripts (auto-detected)", ]
+            "---\n", "# Project overview\n",
+            "This project contains an automated pipeline and a small code agent used to create ",
+            "and edit files and documentation locally (Quarto).", "\n## Contents\n",
+            "* Top-level Python modules and scripts (auto-detected)", ]
 
     # Add Python files
     for p in info["py_files"][:50]:
@@ -70,7 +70,7 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
     # Add data files section
     lines.extend(
             ["\n## Data files\n", *(f"- `{p}`" for p in info["data_files"][:50]),
-             *(["No common data files detected in `data/`"] if not info["data_files"] else []), ]
+                    *(["No common data files detected in `data/`"] if not info["data_files"] else []), ]
             )
 
     # Add notebooks section
@@ -86,10 +86,11 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
     # Add how to run section
     lines.extend(
             ["\n## How to run the pipeline\n",
-             "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.", "\n## CodeAgent\n",
-             "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
-             "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
-             "details.", ]
+                    "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.",
+                    "\n## CodeAgent\n",
+                    "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
+                    "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
+                    "details.", ]
             )
 
     return "\n".join(lines)
@@ -138,7 +139,7 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
         String containing the FILES.qmd content
     """
     lines = ["---", 'title: "Files"', "format:", "  markdown_docs:", "    css: docs/styles/custom.css", "---\n",
-             "# Project files\n", ]
+            "# Project files\n", ]
 
     # Add all files
     for file_type in ["py_files", "data_files", "notebooks"]:
@@ -151,7 +152,7 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
 def generate_quarto_docs(
         output_dir: Path = "docs", overwrite: bool = True, use_llm: bool = False, llm: BaseChatModel | None = None,
         ) -> \
-        list[str]:
+list[str]:
     """Generate a small set of .qmd files in `output_dir`.
 
     Args:

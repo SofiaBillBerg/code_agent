@@ -14,5 +14,5 @@ from .read_file_tool import ReadFileTool
 from .search_explain_tool import SearchExplainTool
 
 __all__ = ["EditFileTool", "SearchExplainTool", "LinkerTool", "NewFileTool", "GenerateTestTool", "FormatCodeTool",
-           "NotebookTool", "NaturalLanguageTool", "ReadFileTool", "GeneralChatTool", "RScriptTool",  # Added RScriptTool
-           ]
+        "NotebookTool", "NaturalLanguageTool", "ReadFileTool", "GeneralChatTool", "RScriptTool",  # Added RScriptTool
+        ]

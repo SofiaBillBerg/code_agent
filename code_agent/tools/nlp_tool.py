@@ -38,9 +38,11 @@ class NaturalLanguageTool(BaseTool):
 
             arg_details = []
             for arg_name, arg_info in properties.items():
-                is_required = "required" if arg_name in required_args else "optional"
+                is_required = ("required" if arg_name in required_args else "optional")
                 arg_desc = arg_info.get("description", "No description")
-                arg_details.append(f"      - `{arg_name}` ({is_required}): {arg_desc}")
+                arg_details.append(
+                        f"      - `{arg_name}` ({is_required}): {arg_desc}"
+                        )
 
             tool_manifest.append(
                     f"  - Tool: `{t.name}`\n"
@@ -50,15 +52,15 @@ class NaturalLanguageTool(BaseTool):
 
         tool_manifest_str = "\n".join(tool_manifest)
 
-        prompt = f"""You are a JSON-only API endpoint. Your sole purpose is to translate a user's natural language 
+        prompt = f"""You are a JSON-only API endpoint. Your sole purpose is to translate a user's natural language
         request into a single, valid JSON object that conforms to the provided tool specifications.
 
 Your output MUST be ONLY the JSON object. Do not include ```json``` markers, explanations, or any other text.
 
 **CRITICAL RULES**:
-1. If the user asks to 'edit', 'improve', 'fix', or 'modify' an existing file, you MUST use the `read-file` tool 
+1. If the user asks to 'edit', 'improve', 'fix', or 'modify' an existing file, you MUST use the `read-file` tool
 FIRST to understand the file's current content.
-2. If the user's query is a general question, a 'how-to' question, or does not match any specific tool, you MUST use 
+2. If the user's query is a general question, a 'how-to' question, or does not match any specific tool, you MUST use
 the `general-chat` tool.
 
 The JSON object must contain:
@@ -88,7 +90,9 @@ Valid JSON Response:"""
             tool_call = json.loads(content)
 
             if not isinstance(tool_call, dict) or "tool" not in tool_call:
-                return json.dumps({"error": "LLM failed to select a valid tool."})
+                return json.dumps(
+                        {"error": "LLM failed to select a valid tool."}
+                        )
 
             return json.dumps(tool_call)
 
@@ -99,4 +103,6 @@ Valid JSON Response:"""
                     )
         except Exception as e:
             logging.error(f"Error in NaturalLanguageTool: {e}")
-            return json.dumps({"error": f"An unexpected error occurred: {str(e)}"})
+            return json.dumps(
+                    {"error": f"An unexpected error occurred: {str(e)}"}
+                    )

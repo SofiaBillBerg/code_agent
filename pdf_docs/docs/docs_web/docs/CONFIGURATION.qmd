@@ -1,0 +1,75 @@
+---
+title: "Configuration"
+format: html
+---
+
+This page provides a comprehensive guide to configuring `code_agent`.
+
+## Configuration Methods
+
+`code_agent` can be configured in three ways, in the following order of precedence (later methods override earlier
+ones):
+
+1. **Configuration File**: A JSON file (`llm_config.json`) located in `code_agent/config/`. This is the recommended way
+   to set your default configuration.
+2. **Environment Variables**: Overrides settings from the configuration file, especially useful in CI/CD environments or
+   for temporary changes.
+3. **Programmatic Overrides**: You can pass a dictionary of configuration options when creating the LLM or agent in
+   Python scripts.
+
+## Configuration File
+
+The primary configuration file is `code_agent/config/llm_config.json`. Here is an example with commonly used options:
+
+```json
+{
+  "ollama_host": "localhost",
+  "ollama_port": 11434,
+  "ollama_model": "llama3",
+  "temperature": 0.7
+}
+```
+
+### Options
+
+* `ollama_host`: The hostname or IP address of the Ollama server. Defaults to `localhost`.
+* `ollama_port`: The port on which the Ollama server is running. Defaults to `11434`.
+* `ollama_model`: The name of the Ollama model to use (e.g., `"llama3"`, `"codellama"`). This model is used for both
+  chat and embeddings.
+* `temperature`: The sampling temperature for the LLM. Higher values result in more creative but less predictable
+  responses. Defaults to `0.7`.
+
+## Environment Variables
+
+You can override any of the options in the configuration file using environment variables. The environment variables are
+named by prefixing the option name with `CODE_AGENT_`.
+
+* `CODE_AGENT_OLLAMA_HOST`
+* `CODE_AGENT_OLLAMA_PORT`
+* `CODE_AGENT_OLLAMA_MODEL`
+* `CODE_AGENT_TEMPERATURE`
+
+For example, to use a different Ollama model, you could set the following environment variable:
+
+```bash
+export CODE_AGENT_OLLAMA_MODEL="another-model:latest"
+```
+
+## Programmatic Overrides
+
+When creating the LLM instance in a Python script, you can pass a dictionary of configuration overrides to the
+`create_llm` function.
+
+```python
+from code_agent.main import create_llm, load_config
+
+# Load base configuration
+config = load_config()
+
+# Override specific settings
+config["ollama_model"] = "a-third-model:latest"
+config["temperature"] = 0.9
+
+# Create LLM with overrides
+llm = create_llm(config)
+```

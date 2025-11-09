@@ -29,13 +29,13 @@ def create_default_tools(
 
     root_path = Path(root_dir) if root_dir else Path.cwd()
 
-    standard_tools: list[BaseTool | None] = [ReadFileTool(root_dir = root_path), EditFileTool(root_dir = root_path), (
-        SearchExplainTool(root_dir = root_path, llm_instance = llm) if llm else None), LinkerTool(root_dir = root_path),
-                                             NewFileTool(root_dir = root_path), (GenerateTestTool(
-                root_dir = root_path, llm_instance = llm
-                ) if llm else None), FormatCodeTool(root_dir = root_path),
-                                             (NotebookTool(root_dir = root_path, llm_instance = llm) if llm else None),
-                                             (GeneralChatTool(llm_instance = llm) if llm else None), RScriptTool(), ]
+    standard_tools: list[BaseTool | None] = [ReadFileTool(root_dir = root_path), EditFileTool(root_dir = root_path),
+            (SearchExplainTool(root_dir = root_path, llm_instance = llm) if llm else None),
+            LinkerTool(root_dir = root_path), NewFileTool(root_dir = root_path),
+            (GenerateTestTool(root_dir = root_path, llm_instance = llm) if llm else None),
+            FormatCodeTool(root_dir = root_path),
+            (NotebookTool(root_dir = root_path, llm_instance = llm) if llm else None),
+            (GeneralChatTool(llm_instance = llm) if llm else None), RScriptTool(), ]
 
     tools: list[BaseTool] = [tool for tool in standard_tools if tool is not None]
 

@@ -28,10 +28,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Dummy LLM for examples that don't require a real Ollama server
 class DummyLLM(BaseChatModel):
     def _generate(
-            self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any
-            ) -> ChatResult:
+            self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any, ) -> ChatResult:
         return ChatResult(
-                generations = [ChatGeneration(message = AIMessage(content = "Hello from DummyLLM"))]
+                generations = [ChatGeneration(
+                        message = AIMessage(content = "Hello from DummyLLM")
+                        )]
                 )
 
     def bind_tools(
@@ -81,7 +82,9 @@ def example_basic_file_operations():
         # Show preview of an edit (if agent_runnable had a preview_edit method, which it doesn't directly)
         # This part of the example is conceptual for the old agent structure.
         # For LCEL, you'd invoke a tool for preview.
-        print("\nPreview edit functionality would be invoked via a tool in LCEL.")
+        print(
+                "\nPreview edit functionality would be invoked via a tool in LCEL."
+                )
 
 
 def example_llm_generation():
@@ -101,12 +104,12 @@ def example_llm_generation():
         # The llm object itself is a Runnable
 
         # Generate content with LLM
-        prompt = "Write a Python function to calculate the factorial of a number."
+        prompt = ("Write a Python function to calculate the factorial of a number.")
         print(f"Prompt: {prompt}")
         print("Generating...")
 
         response = llm.invoke(prompt)
-        result = response.content if hasattr(response, "content") else str(response)
+        result = (response.content if hasattr(response, "content") else str(response))
         print(f"✓ Generated content (first 200 chars):\n{result[:200]}...")
     except Exception as e:
         print(f"Error generating content: {e}")
@@ -171,34 +174,34 @@ def example_article_evaluation():
 
     print(
             """
-    The article evaluation pipeline works as follows:
+        The article evaluation pipeline works as follows:
     
-    1. Load articles CSV with doc_id, text, summary, etc.
-    2. Run PCC analysis to classify articles
-    3. Call LLM (via llm_inference.generate_exclusion_reason) to generate reasons
-    4. Save results to tmp_batch_results.csv
-    5. Merge results back into articles using fill_exclusion_reasons.py
+        1. Load articles CSV with doc_id, text, summary, etc.
+        2. Run PCC analysis to classify articles
+        3. Call LLM (via llm_inference.generate_exclusion_reason) to generate reasons
+        4. Save results to tmp_batch_results.csv
+        5. Merge results back into articles using fill_exclusion_reasons.py
     
-    Example commands:
+        Example commands:
     
-        # Run full analysis
-        export OLLAMA_MODEL=gemma2:2b
-        export USE_LLM=1
-        python run_full_analysis.py
+            # Run full analysis
+            export OLLAMA_MODEL=gemma2:2b
+            export USE_LLM=1
+            python run_full_analysis.py
     
-        # Fill reasons into articles
-        python fill_exclusion_reasons.py \\
-            data/articles.csv \\
-            output/tmp_batch_results.csv \\
-            output/articles_with_reasons.csv
+            # Fill reasons into articles
+            python fill_exclusion_reasons.py \\
+                data/articles.csv \\
+                output/tmp_batch_results.csv \\
+                output/articles_with_reasons.csv
     
-    Key features:
-    - ✓ Automatic doc_id normalization
-    - ✓ Retry logic with exponential backoff
-    - ✓ Lock files to prevent duplicate processing
-    - ✓ Progress logging
-    - ✓ Graceful error handling
-        """, )
+        Key features:
+        - ✓ Automatic doc_id normalization
+        - ✓ Retry logic with exponential backoff
+        - ✓ Lock files to prevent duplicate processing
+        - ✓ Progress logging
+        - ✓ Graceful error handling
+            """, )
 
 
 def main():
@@ -207,12 +210,14 @@ def main():
     print("CodeAgent with LLM Integration - Examples")
     print("=" * 60)
     print("\nThese examples demonstrate the enhanced CodeAgent functionality.")
-    print("Note: LLM examples use simulation mode to avoid requiring Ollama.\n")
+    print(
+            "Note: LLM examples use simulation mode to avoid requiring Ollama.\n"
+            )
 
     examples = [("Basic File Operations", example_basic_file_operations),
-                ("LLM Content Generation", example_llm_generation),
-                ("Documentation Generation", example_documentation_generation),
-                ("Configuration Loading", example_config_loading), ("Article Evaluation", example_article_evaluation), ]
+            ("LLM Content Generation", example_llm_generation),
+            ("Documentation Generation", example_documentation_generation),
+            ("Configuration Loading", example_config_loading), ("Article Evaluation", example_article_evaluation), ]
 
     for i, (name, func) in enumerate(examples, 1):
         try:

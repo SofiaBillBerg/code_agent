@@ -9,7 +9,9 @@ from code_agent.scaffold import create_project_scaffold
 
 
 def scaffold(root = ".", name = "project", overwrite = False):
-    return create_project_scaffold(root, project_name = name, overwrite = overwrite)
+    return create_project_scaffold(
+            root, project_name = name, overwrite = overwrite
+            )
 
 
 if __name__ == "__main__":
@@ -22,6 +24,8 @@ if __name__ == "__main__":
     p.add_argument("--overwrite", action = "store_true")
     args = p.parse_args()
     if args.scaffold:
-        print(scaffold(args.scaffold, name = args.name, overwrite = args.overwrite))
+        print(
+                scaffold(args.scaffold, name = args.name, overwrite = args.overwrite)
+                )
     else:
         print("No-op. Use --scaffold")

@@ -20,10 +20,12 @@ from .file_generator import (py_to_ipynb, write_file, )
 from .scaffold import create_project_scaffold  # Re-export for public API
 
 __all__ = ["write_file", "create_file", "append_file", "create_from_template", "py_to_ipynb", "create_project_scaffold",
-           "CodeAgentError", ]
+        "CodeAgentError", ]
 
 
-def create_file(path: Path | str, content: str, *, overwrite: bool = False) -> Path:
+def create_file(
+        path: Path | str, content: str, *, overwrite: bool = False
+        ) -> Path:
     """Create *path* and write *content*.
 
     Parameters
@@ -72,4 +74,6 @@ def create_from_template(
     ``replace_vars`` using :meth:`str.format`.
     """
 
-    return _create_from_template(template_path, dest_path, replace_vars = replace_vars)
+    return _create_from_template(
+            template_path, dest_path, replace_vars = replace_vars
+            )

@@ -57,15 +57,20 @@ class NewFileTool(BaseTool):
             backup_status = "no_backup"
             if full_path.exists():
                 if not overwrite:
-                    return (f"❌ File already exists: {full_path}. Use 'overwrite=True' to replace it.",
-                            FileObject(path = full_path, contents = "", status = "error"),)
+                    return (f"❌ File already exists: {full_path}. Use 'overwrite=True' to replace it.", FileObject(
+                            path = full_path, contents = "", status = "error"
+                            ),)
                 else:
                     # Create a backup before overwriting
-                    backup_path = full_path.with_suffix(full_path.suffix + ".bak")
+                    backup_path = full_path.with_suffix(
+                            full_path.suffix + ".bak"
+                            )
                     try:
                         shutil.copy(full_path, backup_path)
                         backup_status = "backup_created"
-                        log.info(f"Backup created for overwrite: {backup_path}")
+                        log.info(
+                                f"Backup created for overwrite: {backup_path}"
+                                )
                     except Exception as e:
                         backup_status = "backup_failed"
                         log.error(

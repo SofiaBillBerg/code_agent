@@ -55,6 +55,8 @@ def write_file(
     """
 
     target = Path(target).expanduser().resolve()
+    if target.is_dir():
+        raise CodeAgentError(f"Cannot write to a directory: {target!s}")
     try:
         target.parent.mkdir(parents = True, exist_ok = True)
         tmp = target.with_suffix(".tmp")
@@ -63,7 +65,9 @@ def write_file(
         tmp.replace(target)
         return target
     except OSError as exc:  # pragma: no cover – exercised via tests
-        raise CodeAgentError(f"Failed to write file {target!s}: {exc}") from exc
+        raise CodeAgentError(
+                f"Failed to write file {target!s}: {exc}"
+                ) from exc
 
 
 def create_from_template(
@@ -168,4 +172,6 @@ def py_to_ipynb(py_file: Path | str, output: Path | str | None = None) -> Path:
             write_file(output, json_text)
         return output
     except Exception as exc:  # pragma: no cover – exercised via tests
-        raise CodeAgentError(f"Failed to write notebook {output!s}: {exc}") from exc
+        raise CodeAgentError(
+                f"Failed to write notebook {output!s}: {exc}"
+                ) from exc

@@ -11,7 +11,9 @@ from pydantic import BaseModel, Field
 class ReadFileArgs(BaseModel):
     """Arguments for reading a file."""
 
-    file_path: str = Field(..., description = "The full path of the file to read.")
+    file_path: str = Field(
+            ..., description = "The full path of the file to read."
+            )
 
 
 class ReadFileTool(BaseTool):

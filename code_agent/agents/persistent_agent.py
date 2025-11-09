@@ -44,7 +44,9 @@ class PersistentAgent:
             try:
                 with open(self._state_file) as f:
                     data = json.load(f)
-                    self.conversation_history = data.get("conversation_history", [])
+                    self.conversation_history = data.get(
+                            "conversation_history", []
+                            )
                     self.settings = data.get("settings", {})
             except Exception as e:
                 print(f"⚠️  Warning: Could not load state: {e}")
@@ -79,7 +81,9 @@ class PersistentAgent:
 
         except Exception as e:
             error_msg = f"❌ Error: {str(e)}"
-            self.conversation_history.append({"role": "error", "content": error_msg})
+            self.conversation_history.append(
+                    {"role": "error", "content": error_msg}
+                    )
             self._save_state()
             return error_msg
 

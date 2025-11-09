@@ -9,7 +9,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
 
-
 # ---------------------------------
 # 1️⃣  Arguments schema
 

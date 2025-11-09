@@ -51,18 +51,20 @@ def _create_directories(root_path: Path, project_name: str) -> None:
         try:
             d.mkdir(parents = True, exist_ok = True)
         except OSError as exc:
-            raise CodeAgentError(f"Failed to create directory {d}: {exc}") from exc
+            raise CodeAgentError(
+                    f"Failed to create directory {d}: {exc}"
+                    ) from exc
 
 
 def _create_files(root_path: Path, project_name: str, overwrite: bool) -> None:
     """Create the files for the project."""
     files_to_create = {"README.qmd": f"# {project_name}\n\nGenerated scaffold.",
-                       "requirements.txt": DEFAULT_REQUIREMENTS,
-                       "docs/index.qmd": f"---\ntitle: {project_name}\nformat: html\n---\n\n# "
-                                         f"{project_name}\n\nGenerated docs "
-                                         f"index.", "tests/test_smoke.py": "def test_smoke():\n    assert True\n",
-                       f"src/{project_name}/__init__.py": "# sample package init\n",
-                       ".github/workflows/ci.yml": WORKFLOW_CONTENT, }
+            "requirements.txt": DEFAULT_REQUIREMENTS,
+            "docs/index.qmd": f"---\ntitle: {project_name}\nformat: html\n---\n\n# "
+                              f"{project_name}\n\nGenerated docs "
+                              f"index.", "tests/test_smoke.py": "def test_smoke():\n    assert True\n",
+            f"src/{project_name}/__init__.py": "# sample package init\n",
+            ".github/workflows/ci.yml": WORKFLOW_CONTENT, }
 
     for file, content in files_to_create.items():
         path = root_path / file

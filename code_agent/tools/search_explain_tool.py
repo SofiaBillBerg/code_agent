@@ -18,7 +18,9 @@ class SearchExplainArgs(BaseModel):
     """Arguments schema for searching and explaining code."""
 
     search_query: str = Field(..., description = "Term or regexp to search")
-    max_results: int = Field(10, description = "Maximum number of hits to return")
+    max_results: int = Field(
+            10, description = "Maximum number of hits to return"
+            )
 
 
 class SearchExplainTool(BaseTool):

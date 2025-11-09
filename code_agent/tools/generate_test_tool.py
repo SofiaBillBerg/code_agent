@@ -14,7 +14,9 @@ class GenerateTestArgs(BaseModel):
     file_path: str = Field(
             ..., description = "Path to the module/file to generate tests for"
             )
-    tests_dir: str = Field("tests", description = "Directory to place generated tests")
+    tests_dir: str = Field(
+            "tests", description = "Directory to place generated tests"
+            )
 
 
 class GenerateTestTool(BaseTool):
@@ -31,12 +33,16 @@ class GenerateTestTool(BaseTool):
     def __init__(self, root_dir: str | Path, **kwargs):
         super().__init__(root = Path(root_dir).expanduser().resolve(), **kwargs)
 
-    def _run(self, file_path: str, tests_dir: str = "tests") -> tuple[str, FileObject]:
+    def _run(
+            self, file_path: str, tests_dir: str = "tests"
+            ) -> tuple[str, FileObject]:
         """Generates a basic pytest test file for a given Python module."""
 
         src = self.root / file_path
         if not src.exists():
             return (f"❌ Source file not found: {src}", FileObject(path = src, contents = "", status = "error"),)
+        if src.suffix != ".py":
+            raise ValueError(f"File {file_path} is not a Python file.")
 
         module_name = Path(file_path).stem
         test_file = self.root / tests_dir / f"test_{module_name}.py"

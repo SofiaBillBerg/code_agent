@@ -173,7 +173,9 @@ def build_import_graph(
     return graph
 
 
-def reachable_from(entrypoints: set[Path], graph: dict[Path, set[Path]]) -> set[Path]:
+def reachable_from(
+        entrypoints: set[Path], graph: dict[Path, set[Path]]
+        ) -> set[Path]:
     visited = set()
     stack = list(entrypoints)
     while stack:
