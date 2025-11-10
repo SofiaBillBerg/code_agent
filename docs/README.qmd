@@ -1,8 +1,6 @@
 ---
 title: "Code Agent"
 author: "Sofia Billger Bergström"
-date: "`r Sys.Date()`"
-format: html
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -15,8 +13,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent/main/HEAD?urlpath=%2Fdoc%2Ftree%2Fdocs%2FREADME.qmd)
-<!-- badges: end -->
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent.git/HEAD)<!-- badges: end -->
 
 
 > A lightweight, LLM‑driven assistant that can scaffold projects, edit files, generate documentation, and operate as an

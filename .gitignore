@@ -214,3 +214,5 @@ _site/
 /_site/
 *.backup
 docs/docs_web/
+/renv/.gitignore
+/renv/activate.R

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "agent": "code_agent.graph:build_graph"
+  },
+  "pip_installer": "uv",
+  "env": "./.env"
+}
