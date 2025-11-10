@@ -3,8 +3,11 @@ project:
   output-dir: docs/docs_web
   render:
     - "docs/*.qmd"
-    - "!pdf_docs/*.*"
-    - "!docs/web_docs/*.qmd"
+    - "docs/*.md"
+    - "docs/*.ipynb"
+    - "!docs/docs_web/*.qmd"
+    - "!docs/docs_web/*.md"
+    - "!pdf_docs/*.qmd"
     - "!docs/tools/cleanup_instructions.qmd"
     - "!docs/docs_backup/*.*"
     - "!docs/*_backup.qmd"
@@ -95,7 +98,14 @@ format:
     subtitle: "Documentation for The code_agent - an interactive, locally maintained LLM-powered assistant"
     description: "The code_agent is a local, LLM‑driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
 
+  pdf:
+    latex-output-dir: pdf_docs
+    pdf-engine: lualatex
+    toc: true
+    number-sections: true
+    colorlinks: true
 fig-env: figure
+cache: true
 includesource: true
 wrap: auto
 touch: true
