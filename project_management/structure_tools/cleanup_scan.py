@@ -21,16 +21,28 @@ import csv
 import hashlib
 import json
 import re
+
 from pathlib import Path
 
+
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDE_DIRS = {".venv", "venv", "__pycache__", "output", "archive", "backup", "packrat", "node_modules", ".git", }
+EXCLUDE_DIRS = {
+    ".venv",
+    "venv",
+    "__pycache__",
+    "output",
+    "archive",
+    "backup",
+    "packrat",
+    "node_modules",
+    ".git",
+}
 # Optional file with explicit paths to exclude (one per line, relative to project root)
 ARCHIVE_EXCLUDE_FILE = ROOT / "output" / "archive_candidates.txt"
 ARCHIVE_EXCLUDES: set[str] = set()
 if ARCHIVE_EXCLUDE_FILE.exists():
     try:
-        for L in ARCHIVE_EXCLUDE_FILE.read_text(encoding = "utf8").splitlines():
+        for L in ARCHIVE_EXCLUDE_FILE.read_text(encoding="utf8").splitlines():
             s = L.strip()
             if not s:
                 continue
@@ -43,8 +55,16 @@ if ARCHIVE_EXCLUDE_FILE.exists():
 PY_EXT = ".py"
 Q_EXTS = {".qmd", ".qmd.txt", ".md", ".markdown_docs"}
 
-ENTRYPOINT_PATTERNS = ["run_", "runfull", "run-full", "run", "main.py", "cli.py", "flow_pipeline/run_",
-                       "run_full_analysis.py", ]
+ENTRYPOINT_PATTERNS = [
+    "run_",
+    "runfull",
+    "run-full",
+    "run",
+    "main.py",
+    "cli.py",
+    "flow_pipeline/run_",
+    "run_full_analysis.py",
+]
 
 IMPORT_RE = re.compile(r"^(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))")
 
@@ -117,7 +137,7 @@ def collect_files(root: Path) -> list[Path]:
 def parse_imports_from_py(path: Path) -> set[str]:
     names = set()
     try:
-        text = path.read_text(encoding = "utf8", errors = "ignore")
+        text = path.read_text(encoding="utf8", errors="ignore")
     except Exception:
         return names
     for line in text.splitlines():
@@ -162,8 +182,8 @@ def find_entrypoints(all_files: list[Path]) -> set[Path]:
 
 
 def build_import_graph(
-        py_files: list[Path], mapping: dict[str, Path]
-        ) -> dict[Path, set[Path]]:
+    py_files: list[Path], mapping: dict[str, Path]
+) -> dict[Path, set[Path]]:
     graph: dict[Path, set[Path]] = {p: set() for p in py_files}
     for p in py_files:
         imports = parse_imports_from_py(p)
@@ -174,8 +194,8 @@ def build_import_graph(
 
 
 def reachable_from(
-        entrypoints: set[Path], graph: dict[Path, set[Path]]
-        ) -> set[Path]:
+    entrypoints: set[Path], graph: dict[Path, set[Path]]
+) -> set[Path]:
     visited = set()
     stack = list(entrypoints)
     while stack:
@@ -229,39 +249,55 @@ def scan() -> tuple[list[dict], dict]:
             found = False
             for py in py_files:
                 try:
-                    if fname in py.read_text(encoding = "utf8", errors = "ignore"):
+                    if fname in py.read_text(encoding="utf8", errors="ignore"):
                         found = True
                         break
                 except Exception:
                     continue
-            category = ("referenced_quarto_md_html" if found else "unreferenced_quarto_md_html")
+            category = (
+                "referenced_quarto_md_html"
+                if found
+                else "unreferenced_quarto_md_html"
+            )
         if p.stem.lower() in dup:
             notes = "duplicate_basename"
             category = "duplicate_same_basename"
-        report_rows.append(
-                {"path": rel, "size": size, "sha1": sha1, "category": category, "notes": notes, }
-                )
+        report_rows.append({
+            "path": rel,
+            "size": size,
+            "sha1": sha1,
+            "category": category,
+            "notes": notes,
+        })
 
-    meta = {"root": str(ROOT), "total_files_scanned": len(all_files), "total_python": len(py_files),
-            "total_quarto_md_html": len(q_files), }
-    return report_rows, {"meta": meta,
-                         "duplicates": {k: [str(x.relative_to(ROOT)) for x in v] for k, v in dup.items()}, }
+    meta = {
+        "root": str(ROOT),
+        "total_files_scanned": len(all_files),
+        "total_python": len(py_files),
+        "total_quarto_md_html": len(q_files),
+    }
+    return report_rows, {
+        "meta": meta,
+        "duplicates": {
+            k: [str(x.relative_to(ROOT)) for x in v] for k, v in dup.items()
+        },
+    }
 
 
 def write_reports(rows: list[dict], extra: dict):
     outdir = ROOT / "output"
-    outdir.mkdir(exist_ok = True)
+    outdir.mkdir(exist_ok=True)
     csvp = outdir / "cleanup_report.csv"
     jsonp = outdir / "cleanup_report.json"
-    with csvp.open("w", newline = "", encoding = "utf8") as f:
+    with csvp.open("w", newline="", encoding="utf8") as f:
         writer = csv.DictWriter(
-                f, fieldnames = ["path", "size", "sha1", "category", "notes"]
-                )
+            f, fieldnames=["path", "size", "sha1", "category", "notes"]
+        )
         writer.writeheader()
         for r in rows:
             writer.writerow(r)
-    with jsonp.open("w", encoding = "utf8") as f:
-        json.dump({"rows": rows, "extra": extra}, f, indent = 2)
+    with jsonp.open("w", encoding="utf8") as f:
+        json.dump({"rows": rows, "extra": extra}, f, indent=2)
     print(f"Wrote cleanup reports to: {csvp} and {jsonp}")
 
 
@@ -270,24 +306,31 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-            description = "Run cleanup scan with optional excludes"
-            )
+        description="Run cleanup scan with optional excludes"
+    )
     parser.add_argument(
-            "--exclude", "-e", action = "append",
-            help = "Explicit path to exclude (relative to project root). Can be repeated.", )
+        "--exclude",
+        "-e",
+        action="append",
+        help="Explicit path to exclude (relative to project root). Can be repeated.",
+    )
     parser.add_argument(
-            "--exclude-file", "-f", action = "append",
-            help = "Path to file containing exclude paths (one per line). Can be repeated.", )
+        "--exclude-file",
+        "-f",
+        action="append",
+        help="Path to file containing exclude paths (one per line). Can be repeated.",
+    )
     parser.add_argument(
-            "--exclude-folder", "-d", action = "append",
-            help = "Path to folder to exclude (relative to project root). Can be repeated.", )
+        "--exclude-folder",
+        "-d",
+        action="append",
+        help="Path to folder to exclude (relative to project root). Can be repeated.",
+    )
     args = parser.parse_args()
-
 
     def _add_exclude(s: str):
         s2 = s.replace("/", "\\").lstrip(".\\/")
         ARCHIVE_EXCLUDES.add(s2)
-
 
     # Load excludes provided on command line
     if args.exclude:
@@ -311,7 +354,7 @@ if __name__ == "__main__":
                 if not pth.is_absolute():
                     pth = ROOT / ef
                 if pth.exists():
-                    for L in pth.read_text(encoding = "utf8").splitlines():
+                    for L in pth.read_text(encoding="utf8").splitlines():
                         if L.strip():
                             _add_exclude(L.strip())
             except Exception:
@@ -321,5 +364,5 @@ if __name__ == "__main__":
     rows, extra = scan()
     write_reports(rows, extra)
     print(
-            "Scan complete. Review output/cleanup_report.csv before running any archival commands."
-            )
+        "Scan complete. Review output/cleanup_report.csv before running any archival commands."
+    )
