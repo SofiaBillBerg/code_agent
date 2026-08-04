@@ -16,16 +16,24 @@ from pathlib import Path
 
 from .exceptions import CodeAgentError
 from .file_generator import create_from_template as _create_from_template
-from .file_generator import (py_to_ipynb, write_file, )
+from .file_generator import py_to_ipynb, write_file
 from .scaffold import create_project_scaffold  # Re-export for public API
 
-__all__ = ["write_file", "create_file", "append_file", "create_from_template", "py_to_ipynb", "create_project_scaffold",
-        "CodeAgentError", ]
+
+__all__ = [
+    "CodeAgentError",
+    "append_file",
+    "create_file",
+    "create_from_template",
+    "create_project_scaffold",
+    "py_to_ipynb",
+    "write_file",
+]
 
 
 def create_file(
-        path: Path | str, content: str, *, overwrite: bool = False
-        ) -> Path:
+    path: Path | str, content: str, *, overwrite: bool = False
+) -> Path:
     """Create *path* and write *content*.
 
     Parameters
@@ -46,8 +54,8 @@ def create_file(
     path = Path(path).expanduser().resolve()
     if path.exists() and not overwrite:
         raise CodeAgentError(
-                f"File {path!s} already exists – use overwrite=True to replace it"
-                )
+            f"File {path!s} already exists – use overwrite=True to replace it"
+        )
     return write_file(path, content)
 
 
@@ -61,13 +69,17 @@ def append_file(path: Path | str, content: str) -> Path:
     path = Path(path).expanduser().resolve()
     if not path.exists():
         raise CodeAgentError(f"File {path!s} does not exist – cannot append")
-    with path.open("a", encoding = "utf-8") as fp:
+    with path.open("a", encoding="utf-8") as fp:
         fp.write(content)
     return path
 
 
 def create_from_template(
-        template_path: Path | str, dest_path: Path | str, *, replace_vars: dict | None = None, ) -> Path:
+    template_path: Path | str,
+    dest_path: Path | str,
+    *,
+    replace_vars: dict | None = None,
+) -> Path:
     """Create a file by copying *template_path* to *dest_path*.
 
     Any ``{}`` placeholders in the template are replaced by
@@ -75,5 +87,5 @@ def create_from_template(
     """
 
     return _create_from_template(
-            template_path, dest_path, replace_vars = replace_vars
-            )
+        template_path, dest_path, replace_vars=replace_vars
+    )

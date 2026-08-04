@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import difflib
+
 from pathlib import Path
 
 
 def generate_diff(
-        old_content: str, new_content: str, from_file: str = "original", to_file: str = "modified", ) -> str:
+    old_content: str,
+    new_content: str,
+    from_file: str = "original",
+    to_file: str = "modified",
+) -> str:
     """Generate a unified diff between two strings.
 
     Args:
@@ -20,14 +25,17 @@ def generate_diff(
         A string containing the unified diff
     """
     diff = difflib.unified_diff(
-            old_content.splitlines(keepends = True), new_content.splitlines(keepends = True), fromfile = from_file,
-            tofile = to_file, )
+        old_content.splitlines(keepends=True),
+        new_content.splitlines(keepends=True),
+        fromfile=from_file,
+        tofile=to_file,
+    )
     return "".join(diff)
 
 
 def preview_file_edit(
-        file_path: str | Path, new_content: str, create_if_missing: bool = False
-        ) -> tuple[str, bool]:
+    file_path: str | Path, new_content: str, create_if_missing: bool = False
+) -> tuple[str, bool]:
     """Generate a preview of file changes without modifying the file.
 
     Args:
@@ -43,7 +51,7 @@ def preview_file_edit(
     path = Path(file_path)
 
     if path.exists():
-        old_content = path.read_text(encoding = "utf-8")
+        old_content = path.read_text(encoding="utf-8")
         file_exists = True
     elif create_if_missing:
         old_content = ""
@@ -52,8 +60,8 @@ def preview_file_edit(
         raise FileNotFoundError(f"File not found: {file_path}")
 
     diff = generate_diff(
-            old_content, new_content, str(path), f"(proposed) {path}"
-            )
+        old_content, new_content, str(path), f"(proposed) {path}"
+    )
     return diff, file_exists
 
 
@@ -65,5 +73,5 @@ def apply_edit(file_path: str | Path, content: str) -> None:
         content: The new content
     """
     path = Path(file_path)
-    path.parent.mkdir(parents = True, exist_ok = True)
-    path.write_text(content, encoding = "utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")

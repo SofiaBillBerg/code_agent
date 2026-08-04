@@ -11,6 +11,7 @@ import argparse
 import json
 import logging
 import sys
+
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,7 @@ from typing import Any
 from langchain_chroma import Chroma
 from langchain_community.embeddings import GPT4AllEmbeddings
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import (AIMessage, BaseMessage, HumanMessage, )
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool  # Added import for BaseTool
@@ -27,6 +28,7 @@ from langchain_core.tools import BaseTool  # Added import for BaseTool
 # Local imports
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.graph import build_graph
+
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +39,8 @@ log = logging.getLogger(__name__)
 
 
 def load_config(
-        config_path: str = "code_agent/config/llm_config.json", ) -> dict[str, Any]:
+    config_path: str = "code_agent/config/llm_config.json",
+) -> dict[str, Any]:
     """Load JSON config, tolerant to missing file.
 
     Parameters
@@ -62,10 +65,10 @@ def load_config(
             cfg_file = alt
         else:
             raise FileNotFoundError(
-                    f"Config file not found: {config_path} or {alt}"
-                    )
+                f"Config file not found: {config_path} or {alt}"
+            )
 
-    with cfg_file.open("r", encoding = "utf-8") as f:
+    with cfg_file.open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -93,8 +96,8 @@ def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
         from langchain_ollama import ChatOllama
 
         return ChatOllama(
-                model = model, base_url = base_url, temperature = temperature
-                )
+            model=model, base_url=base_url, temperature=temperature
+        )
     except Exception as exc:  # pragma: no cover – fallback path
 
         class _FallbackLLM(BaseChatModel):
@@ -107,23 +110,28 @@ def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
                 self._base_url = base_url
 
             def _generate(
-                    self, messages: list, stop: list | None = None, **kwargs: Any
-                    ) -> ChatResult:
-                content = json.dumps(
-                        {"error": "LLM unavailable", "details": (f"Failed to initialise ChatOllama. Error: {self._err}"
-                                                                 f". Base URL: {self._base_url}."), }
-                        )
+                self, messages: list, stop: list | None = None, **kwargs: Any
+            ) -> ChatResult:
+                content = json.dumps({
+                    "error": "LLM unavailable",
+                    "details": (
+                        f"Failed to initialise ChatOllama. Error: {self._err}"
+                        f". Base URL: {self._base_url}."
+                    ),
+                })
                 return ChatResult(
-                        generations = [ChatGeneration(message = AIMessage(content = content))]
-                        )
+                    generations=[
+                        ChatGeneration(message=AIMessage(content=content))
+                    ]
+                )
 
             @property
             def _llm_type(self) -> str:
                 return "fallback"
 
             def bind_tools(
-                    self, tools: list[BaseTool], **kwargs: Any
-                    ) -> Runnable[Any, BaseMessage]:
+                self, tools: list[BaseTool], **kwargs: Any
+            ) -> Runnable[Any, BaseMessage]:
                 return self  # Simply return self for fallback LLM
 
         return _FallbackLLM(exc, base_url)
@@ -151,10 +159,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     A namespace object containing the parsed arguments.
     """
     parser = argparse.ArgumentParser(
-            prog = "code_agent", description = "An interactive agent for code manipulation.", )
+        prog="code_agent",
+        description="An interactive agent for code manipulation.",
+    )
     parser.add_argument(
-            "--debug", action = "store_true", help = "Enable DEBUG logs."
-            )
+        "--debug", action="store_true", help="Enable DEBUG logs."
+    )
     return parser.parse_args(argv)
 
 
@@ -174,7 +184,10 @@ def _setup_logging(debug: bool) -> None:
     """
     level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
-            level = level, format = "[%(asctime)s] %(levelname)s %(name)s: %(message)s", datefmt = "%H:%M:%S", )
+        level=level,
+        format="[%(asctime)s] %(levelname)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -202,27 +215,29 @@ def main(argv: Sequence[str] | None = None) -> None:
         cfg = load_config()
         llm = create_llm(cfg)
         root_dir = Path(cfg.get("root_dir", ".")).resolve()
-        tools = create_default_tools(root_dir = str(root_dir), llm = llm)
+        tools = create_default_tools(root_dir=str(root_dir), llm=llm)
 
         # Build the LangGraph
         app = build_graph(llm, tools)
 
         # Vector store for retrieval‑augmented generation
         memory_dir = root_dir / ".code_agent_memory"
-        memory_dir.mkdir(exist_ok = True)
+        memory_dir.mkdir(exist_ok=True)
 
-        embeddings = GPT4AllEmbeddings(client = None)
+        embeddings = GPT4AllEmbeddings(client=None)
         vectorstore = Chroma(
-                collection_name = "code_agent_conversations", embedding_function = embeddings,
-                persist_directory = str(memory_dir), )
+            collection_name="code_agent_conversations",
+            embedding_function=embeddings,
+            persist_directory=str(memory_dir),
+        )
 
         log.info(f"Agent initialized with root: {root_dir}")
         log.info(f"Persistent memory initialized at: {memory_dir}")
         print(f"Available tools: {[t.name for t in tools]}\n")
     except Exception as e:
         log.critical(
-                "Error loading or initializing agent: %s", e, exc_info = True
-                )
+            "Error loading or initializing agent: %s", e, exc_info=True
+        )
         print(f"❌ Critical Error: {e}")
         sys.exit(1)
 
@@ -236,16 +251,16 @@ def main(argv: Sequence[str] | None = None) -> None:
 
 
 def _handle_retrieval(
-        vectorstore: Chroma, user_input: str, chat_history: list[BaseMessage]
-        ) -> None:
+    vectorstore: Chroma, user_input: str, chat_history: list[BaseMessage]
+) -> None:
     """Retrieve relevant documents and update chat history."""
-    retrieved_docs = vectorstore.similarity_search(user_input, k = 2)
+    retrieved_docs = vectorstore.similarity_search(user_input, k=2)
     if retrieved_docs:
         print("\n🧠 Retrieved from memory:")
         for doc in retrieved_docs:
             chat_history.append(
-                    HumanMessage(content = f"Past context: {doc.page_content}")
-                    )
+                HumanMessage(content=f"Past context: {doc.page_content}")
+            )
             print(f"- {doc.page_content[:100]}...")
 
 
@@ -258,8 +273,8 @@ def _process_agent_event(event: dict) -> AIMessage | None:
             if getattr(agent_response, "tool_calls", None):
                 for tool_call in agent_response.tool_calls:
                     print(
-                            f"🛠️  Agent decided to use tool: **{tool_call['name']}**"
-                            )
+                        f"🛠️  Agent decided to use tool: **{tool_call['name']}**"
+                    )
                     print(f"   With arguments: {tool_call['args']}")
             else:
                 final_response = agent_response
@@ -269,14 +284,22 @@ def _process_agent_event(event: dict) -> AIMessage | None:
 
 
 def _update_history_and_persist(
-        vectorstore: Chroma, user_input: str, final_response: AIMessage, chat_history: list[BaseMessage], ) -> None:
+    vectorstore: Chroma,
+    user_input: str,
+    final_response: AIMessage,
+    chat_history: list[BaseMessage],
+) -> None:
     """Update chat history and persist to vector store."""
     print("\n=== Agent response ===")
     print(final_response.content)
     chat_history.append(final_response)
     vectorstore.add_texts(
-            texts = [user_input, final_response.content],
-            metadatas = [{"type": "user_query"}, {"type": "agent_response"}, ], )
+        texts=[user_input, final_response.content],
+        metadatas=[
+            {"type": "user_query"},
+            {"type": "agent_response"},
+        ],
+    )
 
 
 def _main_loop(app: Runnable, vectorstore: Chroma) -> None:
@@ -293,7 +316,7 @@ def _main_loop(app: Runnable, vectorstore: Chroma) -> None:
 
             log.info("User input: %s", user_input)
             _handle_retrieval(vectorstore, user_input, chat_history)
-            chat_history.append(HumanMessage(content = user_input))
+            chat_history.append(HumanMessage(content=user_input))
 
             print("\n=== Agent working... ===")
             final_response = None
@@ -304,8 +327,8 @@ def _main_loop(app: Runnable, vectorstore: Chroma) -> None:
 
             if final_response:
                 _update_history_and_persist(
-                        vectorstore, user_input, final_response, chat_history
-                        )
+                    vectorstore, user_input, final_response, chat_history
+                )
 
             print("-" * 60)
 

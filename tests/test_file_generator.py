@@ -19,14 +19,14 @@ def tmp_file(tmp_path: Path) -> Path:
 
 def test_write_text_file(tmp_file: Path) -> None:
     """Writing a simple text file should succeed and contain the same content."""
-    write_file(content = "content", target = tmp_file)
+    write_file(content="content", target=tmp_file)
     assert tmp_file.read_text() == "content"
 
 
 def test_write_text_file_overwrite(tmp_file: Path) -> None:
     """Overwriting an existing file should replace its contents."""
-    write_file(content = "first", target = tmp_file)
-    write_file(content = "second", target = tmp_file, mode = "w")
+    write_file(content="first", target=tmp_file)
+    write_file(content="second", target=tmp_file, mode="w")
     assert tmp_file.read_text() == "second"
 
 

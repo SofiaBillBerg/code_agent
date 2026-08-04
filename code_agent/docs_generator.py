@@ -42,8 +42,12 @@ def _gather_repo_info(root: Path) -> dict[str, list[str]]:
             elif p.parts and "tests" in p.parts:
                 tests.append(p.relative_to(root).as_posix())
 
-    return {"py_files": sorted(set(py_files)), "data_files": sorted(set(data_files)),
-            "notebooks": sorted(set(notebooks)), "tests": sorted(set(tests)), }
+    return {
+        "py_files": sorted(set(py_files)),
+        "data_files": sorted(set(data_files)),
+        "notebooks": sorted(set(notebooks)),
+        "tests": sorted(set(tests)),
+    }
 
 
 def _render_readme_qmd(info: dict[str, list[str]]) -> str:
@@ -55,11 +59,19 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
     Returns:
         String containing the README.qmd content
     """
-    lines = ["---", 'title: "Project overview"', "format:", "  markdown_docs:", "    css: docs/styles/custom.css",
-            "---\n", "# Project overview\n",
-            "This project contains an automated pipeline and a small code agent used to create ",
-            "and edit files and documentation locally (Quarto).", "\n## Contents\n",
-            "* Top-level Python modules and scripts (auto-detected)", ]
+    lines = [
+        "---",
+        'title: "Project overview"',
+        "format:",
+        "  markdown_docs:",
+        "    css: docs/styles/custom.css",
+        "---\n",
+        "# Project overview\n",
+        "This project contains an automated pipeline and a small code agent used to create ",
+        "and edit files and documentation locally (Quarto).",
+        "\n## Contents\n",
+        "* Top-level Python modules and scripts (auto-detected)",
+    ]
 
     # Add Python files
     for p in info["py_files"][:50]:
@@ -68,10 +80,15 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         lines.append(f"- ... ({len(info['py_files']) - 50} more)")
 
     # Add data files section
-    lines.extend(
-            ["\n## Data files\n", *(f"- `{p}`" for p in info["data_files"][:50]),
-                    *(["No common data files detected in `data/`"] if not info["data_files"] else []), ]
-            )
+    lines.extend([
+        "\n## Data files\n",
+        *(f"- `{p}`" for p in info["data_files"][:50]),
+        *(
+            ["No common data files detected in `data/`"]
+            if not info["data_files"]
+            else []
+        ),
+    ])
 
     # Add notebooks section
     lines.append("\n## Notebooks & docs\n")
@@ -84,14 +101,14 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         lines.append(f"- `{p}`")
 
     # Add how to run section
-    lines.extend(
-            ["\n## How to run the pipeline\n",
-                    "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.",
-                    "\n## CodeAgent\n",
-                    "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
-                    "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
-                    "details.", ]
-            )
+    lines.extend([
+        "\n## How to run the pipeline\n",
+        "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.",
+        "\n## CodeAgent\n",
+        "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
+        "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
+        "details.",
+    ])
 
     return "\n".join(lines)
 
@@ -138,8 +155,15 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
     Returns:
         String containing the FILES.qmd content
     """
-    lines = ["---", 'title: "Files"', "format:", "  markdown_docs:", "    css: docs/styles/custom.css", "---\n",
-            "# Project files\n", ]
+    lines = [
+        "---",
+        'title: "Files"',
+        "format:",
+        "  markdown_docs:",
+        "    css: docs/styles/custom.css",
+        "---\n",
+        "# Project files\n",
+    ]
 
     # Add all files
     for file_type in ["py_files", "data_files", "notebooks"]:
@@ -150,9 +174,11 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
 
 
 def generate_quarto_docs(
-        output_dir: Path = "docs", overwrite: bool = True, use_llm: bool = False, llm: BaseChatModel | None = None,
-        ) -> \
-list[str]:
+    output_dir: Path = "docs",
+    overwrite: bool = True,
+    use_llm: bool = False,
+    llm: BaseChatModel | None = None,
+) -> list[str]:
     """Generate a small set of .qmd files in `output_dir`.
 
     Args:
@@ -166,7 +192,7 @@ list[str]:
     """
     root = Path(".")
     out = Path(output_dir)
-    out.mkdir(parents = True, exist_ok = True)
+    out.mkdir(parents=True, exist_ok=True)
     info = _gather_repo_info(root)
     written = []
 
@@ -178,13 +204,15 @@ list[str]:
         if use_llm and llm:
             try:
                 # Build a prompt for the LLM to generate a README
-                prompt = ("You are an expert technical writer. Create a comprehensive README.qmd "
-                          "for this project. Include sections for: project description, installation, "
-                          "usage, and examples. Format it in Quarto markdown with a YAML header.\n\n"
-                          f"Project files:\n"
-                          f"Python files: {', '.join(info['py_files'][:20])}\n"
-                          f"Data files: {', '.join(info['data_files'][:10])}\n"
-                          f"Notebooks: {', '.join(info['notebooks'][:10])}\n")
+                prompt = (
+                    "You are an expert technical writer. Create a comprehensive README.qmd "
+                    "for this project. Include sections for: project description, installation, "
+                    "usage, and examples. Format it in Quarto markdown with a YAML header.\n\n"
+                    f"Project files:\n"
+                    f"Python files: {', '.join(info['py_files'][:20])}\n"
+                    f"Data files: {', '.join(info['data_files'][:10])}\n"
+                    f"Notebooks: {', '.join(info['notebooks'][:10])}\n"
+                )
 
                 # Use the provided LLM instance
                 content = llm.invoke(prompt)
@@ -196,12 +224,14 @@ list[str]:
 
                 # Ensure it starts with --- for YAML front matter
                 if not content.startswith("---"):
-                    content = ("---\n"
-                               'title: "Project Overview"\n'
-                               "format:\n"
-                               "  markdown_docs:\n"
-                               "    css: docs/styles/custom.css\n"
-                               "---\n\n" + content)
+                    content = (
+                        "---\n"
+                        'title: "Project Overview"\n'
+                        "format:\n"
+                        "  markdown_docs:\n"
+                        "    css: docs/styles/custom.css\n"
+                        "---\n\n" + content
+                    )
 
                 write_file(readme_q, content)
                 written.append(str(readme_q))

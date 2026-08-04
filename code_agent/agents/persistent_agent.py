@@ -1,6 +1,7 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
+
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,7 @@ class PersistentAgent:
         if self._initialized:
             return
 
-        self.agent: Runnable = build_agent(llm = llm, tools = tools)
+        self.agent: Runnable = build_agent(llm=llm, tools=tools)
         self.conversation_history: list[dict[str, str]] = []
         self.settings: dict[str, Any] = {}
         self._initialized = True
@@ -35,7 +36,7 @@ class PersistentAgent:
 
     def _ensure_state_dir(self):
         """Ensure the state directory exists."""
-        self._state_file.parent.mkdir(parents = True, exist_ok = True)
+        self._state_file.parent.mkdir(parents=True, exist_ok=True)
 
     def _load_state(self):
         """Load agent state from disk."""
@@ -45,8 +46,8 @@ class PersistentAgent:
                 with open(self._state_file) as f:
                     data = json.load(f)
                     self.conversation_history = data.get(
-                            "conversation_history", []
-                            )
+                        "conversation_history", []
+                    )
                     self.settings = data.get("settings", {})
             except Exception as e:
                 print(f"⚠️  Warning: Could not load state: {e}")
@@ -55,9 +56,12 @@ class PersistentAgent:
         """Save agent state to disk."""
         self._ensure_state_dir()
         try:
-            data = {"conversation_history": self.conversation_history, "settings": self.settings, }
+            data = {
+                "conversation_history": self.conversation_history,
+                "settings": self.settings,
+            }
             with open(self._state_file, "w") as f:
-                json.dump(data, f, indent = 2)
+                json.dump(data, f, indent=2)
         except Exception as e:
             print(f"⚠️  Warning: Could not save state: {e}")
 
@@ -69,21 +73,24 @@ class PersistentAgent:
         self.conversation_history.append({"role": "user", "content": message})
 
         try:
-            response = self.agent.invoke(
-                    {"input": message, "chat_history": self.conversation_history}
-                    )
+            response = self.agent.invoke({
+                "input": message,
+                "chat_history": self.conversation_history,
+            })
             response_content = response.get("output", str(response))
-            self.conversation_history.append(
-                    {"role": "assistant", "content": response_content}
-                    )
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": response_content,
+            })
             self._save_state()
             return response_content
 
         except Exception as e:
             error_msg = f"❌ Error: {str(e)}"
-            self.conversation_history.append(
-                    {"role": "error", "content": error_msg}
-                    )
+            self.conversation_history.append({
+                "role": "error",
+                "content": error_msg,
+            })
             self._save_state()
             return error_msg
 
@@ -99,7 +106,7 @@ agent = None
 def get_persistent_agent(llm, tools):
     global agent
     if agent is None:
-        agent = PersistentAgent(llm = llm, tools = tools)
+        agent = PersistentAgent(llm=llm, tools=tools)
     return agent
 
 

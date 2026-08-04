@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+
 from pathlib import Path
 from typing import Any, Literal
 
@@ -17,35 +18,43 @@ from .edit_file_tool import FileObject
 class SearchExplainArgs(BaseModel):
     """Arguments schema for searching and explaining code."""
 
-    search_query: str = Field(..., description = "Term or regexp to search")
-    max_results: int = Field(
-            10, description = "Maximum number of hits to return"
-            )
+    search_query: str = Field(..., description="Term or regexp to search")
+    max_results: int = Field(10, description="Maximum number of hits to return")
 
 
 class SearchExplainTool(BaseTool):
     """Tool for searching code and generating comprehensive explanations."""
 
     name: str = "search-explain"
-    description: str = ("Search for a specific string or pattern in local text files and "
-                        "summarise the snippets (and their file names). Return the summary as "
-                        "a string and a FileObject containing the first hit's path.")
+    description: str = (
+        "Search for a specific string or pattern in local text files and "
+        "summarise the snippets (and their file names). Return the summary as "
+        "a string and a FileObject containing the first hit's path."
+    )
     response_format: Literal["content_and_artifact"] = "content_and_artifact"
     args_schema: type[BaseModel] = SearchExplainArgs
 
     llm: BaseChatModel
     root: Path
 
-    model_config = ConfigDict(arbitrary_types_allowed = True)
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(
-            self, root_dir: str | Path, llm_instance: BaseChatModel, max_hits: int = 10, **kwargs, ):
+        self,
+        root_dir: str | Path,
+        llm_instance: BaseChatModel,
+        max_hits: int = 10,
+        **kwargs,
+    ):
         super().__init__(
-                llm = llm_instance, root = Path(root_dir).expanduser().resolve(), **kwargs, )
+            llm=llm_instance,
+            root=Path(root_dir).expanduser().resolve(),
+            **kwargs,
+        )
 
     def _read_ipynb_preview(self, path: Path) -> str:
         try:
-            nb = json.loads(path.read_text(encoding = "utf-8"))
+            nb = json.loads(path.read_text(encoding="utf-8"))
             cells = nb.get("cells", [])
             texts = []
             for c in cells:
@@ -78,17 +87,23 @@ class SearchExplainTool(BaseTool):
         hits = self._gather_hits(search_query, pattern, max_results)
 
         if not hits:
-            return ("❌ No matches found.", FileObject(path = Path(), contents = "", status = "No hits"),)
+            return (
+                "❌ No matches found.",
+                FileObject(path=Path(), contents="", status="No hits"),
+            )
 
         summary, first_hit = self._summarize_hits(hits)
         file_obj = FileObject(
-                path = Path(str(first_hit["file_path"])).resolve(), contents = "", status = "Analysed", )
+            path=Path(str(first_hit["file_path"])).resolve(),
+            contents="",
+            status="Analysed",
+        )
 
         return summary, file_obj
 
     def _gather_hits(
-            self, search_query: str, pattern: re.Pattern | None, max_results: int
-            ):
+        self, search_query: str, pattern: re.Pattern | None, max_results: int
+    ):
         """
         Gather all matching files and their snippets from the root directory.
 
@@ -134,8 +149,17 @@ class SearchExplainTool(BaseTool):
         """Return True if the path should be considered for searching."""
         # skip virtualenvs and large folders
         if any(
-                part in (".venv", "venv", "node_modules", "packrat", "archive", "output",) for part in path.parts
-                ):
+            part
+            in (
+                ".venv",
+                "venv",
+                "node_modules",
+                "packrat",
+                "archive",
+                "output",
+            )
+            for part in path.parts
+        ):
             return False
         if not path.is_file():
             return False
@@ -151,22 +175,25 @@ class SearchExplainTool(BaseTool):
         try:
             if path.suffix == ".ipynb":
                 return self._read_ipynb_preview(path)
-            return path.read_text(encoding = "utf-8")
+            return path.read_text(encoding="utf-8")
         except Exception:
             return None
 
     def _summarize_hits(self, hits: list[dict]):
         snippets = "\n\n".join(
-                f"File: {hit['file_path']}\nSnippet:\n{hit['snippet']}" for hit in hits
-                )
+            f"File: {hit['file_path']}\nSnippet:\n{hit['snippet']}"
+            for hit in hits
+        )
 
         summary_prompt = (
-                "You are an expert code analyst. Provide a comprehensive analysis of the following code snippets. "
-                "Include: 1) Overall purpose and functionality, 2) Key design patterns and architectural decisions, "
-                "3) Potential issues or improvements, 4) Dependencies and relationships between files, "
-                "5) Best practices being followed or violated. Be thorough and detailed.\n\n" + snippets)
+            "You are an expert code analyst. Provide a comprehensive analysis of the following code snippets. "
+            "Include: 1) Overall purpose and functionality, 2) Key design patterns and architectural decisions, "
+            "3) Potential issues or improvements, 4) Dependencies and relationships between files, "
+            "5) Best practices being followed or violated. Be thorough and detailed.\n\n"
+            + snippets
+        )
 
-        response = self.llm.invoke([HumanMessage(content = summary_prompt)])
+        response = self.llm.invoke([HumanMessage(content=summary_prompt)])
         if hasattr(response, "content"):
             summary: str = str(response.content)
         else:

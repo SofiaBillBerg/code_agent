@@ -2,6 +2,7 @@
 
 import json
 import logging
+
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -38,17 +39,19 @@ class NaturalLanguageTool(BaseTool):
 
             arg_details = []
             for arg_name, arg_info in properties.items():
-                is_required = ("required" if arg_name in required_args else "optional")
+                is_required = (
+                    "required" if arg_name in required_args else "optional"
+                )
                 arg_desc = arg_info.get("description", "No description")
                 arg_details.append(
-                        f"      - `{arg_name}` ({is_required}): {arg_desc}"
-                        )
+                    f"      - `{arg_name}` ({is_required}): {arg_desc}"
+                )
 
             tool_manifest.append(
-                    f"  - Tool: `{t.name}`\n"
-                    f"    Description: {t.description}\n"
-                    f"    Arguments:\n" + "\n".join(arg_details)
-                    )
+                f"  - Tool: `{t.name}`\n"
+                f"    Description: {t.description}\n"
+                f"    Arguments:\n" + "\n".join(arg_details)
+            )
 
         tool_manifest_str = "\n".join(tool_manifest)
 
@@ -76,7 +79,11 @@ Valid JSON Response:"""
 
         try:
             response: AIMessage = self.llm.invoke(prompt)
-            content = (response.content if hasattr(response, "content") else str(response))
+            content = (
+                response.content
+                if hasattr(response, "content")
+                else str(response)
+            )
             logging.debug(f"Raw LLM response for tool selection: {content}")
 
             # Clean the response content
@@ -90,19 +97,20 @@ Valid JSON Response:"""
             tool_call = json.loads(content)
 
             if not isinstance(tool_call, dict) or "tool" not in tool_call:
-                return json.dumps(
-                        {"error": "LLM failed to select a valid tool."}
-                        )
+                return json.dumps({
+                    "error": "LLM failed to select a valid tool."
+                })
 
             return json.dumps(tool_call)
 
         except json.JSONDecodeError as e:
             logging.error(f"JSONDecodeError: {e}. LLM response was: {content}")
-            return json.dumps(
-                    {"error": "Invalid JSON format from LLM.", "raw_response": content, }
-                    )
+            return json.dumps({
+                "error": "Invalid JSON format from LLM.",
+                "raw_response": content,
+            })
         except Exception as e:
             logging.error(f"Error in NaturalLanguageTool: {e}")
-            return json.dumps(
-                    {"error": f"An unexpected error occurred: {str(e)}"}
-                    )
+            return json.dumps({
+                "error": f"An unexpected error occurred: {str(e)}"
+            })

@@ -216,3 +216,7 @@ _site/
 docs/docs_web/
 /renv/.gitignore
 /renv/activate.R
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json

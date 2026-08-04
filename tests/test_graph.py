@@ -20,7 +20,14 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-from langchain_core.messages import (AIMessage, BaseMessage, HumanMessage, ToolCall, ToolMessage, )
+
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    ToolCall,
+    ToolMessage,
+)
 from langchain_core.tools import tool
 
 # Import the graph builder and the factory helper that creates an agent
@@ -49,12 +56,14 @@ def mock_llm() -> MagicMock:
         prompt = messages[-1].content
         if "tool" in prompt.lower():
             return AIMessage(
-                    content = "", tool_calls = [ToolCall(name = "dummy", args = {}, id = "1")], )
-        return AIMessage(content = "Hello, world!")
+                content="",
+                tool_calls=[ToolCall(name="dummy", args={}, id="1")],
+            )
+        return AIMessage(content="Hello, world!")
 
     mock.invoke.side_effect = _invoke
     # Add the bind_tools method to the mock
-    mock.bind_tools = MagicMock(return_value = mock)
+    mock.bind_tools = MagicMock(return_value=mock)
     return mock
 
 
@@ -73,7 +82,7 @@ def dummy_tool():
 @pytest.fixture
 def agent_graph(mock_llm, dummy_tool) -> Any:
     """Create a CodeAgent wired with the mock LLM and an in‑memory store."""
-    return build_graph(llm = mock_llm, tools = [dummy_tool])
+    return build_graph(llm=mock_llm, tools=[dummy_tool])
 
 
 # ---------------------------------------------------------------------------
@@ -84,11 +93,13 @@ def agent_graph(mock_llm, dummy_tool) -> Any:
 def test_action_node_generates_tool_message(agent_graph):
     """The action node should call the tool and return a ``ToolMessage``."""
     # type: ignore[arg-type]
-    state = {"messages": [HumanMessage(content = "Please call a tool")]}
+    state = {"messages": [HumanMessage(content="Please call a tool")]}
 
     final_state = agent_graph.invoke(state)
 
-    tool_msgs = [m for m in final_state["messages"] if isinstance(m, ToolMessage)]
+    tool_msgs = [
+        m for m in final_state["messages"] if isinstance(m, ToolMessage)
+    ]
     assert len(tool_msgs) == 1, "Expected one ToolMessage in the final state"
 
     # Verify that the tool call was made correctly.
@@ -98,7 +109,7 @@ def test_action_node_generates_tool_message(agent_graph):
 
 def test_action_node_returns_normal_ai_message(agent_graph):
     """If the LLM does not request a tool, the graph should return a normal AIMessage."""
-    state = {"messages": [HumanMessage(content = "Say hello")]}
+    state = {"messages": [HumanMessage(content="Say hello")]}
 
     final_state = agent_graph.invoke(state)
 
@@ -111,8 +122,8 @@ def test_action_node_returns_normal_ai_message(agent_graph):
 def test_graph_handles_llm_error(mock_llm, dummy_tool):
     """If the LLM raises an exception, the graph should propagate it."""
     mock_llm.invoke.side_effect = RuntimeError("LLM failure")
-    graph = build_graph(llm = mock_llm, tools = [dummy_tool])
-    state = {"messages": [HumanMessage(content = "Trigger an error")]}
+    graph = build_graph(llm=mock_llm, tools=[dummy_tool])
+    state = {"messages": [HumanMessage(content="Trigger an error")]}
 
-    with pytest.raises(RuntimeError, match = "LLM failure"):
+    with pytest.raises(RuntimeError, match="LLM failure"):
         graph.invoke(state)

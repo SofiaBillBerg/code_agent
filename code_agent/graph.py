@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import (AIMessage, BaseMessage, )
+from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_core.tools import BaseTool
 from langgraph.graph import END, StateGraph
@@ -108,7 +108,10 @@ def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
 
     # Conditional routing
     graph.add_conditional_edges(
-            "agent", should_continue, {"action": "action", END: END}, )
+        "agent",
+        should_continue,
+        {"action": "action", END: END},
+    )
 
     # Return to agent after a tool call
     graph.add_edge("action", "agent")
