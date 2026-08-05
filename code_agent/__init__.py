@@ -11,6 +11,19 @@ from .exceptions import CodeAgentError, FileCreationError, InvalidToolError
 from .file_generator import create_from_template, py_to_ipynb, write_file
 from .main import create_llm, load_config
 
+# OAP-inspired capability layer (public API)
+from .capabilities.audit import AuditLog, Receipt
+from .capabilities.base import Capability, CapabilityBase, RiskClass
+from .capabilities.envelope import InvocationRequest, InvocationResponse
+from .capabilities.registry import CapabilityRegistry
+from .capabilities.tool_adapter import tool_to_capability
+
+# Provider-agnostic LLM layer (public API)
+from .providers.base import LLMProvider, ProviderBase
+from .providers.factory import create_provider
+from .providers.ollama import OllamaProvider
+from .providers.openai import OpenAIProvider
+
 
 # Explicitly expose the public API members
 __all__ = [
@@ -19,10 +32,24 @@ __all__ = [
     "InvalidToolError",
     "build_agent",
     "create_default_tools",
-    "create_from_template",
-    "create_llm",
     "create_project_scaffold",
-    "load_config",
+    "create_from_template",
     "py_to_ipynb",
     "write_file",
+    "create_llm",
+    "load_config",
+    "AuditLog",
+    "Capability",
+    "CapabilityBase",
+    "CapabilityRegistry",
+    "InvocationRequest",
+    "InvocationResponse",
+    "Receipt",
+    "RiskClass",
+    "tool_to_capability",
+    "create_provider",
+    "LLMProvider",
+    "OllamaProvider",
+    "OpenAIProvider",
+    "ProviderBase",
 ]

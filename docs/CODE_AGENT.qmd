@@ -16,7 +16,7 @@ The agent is designed to be backend-agnostic, but the default configuration uses
 from code_agent.main import load_config, create_llm
 from langchain_community.embeddings import GPT4AllEmbeddings
 
-# Load configuration from llm_config.json
+# Load configuration from the .env file at the project root
 cfg = load_config()
 
 # Create the LLM instance (defaults to ChatOllama)

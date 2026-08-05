@@ -46,7 +46,7 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
-.installed.cfg
+.installed.cfg  
 *.egg
 MANIFEST
 
@@ -69,9 +69,6 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
 .pytest_cache/
 cover/
 
@@ -80,8 +77,6 @@ cover/
 *.pot
 
 # Django stuff:
-*.log
-local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
@@ -100,7 +95,7 @@ docs/_build/
 
 # IPython
 profile_default/
-ipython_config.py
+# ipython_config.py # temp disabled during this work
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
@@ -169,7 +164,7 @@ dmypy.json
 .pyre/
 
 # pytype static type analyzer
-.pytype/
+.pytype/ 
 
 # Cython debug symbols
 cython_debug/
@@ -218,5 +213,5 @@ docs/docs_web/
 /renv/activate.R
 
 # MemPalace per-project files (issue #185)
-mempalace.yaml
-entities.json
+mempalace.yaml 
+entities.json  

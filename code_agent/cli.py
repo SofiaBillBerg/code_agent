@@ -9,6 +9,10 @@ repository:
 * ``scaffold`` – generate a minimal project structure.
 * ``py2ipynb`` – convert a Python script to a Jupyter notebook.
 * ``docs`` – generate Quarto documentation for the current tree.
+* ``chat`` – start an interactive chat session with the agent.
+* ``capabilities list`` – list the registered capabilities.
+* ``capabilities invoke`` – dispatch an invocation through the registry.
+* ``serve`` – start the LLM provider selected by the config.
 
 Implementation details
 ----------------------
@@ -20,27 +24,243 @@ Implementation details
   :func:`code_agent.file_generator.py_to_ipynb`.
 * ``scaffold`` uses :func:`code_agent.file_generator.create_project_scaffold`.
 * ``docs`` simply calls :func:`code_agent.docs_generator.generate_quarto_docs`.
+* ``capabilities`` commands build a :class:`CapabilityRegistry` populated
+  with the default tools adapted via :func:`tool_to_capability`, then
+  discover or dispatch through it.
+* ``serve`` selects a provider via :func:`create_provider` from the config
+  and runs a small read‑eval‑print loop against ``provider.complete``.
 * Errors are wrapped in :class:`code_agent.exceptions.CodeAgentError` to
 
 The CLI is intentionally **stateless** – it performs the requested
 action and exits.  All heavy lifting is done by the helper functions.
 """
 
+from __future__ import annotations
+
+import json
 import subprocess
+import sys
+import uuid
 
 from pathlib import Path
+from typing import Any
 
 import typer
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.capabilities.audit import Receipt
+from code_agent.capabilities.envelope import (
+    InvocationRequest,
+    InvocationResponse,
+)
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.capabilities.tool_adapter import tool_to_capability
 from code_agent.docs_generator import generate_quarto_docs
 from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
+from code_agent.providers.factory import create_provider
 from code_agent.scaffold import create_project_scaffold
 
 
 app = typer.Typer(name="code_agent", help="Local LLM‑driven code assistant")
+
+
+def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
+    """Build a registry populated with the default tool‑adapted capabilities.
+
+    Each default tool that can be constructed without an LLM is wrapped via
+    :func:`tool_to_capability` and registered under its kebab‑cased id. Tools
+    that require an LLM (e.g. ``search-explain``, ``generate-test``) are
+    intentionally omitted so ``capabilities`` commands stay stateless and do
+    not require a running model backend.
+
+    Args:
+        root_dir: Root directory the tools operate within; defaults to the
+            current working directory.
+
+    Returns:
+        A :class:`CapabilityRegistry` with the adapted tools registered.
+    """
+    registry = CapabilityRegistry()
+    for tool in create_default_tools(root_dir=root_dir):
+        registry.register(tool_to_capability(tool))  # type: ignore[arg-type]
+    return registry
+
+
+def _echo_response(response: InvocationResponse, receipt: Receipt) -> None:
+    """Print an invocation response and its audit receipt.
+
+    Args:
+        response: The invocation response to display.
+        receipt: The audit receipt recorded for the dispatch.
+    """
+    if response.status == "error":
+        typer.echo(f"status: error")
+        typer.echo(f"error: {response.error}")
+    else:
+        typer.echo(f"status: ok")
+        typer.echo(f"result: {json.dumps(response.result, default=str)}")
+    typer.echo(f"duration_ms: {response.duration_ms}")
+    typer.echo(
+        f"receipt: request_id={receipt.request_id} "
+        f"status={receipt.status} timestamp={receipt.timestamp} "
+        f"receipt_hash={receipt.receipt_hash}"
+    )
+
+
+capabilities_app = typer.Typer(
+    help="Inspect and invoke the registered capabilities."
+)
+app.add_typer(capabilities_app, name="capabilities")
+
+
+@capabilities_app.command("list", help="List all registered capabilities.")
+def capabilities_list() -> None:
+    """List every registered capability (id, intent, risk class).
+
+    The catalog is built from the default tools adapted into capabilities.
+    Each row shows the capability ``id``, its ``risk_class`` and its
+    ``intent`` (a human description of what the capability does).
+    """
+    capabilities = _build_registry().discover()
+    if not capabilities:
+        typer.echo("No capabilities registered.")
+        return
+
+    rows: list[tuple[str, str, str]] = [
+        (cap["id"], cap["risk_class"], cap["intent"]) for cap in capabilities
+    ]
+    id_width = max(len(row[0]) for row in rows)
+    risk_width = max(len(row[1]) for row in rows)
+    for cap_id, risk_class, intent in rows:
+        typer.echo(
+            f"{cap_id:<{id_width}}  {risk_class:<{risk_width}}  {intent}"
+        )
+
+
+@capabilities_app.command(
+    "invoke", help="Dispatch a request through the registry."
+)
+def capabilities_invoke(
+    capability_id: str = typer.Argument(
+        ..., help="Identifier of the capability to invoke."
+    ),
+    params: str = typer.Option(
+        "{}", help="JSON object of invocation parameters."
+    ),
+) -> None:
+    """Invoke a capability and print the response and audit receipt.
+
+    Builds an :class:`InvocationRequest` for ``capability_id`` with the
+    supplied ``params`` (a JSON object), dispatches it through the registry
+    and prints the resulting :class:`InvocationResponse` together with the
+    hash‑chained audit :class:`Receipt`. A non‑zero exit code is returned
+    when the dispatch reports an error.
+
+    Args:
+        capability_id: Stable identifier of the capability to invoke.
+        params: JSON object of parameters for the capability.
+    """
+    try:
+        parsed_params: dict[str, Any] = json.loads(params)
+    except json.JSONDecodeError as exc:
+        raise CodeAgentError(f"Invalid --params JSON: {exc}") from exc
+
+    request = InvocationRequest(
+        request_id=uuid.uuid4().hex,
+        capability_id=capability_id,
+        params=parsed_params,
+        caller="cli",
+    )
+    response, receipt = _build_registry().dispatch(request)
+    _echo_response(response, receipt)
+    if response.status == "error":
+        raise typer.Exit(code=1)
+
+
+@app.command(help="Start the LLM provider selected by the config.")
+def serve(
+    config_path: str | None = typer.Option(
+        None,
+        help="Optional path to a JSON configuration file (overrides .env settings).",
+    ),
+    web: bool = typer.Option(
+        False,
+        "--web",
+        is_flag=True,
+        help="Serve the web UI instead of the console loop.",
+    ),
+    web_host: str = typer.Option(
+        "127.0.0.1",
+        "--web-host",
+        help="Host to bind the web UI server to.",
+    ),
+    web_port: int = typer.Option(
+        8000,
+        "--web-port",
+        help="Port to bind the web UI server to.",
+    ),
+) -> None:
+    """Start the provider selected by the config and serve prompts.
+
+    Loads the config, constructs the provider via :func:`create_provider`
+    and runs a small read‑eval‑print loop: each line of input is sent to
+    ``provider.complete`` and the completion is printed. Type ``exit``,
+    ``quit`` or ``q`` (or press Ctrl‑C) to end the session.
+
+    With ``--web`` the command instead starts a local HTTP server for the
+    web UI (``code_agent.ui.web``): ``GET /capabilities`` lists the
+    capability catalog and ``POST /invoke`` dispatches audited invocations.
+    The built React app is served from ``code_agent/ui/webapp/dist`` when
+    present. The server binds to ``127.0.0.1:8000``; pass ``--web-port`` to
+    change the port. No API keys or prompt content are ever logged.
+
+    Args:
+        config_path: Path to the JSON configuration file.
+        web: Whether to serve the web UI instead of the console loop.
+        web_host: Host to bind the web UI server to.
+        web_port: Port to bind the web UI server to.
+    """
+    if web:
+        import uvicorn
+
+        typer.echo(f"Web UI at http://{web_host}:{web_port}")
+        uvicorn.run(
+            "code_agent.ui.web:app",
+            host=web_host,
+            port=web_port,
+            log_level="info",
+        )
+        return
+
+    try:
+        cfg = load_config(config_path)
+        provider = create_provider(cfg)
+    except Exception as exc:  # pragma: no cover – exercised via tests
+        raise CodeAgentError(str(exc)) from exc
+
+    model = getattr(provider, "model", "unknown")
+    typer.echo(f"Serving provider '{provider.name}' (model: {model}).")
+    typer.echo("Type 'exit', 'quit' or 'q' to end the session.")
+
+    while True:
+        try:
+            prompt = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            typer.echo("\nGoodbye!")
+            break
+        if not prompt:
+            continue
+        if prompt.lower() in {"exit", "quit", "q"}:
+            typer.echo("Goodbye!")
+            break
+        try:
+            response = provider.complete([{"role": "user", "content": prompt}])
+        except Exception as exc:  # noqa: BLE001 – surfaced to the user
+            typer.echo(f"Error: {exc}")
+            continue
+        typer.echo(response)
 
 
 @app.command(help="Create a new file with the supplied content.")
@@ -321,10 +541,6 @@ def _display_agent_response(response, conversation_state):
         return conversation_state
 
 
-# Register the chat command
-app.command(help="Start an interactive chat session with the code agent")(chat)
-
-
 def main() -> None:  # pragma: no cover – thin wrapper
     """Entry point used by ``python -m code_agent.cli``.
 
@@ -335,6 +551,4 @@ def main() -> None:  # pragma: no cover – thin wrapper
 
 if __name__ == "__main__":
     # This allows the script to be run directly with `python -m code_agent.cli`
-    import sys
-
     main()

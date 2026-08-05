@@ -12,14 +12,15 @@ import json
 import logging
 import sys
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
 # LangChain imports
 from langchain_chroma import Chroma
 from langchain_community.embeddings import GPT4AllEmbeddings
-from langchain_core.language_models import BaseChatModel
+from langchain_core.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.language_models import BaseChatModel, LanguageModelInput
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
@@ -28,6 +29,7 @@ from langchain_core.tools import BaseTool  # Added import for BaseTool
 # Local imports
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.graph import build_graph
+from code_agent.settings import Settings, get_settings
 
 
 log = logging.getLogger(__name__)
@@ -38,15 +40,18 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def load_config(
-    config_path: str = "code_agent/config/llm_config.json",
-) -> dict[str, Any]:
-    """Load JSON config, tolerant to missing file.
+def load_config(config_path: str | None = None) -> dict[str, Any]:
+    """Load configuration as a dictionary.
+
+    When *config_path* is provided the JSON file at that location is loaded
+    (legacy override).  When it is ``None`` the typed application settings are
+    returned instead, so the ``.env`` file / environment remain the single
+    source of truth.
 
     Parameters
     ----------
     config_path:
-        Path to the JSON configuration file.  If the path points to a
+        Optional path to a JSON configuration file.  If the path points to a
         directory, the function will look for ``llm_config.json`` inside.
 
     Returns
@@ -54,19 +59,15 @@ def load_config(
     Dict[str, Any]
         Parsed configuration dictionary.
     """
+    if config_path is None:
+        return get_settings().model_dump()
+
     cfg_file = Path(config_path)
     if cfg_file.is_dir():
         cfg_file = cfg_file / "llm_config.json"
 
     if not cfg_file.exists():
-        script_dir = Path(__file__).parent
-        alt = script_dir / "config" / "llm_config.json"
-        if alt.exists():
-            cfg_file = alt
-        else:
-            raise FileNotFoundError(
-                f"Config file not found: {config_path} or {alt}"
-            )
+        raise FileNotFoundError(f"Config file not found: {config_path}")
 
     with cfg_file.open("r", encoding="utf-8") as f:
         return json.load(f)
@@ -77,23 +78,41 @@ def load_config(
 # ---------------------------------------------------------------------------
 
 
-def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
+def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     """Create an LLM instance from config, with graceful fallback.
 
     The function supports an Ollama‑style backend and falls back to a
     lightweight dummy model that returns an error message when the real
     LLM cannot be initialised.
+
+    Parameters
+    ----------
+    cfg:
+        Either a :class:`~code_agent.settings.Settings` instance or a plain
+        configuration dictionary (e.g. from :func:`load_config`).
     """
+    if isinstance(cfg, Settings):
+        cfg = cfg.model_dump()
+
     scheme = cfg.get("ollama_scheme", "http")
     host = cfg.get("ollama_host", "localhost")
     port = cfg.get("ollama_port", 11434)
     model = cfg.get("ollama_model", "gpt-oss:20b-cloud")
     temperature = cfg.get("temperature", 0.7)
 
+    # ``ChatOllama`` is constructed lazily and never contacts the server, so an
+    # invalid port would otherwise slip through and fail only at request time.
+    # Build the URL up front and validate the port eagerly so bad configs
+    # route to the graceful ``_FallbackLLM`` instead of hanging on a connection.
     base_url = f"{scheme}://{host}:{port}"
 
     try:
         from langchain_ollama import ChatOllama
+
+        try:
+            int(port)
+        except (TypeError, ValueError):
+            raise ValueError(f"Invalid ollama_port: {port!r}")
 
         return ChatOllama(
             model=model, base_url=base_url, temperature=temperature
@@ -110,7 +129,11 @@ def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
                 self._base_url = base_url
 
             def _generate(
-                self, messages: list, stop: list | None = None, **kwargs: Any
+                self,
+                messages: list[BaseMessage],
+                stop: list[str] | None = None,
+                run_manager: CallbackManagerForLLMRun | None = None,
+                **kwargs: Any,
             ) -> ChatResult:
                 content = json.dumps({
                     "error": "LLM unavailable",
@@ -130,8 +153,12 @@ def create_llm(cfg: dict[str, Any]) -> BaseChatModel:
                 return "fallback"
 
             def bind_tools(
-                self, tools: list[BaseTool], **kwargs: Any
-            ) -> Runnable[Any, BaseMessage]:
+                self,
+                tools: Sequence[
+                    dict[str, Any] | type | Callable[..., Any] | BaseTool
+                ],
+                **kwargs: Any,
+            ) -> Runnable[LanguageModelInput, AIMessage]:
                 return self  # Simply return self for fallback LLM
 
         return _FallbackLLM(exc, base_url)
@@ -294,7 +321,7 @@ def _update_history_and_persist(
     print(final_response.content)
     chat_history.append(final_response)
     vectorstore.add_texts(
-        texts=[user_input, final_response.content],
+        texts=[user_input, str(final_response.content)],
         metadatas=[
             {"type": "user_query"},
             {"type": "agent_response"},

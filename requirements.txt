@@ -21,3 +21,12 @@ pytest
 python-dotenv
 six
 tqdm
+fastapi
+uvicorn
+langchain-openai
+uv
+pip
+typer
+pydantic
+httpx
+rich

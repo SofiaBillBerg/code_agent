@@ -23,8 +23,8 @@ llm = create_llm(config)
 
 **Arguments:**
 
-* `cfg` (dict): A dictionary containing LLM configuration options (e.g., `ollama_model`, `ollama_host`, `ollama_port`).
-  This is typically loaded from `llm_config.json`.
+* `cfg` (dict | Settings): A dictionary (or `code_agent.settings.Settings`) containing LLM configuration options (e.g.,
+  `ollama_model`, `ollama_host`, `ollama_port`). This is typically loaded from the `.env` file at the project root.
 
 **Returns:**
 
