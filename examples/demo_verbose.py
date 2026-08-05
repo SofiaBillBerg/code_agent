@@ -1,32 +1,27 @@
+from langchain.messages import HumanMessage
+
 from code_agent.agents.persistent_agent import get_persistent_agent
 
 
 class DummyLLM:
-    def invoke(self, messages):
+    """Dummy LLM that always returns the same message."""
+
+    def invoke(self, messages: list[HumanMessage]) -> R:
         """
         Invoke the LLM with a list of messages and return a response.
 
-        Parameters
-        ----------
-        messages : list[HumanMessage]
-            The list of messages to send to the LLM.
-
-        Returns
-        -------
-        R
-            A response object with a content attribute containing the response text.
+        :param messages : list[HumanMessage] The list of messages to send to the LLM.
+        :return R: A response object with a content attribute containing the response text.
         """
+        print("LLM invoked with messages:", messages)
 
-        class R:
-            pass
-
-        r = R()
-        # Simple echo-style response, and include no tool call markers (so agent returns it)
-        r.content = (
-            "I will review the repository: I'll look for structure, tests, docs "
-            "and refactor opportunities. First step: run tests and linter."
+        # Create a response object
+        R = type("R", (), {})()
+        # Set the content of the response
+        R.content = (
+            "I'm a dummy LLM. I don't know how to respond to your message."
         )
-        return r
+        return R
 
 
 if __name__ == "__main__":

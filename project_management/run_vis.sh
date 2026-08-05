@@ -18,7 +18,8 @@ VISUALIZATION_DIR="./docs/visualizations"
 echo "Output directories created: $VISUALIZATION_DIR"
 
 # Common color palette for all diagrams
-PALETTE="[#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700]"
+PALETTE="[lavender,blue,purple,pink,ghostwhite,mediumorchid,coral,orangered,goldenrod,darkorange,lemonchiffon,gold,yellow,palegoldenrod]"
+# "[#f3e5f5,#ffb6c1,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700]"
 
 # Track failures across all steps
 FAILURES=()
@@ -39,7 +40,7 @@ run_vis_step() {
 }
 
 # 2. Package-level diagrams
-run_vis_step "Package all-classes diagram" pyreverse code_agent -d "$VISUALIZATION_DIR" -A -f ALL --colorized -a 10 --color-palette "$PALETTE" -o svg
+run_vis_step "Package all-classes diagram" pyreverse code_agent -d "$VISUALIZATION_DIR" -A -f ALL --colorized -a 10 --color-palette "$PALETTE" -o mmd
 
 # 3. Per-class diagrams
 echo ""
@@ -58,7 +59,7 @@ while IFS= read -r -d '' file; do
     full_class_name="code_agent.${module_name}.${class_name}"
     echo "  ▶ $full_class_name"
 
-    if pyreverse code_agent -S -A -f ALL -c "$full_class_name" -d "$VISUALIZATION_DIR" --colorized --color-palette "$PALETTE" -o svg; then
+    if pyreverse code_agent -S -A -f ALL -a 10 -c "$full_class_name" -d "$VISUALIZATION_DIR" --colorized --color-palette "$PALETTE" -o mmd; then
       successful_classes+=("$full_class_name")
       echo "    ✓ $full_class_name passed"
     else
@@ -77,6 +78,13 @@ echo "  Per-class results: ${#successful_classes[@]} succeeded, ${#failed_classe
 if [ ${#failed_classes[@]} -gt 0 ]; then
     FAILURES+=("Per-class diagrams (${#failed_classes[@]} failures)")
 fi
+
+# Format all mermaid and markdown files
+find . -name "*.md" -exec mermaidfmt -w {} \;
+find . -name "*.mmd" -exec mermaidfmt -w {} \;
+find "$VISUALIZATION_DIR" -name "*.mmd" -exec mmdc --input {} -o {}.svg \;
+
+
 
 # --- Summary ---
 echo ""

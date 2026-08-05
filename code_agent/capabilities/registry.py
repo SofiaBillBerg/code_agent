@@ -10,6 +10,7 @@ and records every invocation as an audit :class:`Receipt`.
 from __future__ import annotations
 
 import time
+
 from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError

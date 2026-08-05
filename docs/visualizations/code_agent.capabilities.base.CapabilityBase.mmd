@@ -1,0 +1,13 @@
+classDiagram
+
+class CapabilityBase {
+    id : ClassVar[str]
+    input_model : ClassVar[type[BaseModel]]
+    intent : ClassVar[str]
+    output_model : ClassVar[type[BaseModel]]
+    risk_class : ClassVar[str]
+    _execute(params: BaseModel)* BaseModel
+    describe() dict[str, Any]
+    invoke(params: BaseModel) BaseModel
+}
+    style CapabilityBase fill:[lavender

@@ -14,12 +14,14 @@ available.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 import json
+
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
 from ..exceptions import CodeAgentError
+
 
 try:  # Optional dependency – used only for the notebook path.
     import nbformat  # type: ignore

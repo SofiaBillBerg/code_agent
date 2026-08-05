@@ -1,0 +1,18 @@
+classDiagram
+
+class PersistentAgent {
+    _initialized : bool
+    _instance : NoneType
+    _state_file
+    agent
+    conversation_history : list[dict[str, str]]
+    settings : dict[str, Any]
+    \_\_init\_\_(llm: BaseChatModel, tools: list[BaseTool])
+    \_\_new\_\_()
+    _ensure_state_dir()
+    _load_state()
+    _save_state()
+    chat(message: str) str
+    reset_conversation() None
+}
+    style PersistentAgent fill:[lavender

@@ -1,0 +1,14 @@
+classDiagram
+
+class NotebookTool {
+    args_schema : type[BaseModel]
+    description : str
+    model_config
+    name : str
+    response_format : Literal['content_and_artifact']
+    root : Path
+    \_\_init\_\_(root_dir: str | Path)
+    _arun() tuple[str, FileObject]
+    _run() tuple[str, FileObject]
+}
+    style NotebookTool fill:[lavender

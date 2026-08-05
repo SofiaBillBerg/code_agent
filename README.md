@@ -27,18 +27,17 @@ code-agent
 
 You can now type queries, e.g.:
 
+```cli
     > Show me a simple project scaffold
     > Add a new function to utils.py
+```
 
 ## Architecture
 
-``` mermaid
-flowchart LR
-  CLI(Typer CLI) --\u003e Main(Main driver)
-  Main --\u003e Graph(LangGraph)
-  Graph --\u003e Tools
-  Graph --\u003e Memory(Chroma vector store)
-  Main --\u003e LLM(LLM wrapper)
+![Architecture diagram](docs/visualizations/packages.svg)
+
+
+![Classes diagram](docs/visualizations/classes.svg)
 ```
 
 For a deeper dive, see the following sections:

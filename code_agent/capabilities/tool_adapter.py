@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from .base import CapabilityBase, RiskClass
 
+
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (
     "read",

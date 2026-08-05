@@ -26,6 +26,7 @@ Security notes:
 from __future__ import annotations
 
 import uuid
+
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,7 @@ from pydantic import BaseModel, Field
 
 from code_agent.capabilities.envelope import InvocationRequest
 from code_agent.capabilities.registry import CapabilityRegistry
+
 
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"

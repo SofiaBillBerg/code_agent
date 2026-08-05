@@ -34,12 +34,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Dummy LLM for examples that don't require a real Ollama server
 class DummyLLM(BaseChatModel):
+    """Dummy LLM that always returns the same message."""
+
     def _generate(
         self,
         messages: list[BaseMessage],
         stop: list[str] | None = None,
         **kwargs: Any,
     ) -> ChatResult:
+        """Dummy LLM that always returns the same message."""
         return ChatResult(
             generations=[
                 ChatGeneration(message=AIMessage(content="Hello from DummyLLM"))
@@ -49,14 +52,16 @@ class DummyLLM(BaseChatModel):
     def bind_tools(
         self, tools: list[BaseTool], **kwargs: Any
     ) -> Runnable[Any, BaseMessage]:
+        """Mock implementation of bind_tools."""
         return self
 
     @property
     def _llm_type(self) -> str:
+        """Return type of llm."""
         return "dummy-chat-model"
 
 
-def example_basic_file_operations():
+def example_basic_file_operations() -> None:
     """Example 1: Basic file operations without LLM."""
     print("\n" + "=" * 60)
     print("Example 1: Basic File Operations")
@@ -81,7 +86,7 @@ def example_basic_file_operations():
 
         # Append to it
         # Note: append_file is a direct utility, not part of the agent_runnable
-        with open(file_path, "a", encoding="utf-8") as f:
+        with Path(file_path).open("a", encoding="utf-8") as f:
             f.write("\nThis is additional content.")
         print("✓ Appended to file")
 
@@ -98,7 +103,7 @@ def example_basic_file_operations():
         )
 
 
-def example_llm_generation():
+def example_llm_generation() -> None:
     """Example 2: Using LLM for content generation."""
     print("\n" + "=" * 60)
     print("Example 2: LLM Content Generation")
@@ -192,26 +197,26 @@ def example_article_evaluation():
     print(
         """
         The article evaluation pipeline works as follows:
-    
+
         1. Load articles CSV with doc_id, text, summary, etc.
         2. Run PCC analysis to classify articles
         3. Call LLM (via llm_inference.generate_exclusion_reason) to generate reasons
         4. Save results to tmp_batch_results.csv
         5. Merge results back into articles using fill_exclusion_reasons.py
-    
+
         Example commands:
-    
+
             # Run full analysis
             export OLLAMA_MODEL=gemma2:2b
             export USE_LLM=1
             python run_full_analysis.py
-    
+
             # Fill reasons into articles
             python fill_exclusion_reasons.py \\
                 data/articles.csv \\
                 output/tmp_batch_results.csv \\
                 output/articles_with_reasons.csv
-    
+
         Key features:
         - ✓ Automatic doc_id normalization
         - ✓ Retry logic with exponential backoff

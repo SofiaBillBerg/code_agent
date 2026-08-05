@@ -1,0 +1,22 @@
+classDiagram
+
+class ProviderBase {
+    name : str
+    bind_capabilities(caps: list[Any]) 'ProviderBase'
+    complete(messages: list[dict[str, Any]])* str
+}
+    style ProviderBase fill:[lavender
+
+class OllamaProvider {
+    _client
+    base_url : str | None
+    model : str
+    name : str
+    \_\_init\_\_(model: str, base_url: str | None) None
+    _load_default_config() dict[str, Any]
+    bind_capabilities(caps: list[Any]) 'OllamaProvider'
+    complete(messages: list[dict[str, Any]]) str
+    from_config(config: dict[str, Any] | None) 'OllamaProvider'
+}
+    style OllamaProvider fill:[lavender
+    OllamaProvider --|> ProviderBase

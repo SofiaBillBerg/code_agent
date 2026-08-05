@@ -149,3 +149,7 @@ from pathlib import Path
 project_root = Path("./my_new_project")
 create_project_scaffold(str(project_root), project_name="my_new_project")
 ```
+
+
+![visualizations/code_agent.tools.notebook_tool.NotebookTool.mmd](visualizations/code_agent.tools.notebook_tool.NotebookTool.mmd)
+

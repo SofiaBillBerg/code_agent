@@ -80,17 +80,15 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         lines.append(f"- ... ({len(info['py_files']) - 50} more)")
 
     # Add data files section
-    lines.extend(
-        [
-            "\n## Data files\n",
-            *(f"- `{p}`" for p in info["data_files"][:50]),
-            *(
-                ["No common data files detected in `data/`"]
-                if not info["data_files"]
-                else []
-            ),
-        ]
-    )
+    lines.extend([
+        "\n## Data files\n",
+        *(f"- `{p}`" for p in info["data_files"][:50]),
+        *(
+            ["No common data files detected in `data/`"]
+            if not info["data_files"]
+            else []
+        ),
+    ])
 
     # Add notebooks section
     lines.append("\n## Notebooks & docs\n")
@@ -103,16 +101,14 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         lines.append(f"- `{p}`")
 
     # Add how to run section
-    lines.extend(
-        [
-            "\n## How to run the pipeline\n",
-            "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.",
-            "\n## CodeAgent\n",
-            "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
-            "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
-            "details.",
-        ]
-    )
+    lines.extend([
+        "\n## How to run the pipeline\n",
+        "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.",
+        "\n## CodeAgent\n",
+        "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
+        "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
+        "details.",
+    ])
 
     return "\n".join(lines)
 
