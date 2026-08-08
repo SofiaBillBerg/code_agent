@@ -12,10 +12,11 @@ echo "Current working directory: $(pwd)"
 # 1. Create necessary directories if they do not exist
 echo "Creating output directories..."
 mkdir -p docs/visualizations
+mkdir -p docs/visualizations/svg
+RAW_VISUALIZATION_DIR="./docs/visualizations"
+SVG_DIR="$RAW_VISUALIZATION_DIR/svg"
 
-VISUALIZATION_DIR="./docs/visualizations"
-
-echo "Output directories created: $VISUALIZATION_DIR"
+echo "Output directories created: $RAW_VISUALIZATION_DIR"
 
 # Common color palette for all diagrams
 PALETTE="[lavender,blue,purple,pink,ghostwhite,mediumorchid,coral,orangered,goldenrod,darkorange,lemonchiffon,gold,yellow,palegoldenrod]"
@@ -40,7 +41,7 @@ run_vis_step() {
 }
 
 # 2. Package-level diagrams
-run_vis_step "Package all-classes diagram" pyreverse code_agent -d "$VISUALIZATION_DIR" -A -f ALL --colorized -a 10 --color-palette "$PALETTE" -o mmd
+run_vis_step "Package all-classes diagram" pyreverse code_agent -d "$RAW_VISUALIZATION_DIR" -A -f ALL --colorized -a 10 --color-palette "$PALETTE" -o mmd
 
 # 3. Per-class diagrams
 echo ""
@@ -59,13 +60,14 @@ while IFS= read -r -d '' file; do
     full_class_name="code_agent.${module_name}.${class_name}"
     echo "  ▶ $full_class_name"
 
-    if pyreverse code_agent -S -A -f ALL -a 10 -c "$full_class_name" -d "$VISUALIZATION_DIR" --colorized --color-palette "$PALETTE" -o mmd; then
+    if pyreverse code_agent -S -A -f ALL -a 10 -c "$full_class_name" -d "$RAW_VISUALIZATION_DIR" --colorized --color-palette "$PALETTE" -o mmd; then
       successful_classes+=("$full_class_name")
       echo "    ✓ $full_class_name passed"
     else
       failed_classes+=("$full_class_name")
       echo "    ✗ $full_class_name failed — continuing..."
     fi
+
 
   done < <(grep -oP '^class \K\w+' "$file" || true)
 
@@ -74,17 +76,45 @@ done < <(find code_agent -name "*.py" -not -path "*/.*" -print0)
 echo ""
 echo "  Per-class results: ${#successful_classes[@]} succeeded, ${#failed_classes[@]} failed"
 
+# format the generated mermaid files in the RAW_VISUALIZATION_DIR and save to SVG_DIR
+for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
+    if [ -f "$mermaid_file" ]; then
+        echo "  ▶ Formatting $mermaid_file"
+        if ! mermaidfmt -w "$mermaid_file"; then
+            echo "    ✗ Formatting failed for $mermaid_file — continuing..."
+            FAILURES+=("Formatting failed for $mermaid_file")
+        fi
+    fi
+done
+
+  # convert the generated mermaid file to SVG av save to SVG_DIR
+for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
+    if [ -f "$mermaid_file" ]; then
+        svg_file="$SVG_DIR/$(basename "$mermaid_file" .mmd).svg"
+        echo "  ▶ Converting $mermaid_file to $svg_file"
+        if ! mmdc -i "$mermaid_file" -o "$svg_file"; then
+            echo "    ✗ Conversion failed for $mermaid_file — continuing..."
+            FAILURES+=("Conversion failed for $mermaid_file")
+        fi
+    fi
+done
+
 # Add per-class failures to global tracker
 if [ ${#failed_classes[@]} -gt 0 ]; then
     FAILURES+=("Per-class diagrams (${#failed_classes[@]} failures)")
 fi
 
-# Format all mermaid and markdown files
-find . -name "*.md" -exec mermaidfmt -w {} \;
-find . -name "*.mmd" -exec mermaidfmt -w {} \;
-find "$VISUALIZATION_DIR" -name "*.mmd" -exec mmdc --input {} -o {}.svg \;
 
-
+# Format all project-level markdown files with mermaid diagrams
+while IFS= read -r -d '' file; do
+  find "$file" -type f -name "*.md" -print0 ! -path '*/.git/*' ! -path '*/.*/*' ! -path '*/lib/*' ! -path '*/dist/*' ! -path '*/win/*' ! -path '*/node_modules/*' ! -path '.venv/*' ! -path '*/build/*' | while read -r file; do
+    echo "  ▶ Formatting $file"
+    if ! mermaidfmt -w "$file"; then
+      echo "    ✗ Formatting failed for $file — continuing..."
+      FAILURES+=("Formatting failed for $file")
+    fi
+  done
+done < <(find . -type d -name "docs" -print0)
 
 # --- Summary ---
 echo ""

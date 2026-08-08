@@ -110,7 +110,6 @@ prerelease = "if-necessary"
 no-build-isolation-package = ["flash-attn"]
 package = true
 default-groups=["notebooks","dev","agent-deps"]
-line-endings = "lf"
 [[tool.uv.index]]
 url = "https://pypi.nvidia.com/"
 name = "nvidia"

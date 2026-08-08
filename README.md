@@ -32,13 +32,15 @@ You can now type queries, e.g.:
     > Add a new function to utils.py
 ```
 
-## Architecture
+## Package structure and class diagram
 
-![Architecture diagram](docs/visualizations/packages.svg)
+**Package diagram**: The following diagram illustrates the main packages and their relationships within the Code Agent project.
+![Package diagram](docs/visualizations/svg/packages.svg)
 
+**Classes diagram**: The following diagram illustrates the main classes and their relationships within the Code Agent project.
 
-![Classes diagram](docs/visualizations/classes.svg)
-```
+![Classes diagram](docs/visualizations/svg/classes.svg)
+
 
 For a deeper dive, see the following sections:
 
@@ -52,3 +54,5 @@ For a deeper dive, see the following sections:
 - **[ROADMAP](ROADMAP.qmd)** – Future plans and development.
 - **[CHANGELOG](CHANGELOG.qmd)** – Version history and changes.
 - **[Agent Workflow](AGENT_WORKFLOW.qmd)**
+- **[Class Visualizations](docs/visualizations/svg/classes.svg)** – Visual representation of class relationships. All class diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.
+- **[Package Visualizations](docs/visualizations/svg/packages.svg)** – Visual representation of package relationships. All package diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.
