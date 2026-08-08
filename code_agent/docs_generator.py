@@ -174,10 +174,10 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
 
 
 def generate_quarto_docs(
-        output_dir: Path = "docs",
-        overwrite: bool = True,
-        use_llm: bool = False,
-        llm: BaseChatModel | None = None,
+    output_dir: Path = "docs",
+    overwrite: bool = True,
+    use_llm: bool = False,
+    llm: BaseChatModel | None = None,
 ) -> list[str]:
     """Generate a small set of .qmd files in `output_dir`.
 
@@ -225,12 +225,12 @@ def generate_quarto_docs(
                 # Ensure it starts with --- for YAML front matter
                 if not content.startswith("---"):
                     content = (
-                            "---\n"
-                            'title: "Project Overview"\n'
-                            "format:\n"
-                            "  markdown_docs:\n"
-                            "    css: docs/styles/custom.css\n"
-                            "---\n\n" + content
+                        "---\n"
+                        'title: "Project Overview"\n'
+                        "format:\n"
+                        "  markdown_docs:\n"
+                        "    css: docs/styles/custom.css\n"
+                        "---\n\n" + content
                     )
 
                 write_file(readme_q, content)

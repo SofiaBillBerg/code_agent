@@ -19,6 +19,7 @@ from .file_generator import create_from_template as _create_from_template
 from .file_generator import py_to_ipynb, write_file
 from .scaffold import create_project_scaffold  # Re-export for public API
 
+
 __all__ = [
     "CodeAgentError",
     "append_file",
@@ -31,7 +32,7 @@ __all__ = [
 
 
 def create_file(
-        path: Path | str, content: str, *, overwrite: bool = False
+    path: Path | str, content: str, *, overwrite: bool = False
 ) -> Path:
     """Create *path* and write *content*.
 
@@ -74,10 +75,10 @@ def append_file(path: Path | str, content: str) -> Path:
 
 
 def create_from_template(
-        template_path: Path | str,
-        dest_path: Path | str,
-        *,
-        replace_vars: dict | None = None,
+    template_path: Path | str,
+    dest_path: Path | str,
+    *,
+    replace_vars: dict | None = None,
 ) -> Path:
     """Create a file by copying *template_path* to *dest_path*.
 

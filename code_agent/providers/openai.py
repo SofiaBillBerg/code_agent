@@ -11,6 +11,7 @@ from constructor arguments (the API key falls back to the
 from __future__ import annotations
 
 import os
+
 from typing import Any
 
 from langchain_openai import ChatOpenAI
@@ -32,11 +33,11 @@ class OpenAIProvider(ProviderBase):
     name: str = "openai"
 
     def __init__(
-            self,
-            model: str,
-            api_key: str | None = None,
-            base_url: str | None = None,
-            **kwargs: Any,
+        self,
+        model: str,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize the OpenAI provider.
 

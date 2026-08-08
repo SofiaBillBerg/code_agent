@@ -13,10 +13,12 @@ registry, keeping the suite hermetic and fast.
 from __future__ import annotations
 
 import io
+
 from collections.abc import Iterator
 from typing import Callable
 
 import pytest
+
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 from rich.console import Console

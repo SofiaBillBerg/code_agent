@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import logging
 import shutil
+
 from pathlib import Path
 from typing import Literal
 
 from langchain.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
+
 
 log = logging.getLogger(__name__)
 
@@ -76,14 +78,14 @@ class EditFileTool(BaseTool):
             pre, rest = original_content.split(start_marker, 1)
             _, post = rest.split(end_marker, 1)
             new_full = (
-                    pre + start_marker + "\n" + content + "\n" + end_marker + post
+                pre + start_marker + "\n" + content + "\n" + end_marker + post
             )
         else:
             new_full = original_content + "\n" + content
         path.write_text(new_full, encoding="utf-8")
 
     def _run(
-            self, file_path: str, new_content: str, mode: str = "replace"
+        self, file_path: str, new_content: str, mode: str = "replace"
     ) -> tuple[str, FileObject]:
         full_path = self.root / file_path
 
@@ -133,7 +135,7 @@ class EditFileTool(BaseTool):
             )
 
     async def _arun(
-            self, file_path: str, new_content: str, mode: str = "replace"
+        self, file_path: str, new_content: str, mode: str = "replace"
     ) -> tuple[str, FileObject]:
         """Async version."""
         return self._run(file_path, new_content, mode)

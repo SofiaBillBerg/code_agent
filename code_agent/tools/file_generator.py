@@ -15,11 +15,13 @@ available.
 from __future__ import annotations
 
 import json
+
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
 from ..exceptions import CodeAgentError
+
 
 try:  # Optional dependency – used only for the notebook path.
     import nbformat  # type: ignore
@@ -30,11 +32,11 @@ __all__ = ["create_from_template", "py_to_ipynb", "write_file"]
 
 
 def write_file(
-        target: Path | str,
-        content: str,
-        *,
-        mode: str = "w",
-        encoding: str = "utf-8",
+    target: Path | str,
+    content: str,
+    *,
+    mode: str = "w",
+    encoding: str = "utf-8",
 ) -> Path:
     """Write *content* to *target* atomically.
 
@@ -74,10 +76,10 @@ def write_file(
 
 
 def create_from_template(
-        template_path: Path | str,
-        dest_path: Path | str,
-        *,
-        replace_vars: dict | None = None,
+    template_path: Path | str,
+    dest_path: Path | str,
+    *,
+    replace_vars: dict | None = None,
 ) -> Path:
     """Create *dest_path* by copying *template_path*.
 
@@ -102,15 +104,15 @@ def create_from_template(
 
 
 def _generate_ipynb_from_cells(
-        cells: Iterable[str],
+    cells: Iterable[str],
 ) -> (
-        dict[
-            str,
-            list[dict[str, str | None | dict[Any, Any] | list[Any]]]
-            | dict[str, dict[str, str]]
-            | int,
-        ]
-        | str
+    dict[
+        str,
+        list[dict[str, str | None | dict[Any, Any] | list[Any]]]
+        | dict[str, dict[str, str]]
+        | int,
+    ]
+    | str
 ):
     """Return a minimal Jupyter notebook dict for the given *cells*.
 

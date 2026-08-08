@@ -10,6 +10,7 @@ and records every invocation as an audit :class:`Receipt`.
 from __future__ import annotations
 
 import time
+
 from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError
@@ -61,7 +62,7 @@ class CapabilityRegistry:
         ]
 
     def dispatch(
-            self, request: InvocationRequest
+        self, request: InvocationRequest
     ) -> tuple[InvocationResponse, Receipt]:
         """Validate, gate and invoke a capability, recording an audit receipt.
 
@@ -119,12 +120,12 @@ class CapabilityRegistry:
         )
 
     def _finish(
-            self,
-            request: InvocationRequest,
-            started: float,
-            status: Literal["ok", "error"],
-            result: dict[str, Any] | None = None,
-            error: str | None = None,
+        self,
+        request: InvocationRequest,
+        started: float,
+        status: Literal["ok", "error"],
+        result: dict[str, Any] | None = None,
+        error: str | None = None,
     ) -> tuple[InvocationResponse, Receipt]:
         """Build the response, record the audit receipt and return both.
 

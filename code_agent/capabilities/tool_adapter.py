@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from .base import CapabilityBase, RiskClass
 
+
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (
     "read",
@@ -98,7 +99,7 @@ def _make_execute(tool: BaseTool) -> Callable[[BaseModel], BaseModel]:
 
 
 def tool_to_capability(
-        tool: BaseTool, risk_class: str | None = None
+    tool: BaseTool, risk_class: str | None = None
 ) -> CapabilityBase:
     """Wrap a LangChain ``BaseTool`` into a :class:`CapabilityBase`.
 
