@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import logging
 import shutil
-
 from pathlib import Path
 from typing import Literal
 
@@ -11,7 +10,6 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
-
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +47,7 @@ class NewFileTool(BaseTool):
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(
-        self, file_path: str, content: str, overwrite: bool = False
+            self, file_path: str, content: str, overwrite: bool = False
     ) -> tuple[str, FileObject]:
         """Creates a new file at the specified path with the given content."""
 
@@ -106,7 +104,7 @@ class NewFileTool(BaseTool):
             )
 
     async def _arun(
-        self, file_path: str, content: str, overwrite: bool = False
+            self, file_path: str, content: str, overwrite: bool = False
     ) -> tuple[str, FileObject]:
         """Async version."""
         return self._run(file_path, content, overwrite)

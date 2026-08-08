@@ -36,7 +36,7 @@ class GenerateTestTool(BaseTool):
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(
-        self, file_path: str, tests_dir: str = "tests"
+            self, file_path: str, tests_dir: str = "tests"
     ) -> tuple[str, FileObject]:
         """Generates a basic pytest test file for a given Python module."""
 
@@ -79,7 +79,7 @@ def test_placeholder():
         )
 
     async def _arun(
-        self, file_path: str, tests_dir: str = "tests"
+            self, file_path: str, tests_dir: str = "tests"
     ) -> tuple[str, FileObject]:
         """Async version."""
         return self._run(file_path, tests_dir)

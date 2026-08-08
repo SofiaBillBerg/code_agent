@@ -30,3 +30,12 @@ typer
 pydantic
 httpx
 rich
+fastapi
+uvicorn
+langchain-openai
+uv
+pip
+typer
+pydantic
+httpx
+rich

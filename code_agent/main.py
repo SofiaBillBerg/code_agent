@@ -11,7 +11,6 @@ import argparse
 import json
 import logging
 import sys
-
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
@@ -30,7 +29,6 @@ from langchain_core.tools import BaseTool  # Added import for BaseTool
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.graph import build_graph
 from code_agent.settings import Settings, get_settings
-
 
 log = logging.getLogger(__name__)
 
@@ -129,11 +127,11 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 self._base_url = base_url
 
             def _generate(
-                self,
-                messages: list[BaseMessage],
-                stop: list[str] | None = None,
-                run_manager: CallbackManagerForLLMRun | None = None,
-                **kwargs: Any,
+                    self,
+                    messages: list[BaseMessage],
+                    stop: list[str] | None = None,
+                    run_manager: CallbackManagerForLLMRun | None = None,
+                    **kwargs: Any,
             ) -> ChatResult:
                 content = json.dumps({
                     "error": "LLM unavailable",
@@ -153,11 +151,11 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 return "fallback"
 
             def bind_tools(
-                self,
-                tools: Sequence[
-                    dict[str, Any] | type | Callable[..., Any] | BaseTool
-                ],
-                **kwargs: Any,
+                    self,
+                    tools: Sequence[
+                        dict[str, Any] | type | Callable[..., Any] | BaseTool
+                        ],
+                    **kwargs: Any,
             ) -> Runnable[LanguageModelInput, AIMessage]:
                 return self  # Simply return self for fallback LLM
 
@@ -278,7 +276,7 @@ def main(argv: Sequence[str] | None = None) -> None:
 
 
 def _handle_retrieval(
-    vectorstore: Chroma, user_input: str, chat_history: list[BaseMessage]
+        vectorstore: Chroma, user_input: str, chat_history: list[BaseMessage]
 ) -> None:
     """Retrieve relevant documents and update chat history."""
     retrieved_docs = vectorstore.similarity_search(user_input, k=2)
@@ -311,10 +309,10 @@ def _process_agent_event(event: dict) -> AIMessage | None:
 
 
 def _update_history_and_persist(
-    vectorstore: Chroma,
-    user_input: str,
-    final_response: AIMessage,
-    chat_history: list[BaseMessage],
+        vectorstore: Chroma,
+        user_input: str,
+        final_response: AIMessage,
+        chat_history: list[BaseMessage],
 ) -> None:
     """Update chat history and persist to vector store."""
     print("\n=== Agent response ===")

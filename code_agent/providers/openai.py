@@ -32,11 +32,11 @@ class OpenAIProvider(ProviderBase):
     name: str = "openai"
 
     def __init__(
-        self,
-        model: str,
-        api_key: str | None = None,
-        base_url: str | None = None,
-        **kwargs: Any,
+            self,
+            model: str,
+            api_key: str | None = None,
+            base_url: str | None = None,
+            **kwargs: Any,
     ) -> None:
         """Initialize the OpenAI provider.
 

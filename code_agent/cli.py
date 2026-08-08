@@ -41,7 +41,6 @@ import json
 import subprocess
 import sys
 import uuid
-
 from pathlib import Path
 from typing import Any
 
@@ -61,7 +60,6 @@ from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
 from code_agent.providers.factory import create_provider
 from code_agent.scaffold import create_project_scaffold
-
 
 app = typer.Typer(name="code_agent", help="Local LLM‑driven code assistant")
 
@@ -143,12 +141,12 @@ def capabilities_list() -> None:
     "invoke", help="Dispatch a request through the registry."
 )
 def capabilities_invoke(
-    capability_id: str = typer.Argument(
-        ..., help="Identifier of the capability to invoke."
-    ),
-    params: str = typer.Option(
-        "{}", help="JSON object of invocation parameters."
-    ),
+        capability_id: str = typer.Argument(
+            ..., help="Identifier of the capability to invoke."
+        ),
+        params: str = typer.Option(
+            "{}", help="JSON object of invocation parameters."
+        ),
 ) -> None:
     """Invoke a capability and print the response and audit receipt.
 
@@ -181,26 +179,26 @@ def capabilities_invoke(
 
 @app.command(help="Start the LLM provider selected by the config.")
 def serve(
-    config_path: str | None = typer.Option(
-        None,
-        help="Optional path to a JSON configuration file (overrides .env settings).",
-    ),
-    web: bool = typer.Option(
-        False,
-        "--web",
-        is_flag=True,
-        help="Serve the web UI instead of the console loop.",
-    ),
-    web_host: str = typer.Option(
-        "127.0.0.1",
-        "--web-host",
-        help="Host to bind the web UI server to.",
-    ),
-    web_port: int = typer.Option(
-        8000,
-        "--web-port",
-        help="Port to bind the web UI server to.",
-    ),
+        config_path: str | None = typer.Option(
+            None,
+            help="Optional path to a JSON configuration file (overrides .env settings).",
+        ),
+        web: bool = typer.Option(
+            False,
+            "--web",
+            is_flag=True,
+            help="Serve the web UI instead of the console loop.",
+        ),
+        web_host: str = typer.Option(
+            "127.0.0.1",
+            "--web-host",
+            help="Host to bind the web UI server to.",
+        ),
+        web_port: int = typer.Option(
+            8000,
+            "--web-port",
+            help="Port to bind the web UI server to.",
+        ),
 ) -> None:
     """Start the provider selected by the config and serve prompts.
 
@@ -265,13 +263,13 @@ def serve(
 
 @app.command(help="Create a new file with the supplied content.")
 def create(
-    file_path: Path = typer.Argument(
-        ..., exists=False, help="Path to the file to create."
-    ),
-    content: str = typer.Option(..., help="Content to write into the file."),
-    overwrite: bool = typer.Option(
-        False, is_flag=True, help="Allow overwriting an existing file."
-    ),
+        file_path: Path = typer.Argument(
+            ..., exists=False, help="Path to the file to create."
+        ),
+        content: str = typer.Option(..., help="Content to write into the file."),
+        overwrite: bool = typer.Option(
+            False, is_flag=True, help="Allow overwriting an existing file."
+        ),
 ):
     """Create ``file_path`` with ``content``.
 
@@ -294,10 +292,10 @@ def create(
 
 @app.command(help="Append text to an existing file.")
 def append(
-    file_path: Path = typer.Argument(
-        ..., exists=True, help="Path to the file to modify."
-    ),
-    content: str = typer.Option(..., help="Text to append to the file."),
+        file_path: Path = typer.Argument(
+            ..., exists=True, help="Path to the file to modify."
+        ),
+        content: str = typer.Option(..., help="Text to append to the file."),
 ):
     """Append ``content`` to ``file_path``.
 
@@ -318,20 +316,20 @@ def append(
 
 @app.command(help="Create a minimal project scaffold.")
 def scaffold(
-    target: Path = typer.Argument(
-        ..., exists=False, help="Target directory for the scaffold."
-    ),
-    project_name: str = typer.Option(
-        "sample_project",
-        "--name",
-        "-n",
-        help="Project name used in scaffold files.",
-    ),
-    overwrite: bool = typer.Option(
-        False,
-        is_flag=True,
-        help="Overwrite existing files in the target directory.",
-    ),
+        target: Path = typer.Argument(
+            ..., exists=False, help="Target directory for the scaffold."
+        ),
+        project_name: str = typer.Option(
+            "sample_project",
+            "--name",
+            "-n",
+            help="Project name used in scaffold files.",
+        ),
+        overwrite: bool = typer.Option(
+            False,
+            is_flag=True,
+            help="Overwrite existing files in the target directory.",
+        ),
 ):
     """Generate a project skeleton.
 
@@ -355,10 +353,10 @@ def scaffold(
 
 @app.command(help="Convert a Python script to a Jupyter notebook.")
 def py2ipynb(
-    src: Path = typer.Argument(
-        ..., exists=True, help="Python script to convert."
-    ),
-    dst: Path = typer.Argument(..., exists=False, help="Target notebook path."),
+        src: Path = typer.Argument(
+            ..., exists=True, help="Python script to convert."
+        ),
+        dst: Path = typer.Argument(..., exists=False, help="Target notebook path."),
 ):
     """Create a minimal Jupyter notebook from a Python file.
 
@@ -375,12 +373,12 @@ def py2ipynb(
 
 @app.command(help="Generate and render Quarto documentation.")
 def docs(
-    output_dir: str = typer.Option(
-        "docs", help="Directory to write docs into."
-    ),
-    overwrite: bool = typer.Option(
-        True, help="Overwrite existing files in the output directory."
-    ),
+        output_dir: str = typer.Option(
+            "docs", help="Directory to write docs into."
+        ),
+        overwrite: bool = typer.Option(
+            True, help="Overwrite existing files in the output directory."
+        ),
 ):
     """Generate a minimal set of QMD files and render the Quarto site."""
 
@@ -400,12 +398,12 @@ def docs(
 
 @app.command(help="Start an interactive chat session with the code agent.")
 def chat(
-    verbose: bool = typer.Option(
-        False,
-        "--verbose",
-        "-v",
-        help="Show verbose streaming 'thinking' output from the agent.",
-    ),
+        verbose: bool = typer.Option(
+            False,
+            "--verbose",
+            "-v",
+            help="Show verbose streaming 'thinking' output from the agent.",
+        ),
 ) -> None:
     """Start an interactive chat session with the code agent."""
     try:
@@ -525,9 +523,9 @@ def _display_agent_response(response, conversation_state):
         messages = response["messages"]
         for msg in reversed(messages):
             if (
-                isinstance(msg, (list, tuple))
-                and len(msg) > 1
-                and msg[0] in ["ai", "assistant"]
+                    isinstance(msg, (list, tuple))
+                    and len(msg) > 1
+                    and msg[0] in ["ai", "assistant"]
             ):
                 print(msg[1])
                 break

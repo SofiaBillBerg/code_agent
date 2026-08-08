@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import re
-
 from pathlib import Path
 from typing import Any, Literal
 
@@ -40,11 +39,11 @@ class SearchExplainTool(BaseTool):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(
-        self,
-        root_dir: str | Path,
-        llm_instance: BaseChatModel,
-        max_hits: int = 10,
-        **kwargs,
+            self,
+            root_dir: str | Path,
+            llm_instance: BaseChatModel,
+            max_hits: int = 10,
+            **kwargs,
     ):
         super().__init__(
             llm=llm_instance,
@@ -102,7 +101,7 @@ class SearchExplainTool(BaseTool):
         return summary, file_obj
 
     def _gather_hits(
-        self, search_query: str, pattern: re.Pattern | None, max_results: int
+            self, search_query: str, pattern: re.Pattern | None, max_results: int
     ):
         """
         Gather all matching files and their snippets from the root directory.
@@ -149,16 +148,16 @@ class SearchExplainTool(BaseTool):
         """Return True if the path should be considered for searching."""
         # skip virtualenvs and large folders
         if any(
-            part
-            in (
-                ".venv",
-                "venv",
-                "node_modules",
-                "packrat",
-                "archive",
-                "output",
-            )
-            for part in path.parts
+                part
+                in (
+                        ".venv",
+                        "venv",
+                        "node_modules",
+                        "packrat",
+                        "archive",
+                        "output",
+                )
+                for part in path.parts
         ):
             return False
         if not path.is_file():
@@ -186,11 +185,11 @@ class SearchExplainTool(BaseTool):
         )
 
         summary_prompt = (
-            "You are an expert code analyst. Provide a comprehensive analysis of the following code snippets. "
-            "Include: 1) Overall purpose and functionality, 2) Key design patterns and architectural decisions, "
-            "3) Potential issues or improvements, 4) Dependencies and relationships between files, "
-            "5) Best practices being followed or violated. Be thorough and detailed.\n\n"
-            + snippets
+                "You are an expert code analyst. Provide a comprehensive analysis of the following code snippets. "
+                "Include: 1) Overall purpose and functionality, 2) Key design patterns and architectural decisions, "
+                "3) Potential issues or improvements, 4) Dependencies and relationships between files, "
+                "5) Best practices being followed or violated. Be thorough and detailed.\n\n"
+                + snippets
         )
 
         response = self.llm.invoke([HumanMessage(content=summary_prompt)])

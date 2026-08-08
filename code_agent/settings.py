@@ -29,7 +29,6 @@ from typing import Any
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 

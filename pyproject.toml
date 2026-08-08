@@ -106,12 +106,11 @@ rmm-cu13 = { index = "nvidia" }
 
 [tool.uv]
 index-strategy = "unsafe-best-match"
-prerelease = "if-necessary" 
+prerelease = "if-necessary"
 no-build-isolation-package = ["flash-attn"]
 package = true
-workspace=false
 default-groups=["notebooks","dev","agent-deps"]
-
+line-endings = "lf"
 [[tool.uv.index]]
 url = "https://pypi.nvidia.com/"
 name = "nvidia"

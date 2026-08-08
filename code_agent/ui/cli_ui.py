@@ -85,9 +85,9 @@ def _coerce_param(raw: str, prop: dict[str, Any]) -> Any:
 
 
 def _prompt_params(
-    capability_meta: dict[str, Any],
-    read_line: Callable[[str], str],
-    console: Console,
+        capability_meta: dict[str, Any],
+        read_line: Callable[[str], str],
+        console: Console,
 ) -> dict[str, Any]:
     """Collect typed parameters for a capability from the user.
 
@@ -131,9 +131,9 @@ def _prompt_params(
 
 
 def _select_capability(
-    catalog: list[dict[str, Any]],
-    raw: str,
-    console: Console,
+        catalog: list[dict[str, Any]],
+        raw: str,
+        console: Console,
 ) -> dict[str, Any] | None:
     """Resolve a user selection (1-based index or capability id) to an entry.
 
@@ -160,7 +160,7 @@ def _select_capability(
 
 
 def render_catalog(
-    registry: CapabilityRegistry, console: Console | None = None
+        registry: CapabilityRegistry, console: Console | None = None
 ) -> None:
     """Render the capability catalog as a rich table.
 
@@ -191,7 +191,7 @@ def render_catalog(
 
 
 def render_request(
-    request: InvocationRequest, console: Console | None = None
+        request: InvocationRequest, console: Console | None = None
 ) -> None:
     """Render an invocation request as a rich panel.
 
@@ -216,7 +216,7 @@ def render_request(
 
 
 def render_progress(
-    request: InvocationRequest, console: Console | None = None
+        request: InvocationRequest, console: Console | None = None
 ) -> None:
     """Render a tool-call progress indicator for a pending dispatch.
 
@@ -235,7 +235,7 @@ def render_progress(
 
 
 def render_response(
-    response: InvocationResponse, console: Console | None = None
+        response: InvocationResponse, console: Console | None = None
 ) -> None:
     """Render an invocation response as a rich panel.
 
@@ -301,9 +301,9 @@ def render_receipt(receipt: Receipt, console: Console | None = None) -> None:
 
 
 def run_cli_ui(
-    registry: CapabilityRegistry,
-    console: Console | None = None,
-    input_fn: Callable[[str], str] | None = None,
+        registry: CapabilityRegistry,
+        console: Console | None = None,
+        input_fn: Callable[[str], str] | None = None,
 ) -> None:
     """Run the interactive capability CLI session.
 

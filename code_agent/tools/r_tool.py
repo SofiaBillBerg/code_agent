@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import subprocess
 import tempfile
-
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +30,7 @@ class RScriptTool(BaseTool):
         """Executes the given R code and returns the output."""
 
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".R", delete=False
+                mode="w", suffix=".R", delete=False
         ) as temp_file:
             temp_file.write(code)
             temp_file_path = temp_file.name

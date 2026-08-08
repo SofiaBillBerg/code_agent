@@ -219,3 +219,4 @@ docs/docs_web/
 # MemPalace per-project files (issue #185)
 mempalace.yaml
 entities.json
+/.tmp/

@@ -1,7 +1,6 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
-
 from pathlib import Path
 from typing import Any
 

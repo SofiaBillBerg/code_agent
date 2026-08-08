@@ -11,7 +11,6 @@ from pathlib import Path
 from ..exceptions import CodeAgentError
 from ..tools.file_generator import write_file
 
-
 DEFAULT_REQUIREMENTS = """# basic runtime requirements
 pandas
 nbformat
@@ -67,8 +66,8 @@ def _create_files(root_path: Path, project_name: str, overwrite: bool) -> None:
         "README.qmd": f"# {project_name}\n\nGenerated scaffold.",
         "requirements.txt": DEFAULT_REQUIREMENTS,
         "docs/index.qmd": f"---\ntitle: {project_name}\nformat: html\n---\n\n# "
-        f"{project_name}\n\nGenerated docs "
-        f"index.",
+                          f"{project_name}\n\nGenerated docs "
+                          f"index.",
         "tests/test_smoke.py": "def test_smoke():\n    assert True\n",
         f"src/{project_name}/__init__.py": "# sample package init\n",
         ".github/workflows/ci.yml": WORKFLOW_CONTENT,
@@ -84,9 +83,9 @@ def _create_files(root_path: Path, project_name: str, overwrite: bool) -> None:
 
 
 def create_project_scaffold(
-    root: str,
-    project_name: str = "project",
-    overwrite: bool = False,
+        root: str,
+        project_name: str = "project",
+        overwrite: bool = False,
 ) -> str:
     """
     Create a minimal project scaffold in the given directory.
@@ -101,7 +100,7 @@ def create_project_scaffold(
         ) from exc
 
     if not overwrite and any(
-        (root_path / p).exists() for p in ["README.qmd", "src", "tests"]
+            (root_path / p).exists() for p in ["README.qmd", "src", "tests"]
     ):
         raise FileExistsError(f"Project already exists at {root_path}")
 

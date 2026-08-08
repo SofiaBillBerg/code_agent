@@ -30,10 +30,10 @@ class OllamaProvider(ProviderBase):
     name: str = "ollama"
 
     def __init__(
-        self,
-        model: str,
-        base_url: str | None = None,
-        **kwargs: Any,
+            self,
+            model: str,
+            base_url: str | None = None,
+            **kwargs: Any,
     ) -> None:
         """Initialize the Ollama provider.
 
@@ -80,7 +80,7 @@ class OllamaProvider(ProviderBase):
 
     @classmethod
     def from_config(
-        cls, config: dict[str, Any] | None = None
+            cls, config: dict[str, Any] | None = None
     ) -> "OllamaProvider":
         """Build an ``OllamaProvider`` from a config mapping.
 
@@ -129,9 +129,9 @@ class OllamaProvider(ProviderBase):
             return get_settings().model_dump()
         except Exception:
             path = (
-                Path(__file__).resolve().parent.parent
-                / "config"
-                / "llm_config.json"
+                    Path(__file__).resolve().parent.parent
+                    / "config"
+                    / "llm_config.json"
             )
             with path.open("r", encoding="utf-8") as f:
                 return json.load(f)

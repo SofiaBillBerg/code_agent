@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Literal
 
 import nbformat
-
 from langchain.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
 
