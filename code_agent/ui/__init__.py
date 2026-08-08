@@ -16,7 +16,6 @@ from .cli_ui import (
     run_cli_ui,
 )
 
-
 __all__ = [
     "render_catalog",
     "render_progress",

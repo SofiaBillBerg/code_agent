@@ -4,6 +4,12 @@ from __future__ import annotations
 
 # Import agent-related functions
 from .agents import build_agent, create_default_tools
+from .core import create_project_scaffold
+
+# First import non-dependent modules
+from .exceptions import CodeAgentError, FileCreationError, InvalidToolError
+from .file_generator import create_from_template, py_to_ipynb, write_file
+from .main import create_llm, load_config
 
 # OAP-inspired capability layer (public API)
 from .capabilities.audit import AuditLog, Receipt
@@ -11,12 +17,6 @@ from .capabilities.base import Capability, CapabilityBase, RiskClass
 from .capabilities.envelope import InvocationRequest, InvocationResponse
 from .capabilities.registry import CapabilityRegistry
 from .capabilities.tool_adapter import tool_to_capability
-from .core import create_project_scaffold
-
-# First import non-dependent modules
-from .exceptions import CodeAgentError, FileCreationError, InvalidToolError
-from .file_generator import create_from_template, py_to_ipynb, write_file
-from .main import create_llm, load_config
 
 # Provider-agnostic LLM layer (public API)
 from .providers.base import LLMProvider, ProviderBase
@@ -27,29 +27,29 @@ from .providers.openai import OpenAIProvider
 
 # Explicitly expose the public API members
 __all__ = [
+    "CodeAgentError",
+    "FileCreationError",
+    "InvalidToolError",
+    "build_agent",
+    "create_default_tools",
+    "create_project_scaffold",
+    "create_from_template",
+    "py_to_ipynb",
+    "write_file",
+    "create_llm",
+    "load_config",
     "AuditLog",
     "Capability",
     "CapabilityBase",
     "CapabilityRegistry",
-    "CodeAgentError",
-    "FileCreationError",
-    "InvalidToolError",
     "InvocationRequest",
     "InvocationResponse",
+    "Receipt",
+    "RiskClass",
+    "tool_to_capability",
+    "create_provider",
     "LLMProvider",
     "OllamaProvider",
     "OpenAIProvider",
     "ProviderBase",
-    "Receipt",
-    "RiskClass",
-    "build_agent",
-    "create_default_tools",
-    "create_from_template",
-    "create_llm",
-    "create_project_scaffold",
-    "create_provider",
-    "load_config",
-    "py_to_ipynb",
-    "tool_to_capability",
-    "write_file",
 ]

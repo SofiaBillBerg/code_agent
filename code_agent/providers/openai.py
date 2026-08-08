@@ -11,7 +11,6 @@ from constructor arguments (the API key falls back to the
 from __future__ import annotations
 
 import os
-
 from typing import Any
 
 from langchain_openai import ChatOpenAI

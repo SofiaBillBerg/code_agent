@@ -19,7 +19,6 @@ from code_agent.providers.base import LLMProvider
 from code_agent.providers.ollama import OllamaProvider
 from code_agent.providers.openai import OpenAIProvider
 
-
 #: Provider used when ``config`` has no ``provider`` key (backward compat).
 DEFAULT_PROVIDER: str = "ollama"
 
