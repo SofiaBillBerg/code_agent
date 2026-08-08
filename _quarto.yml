@@ -114,3 +114,4 @@ fig-responsive: true
 resources:
   - docs/
   - LICENSE
+  - docs/visualizations/svg/
