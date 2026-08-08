@@ -18,35 +18,15 @@ import hashlib
 import importlib
 import sys
 import types
-
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-
 from pydantic import BaseModel, ValidationError
 
-from code_agent.capabilities.audit import AuditLog, Receipt  # noqa: E402
-from code_agent.capabilities.base import (  # noqa: E402
-    CapabilityBase,
-    RiskClass,
-)
-from code_agent.capabilities.envelope import (  # noqa: E402
-    InvocationRequest,
-    InvocationResponse,
-)
-from code_agent.capabilities.registry import CapabilityRegistry  # noqa: E402
-from code_agent.capabilities.tool_adapter import (  # noqa: E402
-    ToolResult,
-    tool_to_capability,
-)
-
-
 try:
-    from langchain.tools import (  # noqa: F401  # type: ignore[import-not-found]
-        BaseTool,
-    )
+    from langchain.tools import BaseTool  # noqa: F401  # type: ignore[import-not-found]
 except (ImportError, AttributeError):
     # Inject a stand-in before any ``code_agent`` import because
     # ``code_agent/__init__.py`` eagerly imports ``tool_adapter`` and the
@@ -78,6 +58,18 @@ for _module_name, _attr in (
             sys.modules[_module_name] = _module
         if not hasattr(_module, _attr):
             setattr(_module, _attr, type(_attr, (), {}))
+
+from code_agent.capabilities.audit import AuditLog, Receipt  # noqa: E402
+from code_agent.capabilities.base import CapabilityBase, RiskClass  # noqa: E402
+from code_agent.capabilities.envelope import (  # noqa: E402
+    InvocationRequest,
+    InvocationResponse,
+)
+from code_agent.capabilities.registry import CapabilityRegistry  # noqa: E402
+from code_agent.capabilities.tool_adapter import (  # noqa: E402
+    ToolResult,
+    tool_to_capability,
+)
 
 
 # ---------------------------------------------------------------------------

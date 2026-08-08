@@ -2,7 +2,11 @@
 .idea/
 *.iml
 *.ipr
+.*
+stubs/
+th*
 
+.tmp
 # CMake
 cmake-build-*/
 
@@ -46,7 +50,7 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
-.installed.cfg  
+.installed.cfg
 *.egg
 MANIFEST
 
@@ -164,7 +168,7 @@ dmypy.json
 .pyre/
 
 # pytype static type analyzer
-.pytype/ 
+.pytype/
 
 # Cython debug symbols
 cython_debug/
@@ -213,5 +217,5 @@ docs/docs_web/
 /renv/activate.R
 
 # MemPalace per-project files (issue #185)
-mempalace.yaml 
-entities.json  
+mempalace.yaml
+entities.json

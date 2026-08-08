@@ -22,7 +22,6 @@ from __future__ import annotations
 import importlib.util
 import sys
 import types
-
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -139,11 +138,7 @@ try:  # noqa: E402  (imports follow the fallback helpers by design)
     import code_agent.providers.factory as _factory_mod  # noqa: E402
     import code_agent.providers.ollama as _ollama_mod  # noqa: E402
     import code_agent.providers.openai as _openai_mod  # noqa: E402
-
-    from code_agent.providers.base import (  # noqa: E402
-        LLMProvider,
-        ProviderBase,
-    )
+    from code_agent.providers.base import LLMProvider, ProviderBase  # noqa: E402
 except ImportError:
     # Minimal environment: load the real provider source files directly.
     _base_mod, _factory_mod, _ollama_mod, _openai_mod = _load_provider_modules()

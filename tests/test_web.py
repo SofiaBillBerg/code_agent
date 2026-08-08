@@ -9,7 +9,6 @@ do not require Node or a built frontend: the static SPA test is skipped when
 from __future__ import annotations
 
 import pytest
-
 from fastapi.testclient import TestClient
 
 from code_agent.ui.web import _DIST_DIR, app
