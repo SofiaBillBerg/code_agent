@@ -28,11 +28,21 @@ class ReadFileTool(BaseTool):
 
     root: Path
 
-    def __init__(self, root_dir: str | Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
+        """Initialize the ReadFileTool with the given root directory.
+
+        :param root_dir: The root directory to search in.
+        :param kwargs: Additional keyword arguments.
+        :return: None
+        """
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(self, file_path: str) -> str:
-        """Reads the content of the specified file."""
+        """Reads the content of the specified file.
+
+        :param file_path: The path to the file to read.
+        :return: The content of the file or an error message.
+        """
         if not file_path:
             return "❌ Error: 'file_path' cannot be empty."
 

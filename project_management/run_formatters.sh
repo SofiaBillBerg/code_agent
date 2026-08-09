@@ -4,7 +4,14 @@
 # Each command runs independently; failures are collected and reported at the end.
 set +e
 set -o pipefail
-
+# ensure venv is activated by activating, first check os - if windos: .venv/Scripts/activate
+if [ "$(uname)" == "Darwin" ]; then
+    source .venv/bin/activate
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    source .venv/bin/activate
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    source .venv/Scripts/activated
+fi
 FAILURES=()
 
 run_step() {
@@ -21,7 +28,7 @@ run_step() {
     fi
 }
 
-echo "Starting code quality and visualization script..."
+echo "Starting code quality script..."
 echo "Current working directory: $(pwd)"
 
 # 1. Create necessary directories if they do not exist

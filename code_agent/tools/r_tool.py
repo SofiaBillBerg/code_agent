@@ -29,9 +29,8 @@ class RScriptTool(BaseTool):
 
     def _run(self, code: str) -> str:
         """Executes the given R code and returns the output."""
-
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".R", delete=False
+            encoding="utf-8", mode="w", suffix=".R", delete=False
         ) as temp_file:
             temp_file.write(code)
             temp_file_path = temp_file.name

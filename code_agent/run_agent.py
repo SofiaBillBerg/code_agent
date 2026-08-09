@@ -5,10 +5,19 @@ the agent programmatically.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from code_agent.scaffold import create_project_scaffold
 
 
-def scaffold(root=".", name="project", overwrite=False):
+def scaffold(root: Path, name: str = "project", overwrite: bool = False) -> str:
+    """Create a scaffold for a new project.
+
+    :param root: The root directory to create the scaffold in.
+    :param name: The name of the project.
+    :param overwrite: Whether to overwrite existing files.
+    :return: The path to the created scaffold.
+    """
     return create_project_scaffold(root, project_name=name, overwrite=overwrite)
 
 

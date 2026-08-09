@@ -10,8 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from .edit_file_tool import FileObject
 
 
-# ---------------------------------
-# 1️⃣  Arguments schema
+#  Arguments schema
 
 
 class LinkerArgs(BaseModel):
@@ -20,10 +19,7 @@ class LinkerArgs(BaseModel):
     file_path: str = Field(..., description="Path to file to read")
 
 
-# ---------------------------------
-# 2️⃣  Tool definition
-
-
+# Tool definition
 class LinkerTool(BaseTool):
     """Tool for reading file contents."""
 
@@ -39,10 +35,21 @@ class LinkerTool(BaseTool):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, root_dir: str | Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs: dict[str, Any]) -> None:
+        """Initialize the tool.
+
+        :param root_dir: The root directory to use for file operations.
+        :param kwargs: Additional arguments to pass to the parent class.
+        :return: None
+        """
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
+        """Run the tool.
+
+        :param kwargs: The arguments to pass to the tool.
+        :return: The result of the tool.
+        """
         file_path_str: str = kwargs.get("file_path", "")
         file_path = self.root / file_path_str
 

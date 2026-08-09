@@ -9,12 +9,14 @@ giving a uniform, auditable interface across all capabilities.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
 
+@dataclass
 class InvocationRequest(BaseModel):
     """A request to invoke a capability.
 
@@ -35,6 +37,7 @@ class InvocationRequest(BaseModel):
     )
 
 
+@dataclass
 class InvocationResponse(BaseModel):
     """The result of invoking a capability.
 

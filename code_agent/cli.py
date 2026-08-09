@@ -1,22 +1,22 @@
 """Command‑line interface for the **code_agent** package.
 
-The CLI is intentionally small – it only exposes the most common
+The CLI is intentionally small - it only exposes the most common
 operations that a developer would want when working in a local
 repository:
 
-* ``create`` – create a new file with supplied content.
-* ``append`` – append to an existing file.
-* ``scaffold`` – generate a minimal project structure.
-* ``py2ipynb`` – convert a Python script to a Jupyter notebook.
-* ``docs`` – generate Quarto documentation for the current tree.
-* ``chat`` – start an interactive chat session with the agent.
-* ``capabilities list`` – list the registered capabilities.
-* ``capabilities invoke`` – dispatch an invocation through the registry.
-* ``serve`` – start the LLM provider selected by the config.
+* ``create`` - create a new file with supplied content.
+* ``append`` - append to an existing file.
+* ``scaffold`` - generate a minimal project structure.
+* ``py2ipynb`` - convert a Python script to a Jupyter notebook.
+* ``docs`` - generate Quarto documentation for the current tree.
+* ``chat`` - start an interactive chat session with the agent.
+* ``capabilities list`` - list the registered capabilities.
+* ``capabilities invoke`` - dispatch an invocation through the registry.
+* ``serve`` - start the LLM provider selected by the config.
 
 Implementation details
 ----------------------
-* Uses **Typer** for argument parsing – it provides a pleasant
+* Uses **Typer** for argument parsing - it provides a pleasant
   developer experience (automatic ``--help`` generation, type checking
   and rich error messages).
 * All file‑system interactions are delegated to
@@ -31,7 +31,7 @@ Implementation details
   and runs a small read‑eval‑print loop against ``provider.complete``.
 * Errors are wrapped in :class:`code_agent.exceptions.CodeAgentError` to
 
-The CLI is intentionally **stateless** – it performs the requested
+The CLI is intentionally **stateless** - it performs the requested
 action and exits.  All heavy lifting is done by the helper functions.
 """
 
@@ -46,6 +46,8 @@ from pathlib import Path
 from typing import Any
 
 import typer
+
+from langchain_core.tools import BaseTool
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
@@ -75,12 +77,10 @@ def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
     intentionally omitted so ``capabilities`` commands stay stateless and do
     not require a running model backend.
 
-    Args:
-        root_dir: Root directory the tools operate within; defaults to the
+    :param root_dir: Root directory the tools operate within; defaults to the
             current working directory.
 
-    Returns:
-        A :class:`CapabilityRegistry` with the adapted tools registered.
+    :return: A :class:`CapabilityRegistry` with the adapted tools registered.
     """
     registry = CapabilityRegistry()
     for tool in create_default_tools(root_dir=root_dir):
@@ -91,15 +91,15 @@ def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
 def _echo_response(response: InvocationResponse, receipt: Receipt) -> None:
     """Print an invocation response and its audit receipt.
 
-    Args:
-        response: The invocation response to display.
-        receipt: The audit receipt recorded for the dispatch.
+    :param response: The invocation response to display.
+    :param receipt: The audit receipt recorded for the dispatch.
+    :return: None
     """
     if response.status == "error":
-        typer.echo(f"status: error")
+        typer.echo("status: error")
         typer.echo(f"error: {response.error}")
     else:
-        typer.echo(f"status: ok")
+        typer.echo("status: ok")
         typer.echo(f"result: {json.dumps(response.result, default=str)}")
     typer.echo(f"duration_ms: {response.duration_ms}")
     typer.echo(
@@ -122,6 +122,8 @@ def capabilities_list() -> None:
     The catalog is built from the default tools adapted into capabilities.
     Each row shows the capability ``id``, its ``risk_class`` and its
     ``intent`` (a human description of what the capability does).
+
+    :return: None
     """
     capabilities = _build_registry().discover()
     if not capabilities:
@@ -158,9 +160,9 @@ def capabilities_invoke(
     hash‑chained audit :class:`Receipt`. A non‑zero exit code is returned
     when the dispatch reports an error.
 
-    Args:
-        capability_id: Stable identifier of the capability to invoke.
-        params: JSON object of parameters for the capability.
+    :param capability_id: Stable identifier of the capability to invoke.
+    :param params: JSON object of parameters for the capability.
+    :return: None
     """
     try:
         parsed_params: dict[str, Any] = json.loads(params)
@@ -216,11 +218,11 @@ def serve(
     present. The server binds to ``127.0.0.1:8000``; pass ``--web-port`` to
     change the port. No API keys or prompt content are ever logged.
 
-    Args:
-        config_path: Path to the JSON configuration file.
-        web: Whether to serve the web UI instead of the console loop.
-        web_host: Host to bind the web UI server to.
-        web_port: Port to bind the web UI server to.
+    :param config_path: Path to the JSON configuration file.
+    :param web: Whether to serve the web UI instead of the console loop.
+    :param web_host: Host to bind the web UI server to.
+    :param web_port: Port to bind the web UI server to.
+    :return: None
     """
     if web:
         import uvicorn
@@ -237,7 +239,7 @@ def serve(
     try:
         cfg = load_config(config_path)
         provider = create_provider(cfg)
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 
     model = getattr(provider, "model", "unknown")
@@ -257,7 +259,7 @@ def serve(
             break
         try:
             response = provider.complete([{"role": "user", "content": prompt}])
-        except Exception as exc:  # noqa: BLE001 – surfaced to the user
+        except Exception as exc:  # noqa: BLE001 - surfaced to the user
             typer.echo(f"Error: {exc}")
             continue
         typer.echo(response)
@@ -272,15 +274,18 @@ def create(
     overwrite: bool = typer.Option(
         False, is_flag=True, help="Allow overwriting an existing file."
     ),
-):
+) -> None:
     """Create ``file_path`` with ``content``.
 
-    The file is written atomically – a temporary file is written first
+    The file is written atomically - a temporary file is written first
     and then renamed to the target path.  If the file already exists
     and ``overwrite`` is not set, the command exits with a non‑zero
     status code.
-    """
 
+    :param file_path: Path to the file to create.
+    :param content: Content to write into the file.
+    :param overwrite: Allow overwriting an existing file.
+    """
     try:
         if file_path.exists() and not overwrite:
             raise CodeAgentError(
@@ -288,7 +293,7 @@ def create(
             )
         write_file(file_path, content)
         typer.echo(f"File written: {file_path}")
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 
 
@@ -304,15 +309,17 @@ def append(
     The function opens the file in append mode and writes the supplied
     content.  File locking is *not* required for the use‑cases
     envisioned in this project.
-    """
 
+    :param file_path: Path to the file to modify.
+    :param content: Text to append to the file.
+    """
     try:
         file_path.write_text(
             file_path.read_text(encoding="utf-8") + content,
             encoding="utf-8",
         )
         typer.echo(f"Appended to: {file_path}")
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 
 
@@ -332,7 +339,7 @@ def scaffold(
         is_flag=True,
         help="Overwrite existing files in the target directory.",
     ),
-):
+) -> None:
     """Generate a project skeleton.
 
     Creates a minimal Python project with the following structure:
@@ -342,14 +349,21 @@ def scaffold(
     - .GitHub/workflows/ - GitHub Actions workflows
     - requirements.txt - Project dependencies
     - README.qmd - Project documentation
-    """
 
+
+    The function uses :func:`code_agent.file_generator.create_project_scaffold`.
+
+    :param target: Target directory for the scaffold.
+    :param project_name: Project name used in scaffold files.
+    :param overwrite: Allow overwriting existing files.
+    :return: None
+    """
     try:
         create_project_scaffold(
             str(target), project_name=project_name, overwrite=overwrite
         )
         typer.echo(f"Scaffold created: {target}")
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 
 
@@ -359,17 +373,20 @@ def py2ipynb(
         ..., exists=True, help="Python script to convert."
     ),
     dst: Path = typer.Argument(..., exists=False, help="Target notebook path."),
-):
+) -> None:
     """Create a minimal Jupyter notebook from a Python file.
 
     The notebook contains a single code cell with the full source
     code.  The function uses :func:`code_agent.file_generator.py_to_ipynb`.
-    """
 
+    :param src: Python script to convert.
+    :param dst: Target notebook path.
+    :return: None
+    """
     try:
         py_to_ipynb(src, dst)
         typer.echo(f"Notebook written: {dst}")
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 
 
@@ -381,9 +398,15 @@ def docs(
     overwrite: bool = typer.Option(
         True, help="Overwrite existing files in the output directory."
     ),
-):
-    """Generate a minimal set of QMD files and render the Quarto site."""
+) -> None:
+    """Generate a minimal set of QMD files and render the Quarto site.
 
+    The function uses :func:`code_agent.file_generator.generate_quarto_docs`.
+
+    :param output_dir: Directory to write docs into.
+    :param overwrite: Overwrite existing files in the output directory.
+    :return: None
+    """
     try:
         generate_quarto_docs(output_dir=Path(output_dir), overwrite=overwrite)
         typer.echo(f"Docs generated in: {output_dir}")
@@ -394,7 +417,7 @@ def docs(
         typer.echo(
             "Error: 'quarto' command not found. Please ensure Quarto is installed and in your PATH."
         )
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 
 
@@ -407,7 +430,11 @@ def chat(
         help="Show verbose streaming 'thinking' output from the agent.",
     ),
 ) -> None:
-    """Start an interactive chat session with the code agent."""
+    """Start an interactive chat session with the code agent.
+
+    :param verbose: Show verbose streaming 'thinking' output from the agent.
+    :return: None
+    """
     try:
         cfg = load_config()
         llm = create_llm(cfg)
@@ -447,14 +474,14 @@ def chat(
                         response, conversation_state
                     )
                 except Exception as e:
-                    print(f"\n❌ Error processing your request: {str(e)}\n")
+                    print(f"\n❌ Error processing your request: {e!s}\n")
                     continue
 
             except KeyboardInterrupt:
                 print("\n\n👋 Session ended by user. Goodbye!")
                 break
             except Exception as e:
-                print(f"\n❌ An unexpected error occurred: {str(e)}\n")
+                print(f"\n❌ An unexpected error occurred: {e!s}\n")
                 continue
 
     except Exception as e:
@@ -462,14 +489,28 @@ def chat(
         sys.exit(1)
 
 
-def _setup_agent_and_tools(cfg, llm):
+def _setup_agent_and_tools(
+    cfg: dict[str, Any], llm
+) -> tuple[Any, list[BaseTool], Path]:
+    """Setup the agent and tools for the chat session.
+
+    :param cfg: Configuration dictionary.
+    :param llm: Language model instance.
+    :return: Tuple of (agent, tools, root_dir)
+    """
     root_dir = Path(cfg.get("root_dir", ".")).resolve()
     tools = create_default_tools(root_dir=str(root_dir), llm=llm)
     agent = build_agent(llm=llm, tools=tools)
     return agent, tools, root_dir
 
 
-def _show_startup_info(root_dir, tools):
+def _show_startup_info(root_dir: Path, tools: list[BaseTool]):
+    """Show startup information for the chat session.
+
+    :param root_dir: Root directory for the agent.
+    :param tools: List of available tools.
+    :return: None
+    """
     print("\n" + "=" * 50)
     print("=== Code Agent Chat ===")
     print("Type 'exit', 'quit', or 'q' to end the session.")
@@ -479,12 +520,19 @@ def _show_startup_info(root_dir, tools):
     print("=" * 50 + "\n")
 
 
-def _handle_command(user_input: str, conversation_state: dict, tools: list):
+def _handle_command(
+    user_input: str, conversation_state: dict, tools: list
+) -> tuple[bool, dict[Any, Any]] | tuple[bool, None]:
     """Handle simple chat commands. Returns (continue_session, conversation_state or None).
 
     If a command is handled that should not continue into agent invocation (help, tools, clear),
     the function returns (True, None). If the session should end, returns (False, _).
     Otherwise, returns (True, conversation_state) to proceed.
+
+    :param user_input: User input string.
+    :param conversation_state: Current conversation state.
+    :param tools: List of available tools.
+    :return: Tuple of (continue_session, conversation_state or None)
     """
     if user_input.lower() in ["exit", "quit", "q"]:
         print("\nGoodbye!")
@@ -518,7 +566,13 @@ def _handle_command(user_input: str, conversation_state: dict, tools: list):
     return True, conversation_state
 
 
-def _display_agent_response(response, conversation_state):
+def _display_agent_response(response: Any, conversation_state) -> dict | Any:
+    """Display the agent's response to the user.
+
+    :param response: Response from the agent.
+    :param conversation_state: Current conversation state.
+    :return: Updated conversation state.
+    """
     if isinstance(response, dict) and "messages" in response:
         print("\n" + "=" * 50)
         print("🛠️  Agent response:")
@@ -527,7 +581,7 @@ def _display_agent_response(response, conversation_state):
             if (
                 isinstance(msg, (list, tuple))
                 and len(msg) > 1
-                and msg[0] in ["ai", "assistant"]
+                and msg[0] in {"ai", "assistant"}
             ):
                 print(msg[1])
                 break
@@ -541,10 +595,12 @@ def _display_agent_response(response, conversation_state):
         return conversation_state
 
 
-def main() -> None:  # pragma: no cover – thin wrapper
+def main() -> None:  # pragma: no cover - thin wrapper
     """Entry point used by ``python -m code_agent.cli``.
 
     This function initializes and runs the Typer CLI application.
+
+    :return: None
     """
     app()
 

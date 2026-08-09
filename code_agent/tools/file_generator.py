@@ -23,9 +23,9 @@ from typing import Any
 from ..exceptions import CodeAgentError
 
 
-try:  # Optional dependency – used only for the notebook path.
+try:  # Optional dependency - used only for the notebook path.
     import nbformat  # type: ignore
-except Exception:  # pragma: no cover – handled at runtime
+except Exception:  # pragma: no cover - handled at runtime
     nbformat = None  # type: ignore[assignment]
 
 __all__ = ["create_from_template", "py_to_ipynb", "write_file"]
@@ -45,22 +45,12 @@ def write_file(
     temporary file to ``target``.  This prevents partial writes if the
     process is interrupted.
 
-    Parameters
-    ----------
-    target:
-        Destination file path.
-    content:
-        Text to write.
-    mode:
-        File mode – defaults to ``"w"``.
-    encoding:
-        Text encoding – defaults to ``"utf-8"``.
-    Returns
-    -------
-    Path
-        The absolute path of the written file.
+    :param target: Destination file path.
+    :param content: Text to write.
+    :param mode: File mode - defaults to ``"w"``.
+    :param encoding: Text encoding - defaults to ``"utf-8"``.
+    :return: The absolute path of the written file.
     """
-
     target = Path(target).expanduser().resolve()
     if target.is_dir():
         raise CodeAgentError(f"Cannot write to a directory: {target!s}")
@@ -71,13 +61,13 @@ def write_file(
             fp.write(content)
         tmp.replace(target)
         return target
-    except OSError as exc:  # pragma: no cover – exercised via tests
+    except OSError as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(f"Failed to write file {target!s}: {exc}") from exc
 
 
 def create_from_template(
-    template_path: Path | str,
-    dest_path: Path | str,
+    template_root_dir: Path,
+    dest_root_dir: Path,
     *,
     replace_vars: dict | None = None,
 ) -> Path:
@@ -86,10 +76,14 @@ def create_from_template(
     ``replace_vars`` may contain placeholder keys that will be replaced
     in the template text using :meth:`str.format`.  The function
     returns the absolute :class:`Path` to the created file.
-    """
 
-    template_path = Path(template_path).expanduser().resolve()
-    dest_path = Path(dest_path).expanduser().resolve()
+    :param template_path: Path to the template file.
+    :param dest_path: Path to the destination file.
+    :param replace_vars: Optional variables to replace in the template.
+    :return: The absolute path of the created file.
+    """
+    template_path = Path().expanduser().resolve()
+    dest_path = Path().expanduser().resolve()
     if not template_path.is_file():
         raise CodeAgentError(f"Template file {template_path!s} does not exist")
     try:
@@ -97,7 +91,7 @@ def create_from_template(
         if replace_vars:
             text = text.format(**replace_vars)
         return write_file(dest_path, text)
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(
             f"Failed to create {dest_path!s} from template {template_path!s}: {exc}"
         ) from exc
@@ -108,7 +102,7 @@ def _generate_ipynb_from_cells(
 ) -> (
     dict[
         str,
-        list[dict[str, str | None | dict[Any, Any] | list[Any]]]
+        list[dict[str, str | dict[Any, Any] | list[Any] | None]]
         | dict[str, dict[str, str]]
         | int,
     ]
@@ -116,14 +110,17 @@ def _generate_ipynb_from_cells(
 ):
     """Return a minimal Jupyter notebook dict for the given *cells*.
 
-    The function is intentionally minimal – it creates a single
+    The function is intentionally minimal - it creates a single
     code cell per element in ``cells``.  If :mod:`nbformat` is
     available, the notebook is created using the public API; otherwise a
     hand‑crafted minimal structure is returned.
-    """
 
-    if nbformat is None:
-        # Hand‑crafted minimal notebook – sufficient for the tests.
+    :param cells: Iterable of cell contents.
+    :return: A Jupyter notebook dict or JSON string.
+    """
+    if (
+        nbformat is None
+    ):  # Hand‑crafted minimal notebook - sufficient for the tests.
         return {
             "cells": [
                 {
@@ -155,24 +152,15 @@ def _generate_ipynb_from_cells(
 def py_to_ipynb(py_file: Path | str, output: Path | str | None = None) -> Path:
     """Convert a Python script to a minimal Jupyter notebook.
 
-    The function searches the script for ``# %%`` markers – any text
+    The function searches the script for ``# %%`` markers - any text
     following a marker until the next marker (or the file end) becomes a
     separate cell.  If no markers are found, the entire file becomes a
     single cell.
 
-    Parameters
-    ----------
-    py_file:
-        Path to the input Python file.
-    output:
-        Destination notebook path.  If omitted, ``py_file`` is
-        rewritten with a ``.ipynb`` extension.
-    Returns
-    -------
-    Path
-        Absolute path to the generated notebook.
+    :param py_file: Path to the input Python file.
+    :param output: Destination notebook path.  If omitted, ``py_file`` is rewritten with a ``.ipynb`` extension.
+    :return: The absolute path to the generated notebook.
     """
-
     py_file = Path(py_file).expanduser().resolve()
     if not py_file.is_file():
         raise CodeAgentError(f"Python file {py_file!s} does not exist")
@@ -188,7 +176,7 @@ def py_to_ipynb(py_file: Path | str, output: Path | str | None = None) -> Path:
         current.append(line)
     if current:
         cells.append("".join(current))
-    if not cells:  # empty file – create a single empty cell
+    if not cells:  # empty file - create a single empty cell
         cells = ["\n"]
     nb_dict = _generate_ipynb_from_cells(cells)
     if output is None:
@@ -204,7 +192,7 @@ def py_to_ipynb(py_file: Path | str, output: Path | str | None = None) -> Path:
             json_text = json.dumps(nb_dict, indent=2)
             write_file(output, json_text)
         return output
-    except Exception as exc:  # pragma: no cover – exercised via tests
+    except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(
             f"Failed to write notebook {output!s}: {exc}"
         ) from exc

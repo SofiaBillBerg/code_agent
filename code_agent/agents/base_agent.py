@@ -16,15 +16,26 @@ __all__ = ["build_agent", "create_default_tools"]
 
 
 def build_agent(llm: BaseChatModel, tools: Iterable[BaseTool]) -> Runnable:
-    """Builds a LangChain runnable with tools bound to the LLM."""
+    """Builds a LangChain runnable with tools bound to the LLM.
+
+    :param llm: The language model to use.
+    :param tools: The tools to bind to the LLM.
+
+    :return: A LangChain runnable.
+    """
     return build_graph(llm, list(tools))
 
 
 def create_default_tools(
     root_dir: str | None = None, llm: BaseChatModel | None = None
 ) -> list[BaseTool]:
-    """Return a list of default tools."""
+    """Return a list of default tools.
 
+    :param root_dir: The root directory to use for the tools.
+    :param llm: The language model to use for the tools.
+
+    :return: A list of default tools.
+    """
     from code_agent.tools import (
         EditFileTool,
         FormatCodeTool,

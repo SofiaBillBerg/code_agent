@@ -10,11 +10,13 @@ canonical risk levels used to gate high-risk capabilities.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, ClassVar, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
 
+@dataclass
 class RiskClass:
     """Canonical risk levels for capabilities.
 
@@ -46,10 +48,15 @@ class Capability(Protocol):
     risk_class: str
 
     def invoke(self, params: BaseModel) -> BaseModel:
-        """Execute the capability against validated ``params``."""
+        """Execute the capability against validated ``params``.
+
+        :param params: Validated invocation parameters.
+        :return: The capability result.
+        """
         ...
 
 
+@dataclass
 class CapabilityBase(ABC):
     """Base class for capabilities. Subclass and implement ``_execute``.
 
@@ -67,14 +74,9 @@ class CapabilityBase(ABC):
     def invoke(self, params: BaseModel) -> BaseModel:
         """Validate ``params`` and delegate to ``_execute``.
 
-        Args:
-            params: The invocation parameters, an instance of ``input_model``.
-
-        Returns:
-            The capability result, an instance of ``output_model``.
-
-        Raises:
-            TypeError: If ``params`` is not an instance of ``input_model``.
+        :param params: The invocation parameters, an instance of ``input_model``.
+        :return: The capability result, an instance of ``output_model``.
+        :raises TypeError: If ``params`` is not an instance of ``input_model``.
         """
         if not isinstance(params, self.input_model):
             raise TypeError(f"expected {self.input_model.__name__}")
@@ -84,11 +86,9 @@ class CapabilityBase(ABC):
     def _execute(self, params: BaseModel) -> BaseModel:
         """Implement the capability's actual behavior.
 
-        Args:
-            params: Validated invocation parameters.
+        :param params: Validated invocation parameters.
 
-        Returns:
-            The capability result.
+        :return: The capability result.
         """
         ...
 
@@ -97,6 +97,8 @@ class CapabilityBase(ABC):
 
         Includes the id, intent, risk class and the JSON schemas of the
         input and output models.
+
+        :return: A dict describing the capability.
         """
         return {
             "id": self.id,

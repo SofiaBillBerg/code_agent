@@ -41,18 +41,17 @@ You can now type queries, e.g.:
 
 ![Classes diagram](docs/visualizations/svg/classes.svg)
 
-
 For a deeper dive, see the following sections:
 
-- **[CODE_AGENT](CODE_AGENT.qmd)** – Core components and internals.
-- **[USAGE](USAGE.qmd)** – Detailed usage patterns.
-- **[FILES](FILES.qmd)** – File‑level overview of the repo.
-- **[FAQ & Troubleshooting](FAQ.qmd)** – Common questions and solutions.
-- **[CONTRIBUTING](CONTRIBUTING.qmd)** – Guidelines for contributing to
+- **[CODE_AGENT](docs/CODE_AGENT.qmd)** – Core components and internals.
+- **[USAGE](docs/USAGE.qmd)** – Detailed usage patterns.
+- **[FILES](docs/FILES.qmd)** – File‑level overview of the repo.
+- **[FAQ & Troubleshooting](docs/FAQ.qmd)** – Common questions and solutions.
+- **[CONTRIBUTING](docs/CONTRIBUTING.qmd)** – Guidelines for contributing to
   the project.
-- **[LICENSE](../LICENSE)** – Project licensing information.
-- **[ROADMAP](ROADMAP.qmd)** – Future plans and development.
-- **[CHANGELOG](CHANGELOG.qmd)** – Version history and changes.
-- **[Agent Workflow](AGENT_WORKFLOW.qmd)**
+- **[LICENSE](./LICENSE)** – Project licensing information.
+- **[ROADMAP](docs/ROADMAP.qmd)** – Future plans and development.
+- **[CHANGELOG](docs/CHANGELOG.qmd)** – Version history and changes.
+- **[Agent Workflow](docs/AGENT_WORKFLOW.qmd)**
 - **[Class Visualizations](docs/visualizations/svg/classes.svg)** – Visual representation of class relationships. All class diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.
 - **[Package Visualizations](docs/visualizations/svg/packages.svg)** – Visual representation of package relationships. All package diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.

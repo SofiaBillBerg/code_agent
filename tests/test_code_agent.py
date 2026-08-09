@@ -150,7 +150,7 @@ def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
     (output_dir / "README.qmd").write_text("Test content")
 
     # Run the command
-    result = runner.invoke(cli_app, ["docs", f"--output-dir={str(output_dir)}"])
+    result = runner.invoke(cli_app, ["docs", f"--output-dir={output_dir!s}"])
 
     # Check results
     assert result.exit_code == 0

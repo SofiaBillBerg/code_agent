@@ -8,6 +8,7 @@ from typing import Any
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
+from typing_extensions import Self
 
 from code_agent.agents.base_agent import build_agent
 
@@ -18,13 +19,25 @@ class PersistentAgent:
     _instance = None
     _state_file = Path.home() / ".code_agent" / "state.json"
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls: type[Self], *args: Any, **kwargs: Any) -> Any | Self:
+        """Ensure only one instance of the agent exists.
+
+        :param args: Positional arguments.
+        :param kwargs: Keyword arguments.
+        :return: The singleton instance of the agent.
+        """
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self, llm: BaseChatModel, tools: list[BaseTool]):
+    def __init__(self, llm: BaseChatModel, tools: list[BaseTool]) -> None:
+        """Initialize the agent with the given LLM and tools.
+
+        :param llm: The language model to use.
+        :param tools: The tools to use.
+        :return: None
+        """
         if self._initialized:
             return
 
@@ -34,16 +47,22 @@ class PersistentAgent:
         self._initialized = True
         self._load_state()
 
-    def _ensure_state_dir(self):
-        """Ensure the state directory exists."""
+    def _ensure_state_dir(self) -> None:
+        """Ensure the state directory exists.
+
+        :return: None
+        """
         self._state_file.parent.mkdir(parents=True, exist_ok=True)
 
-    def _load_state(self):
-        """Load agent state from disk."""
+    def _load_state(self) -> None:
+        """Load agent state from disk.
+
+        :return: None
+        """
         self._ensure_state_dir()
         if self._state_file.exists():
             try:
-                with open(self._state_file) as f:
+                with Path(self._state_file).open(encoding="utf-8") as f:
                     data = json.load(f)
                     self.conversation_history = data.get(
                         "conversation_history", []
@@ -52,21 +71,28 @@ class PersistentAgent:
             except Exception as e:
                 print(f"⚠️  Warning: Could not load state: {e}")
 
-    def _save_state(self):
-        """Save agent state to disk."""
+    def _save_state(self) -> None:
+        """Save agent state to disk.
+
+        :return: None
+        """
         self._ensure_state_dir()
         try:
             data = {
                 "conversation_history": self.conversation_history,
                 "settings": self.settings,
             }
-            with open(self._state_file, "w") as f:
+            with Path(self._state_file).open("w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
         except Exception as e:
             print(f"⚠️  Warning: Could not save state: {e}")
 
     def chat(self, message: str) -> str:
-        """Process a message and return a response."""
+        """Process a message and return a response.
+
+        :param message: The message to process.
+        :return: The response from the agent.
+        """
         if not self.agent:
             return "❌ Agent not initialized. Please check the configuration."
 
@@ -86,7 +112,7 @@ class PersistentAgent:
             return response_content
 
         except Exception as e:
-            error_msg = f"❌ Error: {str(e)}"
+            error_msg = f"❌ Error: {e!s}"
             self.conversation_history.append({
                 "role": "error",
                 "content": error_msg,
@@ -95,7 +121,10 @@ class PersistentAgent:
             return error_msg
 
     def reset_conversation(self) -> None:
-        """Reset the conversation history."""
+        """Reset the conversation history.
+
+        :return: None
+        """
         self.conversation_history = []
         self._save_state()
 
@@ -103,15 +132,24 @@ class PersistentAgent:
 agent = None
 
 
-def get_persistent_agent(llm, tools):
+def get_persistent_agent(llm, tools: list[Any]) -> Any | None | PersistentAgent:
     global agent
     if agent is None:
         agent = PersistentAgent(llm=llm, tools=tools)
     return agent
 
 
-def main():
-    """Run the interactive chat interface."""
+def main() -> None:
+    """Run the interactive chat interface.
+
+    This function provides a simple command-line interface for interacting with the agent.
+    It handles user input, processes it through the agent, and displays the response.
+    The interface also supports special commands like 'exit', 'quit', 'q', and 'clear'.
+    The 'clear' command resets the conversation history.
+    The 'help' command displays a list of available commands.
+
+    :return: None
+    """
     print("\n" + "=" * 50)
     print("=== Code Agent (Persistent) ===")
     print("Type 'exit', 'quit', or 'q' to end the session.")

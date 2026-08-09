@@ -14,8 +14,7 @@ from __future__ import annotations
 
 import io
 
-from collections.abc import Iterator
-from typing import Callable
+from collections.abc import Callable, Iterator
 
 import pytest
 

@@ -37,11 +37,9 @@ from code_agent.capabilities.registry import CapabilityRegistry
 def _risk_style(risk_class: str) -> str:
     """Return a rich style token for a risk class.
 
-    Args:
-        risk_class: One of the :data:`RiskClass` values.
+    :param risk_class: One of the :data:`RiskClass` values.
 
-    Returns:
-        A rich style name: green for low, yellow for medium, red for high,
+    :return: A rich style name: green for low, yellow for medium, red for high,
         white for anything else.
     """
     return {
@@ -57,12 +55,10 @@ def _coerce_param(raw: str, prop: dict[str, Any]) -> Any:
     Unparseable values fall back to the raw string rather than aborting the
     session, keeping interactive input robust.
 
-    Args:
-        raw: The raw string entered by the user.
-        prop: The JSON schema property describing the parameter.
+    :param raw: The raw string entered by the user.
+    :param prop: The JSON schema property describing the parameter.
 
-    Returns:
-        The coerced value, or ``raw`` when coercion fails.
+    :return: The coerced value, or ``raw`` when coercion fails.
     """
     json_type = prop.get("type", "string")
     try:
@@ -97,14 +93,11 @@ def _prompt_params(
     are skipped are simply omitted from the request (the registry's own
     validation reports any missing field).
 
-    Args:
-        capability_meta: One entry from :meth:`CapabilityRegistry.discover`.
-        read_line: Callable that reads a line of user input.
-        console: Output console.
+    :param capability_meta: One entry from :meth:`CapabilityRegistry.discover`.
+    :param read_line: Callable that reads a line of user input.
+    :param console: Output console.
 
-    Returns:
-        A dict of parameter name -> value suitable for an
-        :class:`InvocationRequest`.
+    :return: A dict of parameter name -> value suitable for an :class:`InvocationRequest`.
     """
     schema = capability_meta.get("input_schema", {})
     properties: dict[str, dict[str, Any]] = schema.get("properties", {})
@@ -138,13 +131,10 @@ def _select_capability(
 ) -> dict[str, Any] | None:
     """Resolve a user selection (1-based index or capability id) to an entry.
 
-    Args:
-        catalog: Entries from :meth:`CapabilityRegistry.discover`.
-        raw: The raw user input.
-        console: Output console.
-
-    Returns:
-        The selected catalog entry, or ``None`` when nothing matches.
+    :param catalog: Entries from :meth:`CapabilityRegistry.discover`.
+    :param raw: The raw user input.
+    :param console: Output console.
+    :return: The selected catalog entry, or ``None`` when nothing matches.
     """
     text = raw.strip().lower()
     if text.isdigit():
@@ -168,9 +158,9 @@ def render_catalog(
     Each row shows the selection index, the capability ``id``, its ``intent``
     and its ``risk_class`` (color-coded by severity).
 
-    Args:
-        registry: The registry whose capabilities are listed.
-        console: Output console; defaults to a new :class:`Console`.
+    :param registry: The registry whose capabilities are listed.
+    :param console: Output console; defaults to a new :class:`Console`.
+    :return: None
     """
     console = console or Console()
     table = Table(title="Capability Catalog", header_style="bold magenta")
@@ -196,9 +186,9 @@ def render_request(
 ) -> None:
     """Render an invocation request as a rich panel.
 
-    Args:
-        request: The request to display.
-        console: Output console; defaults to a new :class:`Console`.
+    :param request: The request to display.
+    :param console: Output console; defaults to a new :class:`Console`.
+    :return: None
     """
     console = console or Console()
     lines = [
@@ -224,9 +214,9 @@ def render_progress(
     Shown immediately before :meth:`CapabilityRegistry.dispatch` runs, so
     the user sees which capability and request id are being executed.
 
-    Args:
-        request: The request being dispatched.
-        console: Output console; defaults to a new :class:`Console`.
+    :param request: The request being dispatched.
+    :param console: Output console; defaults to a new :class:`Console`.
+    :return: None
     """
     console = console or Console()
     console.print(
@@ -244,9 +234,9 @@ def render_response(
     error responses show a short inline message with a red border. Raw
     tracebacks are never printed.
 
-    Args:
-        response: The response to display.
-        console: Output console; defaults to a new :class:`Console`.
+    :param response: The response to display.
+    :param console: Output console; defaults to a new :class:`Console`.
+    :return: None
     """
     console = console or Console()
     if response.status == "error":
@@ -278,9 +268,9 @@ def render_receipt(receipt: Receipt, console: Console | None = None) -> None:
     Displays the receipt's linkage fields — ``prev_hash`` and
     ``receipt_hash`` — so the tamper-evident chain is visible to the user.
 
-    Args:
-        receipt: The receipt to display.
-        console: Output console; defaults to a new :class:`Console`.
+    :param receipt: The receipt to display.
+    :param console: Output console; defaults to a new :class:`Console`.
+    :return: None
     """
     console = console or Console()
     lines = [
@@ -313,10 +303,10 @@ def run_cli_ui(
     :class:`InvocationRequest`. Every dispatch renders the request, a
     progress line, the resulting response and the audit receipt.
 
-    Args:
-        registry: The registry to render and dispatch against.
-        console: Output console; defaults to a new :class:`Console`.
-        input_fn: Read-a-line callable; defaults to the builtin ``input``.
+    :param registry: The registry to render and dispatch against.
+    :param console: Output console; defaults to a new :class:`Console`.
+    :param input_fn: Read-a-line callable; defaults to the builtin ``input``.
+    :return: None
     """
     console = console or Console()
     read_line = input_fn or input
@@ -352,7 +342,7 @@ def run_cli_ui(
             render_request(request, console)
             render_progress(request, console)
             response, receipt = registry.dispatch(request)
-        except Exception as exc:  # noqa: BLE001 - surfaced to the user
+        except Exception as exc:
             console.print(
                 Panel(
                     Text(f"dispatch error: {exc}", style="red"),

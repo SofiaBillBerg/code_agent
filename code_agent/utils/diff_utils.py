@@ -15,14 +15,12 @@ def generate_diff(
 ) -> str:
     """Generate a unified diff between two strings.
 
-    Args:
-        old_content: The original content
-        new_content: The new content
-        from_file: Label for the original content
-        to_file: Label for the modified content
+    :param old_content: The original content
+    :param new_content: The new content
+    :param from_file: Label for the original content
+    :param to_file: Label for the modified content
 
-    Returns:
-        A string containing the unified diff
+    :return: string containing the unified diff
     """
     diff = difflib.unified_diff(
         old_content.splitlines(keepends=True),
@@ -38,13 +36,11 @@ def preview_file_edit(
 ) -> tuple[str, bool]:
     """Generate a preview of file changes without modifying the file.
 
-    Args:
-        file_path: Path to the file being edited
-        new_content: The new content to preview
-        create_if_missing: If True, treat non-existent files as empty
+    :param file_path: Path to the file being edited
+    :param new_content: The new content to preview
+    :param create_if_missing: If True, treat non-existent files as empty
 
-    Returns:
-        A tuple of (diff_string, file_exists) where:
+    :return: A tuple of (diff_string, file_exists) where:
         - diff_string is the unified diff
         - file_exists indicates if the original file existed
     """
@@ -68,9 +64,10 @@ def preview_file_edit(
 def apply_edit(file_path: str | Path, content: str) -> None:
     """Apply changes to a file.
 
-    Args:
-        file_path: Path to the file to modify
-        content: The new content
+    :param file_path: Path to the file to modify
+    :param content: The new content
+    :return: None
+    :raises OSError: If the file cannot be written
     """
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)

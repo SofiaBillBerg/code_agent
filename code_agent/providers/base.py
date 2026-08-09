@@ -27,26 +27,20 @@ class LLMProvider(Protocol):
     def complete(self, messages: list[dict[str, Any]]) -> str:
         """Generate a completion for the given chat ``messages``.
 
-        Args:
-            messages: Chat history as a list of ``{"role": ..., "content": ...}``
-                message dicts.
-
-        Returns:
-            The model's text completion.
+        :param messages: Chat history as a list of ``{"role": ..., "content": ...}`` message dicts.
+        :return: The model's text completion.
         """
         ...
 
-    def bind_capabilities(self, caps: list[Any]) -> "LLMProvider":
+    def bind_capabilities(self, caps: list[Any]) -> LLMProvider:
         """Return a provider bound to the given capabilities.
 
         Providers that need tool-binding (e.g. function calling) may return a
         new provider instance configured with ``caps``; others return ``self``.
 
-        Args:
-            caps: Capabilities available to the provider.
+        :param caps: Capabilities available to the provider.
 
-        Returns:
-            A provider instance bound to ``caps``.
+        :return: A provider instance bound to ``caps``.
         """
         ...
 
@@ -57,6 +51,15 @@ class ProviderBase(ABC):
     Subclasses must set ``name`` and implement ``complete``. ``bind_capabilities``
     defaults to a no-op that returns ``self``; providers that require tool-binding
     override it.
+
+    :ivar name: Stable provider identifier, e.g. ``"ollama"`` or ``"openai"``.
+    :ivar model: The model name, e.g. ``"llama3"`` or ``"gpt-4o"``.
+    :ivar temperature: Sampling temperature, ``0.0`` to ``1.0``.
+    :ivar max_tokens: Maximum number of tokens to generate.
+    :ivar stream: Whether to stream the response.
+    :ivar api_key: API key for the provider.
+    :ivar base_url: Base URL for the provider.
+    :ivar capabilities: Capabilities available to the provider.
     """
 
     name: str = "base"
@@ -65,15 +68,19 @@ class ProviderBase(ABC):
     def complete(self, messages: list[dict[str, Any]]) -> str:
         """Generate a completion for the given chat ``messages``.
 
-        Args:
-            messages: Chat history as a list of ``{"role": ..., "content": ...}``
+        :param messages: Chat history as a list of ``{"role": ..., "content": ...}``
                 message dicts.
-
-        Returns:
-            The model's text completion.
+        :return: The model's text completion.
         """
         ...
 
-    def bind_capabilities(self, caps: list[Any]) -> "ProviderBase":
-        # Default: providers ignore capabilities unless they need tool-binding.
+    def bind_capabilities(self, caps: list[Any]) -> ProviderBase:
+        """Return a provider bound to the given capabilities.
+
+        Providers that need tool-binding (e.g. function calling) may return a
+        new provider instance configured with ``caps``; others return ``self``.
+
+        :param caps: Capabilities available to the provider.
+        :return: A provider instance bound to ``caps``.
+        """
         return self

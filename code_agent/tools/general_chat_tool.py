@@ -30,12 +30,21 @@ class GeneralChatTool(BaseTool):
 
     llm: BaseChatModel
 
-    def __init__(self, llm_instance: BaseChatModel, **kwargs):
+    def __init__(self, llm_instance: BaseChatModel, **kwargs) -> None:
+        """Initialize the tool with the LLM instance.
+
+        :param llm_instance: The LLM instance to use for generating responses.
+        :param kwargs: Additional keyword arguments.
+        :return: None
+        """
         super().__init__(llm=llm_instance, **kwargs)
 
     def _run(self, query: str) -> str:
-        """Sends the query directly to the LLM for a conversational response."""
+        """Send the query directly to the LLM for a conversational response.
 
+        :param query: The user's query or message.
+        :return: The LLM's response.
+        """
         prompt = f"""You are a helpful and knowledgeable AI assistant. A user has asked a question that does not fit
         any of the specialized tools. Provide a direct, helpful, and conversational answer to their query.
 
@@ -52,7 +61,11 @@ Your response:"""
             return f"❌ Error during general chat: {e}"
 
     async def _arun(self, **kwargs: Any) -> str:
-        """Async version."""
+        """Async version.
+
+        :param kwargs: Keyword arguments.
+        :return: The LLM's response.
+        """
         # Simplified for now
         query = kwargs.get("query", "")
         return self._run(query)

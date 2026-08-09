@@ -29,6 +29,11 @@ class CapabilityRegistry:
     """
 
     def __init__(self, audit_log: AuditLog | None = None) -> None:
+        """Initialize the registry with an empty capability map.
+
+        :param audit_log: Optional :class:`AuditLog` used to record every dispatch.
+        :return: None
+        """
         self._capabilities: dict[str, Capability] = {}
         self._audit_log = audit_log if audit_log is not None else AuditLog()
 
@@ -38,16 +43,15 @@ class CapabilityRegistry:
         Registering a capability whose id is already present replaces the
         previous entry.
 
-        Args:
-            capability: The capability instance to register.
+        :param capability: The capability instance to register.
+        :return: None
         """
         self._capabilities[capability.id] = capability
 
     def discover(self) -> list[dict[str, Any]]:
         """Return metadata for all registered capabilities.
 
-        Returns:
-            A list of dicts, one per capability, each containing ``id``,
+        :return: A list of dicts, one per capability, each containing ``id``,
             ``intent``, ``risk_class`` and the JSON schema of the
             ``input_model``.
         """
@@ -66,11 +70,8 @@ class CapabilityRegistry:
     ) -> tuple[InvocationResponse, Receipt]:
         """Validate, gate and invoke a capability, recording an audit receipt.
 
-        Args:
-            request: The invocation request to dispatch.
-
-        Returns:
-            A tuple of the invocation response and the audit receipt recorded
+        :param request: The invocation request to dispatch.
+        :returns: A tuple of the invocation response and the audit receipt recorded
             for this dispatch.
         """
         started = time.perf_counter()
@@ -129,15 +130,13 @@ class CapabilityRegistry:
     ) -> tuple[InvocationResponse, Receipt]:
         """Build the response, record the audit receipt and return both.
 
-        Args:
-            request: The invocation request being dispatched.
-            started: ``time.perf_counter()`` value captured at dispatch start.
-            status: Outcome of the invocation, "ok" or "error".
-            result: Structured result payload on success.
-            error: Error message when status is "error".
+        :param request: The invocation request being dispatched.
+        :param started: ``time.perf_counter()`` value captured at dispatch start.
+        :param status: Outcome of the invocation, "ok" or "error".
+        :param result: Structured result payload on success.
+        :param error: Error message when status is "error".
 
-        Returns:
-            A tuple of the invocation response and the audit receipt.
+        :return: A tuple of the invocation response and the audit receipt.
         """
         duration_ms = int((time.perf_counter() - started) * 1000)
         response = InvocationResponse(
@@ -159,12 +158,9 @@ class CapabilityRegistry:
     def _to_dict(result: Any) -> dict[str, Any]:
         """Normalize an invocation result to a JSON-serializable dict.
 
-        Args:
-            result: The capability's output, typically an ``output_model``
+        :param result: The capability's output, typically an ``output_model``
                 instance.
-
-        Returns:
-            A dict representation of the result.
+        :return: A dict representation of the result.
         """
         if isinstance(result, BaseModel):
             return result.model_dump()

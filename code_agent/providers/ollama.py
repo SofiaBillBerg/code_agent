@@ -59,15 +59,9 @@ class OllamaProvider(ProviderBase):
     def complete(self, messages: list[dict[str, Any]]) -> str:
         """Generate a completion for the given chat ``messages``.
 
-        Args:
-            messages: Chat history as a list of ``{"role": ..., "content": ...}``
-                message dicts.
-
-        Returns:
-            The model's text completion.
-
-        Raises:
-            RuntimeError: If the Ollama backend fails to produce a response.
+        :param messages: Chat history as a list of ``{"role": ..., "content": ...}`` message dicts.
+        :return The model's text completion.
+        :raises RuntimeError: If the Ollama backend fails to produce a response.
         """
         try:
             response = self._client.invoke(messages)
@@ -75,26 +69,27 @@ class OllamaProvider(ProviderBase):
             raise RuntimeError(f"Ollama completion failed: {exc}") from exc
         return str(response.content)
 
-    def bind_capabilities(self, caps: list[Any]) -> "OllamaProvider":
+    def bind_capabilities(self, caps: list[Any]) -> OllamaProvider:
+        """Bind capabilities to the Ollama provider.
+
+        :param caps: List of capabilities to bind.
+        :return: The provider with bound capabilities.
+        """
         # Ollama tool-binding is handled by the LangGraph layer; no-op here.
         return self
 
     @classmethod
     def from_config(
         cls, config: dict[str, Any] | None = None
-    ) -> "OllamaProvider":
+    ) -> OllamaProvider:
         """Build an ``OllamaProvider`` from a config mapping.
 
         Reads ``model``, ``temperature``, ``max_tokens``, ``stream`` and the
         ``ollama_*`` connection keys from ``config`` (or the default config
         file when ``config`` is ``None``).
 
-        Args:
-            config: Configuration mapping. When ``None`` the default
-                ``code_agent/config/llm_config.json`` is loaded.
-
-        Returns:
-            A configured ``OllamaProvider`` instance.
+        :param config: Configuration mapping. When ``None`` the default ``code_agent/config/llm_config.json`` is loaded.
+        :return: A configured ``OllamaProvider`` instance.
         """
         if config is None:
             config = cls._load_default_config()
@@ -123,6 +118,8 @@ class OllamaProvider(ProviderBase):
         The typed application settings (sourced from ``.env`` / the environment)
         are the canonical default.  A legacy ``llm_config.json`` is used only as
         a fallback when the settings module is unavailable.
+
+        :return: The default configuration mapping.
         """
         try:
             from code_agent.settings import get_settings

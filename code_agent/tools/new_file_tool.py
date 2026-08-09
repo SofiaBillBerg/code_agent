@@ -45,14 +45,25 @@ class NewFileTool(BaseTool):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, root_dir: str | Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs) -> None:
+        """Initialize the NewFileTool with the root directory.
+
+        :param root_dir: The root directory for file operations.
+        :param kwargs: Additional keyword arguments.
+        :return: None
+        """
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(
         self, file_path: str, content: str, overwrite: bool = False
     ) -> tuple[str, FileObject]:
-        """Creates a new file at the specified path with the given content."""
+        """Create a new file at the specified path with the given content.
 
+        :param file_path: The path where the new file should be created.
+        :param content: The content to be written into the new file.
+        :param overwrite: Whether to overwrite the file if it already exists.
+        :return: A tuple containing a message and a FileObject.
+        """
         if not file_path:
             return (
                 "❌ Error: 'file_path' cannot be empty.",
@@ -80,9 +91,8 @@ class NewFileTool(BaseTool):
                         log.info(f"Backup created for overwrite: {backup_path}")
                     except Exception as e:
                         backup_status = "backup_failed"
-                        log.error(
-                            f"Failed to create backup for {full_path} during overwrite: {e}",
-                            exc_info=True,
+                        log.exception(
+                            f"Failed to create backup for {full_path} during overwrite: {e}"
                         )  # Continue with the creation, but report backup failure
 
             full_path.parent.mkdir(parents=True, exist_ok=True)
@@ -99,7 +109,7 @@ class NewFileTool(BaseTool):
                 FileObject(path=full_path, contents=content, status="created"),
             )
         except Exception as e:
-            log.error(f"Error creating file {full_path}: {e}", exc_info=True)
+            log.exception(f"Error creating file {full_path}: {e}")
             return (
                 f"❌ Error creating file: {e}",
                 FileObject(path=full_path, contents="", status="error"),

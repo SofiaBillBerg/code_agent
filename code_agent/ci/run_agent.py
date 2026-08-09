@@ -13,7 +13,10 @@ from ..main import create_llm, load_config
 
 
 def get_staged_files() -> list[str]:
-    """Get list of staged files from git."""
+    """Get list of staged files from git.
+
+    :return: List of staged file paths
+    """
     result = subprocess.run(
         ["git", "diff", "--name-only", "--cached", "--diff-filter=ACM"],
         capture_output=True,
@@ -22,8 +25,12 @@ def get_staged_files() -> list[str]:
     return [f.strip() for f in result.stdout.split("\n") if f.strip()]
 
 
-def main():
-    """Run agent review on staged files."""
+def main() -> None:
+    """Run agent review on staged files.
+
+    This script is intended to be run as part of a CI pipeline.
+    It will review all staged files and save the review to .ci/llm_review.txt.
+    """
     staged = get_staged_files()
 
     if not staged:

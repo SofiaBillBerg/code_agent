@@ -11,6 +11,8 @@ from .edit_file_tool import FileObject
 
 
 class GenerateTestArgs(BaseModel):
+    """Arguments for the generate-test tool."""
+
     file_path: str = Field(
         ..., description="Path to the module/file to generate tests for"
     )
@@ -20,6 +22,8 @@ class GenerateTestArgs(BaseModel):
 
 
 class GenerateTestTool(BaseTool):
+    """Tool for generating basic pytest test files."""
+
     name: str = "generate-test"
     description: str = (
         "Generate a basic pytest test file for a given Python module. "
@@ -32,14 +36,24 @@ class GenerateTestTool(BaseTool):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, root_dir: str | Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs) -> None:
+        """Initialize the tool with the root directory.
+
+        :param root_dir: The root directory of the project.
+        :param kwargs: Additional arguments to pass to the parent class.
+        :return: None
+        """
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(
         self, file_path: str, tests_dir: str = "tests"
     ) -> tuple[str, FileObject]:
-        """Generates a basic pytest test file for a given Python module."""
+        """Generate a basic pytest test file for a given Python module.
 
+        :param file_path: Path to the module/file to generate tests for.
+        :param tests_dir: Directory to place generated tests.
+        :return: Tuple of (message, FileObject)
+        """
         src = self.root / file_path
         if not src.exists():
             return (

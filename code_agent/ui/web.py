@@ -4,10 +4,10 @@
 Exposes the registered capabilities over HTTP so a browser (or any HTTP
 client) can list and invoke them:
 
-* ``GET /capabilities`` – lists the capability catalog. The catalog comes
+* ``GET /capabilities`` - lists the capability catalog. The catalog comes
   from the same registry builder the CLI's ``capabilities list`` command
   uses, so the web view always matches the CLI view.
-* ``POST /invoke`` – dispatches an :class:`InvocationRequest` through the
+* ``POST /invoke`` - dispatches an :class:`InvocationRequest` through the
   :class:`CapabilityRegistry` and returns the :class:`InvocationResponse`
   plus the hash-chained audit :class:`Receipt` as JSON.
 
@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import uuid
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -51,9 +52,7 @@ def get_registry() -> CapabilityRegistry:
     continuous across requests. It reuses the CLI's ``_build_registry``
     helper, guaranteeing ``GET /capabilities`` matches ``capabilities list``.
 
-    Returns:
-        A :class:`CapabilityRegistry` populated with the default
-        tool-adapted capabilities.
+    :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
     """
     global _REGISTRY
     if _REGISTRY is None:
@@ -66,6 +65,7 @@ def get_registry() -> CapabilityRegistry:
     return _REGISTRY
 
 
+@dataclass
 class InvokeBody(BaseModel):
     """JSON request body for ``POST /invoke``.
 
@@ -92,8 +92,7 @@ app = FastAPI(
 def list_capabilities() -> list[dict[str, Any]]:
     """Return metadata for every registered capability.
 
-    Returns:
-        A JSON list of capability metadata dicts (id, intent, risk_class,
+    :return: A JSON list of capability metadata dicts (id, intent, risk_class,
         input_schema) from the shared registry.
     """
     return get_registry().discover()
@@ -106,12 +105,10 @@ def invoke_capability(body: InvokeBody) -> dict[str, Any]:
     Args:
         body: Parsed request body (capability_id and params).
 
-    Returns:
-        A JSON object with ``response`` (the :class:`InvocationResponse`)
+    :return: A JSON object with ``response`` (the :class:`InvocationResponse`)
         and ``receipt`` (the audit :class:`Receipt`) fields.
 
-    Raises:
-        HTTPException: 400 when the capability is unknown, high-risk, or the
+    :raises HTTPException: 400 when the capability is unknown, high-risk, or the
             params fail validation.
     """
     request = InvocationRequest(

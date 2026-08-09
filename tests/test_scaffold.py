@@ -34,7 +34,6 @@ def scaffold_root(tmp_path: Path) -> Path:
 
 def _assert_expected_files(root: Path, project_name: str) -> None:
     """Assert that *root* contains the expected scaffold files and directories."""
-
     expected_dirs = [
         "docs",
         "docs/styles",

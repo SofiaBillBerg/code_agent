@@ -45,7 +45,12 @@ jobs:
 
 
 def _create_directories(root_path: Path, project_name: str) -> None:
-    """Create the directory structure for the project."""
+    """Create the directory structure for the project.
+
+    :param root_path: The root directory to create the scaffold in.
+    :param project_name: The name of the project.
+    :return: None
+    """
     dirs = [
         root_path / "docs" / "styles",
         root_path / "src" / project_name,
@@ -62,7 +67,13 @@ def _create_directories(root_path: Path, project_name: str) -> None:
 
 
 def _create_files(root_path: Path, project_name: str, overwrite: bool) -> None:
-    """Create the files for the project."""
+    """Create the files for the project.
+
+    :param root_path: The root directory to create the scaffold in.
+    :param project_name: The name of the project.
+    :param overwrite: Whether to overwrite existing files.
+    :return: None
+    """
     files_to_create = {
         "README.qmd": f"# {project_name}\n\nGenerated scaffold.",
         "requirements.txt": DEFAULT_REQUIREMENTS,
@@ -88,8 +99,12 @@ def create_project_scaffold(
     project_name: str = "project",
     overwrite: bool = False,
 ) -> str:
-    """
-    Create a minimal project scaffold in the given directory.
+    """Create a minimal project scaffold in the given directory.
+
+    :param root: The root directory to create the scaffold in.
+    :param project_name: The name of the project.
+    :param overwrite: Whether to overwrite existing files.
+    :return: The path to the created scaffold.
     """
     root_path = Path(root).expanduser().resolve()
 

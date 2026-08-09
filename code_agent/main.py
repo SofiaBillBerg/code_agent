@@ -35,9 +35,7 @@ from code_agent.settings import Settings, get_settings
 log = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Configuration helpers
-# ---------------------------------------------------------------------------
 
 
 def load_config(config_path: str | None = None) -> dict[str, Any]:
@@ -48,16 +46,9 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
     returned instead, so the ``.env`` file / environment remain the single
     source of truth.
 
-    Parameters
-    ----------
-    config_path:
-        Optional path to a JSON configuration file.  If the path points to a
-        directory, the function will look for ``llm_config.json`` inside.
+    :param config_path: Optional path to a JSON configuration file.  If the path points to a directory, the function will look for ``llm_config.json`` inside.
 
-    Returns
-    -------
-    Dict[str, Any]
-        Parsed configuration dictionary.
+    :returns: Parsed configuration dictionary.
     """
     if config_path is None:
         return get_settings().model_dump()
@@ -73,9 +64,7 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
         return json.load(f)
 
 
-# ---------------------------------------------------------------------------
 # LLM helpers
-# ---------------------------------------------------------------------------
 
 
 def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
@@ -85,11 +74,10 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     lightweight dummy model that returns an error message when the real
     LLM cannot be initialised.
 
-    Parameters
-    ----------
-    cfg:
-        Either a :class:`~code_agent.settings.Settings` instance or a plain
+    :param cfg: Either a :class:`~code_agent.settings.Settings` instance or a plain
         configuration dictionary (e.g. from :func:`load_config`).
+
+    :returns: A :class:`~langchain_core.language_models.BaseChatModel` instance.
     """
     if isinstance(cfg, Settings):
         cfg = cfg.model_dump()
@@ -117,13 +105,20 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
         return ChatOllama(
             model=model, base_url=base_url, temperature=temperature
         )
-    except Exception as exc:  # pragma: no cover – fallback path
+    except Exception as exc:  # pragma: no cover - fallback path
 
         class _FallbackLLM(BaseChatModel):
             _err: Exception
             _base_url: str
 
             def __init__(self, err: Exception, base_url: str, **kwargs: Any):
+                """Initialise the fallback LLM.
+
+                :param err: The exception that caused the fallback.
+                :param base_url: The base URL of the Ollama server.
+                :param kwargs: Additional keyword arguments.
+                :return: None
+                """
                 super().__init__(**kwargs)
                 self._err = err
                 self._base_url = base_url
@@ -135,6 +130,14 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 run_manager: CallbackManagerForLLMRun | None = None,
                 **kwargs: Any,
             ) -> ChatResult:
+                """Generate a response from the fallback LLM.
+
+                :param messages: The messages to generate a response from.
+                :param stop: The stop sequences.
+                :param run_manager: The run manager.
+                :param kwargs: Additional keyword arguments.
+                :return: The generated response.
+                """
                 content = json.dumps({
                     "error": "LLM unavailable",
                     "details": (
@@ -150,6 +153,10 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
 
             @property
             def _llm_type(self) -> str:
+                """Return the type of the LLM.
+
+                :return: The type of the LLM.
+                """
                 return "fallback"
 
             def bind_tools(
@@ -159,6 +166,12 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 ],
                 **kwargs: Any,
             ) -> Runnable[LanguageModelInput, AIMessage]:
+                """Bind tools to the LLM.
+
+                :param tools: The tools to bind.
+                :param kwargs: Additional keyword arguments.
+                :return: The runnable LLM.
+                """
                 return self  # Simply return self for fallback LLM
 
         return _FallbackLLM(exc, base_url)
@@ -175,15 +188,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     Parses the given list of arguments and returns a
     `argparse.Namespace` object containing the parsed arguments.
 
-    Parameters
-    ----------
-    argv : Sequence[str] | None
-    List of command-line arguments. If `None`, `sys.argv` is used.
+    :param argv : List of command-line arguments. If `None`, `sys.argv` is used.
 
-    Returns
-    -------
-    argparse.Namespace
-    A namespace object containing the parsed arguments.
+    :return: A namespace object containing the parsed arguments.
     """
     parser = argparse.ArgumentParser(
         prog="code_agent",
@@ -201,13 +208,10 @@ def _setup_logging(debug: bool) -> None:
 
     This function sets up the logging module for the Code Agent. The logging level is set to `DEBUG` if the `debug`
     parameter is `True`, otherwise it is set to `INFO`.
-    Parameters
-    ----------
-    debug : bool  Whether to enable DEBUG logs.
 
-    Returns
-    -------
-    None This function does not return any value.
+    :param debug: Whether to enable DEBUG logs.
+
+    :return: None
     """
     level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
@@ -217,19 +221,15 @@ def _setup_logging(debug: bool) -> None:
     )
 
 
-# ---------------------------------------------------------------------------
 # Main entry point
-# ---------------------------------------------------------------------------
 
 
 def main(argv: Sequence[str] | None = None) -> None:
     """Entry point for the code agent CLI.
 
-    Parameters
-    ----------
-    argv:
-        Optional argument vector.  If ``None`` the function will read from
+    :param argv: Optional argument vector.  If ``None`` the function will read from
         :data:`sys.argv`.
+    :return: None
     """
     print("=== Code Agent CLI ===")
     print("Type 'exit' or 'quit' to end the session.\n")
@@ -280,7 +280,13 @@ def main(argv: Sequence[str] | None = None) -> None:
 def _handle_retrieval(
     vectorstore: Chroma, user_input: str, chat_history: list[BaseMessage]
 ) -> None:
-    """Retrieve relevant documents and update chat history."""
+    """Retrieve relevant documents and update chat history.
+
+    :param vectorstore: Chroma vector store for retrieval.
+    :param user_input: User's input.
+    :param chat_history: List of messages in the chat history.
+    :return: None
+    """
     retrieved_docs = vectorstore.similarity_search(user_input, k=2)
     if retrieved_docs:
         print("\n🧠 Retrieved from memory:")
@@ -292,7 +298,11 @@ def _handle_retrieval(
 
 
 def _process_agent_event(event: dict) -> AIMessage | None:
-    """Process a single event from the agent stream and print tool calls."""
+    """Process a single event from the agent stream and print tool calls.
+
+    :param event: Event from the agent stream.
+    :return: Final agent response if available.
+    """
     final_response = None
     for node, output in event.items():
         if node == "agent":
@@ -316,7 +326,14 @@ def _update_history_and_persist(
     final_response: AIMessage,
     chat_history: list[BaseMessage],
 ) -> None:
-    """Update chat history and persist to vector store."""
+    """Update chat history and persist to vector store.
+
+    :param vectorstore: Chroma vector store for retrieval.
+    :param user_input: User's input.
+    :param final_response: Final response from the agent.
+    :param chat_history: List of messages in the chat history.
+    :return: None
+    """
     print("\n=== Agent response ===")
     print(final_response.content)
     chat_history.append(final_response)
@@ -330,7 +347,12 @@ def _update_history_and_persist(
 
 
 def _main_loop(app: Runnable, vectorstore: Chroma) -> None:
-    """Run an interactive chat loop."""
+    """Run an interactive chat loop.
+
+    :param app: The compiled agent graph.
+    :param vectorstore: Chroma vector store for retrieval.
+    :return: None
+    """
     chat_history: list[BaseMessage] = []
     while True:
         try:

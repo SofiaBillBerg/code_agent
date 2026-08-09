@@ -2,8 +2,8 @@
 
 This module provides a very small public API that is used by the
 command‑line interface, the agent runtime and the test‑suite.  All
-functions are intentionally pure – they do not depend on any global
-state – which makes them straightforward to unit‑test.
+functions are intentionally pure - they do not depend on any global
+state - which makes them straightforward to unit‑test.
 
 The helpers are thin wrappers around :mod:`code_agent.file_generator`.
 They expose a slightly more user‑friendly name and a few convenience
@@ -31,52 +31,43 @@ __all__ = [
 ]
 
 
-def create_file(
-    path: Path | str, content: str, *, overwrite: bool = False
-) -> Path:
+def create_file(path: Path, content: str, *, overwrite: bool = False) -> Path:
     """Create *path* and write *content*.
 
-    Parameters
-    ----------
-    path:
-        Target file path.
-    content:
-        Text to write.
-    overwrite:
-        If ``False`` (the default) an existing file will raise a
-        :class:`CodeAgentError`.
-    Returns
-    -------
-    Path
-        Absolute path of the created file.
+    :param path: Target file path.
+    :param content: Text to write.
+    :param overwrite: If ``False`` (the default) an existing file will raise a :class:`CodeAgentError`.
+    :return: Absolute path of the created file.
     """
-
     path = Path(path).expanduser().resolve()
     if path.exists() and not overwrite:
         raise CodeAgentError(
-            f"File {path!s} already exists – use overwrite=True to replace it"
+            f"File {path!s} already exists - use overwrite=True to replace it"
         )
     return write_file(path, content)
 
 
-def append_file(path: Path | str, content: str) -> Path:
+def append_file(root_dir: Path, content: str) -> Path:
     """Append *content* to *path*.
 
     The function opens the file in append mode, writes the content and
     returns the absolute file path.
-    """
 
-    path = Path(path).expanduser().resolve()
+    :param path: Target file path.
+    :param content: Text to append.
+    :return: Absolute path of the modified file.
+    """
+    path = Path().expanduser().resolve()
     if not path.exists():
-        raise CodeAgentError(f"File {path!s} does not exist – cannot append")
+        raise CodeAgentError(f"File {path!s} does not exist - cannot append")
     with path.open("a", encoding="utf-8") as fp:
         fp.write(content)
     return path
 
 
 def create_from_template(
-    template_path: Path | str,
-    dest_path: Path | str,
+    template_root_dir: Path,
+    dest_root_dir: Path,
     *,
     replace_vars: dict | None = None,
 ) -> Path:
@@ -84,8 +75,14 @@ def create_from_template(
 
     Any ``{}`` placeholders in the template are replaced by
     ``replace_vars`` using :meth:`str.format`.
-    """
 
+    :param template_path: Path to the template file.
+    :param dest_path: Path to the destination file.
+    :param replace_vars: Variables to replace in the template.
+    :return: Absolute path of the created file.
+    """
+    template_path = Path(template_root_dir).expanduser().resolve()
+    dest_path = Path(dest_root_dir).expanduser().resolve()
     return _create_from_template(
         template_path, dest_path, replace_vars=replace_vars
     )

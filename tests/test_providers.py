@@ -168,7 +168,7 @@ class DummyProvider:
         """Return a canned completion."""
         return "dummy response"
 
-    def bind_capabilities(self, caps: list[Any]) -> "DummyProvider":
+    def bind_capabilities(self, caps: list[Any]) -> DummyProvider:
         """Return self (no tool-binding needed)."""
         return self
 
@@ -178,7 +178,7 @@ class IncompleteProvider:
 
     name: str = "incomplete"
 
-    def bind_capabilities(self, caps: list[Any]) -> "IncompleteProvider":
+    def bind_capabilities(self, caps: list[Any]) -> IncompleteProvider:
         """Return self (no tool-binding needed)."""
         return self
 
@@ -208,7 +208,7 @@ class FakeProvider:
         """Return a canned completion."""
         return "fake"
 
-    def bind_capabilities(self, caps: list[Any]) -> "FakeProvider":
+    def bind_capabilities(self, caps: list[Any]) -> FakeProvider:
         """Return self (no tool-binding needed)."""
         return self
 

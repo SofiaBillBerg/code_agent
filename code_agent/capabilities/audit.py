@@ -12,12 +12,14 @@ from __future__ import annotations
 import hashlib
 import json
 
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import BaseModel
 
 
+@dataclass
 class Receipt(BaseModel):
     """Immutable record of a single capability invocation.
 
@@ -39,7 +41,11 @@ class Receipt(BaseModel):
 
 
 def _hash(*parts: str) -> str:
-    """Return the SHA-256 hex digest of the pipe-joined parts."""
+    """Return the SHA-256 hex digest of the pipe-joined parts.
+
+    :param parts: Strings to hash together.
+    :return: The hex digest of the concatenated parts.
+    """
     return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()
 
 
@@ -55,6 +61,11 @@ class AuditLog:
     """
 
     def __init__(self, path: Path | None = None) -> None:
+        """Initialize the audit log.
+
+        :param path: Optional file to persist each receipt as a JSON line.
+        :return: None
+        """
         self._path = Path(path) if path else None
         self._last_hash = "GENESIS"
         self._receipts: list[Receipt] = []
@@ -64,13 +75,11 @@ class AuditLog:
     ) -> Receipt:
         """Append a receipt for a capability invocation.
 
-        Args:
-            request_id: Unique identifier of the invocation request.
-            capability_id: Stable identifier of the invoked capability.
-            status: Outcome of the invocation (e.g. "ok" | "error").
+        :param request_id: Unique identifier of the invocation request.
+        :param capability_id: Stable identifier of the invoked capability.
+        :param status: Outcome of the invocation (e.g. "ok" | "error").
 
-        Returns:
-            The created receipt, chained to the previous one.
+        :return: The created receipt, chained to the previous one.
         """
         timestamp = datetime.now(timezone.utc).isoformat()
         receipt_hash = _hash(
@@ -94,13 +103,14 @@ class AuditLog:
     def read_chain(self) -> list[Receipt]:
         """Return the full receipt chain in append order.
 
-        Returns:
-            A copy of the receipts recorded so far; the internal log is
-            never exposed for mutation.
+        :return: A copy of the receipts recorded so far; the internal log is never exposed for mutation.
         """
         return list(self._receipts)
 
     @property
     def last_hash(self) -> str:
-        """Return the hash of the most recently recorded receipt."""
+        """Return the hash of the most recently recorded receipt.
+
+        :return: The hash of the most recently recorded receipt.
+        """
         return self._last_hash

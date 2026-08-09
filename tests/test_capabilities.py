@@ -55,12 +55,12 @@ except (ImportError, AttributeError):
     if langchain_tools is None:
         langchain_tools = types.ModuleType("langchain.tools")
         sys.modules["langchain.tools"] = langchain_tools
-    setattr(langchain_tools, "BaseTool", object)
+    langchain_tools.BaseTool = object
     langchain_pkg = sys.modules.get("langchain")
     if langchain_pkg is None:
         langchain_pkg = types.ModuleType("langchain")
         sys.modules["langchain"] = langchain_pkg
-    setattr(langchain_pkg, "tools", langchain_tools)
+    langchain_pkg.tools = langchain_tools
 
 # ``code_agent/__init__.py`` also eagerly imports the provider modules,
 # which need ``langchain_ollama`` and ``langchain_openai``; stand in for

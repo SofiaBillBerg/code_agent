@@ -13,6 +13,8 @@ from .edit_file_tool import FileObject
 
 
 class NotebookArgs(BaseModel):
+    """Arguments for the notebook tool."""
+
     file_path: str = Field(
         ..., description="Path to the notebook to create or edit"
     )
@@ -21,6 +23,8 @@ class NotebookArgs(BaseModel):
 
 
 class NotebookTool(BaseTool):
+    """Tool for creating and editing Jupyter notebooks."""
+
     name: str = "notebook"
     description: str = (
         "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
@@ -34,18 +38,22 @@ class NotebookTool(BaseTool):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, root_dir: str | Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
+        """Initializes the NotebookTool with the given root directory.
+
+        :param root_dir (str | Path): The root directory for the notebook tool.
+        :param **kwargs: Additional keyword arguments.
+        :return: None
         """
-        Initializes the NotebookTool with the given root directory.
-            Args:
-                root_dir (str | Path): The root directory for the notebook tool.
-                **kwargs: Additional keyword arguments.
-            Returns: None
-        """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
-        file_path: str = kwargs.get("file_path")
+        """Creates or edits a Jupyter notebook.
+
+        :param **kwargs: Keyword arguments containing the file path, content, and mode.
+        :return: A tuple containing the result message and a FileObject.
+        """
+        file_path: str = kwargs.get("file_path", "")
         content: str = kwargs.get("content", "")
         mode: str = kwargs.get("mode", "create")
 
@@ -69,6 +77,7 @@ class NotebookTool(BaseTool):
                         FileObject(path=nb_path, contents="", status="error"),
                     )
                 nb = nbformat.read(str(nb_path), as_version=4)
+
                 nb.cells.append(nbformat.v4.new_markdown_cell(content))
                 nbformat.write(nb, str(nb_path))
                 return (
@@ -105,4 +114,5 @@ class NotebookTool(BaseTool):
             )
 
     async def _arun(self, **kwargs: Any) -> tuple[str, FileObject]:
+        """Use the tool asynchronously."""
         return self._run(**kwargs)

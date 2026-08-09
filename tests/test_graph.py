@@ -48,7 +48,6 @@ def mock_llm() -> MagicMock:
     ``"tool"`` (case‑insensitive).  Otherwise, it returns a plain
     ``AIMessage``.
     """
-
     mock = MagicMock()
 
     # type: ignore[override]
@@ -73,7 +72,7 @@ def dummy_tool():
 
     @tool
     def dummy() -> str:
-        """does nothing"""
+        """Does nothing"""
         return "dummy output"
 
     return dummy

@@ -13,7 +13,8 @@ classmethod or a small builder function ``(config: dict) -> LLMProvider``.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from code_agent.providers.base import LLMProvider
 from code_agent.providers.ollama import OllamaProvider
@@ -36,14 +37,11 @@ def _openai_from_config(config: dict[str, Any]) -> OpenAIProvider:
     ``max_tokens`` and ``stream``. Keys absent from ``config`` are omitted so
     constructor defaults (e.g. the ``OPENAI_API_KEY`` env fallback) apply.
 
-    Args:
-        config: Configuration mapping.
+    :param config: Configuration mapping.
+    :return: A configured ``OpenAIProvider`` instance.
 
-    Returns:
-        A configured ``OpenAIProvider`` instance.
+    Prefer the OpenAI-specific keys sourced from settings, falling back to the bare keys for backward compatibility with older configs and tests.
     """
-    # Prefer the OpenAI-specific keys sourced from settings, falling back to the
-    # bare keys for backward compatibility with older configs and tests.
     kwargs: dict[str, Any] = {}
     model = config.get("openai_model") or config.get("model")
     if model is not None:
@@ -61,13 +59,17 @@ def _openai_from_config(config: dict[str, Any]) -> OpenAIProvider:
 
 
 #: Registered provider name -> factory callable.
-_PROVIDER_FACTORIES: dict[str, ProviderFactory] = {
+_PROVIDER_FACTORIES: dict[
+    str,
+    Callable[[dict[str, Any] | None], OllamaProvider]
+    | Callable[[dict[str, Any]], OpenAIProvider],
+] = {
     "ollama": OllamaProvider.from_config,
     "openai": _openai_from_config,
 }
 
 
-def create_provider(config: dict[str, Any]) -> LLMProvider:
+def create_provider(config: dict[str, Any]) -> OllamaProvider | OpenAIProvider:
     """Create an ``LLMProvider`` selected by the config mapping.
 
     The ``provider`` key of ``config`` names the backend (e.g. ``"ollama"``
@@ -76,16 +78,9 @@ def create_provider(config: dict[str, Any]) -> LLMProvider:
     are passed to the selected provider's factory (``from_config`` classmethod
     or builder function).
 
-    Args:
-        config: Configuration mapping containing at least a ``provider`` key
-            plus the options for that provider.
-
-    Returns:
-        A configured ``LLMProvider`` instance.
-
-    Raises:
-        ValueError: If the ``provider`` key names an unknown or unsupported
-            provider.
+    :param config: Configuration mapping containing at least a ``provider`` key plus the options for that provider.
+    :return: A configured ``LLMProvider`` instance.
+    :raises ValueError: If the ``provider`` key names an unknown or unsupported provider.
     """
     provider_value = config.get("provider", DEFAULT_PROVIDER)
     if provider_value is None:

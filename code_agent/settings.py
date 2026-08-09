@@ -87,7 +87,7 @@ class Settings(BaseSettings):
     ollama_scheme: str = "http"
     ollama_host: str = "localhost"
     ollama_port: int = 11434
-    ollama_model: str = "gpt-oss:20b-cloud"
+    ollama_model: str = "gpt-oss:20b"
 
     # --- OpenAI (optional; falls back to the OPENAI_API_KEY env var) --------
     openai_api_key: str | None = None
@@ -99,7 +99,7 @@ class Settings(BaseSettings):
     max_tokens: int = 6000
     stream: bool = True
 
-    # --- Application behaviour ---------------------------------------------
+    # --- Application behavior ---------------------------------------------
     auth_token: str | None = None
     root_dir: str = "."
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
@@ -109,12 +109,14 @@ class Settings(BaseSettings):
     max_execution_time: int = 5000
 
     @model_validator(mode="after")
-    def _split_combined_ollama_host(self) -> "Settings":
+    def _split_combined_ollama_host(self) -> Settings:
         """Accept Ollama's combined ``host:port`` form in ``ollama_host``.
 
         Ollama's own ``OLLAMA_HOST`` uses ``host:port``.  If ``ollama_host``
         carries a trailing port, split it off so the connection URL is built
         correctly instead of duplicating the port.
+
+        :return: The validated settings.
         """
         host = self.ollama_host
         if host and ":" in host:
@@ -131,10 +133,15 @@ def get_settings() -> Settings:
 
     The result is memoised so the ``.env`` file and environment are read only
     once per process.
+
+    :return: The validated settings.
     """
     return Settings()
 
 
 def as_config_dict() -> dict[str, Any]:
-    """Return the settings as a plain dict for the provider/config layer."""
+    """Return the settings as a plain dict for the provider/config layer.
+
+    :return: The settings as a plain dict.
+    """
     return get_settings().model_dump()

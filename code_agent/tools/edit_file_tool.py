@@ -15,7 +15,12 @@ log = logging.getLogger(__name__)
 
 
 class FileObject(BaseModel):
-    """Artifact representing a file."""
+    """Artifact representing a file.
+
+    :param path: Path to the file.
+    :param contents: Contents of the file.
+    :param status: Status of the file.
+    """
 
     path: Path
     contents: str
@@ -25,7 +30,12 @@ class FileObject(BaseModel):
 
 
 class EditFileArgs(BaseModel):
-    """Arguments for editing a file."""
+    """Arguments for editing a file.
+
+    :param file_path: Path to the file to edit.
+    :param new_content: New content for the file.
+    :param mode: Mode: replace|append|patch.
+    """
 
     file_path: str = Field(..., description="Path to the file to edit")
     new_content: str = Field(..., description="New content for the file")
@@ -33,7 +43,15 @@ class EditFileArgs(BaseModel):
 
 
 class EditFileTool(BaseTool):
-    """Tool for editing existing files."""
+    """Tool for editing existing files.
+
+    :param root_dir: Root directory for file operations.
+    :param args_schema: Pydantic model class for validating and parsing tool input.
+    :param return_direct: Whether to return the tool's output directly.
+    :param verbose: Whether to log tool activity.
+    :param handle_tool_error: Whether to handle errors raised by the tool.
+    :param kwargs: Additional keyword arguments.
+    """
 
     name: str = "edit-file"
     description: str = (
@@ -47,11 +65,20 @@ class EditFileTool(BaseTool):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, root_dir: str | Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs) -> None:
+        """Initialize the tool with a root directory.
+
+        :param root_dir: Root directory for file operations.
+        :param kwargs: Additional keyword arguments.
+        """
         super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _backup_file(self, path: Path) -> str:
-        """Create a backup of the file."""
+        """Create a backup of the file.
+
+        :param path: Path to the file to backup.
+        :return: Status of the backup operation.
+        """
         if not path.exists():
             return "no_backup"
         backup_path = path.with_suffix(path.suffix + ".bak")
@@ -64,13 +91,31 @@ class EditFileTool(BaseTool):
             return "backup_failed"
 
     def _edit_replace(self, path: Path, content: str) -> None:
+        """Edit a file by replacing its content.
+
+        :param path: Path to the file to edit.
+        :param content: New content for the file.
+        """
+        log.info(f"Replacing content of {path}")
         path.write_text(content, encoding="utf-8")
 
     def _edit_append(self, path: Path, content: str) -> None:
+        """Edit a file by appending content to it.
+
+        :param path: Path to the file to edit.
+        :param content: Content to append to the file.
+        """
+        log.info(f"Appending content to {path}")
         original_content = path.read_text(encoding="utf-8")
         path.write_text(original_content + content, encoding="utf-8")
 
     def _edit_patch(self, path: Path, content: str) -> None:
+        """Edit a file by patching content between markers.
+
+        :param path: Path to the file to edit.
+        :param content: Content to insert between markers.
+        """
+        log.info(f"Patching content of {path}")
         original_content = path.read_text(encoding="utf-8")
         start_marker = "<!-- AUTOGEN START -->"
         end_marker = "<!-- AUTOGEN END -->"
@@ -87,6 +132,13 @@ class EditFileTool(BaseTool):
     def _run(
         self, file_path: str, new_content: str, mode: str = "replace"
     ) -> tuple[str, FileObject]:
+        """Edit a file with the specified content using the specified mode.
+
+        :param file_path: Path to the file to edit.
+        :param new_content: New content for the file.
+        :param mode: Mode of editing (replace, append, or patch).
+        :return: Tuple of status message and FileObject.
+        """
         full_path = self.root / file_path
 
         if not full_path.exists():
@@ -125,9 +177,8 @@ class EditFileTool(BaseTool):
                 ),
             )
         except Exception as e:
-            log.error(
-                f"Error during file edit operation for {full_path}: {e}",
-                exc_info=True,
+            log.exception(
+                f"Error during file edit operation for {full_path}: {e}"
             )
             return (
                 f"❌ Error editing file: {e}",

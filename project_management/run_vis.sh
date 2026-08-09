@@ -5,6 +5,15 @@
 set +e
 set -o pipefail
 
+# ensure venv is activated by activating, first check os - if windos: .venv/Scripts/activate
+if [ "$(uname)" == "Darwin" ]; then
+    source .venv/bin/activate
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    source .venv/bin/activate
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    source .venv/Scripts/activated
+fi
+
 echo "Starting code visualization script..."
 # Echo the current working directory
 echo "Current working directory: $(pwd)"

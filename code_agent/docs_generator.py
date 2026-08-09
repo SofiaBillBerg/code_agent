@@ -20,11 +20,9 @@ from .file_generator import write_file
 def _gather_repo_info(root: Path) -> dict[str, list[str]]:
     """Gather information about files in the repository.
 
-    Args:
-        root: Root directory to scan
+    :param root: Root directory to scan
 
-    Returns:
-        Dictionary with lists of file paths by type
+    :return: Dictionary with lists of file paths by type
     """
     py_files = []
     data_files = []
@@ -35,9 +33,9 @@ def _gather_repo_info(root: Path) -> dict[str, list[str]]:
         if p.is_file():
             if p.suffix == ".py":
                 py_files.append(p.relative_to(root).as_posix())
-            elif p.suffix in (".csv", ".tsv", ".json"):
+            elif p.suffix in {".csv", ".tsv", ".json"}:
                 data_files.append(p.relative_to(root).as_posix())
-            elif p.suffix in (".ipynb", ".qmd"):
+            elif p.suffix in {".ipynb", ".qmd"}:
                 notebooks.append(p.relative_to(root).as_posix())
             elif p.parts and "tests" in p.parts:
                 tests.append(p.relative_to(root).as_posix())
@@ -53,11 +51,9 @@ def _gather_repo_info(root: Path) -> dict[str, list[str]]:
 def _render_readme_qmd(info: dict[str, list[str]]) -> str:
     """Generate content for README.qmd.
 
-    Args:
-        info: Dictionary containing file information from _gather_repo_info()
+    :param info: Dictionary containing file information from _gather_repo_info()
 
-    Returns:
-        String containing the README.qmd content
+    :return: String containing the README.qmd content
     """
     lines = [
         "---",
@@ -106,8 +102,10 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         "See `RUN_MISTRAL.qmd` for detailed instructions about running the analysis pipeline.",
         "\n## CodeAgent\n",
         "The `code_agent` package provides commands to create files, preview edits (dry-run), ",
-        "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
-        "details.",
+        (
+            "convert `.py` -> `.ipynb`, and scaffold new projects. Use `python -m code_agent.cli --help` for "
+            "details."
+        ),
     ])
 
     return "\n".join(lines)
@@ -116,8 +114,7 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
 def _render_code_agent_qmd() -> str:
     """Generate content for CODE_AGENT.qmd.
 
-    Returns:
-        String containing the CODE_AGENT.qmd content
+    :return: String containing the CODE_AGENT.qmd content
     """
     return """---
 title: "Code Agent"
@@ -149,11 +146,9 @@ python -m code_agent.cli scaffold ./myproject --name=myproject
 def _render_files_qmd(info: dict[str, list[str]]) -> str:
     """Generate content for FILES.qmd.
 
-    Args:
-        info: Dictionary containing file information from _gather_repo_info()
+    param info: Dictionary containing file information from _gather_repo_info()
 
-    Returns:
-        String containing the FILES.qmd content
+    :return: String containing the FILES.qmd content
     """
     lines = [
         "---",
@@ -174,23 +169,21 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
 
 
 def generate_quarto_docs(
-    output_dir: Path = "docs",
-    overwrite: bool = True,
+    output_dir: Path = Path("docs"),
+    overwrite: bool = False,
     use_llm: bool = False,
     llm: BaseChatModel | None = None,
 ) -> list[str]:
     """Generate a small set of .qmd files in `output_dir`.
 
-    Args:
-        output_dir: Directory to write documentation files
-        overwrite: Whether to overwrite existing files
-        use_llm: Whether to use LLM for enhanced documentation generation
-        llm: Optional LLM instance to use for content generation
+    :param output_dir: Directory to write documentation files
+    :param overwrite: Whether to overwrite existing files
+    :param use_llm: Whether to use LLM for enhanced documentation generation
+    :param llm: Optional LLM instance to use for content generation
 
-    Returns:
-        List of paths to the generated files
+    :return: List of paths to the generated files
     """
-    root = Path(".")
+    root = Path()
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     info = _gather_repo_info(root)
@@ -200,52 +193,51 @@ def generate_quarto_docs(
     readme_q = out / "README.qmd"
     if not overwrite and readme_q.exists():
         print(f"Skipping {readme_q} (already exists and overwrite=False)")
-    else:
-        if use_llm and llm:
-            try:
-                # Build a prompt for the LLM to generate a README
-                prompt = (
-                    "You are an expert technical writer. Create a comprehensive README.qmd "
-                    "for this project. Include sections for: project description, installation, "
-                    "usage, and examples. Format it in Quarto markdown with a YAML header.\n\n"
-                    f"Project files:\n"
-                    f"Python files: {', '.join(info['py_files'][:20])}\n"
-                    f"Data files: {', '.join(info['data_files'][:10])}\n"
-                    f"Notebooks: {', '.join(info['notebooks'][:10])}\n"
+    elif use_llm and llm:
+        try:
+            # Build a prompt for the LLM to generate a README
+            prompt = (
+                "You are an expert technical writer. Create a comprehensive README.qmd "
+                "for this project. Include sections for: project description, installation, "
+                "usage, and examples. Format it in Quarto markdown with a YAML header.\n\n"
+                f"Project files:\n"
+                f"Python files: {', '.join(info['py_files'][:20])}\n"
+                f"Data files: {', '.join(info['data_files'][:10])}\n"
+                f"Notebooks: {', '.join(info['notebooks'][:10])}\n"
+            )
+
+            # Use the provided LLM instance
+            content = llm.invoke(prompt)
+            if hasattr(content, "content"):
+                content = content.content
+
+            # Ensure we have a valid string
+            content = str(content).strip()
+
+            # Ensure it starts with --- for YAML front matter
+            if not content.startswith("---"):
+                content = (
+                    "---\n"
+                    'title: "Project Overview"\n'
+                    "format:\n"
+                    "  markdown_docs:\n"
+                    "    css: docs/styles/custom.css\n"
+                    "---\n\n" + content
                 )
 
-                # Use the provided LLM instance
-                content = llm.invoke(prompt)
-                if hasattr(content, "content"):
-                    content = content.content
+            write_file(readme_q, content)
+            written.append(str(readme_q))
 
-                # Ensure we have a valid string
-                content = str(content).strip()
-
-                # Ensure it starts with --- for YAML front matter
-                if not content.startswith("---"):
-                    content = (
-                        "---\n"
-                        'title: "Project Overview"\n'
-                        "format:\n"
-                        "  markdown_docs:\n"
-                        "    css: docs/styles/custom.css\n"
-                        "---\n\n" + content
-                    )
-
-                write_file(readme_q, content)
-                written.append(str(readme_q))
-
-            except Exception as e:
-                print(f"Error generating README with LLM: {e}")
-                print("Falling back to template-based generation")
-                content = _render_readme_qmd(info)
-                write_file(readme_q, content)
-                written.append(str(readme_q))
-        else:
+        except Exception as e:
+            print(f"Error generating README with LLM: {e}")
+            print("Falling back to template-based generation")
             content = _render_readme_qmd(info)
             write_file(readme_q, content)
             written.append(str(readme_q))
+    else:
+        content = _render_readme_qmd(info)
+        write_file(readme_q, content)
+        written.append(str(readme_q))
 
     # Generate CODE_AGENT.qmd
     code_agent_q = out / "CODE_AGENT.qmd"

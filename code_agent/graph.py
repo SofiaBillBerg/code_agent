@@ -20,17 +20,17 @@ from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
 
-# ---------------------------------------------------------------------------
 # State definition
-# ---------------------------------------------------------------------------
+
+
 class AgentState(TypedDict):
     """The conversational state.
 
     Attributes
-    ----------
-    messages:
-        A sequence of chat messages that represents the conversation
-        history.
+     ----------
+     messages:
+         A sequence of chat messages that represents the conversation
+         history.
     """
 
     messages: list[BaseMessage]
@@ -45,17 +45,10 @@ def call_llm(state: AgentState, model: Runnable) -> AgentState:
     """Invoke the LLM with the full conversation history and return the
     updated state.
 
-    Parameters
-    ----------
-    state:
-        The current state of the graph.
-    model:
-        A tool‑aware LLM instance.
+    :param state: The current state of the graph.
+    :param model: A tool‑aware LLM instance.
 
-    Returns
-    -------
-    AgentState
-        Updated state that contains the new LLM message.
+    :return: The updated AgentState that contains the new LLM message.
     """
     response = model.invoke(state["messages"])
     # Preserve the conversation history
@@ -67,6 +60,10 @@ def should_continue(state: AgentState) -> str:
 
     If the last LLM message contains a tool call, we route to the
     ``action`` node; otherwise we finish the conversation.
+
+    :param state: The current state of the graph.
+
+    :return: The name of the next node.
     """
     last = state["messages"][-1]
     if isinstance(last, AIMessage) and last.tool_calls:
@@ -74,25 +71,16 @@ def should_continue(state: AgentState) -> str:
     return END
 
 
-# ---------------------------------------------------------------------------
 # Graph construction
-# ---------------------------------------------------------------------------
 
 
 def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
     """Build a LangGraph ``StateGraph`` for a tool‑aware agent.
 
-    Parameters
-    ----------
-    llm:
-        The underlying language model.
-    tools:
-        A list of tools that the agent can invoke.
+    :param llm: The underlying language model.
+    :param tools: A list of tools that the agent can invoke.
 
-    Returns
-    -------
-    Runnable
-        The compiled graph ready for execution.
+    :returns: The compiled graph ready for execution.
     """
     # Bind tools to the LLM
     model = llm.bind_tools(tools)
@@ -132,6 +120,9 @@ def graph_factory(config: RunnableConfig) -> Runnable:
     ``RunnableConfig`` argument.  The configuration is expected to
     contain ``configurable`` entries ``llm`` (``BaseChatModel``)
     and ``tools`` (``List[BaseTool]``).
+
+    :param config: The configuration for the graph.
+    :returns: The compiled graph ready for execution.
     """
     cfg = config.get("configurable", {})
     llm: BaseChatModel = cfg["llm"]

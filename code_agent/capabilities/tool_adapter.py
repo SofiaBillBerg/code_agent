@@ -10,6 +10,7 @@ the tool's ``_run`` with the same keyword arguments LangChain would pass.
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 from langchain.tools import BaseTool
@@ -30,6 +31,7 @@ _READ_ONLY_HINTS: tuple[str, ...] = (
 )
 
 
+@dataclass
 class ToolResult(BaseModel):
     """Uniform output model for an adapted tool invocation.
 
@@ -43,12 +45,8 @@ class ToolResult(BaseModel):
 def _kebab_case(name: str) -> str:
     """Normalize a tool name into a kebab-case capability id.
 
-    Args:
-        name: The tool's ``name`` attribute.
-
-    Returns:
-        The name lower-cased with underscores and spaces replaced by
-        hyphens.
+    :param name: The tool's ``name`` attribute.
+    :return: The name lower-cased with underscores and spaces replaced by hyphens.
     """
     return name.strip().lower().replace("_", "-").replace(" ", "-")
 
@@ -60,11 +58,9 @@ def _infer_risk_class(tool: BaseTool) -> str:
     everything else is medium risk. This is a simple heuristic — callers
     may override it with an explicit ``risk_class``.
 
-    Args:
-        tool: The tool to classify.
+    :param tool: The tool to classify.
 
-    Returns:
-        One of the :data:`RiskClass` values.
+    :return: One of the :data:`RiskClass` values.
     """
     lowered = tool.name.lower()
     if any(hint in lowered for hint in _READ_ONLY_HINTS):
@@ -80,14 +76,16 @@ def _make_execute(tool: BaseTool) -> Callable[[BaseModel], BaseModel]:
     the tool's synchronous ``_run`` unchanged, falling back to the public
     ``invoke`` only for tools that do not implement ``_run``.
 
-    Args:
-        tool: The LangChain tool to delegate to.
-
-    Returns:
-        A callable from validated params to a :class:`ToolResult`.
+    :param tool: The LangChain tool to delegate to.
+    :return: A callable from validated params to a :class:`ToolResult`.
     """
 
     def execute(params: BaseModel) -> BaseModel:
+        """Execute the tool with the given parameters.
+
+        :param params: Validated input parameters.
+        :return: A :class:`ToolResult` wrapping the tool's output.
+        """
         tool_args = params.model_dump()
         try:
             output = tool._run(**tool_args)
@@ -109,14 +107,10 @@ def tool_to_capability(
     is the tool's description, and the input model is the tool's
     ``args_schema``.
 
-    Args:
-        tool: The LangChain tool to adapt.
-        risk_class: Optional explicit risk class; when omitted it is inferred
-            from the tool name (read-only hints map to low risk).
+    :param tool: The LangChain tool to adapt.
+    :param risk_class: Optional explicit risk class; when omitted it is inferred from the tool name (read-only hints map to low risk).
 
-    Returns:
-        A capability wrapping ``tool``, ready for registration in a
-        :class:`CapabilityRegistry`.
+    :return: A capability wrapping ``tool``, ready for registration in a :class:`CapabilityRegistry`.
     """
     capability_cls = type(
         "ToolCapability",

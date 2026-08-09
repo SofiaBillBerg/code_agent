@@ -16,19 +16,27 @@ from .edit_file_tool import FileObject
 
 
 class SearchExplainArgs(BaseModel):
-    """Arguments schema for searching and explaining code."""
+    """Arguments schema for searching and explaining code.
+
+    The search query can be a string or a regular expression.
+    """
 
     search_query: str = Field(..., description="Term or regexp to search")
     max_results: int = Field(10, description="Maximum number of hits to return")
 
 
 class SearchExplainTool(BaseTool):
-    """Tool for searching code and generating comprehensive explanations."""
+    """Tool for searching code and generating comprehensive explanations.
+
+    This tool searches for a specific string or pattern in local text files and
+    summarizes the snippets (and their file names). It returns the summary as
+    a string and a FileObject containing the first hit's path.
+    """
 
     name: str = "search-explain"
     description: str = (
         "Search for a specific string or pattern in local text files and "
-        "summarise the snippets (and their file names). Return the summary as "
+        "summarize the snippets (and their file names). Return the summary as "
         "a string and a FileObject containing the first hit's path."
     )
     response_format: Literal["content_and_artifact"] = "content_and_artifact"
@@ -41,39 +49,53 @@ class SearchExplainTool(BaseTool):
 
     def __init__(
         self,
-        root_dir: str | Path,
+        root_dir: Path,
         llm_instance: BaseChatModel,
         max_hits: int = 10,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the SearchExplainTool with the given root directory.
+
+        :param root_dir: The root directory to search in.
+        :param llm_instance: The language model instance to use for summarization.
+        :param max_hits: The maximum number of hits to return.
+        :param kwargs: Additional keyword arguments.
+        :return: None
+        """
         super().__init__(
-            llm=llm_instance,
             root=Path(root_dir).expanduser().resolve(),
+            llm=llm_instance,
             **kwargs,
         )
 
     def _read_ipynb_preview(self, path: Path) -> str:
+        """Read the preview of an IPython notebook file.
+
+        :param path: The path to the IPython notebook file.
+        :return: The preview of the IPython notebook file.
+        """
         try:
             nb = json.loads(path.read_text(encoding="utf-8"))
             cells = nb.get("cells", [])
             texts = []
             for c in cells:
-                if c.get("cell_type") == "markdown":
-                    texts.append("".join(c.get("source", [])))
-                elif c.get("cell_type") == "code":
+                if (
+                    c.get("cell_type") == "markdown"
+                    or c.get("cell_type") == "code"
+                ):
                     texts.append("".join(c.get("source", [])))
             return "\n".join(texts)[:1000]
         except Exception:
             return ""
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """
-        Parameters
-        ----------
-        kwargs : search query
-        Returns
-        -------
-        tuple[str, FileObject]
+        """Run the tool to search for a specific string or pattern in local text files and summarize the snippets (and their file names).
+
+        Return the summary as a string and a FileObject containing the first hit's path.
+
+
+        :param kwargs : search query
+        :return tuple[str, FileObject]
         """
         search_query: str = kwargs.get("search_query", "")
         max_results: int = kwargs.get("max_results", 10)
@@ -96,30 +118,20 @@ class SearchExplainTool(BaseTool):
         file_obj = FileObject(
             path=Path(str(first_hit["file_path"])).resolve(),
             contents="",
-            status="Analysed",
+            status="Analyzed",
         )
 
         return summary, file_obj
 
     def _gather_hits(
         self, search_query: str, pattern: re.Pattern | None, max_results: int
-    ):
-        """
-        Gather all matching files and their snippets from the root directory.
+    ) -> list[dict[str, str]]:
+        """Gather all matching files and their snippets from the root directory.
 
-        Parameters
-        ----------
-        search_query : str
-            The search query to look for in files
-        pattern : re.Pattern | None
-            A compiled regex pattern to search for
-        max_results : int
-            The maximum number of hits to return
-
-        Returns
-        -------
-        list[dict]
-            A list of dictionaries, each containing the file path and snippet
+        :param search_query : The search query to look for in files
+        :param pattern : A compiled regex pattern to search for
+        :param max_results : The maximum number of hits to return
+        :return: A list of dictionaries, each containing the file path and snippet
         """
         hits = []
         for path in self.root.rglob("*"):
@@ -146,18 +158,23 @@ class SearchExplainTool(BaseTool):
         return hits
 
     def _is_candidate_path(self, path: Path) -> bool:
-        """Return True if the path should be considered for searching."""
-        # skip virtualenvs and large folders
+        """Return True if the path should be considered for searching.
+
+        Skip virtualenvs, large folders, and non-files.
+
+        :param path: The path to check.
+        :return: True if the path should be considered for searching.
+        """
         if any(
             part
-            in (
+            in {
                 ".venv",
                 "venv",
                 "node_modules",
                 "packrat",
                 "archive",
                 "output",
-            )
+            }
             for part in path.parts
         ):
             return False
@@ -171,7 +188,11 @@ class SearchExplainTool(BaseTool):
         return True
 
     def _read_file_content(self, path: Path) -> str | None:
-        """Read file content with safe fallback for notebooks and read errors."""
+        """Read file content with safe fallback for notebooks and read errors.
+
+        :param path: The path to the file to read.
+        :return: The file content as a string, or None if there was an error.
+        """
         try:
             if path.suffix == ".ipynb":
                 return self._read_ipynb_preview(path)
@@ -179,7 +200,12 @@ class SearchExplainTool(BaseTool):
         except Exception:
             return None
 
-    def _summarize_hits(self, hits: list[dict]):
+    def _summarize_hits(self, hits: list[dict]) -> tuple[str, dict[Any, Any]]:
+        """Summarize the hits using the LLM.
+
+        :param hits: A list of dictionaries, each containing the file path and snippet
+        :return: A summary of the hits
+        """
         snippets = "\n\n".join(
             f"File: {hit['file_path']}\nSnippet:\n{hit['snippet']}"
             for hit in hits
@@ -202,4 +228,9 @@ class SearchExplainTool(BaseTool):
         return summary, hits[0]
 
     async def _arun(self, **kwargs: Any) -> tuple[str, FileObject]:
+        """Run the tool asynchronously.
+
+        :param kwargs: The arguments to pass to the tool.
+        :return: The result of the tool.
+        """
         return self._run(**kwargs)
