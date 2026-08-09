@@ -521,8 +521,10 @@ def _show_startup_info(root_dir: Path, tools: list[BaseTool]):
 
 
 def _handle_command(
-    user_input: str, conversation_state: dict, tools: list
-) -> tuple[bool, dict[Any, Any]] | tuple[bool, None]:
+    user_input: str,
+    conversation_state: dict[Any, Any] | None,
+    tools: list,
+) -> tuple[bool, dict[Any, Any] | None]:
     """Handle simple chat commands. Returns (continue_session, conversation_state or None).
 
     If a command is handled that should not continue into agent invocation (help, tools, clear),

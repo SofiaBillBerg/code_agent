@@ -48,16 +48,16 @@ def create_file(path: Path, content: str, *, overwrite: bool = False) -> Path:
 
 
 def append_file(root_dir: Path, content: str) -> Path:
-    """Append *content* to *path*.
+    """Append *content* to the file at *root_dir*.
 
     The function opens the file in append mode, writes the content and
     returns the absolute file path.
 
-    :param path: Target file path.
+    :param root_dir: Target file path.
     :param content: Text to append.
     :return: Absolute path of the modified file.
     """
-    path = Path().expanduser().resolve()
+    path = Path(root_dir).expanduser().resolve()
     if not path.exists():
         raise CodeAgentError(f"File {path!s} does not exist - cannot append")
     with path.open("a", encoding="utf-8") as fp:

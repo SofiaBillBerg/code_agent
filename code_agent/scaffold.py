@@ -95,7 +95,7 @@ def _create_files(root_path: Path, project_name: str, overwrite: bool) -> None:
 
 
 def create_project_scaffold(
-    root: str,
+    root: str | Path,
     project_name: str = "project",
     overwrite: bool = False,
 ) -> str:

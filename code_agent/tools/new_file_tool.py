@@ -38,8 +38,10 @@ class NewFileTool(BaseTool):
         "Example: {'tool': 'new-file', 'arguments': {'file_path': 'src/new_module.py', 'content': '# "
         "New Python module\\n'}}"
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = NewFileArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = NewFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
 

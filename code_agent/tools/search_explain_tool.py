@@ -39,8 +39,10 @@ class SearchExplainTool(BaseTool):
         "summarize the snippets (and their file names). Return the summary as "
         "a string and a FileObject containing the first hit's path."
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = SearchExplainArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = SearchExplainArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     llm: BaseChatModel
     root: Path

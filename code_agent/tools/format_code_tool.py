@@ -28,8 +28,10 @@ class FormatCodeTool(BaseTool):
         "Format a source file. For python files, run black and isort if available. "
         "For R files, optionally run styler if available. Returns a FileObject."
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = FormatCodeArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = FormatCodeArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
 

@@ -53,15 +53,23 @@ class OpenAIProvider(ProviderBase):
         """
         if api_key is None:
             api_key = SecretStr(os.environ["OPENAI_API_KEY"])
+        elif isinstance(api_key, str):
+            api_key = SecretStr(api_key)
 
         self.model = model
         self.api_key = api_key
         self.base_url = base_url
+        # ChatOpenAI expects a plain string (or lazy callable), not a SecretStr.
+        client_api_key = (
+            api_key.get_secret_value()
+            if isinstance(api_key, SecretStr)
+            else api_key
+        )
         self._client = ChatOpenAI(
-            model=model, api_key=api_key, base_url=base_url, **kwargs
+            model=model, api_key=client_api_key, base_url=base_url, **kwargs
         )
 
-    def complete(self, messages: list[dict[str, Any]]):
+    def complete(self, messages: list[dict[str, Any]]) -> str:
         """Generate a completion for the given chat ``messages``.
 
         :param messages: Chat history as a list of ``{"role": ..., "content": ...}`` message dicts.
@@ -72,7 +80,10 @@ class OpenAIProvider(ProviderBase):
             response = self._client.invoke(messages)
         except Exception as exc:
             raise RuntimeError(f"OpenAI completion failed: {exc}") from exc
-        return response.content
+        content = response.content
+        if isinstance(content, list):
+            content = "\n".join(str(part) for part in content)
+        return str(content)
 
     def bind_capabilities(self, caps: list[Any]) -> OpenAIProvider:
         """Bind capabilities to the OpenAI provider.

@@ -85,13 +85,17 @@ User query: "{query}"
 
 Valid JSON Response:"""
 
+        content = ""
         try:
             response: AIMessage = self.llm.invoke(prompt)
-            content = (
+            raw = (
                 response.content
                 if hasattr(response, "content")
                 else str(response)
             )
+            if isinstance(raw, list):
+                raw = "\n".join(str(part) for part in raw)
+            content = str(raw)
             logger.debug(f"Raw LLM response for tool selection: {content}")
 
             # Clean the response content

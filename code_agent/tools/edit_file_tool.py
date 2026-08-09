@@ -4,17 +4,19 @@ from __future__ import annotations
 import logging
 import shutil
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 from langchain.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 log = logging.getLogger(__name__)
 
 
-class FileObject(BaseModel):
+@dataclass
+class FileObject:
     """Artifact representing a file.
 
     :param path: Path to the file.
@@ -25,8 +27,6 @@ class FileObject(BaseModel):
     path: Path
     contents: str
     status: str = "success"
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class EditFileArgs(BaseModel):
@@ -58,12 +58,12 @@ class EditFileTool(BaseTool):
         "Edit an existing file by replacing/appending/patching its content. "
         "Returns confirmation message and FileObject artifact."
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = EditFileArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = EditFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, root_dir: Path, **kwargs) -> None:
         """Initialize the tool with a root directory.

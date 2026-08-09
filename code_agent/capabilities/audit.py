@@ -12,14 +12,12 @@ from __future__ import annotations
 import hashlib
 import json
 
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import BaseModel
 
 
-@dataclass
 class Receipt(BaseModel):
     """Immutable record of a single capability invocation.
 

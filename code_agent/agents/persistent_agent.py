@@ -6,6 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+)
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from typing_extensions import Self
@@ -93,17 +99,13 @@ class PersistentAgent:
         :param message: The message to process.
         :return: The response from the agent.
         """
-        if not self.agent:
-            return "❌ Agent not initialized. Please check the configuration."
-
         self.conversation_history.append({"role": "user", "content": message})
 
         try:
             response = self.agent.invoke({
-                "input": message,
-                "chat_history": self.conversation_history,
+                "messages": self._history_to_messages()
             })
-            response_content = response.get("output", str(response))
+            response_content = response["messages"][-1].content
             self.conversation_history.append({
                 "role": "assistant",
                 "content": response_content,
@@ -119,6 +121,23 @@ class PersistentAgent:
             })
             self._save_state()
             return error_msg
+
+    def _history_to_messages(self) -> list[BaseMessage]:
+        """Convert stored conversation history into LangChain messages.
+
+        :return: Chronological list of :class:`BaseMessage` objects.
+        """
+        messages: list[BaseMessage] = []
+        for entry in self.conversation_history:
+            role = entry.get("role")
+            content = entry.get("content", "")
+            if role == "assistant":
+                messages.append(AIMessage(content=content))
+            elif role == "system":
+                messages.append(SystemMessage(content=content))
+            else:
+                messages.append(HumanMessage(content=content))
+        return messages
 
     def reset_conversation(self) -> None:
         """Reset the conversation history.
@@ -150,6 +169,9 @@ def main() -> None:
 
     :return: None
     """
+    from code_agent.agents.base_agent import create_default_tools
+    from code_agent.main import create_llm, load_config
+
     print("\n" + "=" * 50)
     print("=== Code Agent (Persistent) ===")
     print("Type 'exit', 'quit', or 'q' to end the session.")
@@ -157,7 +179,36 @@ def main() -> None:
     print("Type 'help' for more options.")
     print("=" * 50 + "\n")
 
-    # This part needs to be refactored to be called from the main entry point  # For now, it serves as a placeholder.
+    try:
+        cfg = load_config()
+        llm = create_llm(cfg)
+        tools = create_default_tools(llm=llm)
+        agent = get_persistent_agent(llm, tools)
+    except Exception as e:
+        print(f"❌ Failed to initialize agent: {e}")
+        return
+
+    assert agent is not None
+
+    while True:
+        try:
+            user_input = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!")
+            break
+        if user_input.lower() in {"exit", "quit", "q"}:
+            print("Goodbye!")
+            break
+        if user_input.lower() == "clear":
+            agent.reset_conversation()
+            print("Conversation history cleared.")
+            continue
+        if user_input.lower() == "help":
+            print("Commands: exit, quit, q, clear, help")
+            continue
+        if not user_input:
+            continue
+        print(f"Agent: {agent.chat(user_input)}")
 
 
 if __name__ == "__main__":

@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import nbformat
 
 from langchain.tools import BaseTool
+from nbformat import NotebookNode
 from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
@@ -31,8 +32,10 @@ class NotebookTool(BaseTool):
         "append: add a markdown cell with content; replace: replace entire notebook with given "
         "content."
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = NotebookArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = NotebookArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
 
@@ -45,7 +48,7 @@ class NotebookTool(BaseTool):
         :param **kwargs: Additional keyword arguments.
         :return: None
         """
-        super().__init__(Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
         """Creates or edits a Jupyter notebook.
@@ -76,7 +79,9 @@ class NotebookTool(BaseTool):
                         f"❌ Notebook not found: {nb_path}",
                         FileObject(path=nb_path, contents="", status="error"),
                     )
-                nb = nbformat.read(str(nb_path), as_version=4)
+                nb = cast(
+                    NotebookNode, nbformat.read(str(nb_path), as_version=4)
+                )
 
                 nb.cells.append(nbformat.v4.new_markdown_cell(content))
                 nbformat.write(nb, str(nb_path))
@@ -92,7 +97,7 @@ class NotebookTool(BaseTool):
                     nb_obj = nbformat.reads(content, as_version=4)
                     nbformat.write(nb_obj, str(nb_path))
                 except Exception:
-                    nb = nbformat.v4.new_notebook()
+                    nb: NotebookNode = nbformat.v4.new_notebook()
                     nb.cells.append(nbformat.v4.new_markdown_cell(content))
                     nb_path.parent.mkdir(parents=True, exist_ok=True)
                     nbformat.write(nb, str(nb_path))

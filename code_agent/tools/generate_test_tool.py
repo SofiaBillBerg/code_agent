@@ -29,8 +29,10 @@ class GenerateTestTool(BaseTool):
         "Generate a basic pytest test file for a given Python module. "
         "Creates a tests/ directory and a test_<module>.py scaffold."
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = GenerateTestArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = GenerateTestArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
 
@@ -67,15 +69,20 @@ class GenerateTestTool(BaseTool):
         test_file = self.root / tests_dir / f"test_{module_name}.py"
         test_file.parent.mkdir(parents=True, exist_ok=True)
 
-        scaffold = f"""
+        scaffold = f'''
 import pytest
-from {module_name} import *
+
+import {module_name}
 
 
-def test_placeholder():
-    # Replace this placeholder with meaningful tests for `{module_name}`
-    assert True
-"""
+def test_{module_name}_smoke():
+    """Smoke test for ``{module_name}``.
+
+    The generated module imports successfully. Replace this with meaningful
+    tests for the module's public API.
+    """
+    assert {module_name} is not None
+'''
         if test_file.exists():
             return (
                 f"❌ Test file already exists: {test_file}",

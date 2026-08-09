@@ -26,7 +26,7 @@ class GeneralChatTool(BaseTool):
         "Use this tool as a last resort if no other tool is appropriate for the user's query. "
         "It is for general conversation, questions, and answering 'how-to' style inquiries."
     )
-    args_schema: type[BaseModel] = GeneralChatArgs
+    args_schema: type[BaseModel] = GeneralChatArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     llm: BaseChatModel
 

@@ -24,7 +24,7 @@ class ReadFileTool(BaseTool):
         "Use this tool to read the entire content of a file. "
         "Provide a 'file_path' to the file you want to inspect."
     )
-    args_schema: type[BaseModel] = ReadFileArgs
+    args_schema: type[BaseModel] = ReadFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
 

@@ -28,8 +28,10 @@ class LinkerTool(BaseTool):
         "Read and return the full contents of a file. "
         "Returns file contents as string and FileObject artifact."
     )
-    response_format: Literal["content_and_artifact"] = "content_and_artifact"
-    args_schema: type[BaseModel] = LinkerArgs
+    response_format: Literal["content", "content_and_artifact"] = (
+        "content_and_artifact"
+    )
+    args_schema: type[BaseModel] = LinkerArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     root: Path
 

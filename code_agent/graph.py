@@ -10,7 +10,7 @@ with the signature `(RunnableConfig) -> Runnable`.
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import TypedDict, cast
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
@@ -126,7 +126,8 @@ def graph_factory(config: RunnableConfig) -> Runnable:
     """
     cfg = config.get("configurable", {})
     llm: BaseChatModel = cfg["llm"]
-    tools: list[BaseTool] = cfg["tools"]
+    tools = cast(list[BaseTool], cfg["tools"])
+
     return build_graph(llm, tools)
 
 

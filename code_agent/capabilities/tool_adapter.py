@@ -10,7 +10,6 @@ the tool's ``_run`` with the same keyword arguments LangChain would pass.
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import Any
 
 from langchain.tools import BaseTool
@@ -31,7 +30,6 @@ _READ_ONLY_HINTS: tuple[str, ...] = (
 )
 
 
-@dataclass
 class ToolResult(BaseModel):
     """Uniform output model for an adapted tool invocation.
 

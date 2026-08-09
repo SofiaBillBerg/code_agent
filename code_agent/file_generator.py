@@ -82,8 +82,8 @@ def create_from_template(
     :param replace_vars: Optional dict of placeholders to replace.
     :return: The absolute path of the created file.
     """
-    template_path = Path().expanduser().resolve()
-    dest_path = Path().expanduser().resolve()
+    template_path = Path(template_root_dir).expanduser().resolve()
+    dest_path = Path(dest_root_dir).expanduser().resolve()
     if not template_path.is_file():
         raise CodeAgentError(f"Template file {template_path!s} does not exist")
     try:

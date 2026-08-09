@@ -25,7 +25,7 @@ class RScriptTool(BaseTool):
         "Use this tool to execute R code. "
         "Provide the R code as a string. The tool will return the standard output and standard error."
     )
-    args_schema: type[BaseModel] = RScriptArgs
+    args_schema: type[BaseModel] = RScriptArgs  # pyrefly: ignore[bad-override-mutable-attribute]
 
     def _run(self, code: str) -> str:
         """Executes the given R code and returns the output."""
