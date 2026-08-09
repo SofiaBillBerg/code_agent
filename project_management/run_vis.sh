@@ -5,13 +5,21 @@
 set +e
 set -o pipefail
 
-# ensure venv is activated by activating, first check os - if windos: .venv/Scripts/activate
-if [ "$(uname)" == "Darwin" ]; then
-    source .venv/bin/activate
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    source .venv/bin/activate
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    source .venv/Scripts/activated
+# --- 1. Activate Virtual Environment (Robust OS detection) ---
+echo "Activating virtual environment..."
+
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
+    if [ -f ".venv/Scripts/activate" ]; then
+        source .venv/Scripts/activate
+    else
+        echo "✗ Could not find .venv/Scripts/activate"
+    fi
+else
+    if [ -f ".venv/bin/activate" ]; then
+        source .venv/bin/activate
+    else
+        echo "✗ Could not find .venv/bin/activate"
+    fi
 fi
 
 echo "Starting code visualization script..."

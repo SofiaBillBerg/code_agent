@@ -3,13 +3,14 @@
 *.iml
 *.ipr
 .*
+apidocs
 stubs/
 th*
-
+docs/visualizations/*.mmd
 .tmp
 # CMake
 cmake-build-*/
-
+_extensions
 # File-based project format
 *.iws
 

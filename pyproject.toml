@@ -63,6 +63,7 @@ agent-deps = [
 
 dev = [
     "black>=24.3.0",
+    "httpx2>=2.9.1",
     "isort>=5.13.2",
     "pandas-stubs==2.3.2.250926",
     "pytest-mock>=3.14.0",
@@ -224,6 +225,8 @@ profile = "attrs" # This will set the isort profile to "attrs", which will confi
 remove_redundant_aliases = true # This will remove redundant aliases from imports (e.g., `import numpy as np` when `np` is not used in the code).
 skip_glob = [
     "_build",
+    "_extensions",
+    ".*/",
     ".venv",
     "*cache*",
     "node_modules",
@@ -255,6 +258,8 @@ extend-exclude = [
     ".venv",
     "*cache*",
     "node_modules",
+    "_extensions",
+    ".*/",
     "dist",
     "build",
     ".ipynb_checkpoints",
@@ -398,8 +403,14 @@ mode = "default"
 project-includes = ["code_agent/"]
 search-path = ["./stubs", "code_agent/"]
 python-interpreter-path = ".venv/bin/python"
+# pyrefly mis-detects Pydantic v2 models and requires `model_config` as a
+# constructor argument; this only affects FileObject (a @dataclass) here.
+ignore = [{ code = "missing-argument" }]
 project-excludes = [
     "**/.[!/.]*",
+    
+    "_extensions",
+    ".*/",
     "**/tests",
     "**/test*",
     "**/node_modules",
@@ -445,6 +456,9 @@ exclude = [
     "**/build",
     "**/dist",
     ".venv",
+    
+    "_extensions",
+    ".*/",
     "**/*cache*",
     ".*",
     "**/**/node_modules",
@@ -509,6 +523,8 @@ exclude = [
     "code_agent.egg-info",
     "**/*cache*",
     "build",
+    "_extensions",
+    ".*/",
     "aws",
     "requirements.txt",
     "**/*.json",
