@@ -1,4 +1,3 @@
-# settings.py
 """Typed application configuration loaded from environment / ``.env``.
 
 All runtime configuration for the agent is centralised in a single

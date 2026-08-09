@@ -1,4 +1,3 @@
-# tests/test_ui.py
 """Tests for the Code Agent UI layer (``code_agent.ui``).
 
 Covers the rich terminal renderer (:mod:`code_agent.ui.cli_ui`) and the

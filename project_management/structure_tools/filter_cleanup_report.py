@@ -1,6 +1,6 @@
 """
 Filter cleanup_report.json/csv by excluding paths listed in output/archive_candidates.txt
-Writes output/cleanup_report.filtered.csv and output/cleanup_report.filtered.json
+Writes output/cleanup_report.filtered.csv and output/cleanup_report.filtered.json.
 
 Usage (project root):
     python -m tools.filter_cleanup_report
@@ -43,7 +43,7 @@ for r in rows:
     if p_norm in arch:
         continue
     # also skip anything under 'archive/' or '_site/' explicitly
-    if p_norm.startswith("archive\\") or p_norm.startswith("_site\\"):
+    if p_norm.startswith(("archive\\", "_site\\")):
         continue
     filtered.append(r)
 

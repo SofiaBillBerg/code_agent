@@ -1,4 +1,5 @@
-# tools/generate_test_tool.py
+"""Tool to generate tests."""
+
 from __future__ import annotations
 
 from pathlib import Path

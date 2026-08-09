@@ -1,6 +1,4 @@
-"""
-Unit tests for the public helpers in `code_agent.core`.
-"""
+"""Unit tests for the public helpers in `code_agent.core`."""
 
 import textwrap
 
@@ -104,10 +102,10 @@ def tmp_file(tmp_path: Path) -> Path:
 
 def test_write_and_append(tmp_file: Path) -> None:
     write_file(tmp_file, "line1\n")
-    assert tmp_file.read_text() == "line1\n"
+    assert tmp_file.read_text(encoding="utf-8") == "line1\n"
 
     append_file(tmp_file, "line2\n")
-    assert tmp_file.read_text() == "line1\nline2\n"
+    assert tmp_file.read_text(encoding="utf-8") == "line1\nline2\n"
 
 
 def test_convert_py_to_nb(tmp_path: Path) -> None:

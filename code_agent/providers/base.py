@@ -1,4 +1,3 @@
-# providers/base.py
 """Provider-agnostic LLM contract for the OAP-inspired layer.
 
 Defines ``LLMProvider`` (the structural protocol every concrete provider -

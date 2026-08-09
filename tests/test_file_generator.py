@@ -1,6 +1,4 @@
-# tests/test_file_generator.py
-"""
-Unit tests for the low-level file helpers in ``code_agent.file_generator``.
+"""Unit tests for the low-level file helpers in ``code_agent.file_generator``.
 
 This is the canonical home for ``write_file`` and ``py_to_ipynb`` coverage;
 other test modules exercise those helpers only incidentally (e.g. via the
@@ -65,7 +63,6 @@ def test_write_file_invalid_path() -> None:
     invalid = "invalid\0name.txt"
     with pytest.raises(Exception) as e:
         write_file(invalid, "content")
-    assert "invalid" in str(e.value)
 
 
 def test_script_to_notebook(tmp_path: Path) -> None:

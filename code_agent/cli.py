@@ -591,7 +591,7 @@ def _handle_command(
     :param tools: List of available tools.
     :return: Tuple of (continue_session, conversation_state or None)
     """
-    if user_input.lower() in ["exit", "quit", "q"]:
+    if user_input.lower() in {"exit", "quit", "q"}:
         print("\nGoodbye!")
         return False, conversation_state
 

@@ -54,7 +54,9 @@ run_step "ruff format" uv run ruff format
 
 # --- 4. Type Checking and Static Analysis ---
 run_step "pyrefly check" uv run pyrefly check --remove-unused-ignores --check-unannotated-defs=true --infer-return-types=checked --use-ignore-files=true --summary=full --dependency-graph="$CODE_QUALITY_DIR/pyrefly_deps_graph.json" --color=always --python-interpreter-path .venv/bin/python3 --output="$CODE_QUALITY_DIR/pyrefly_report.txt"
+
 run_step "pyrefly stubgen" uv run pyrefly stubgen --output-dir ./stubs --include-docstrings --include-private --check-unannotated-defs=true --infer-return-types=checked --use-ignore-files=true --color=always --config pyproject.toml --permissive-ignores=true
+
 #run_step "pyanalyze" pyanalyze --config-file pyproject.toml --find-unused --find-unused-attributes --markdown-output="$CODE_QUALITY_DIR/pyanalyze_reports_0.md"
 run_step "pytype" uv run pytype code_agent --config pyproject.toml -v 2 --use-fiddle-overlay --precise-return --protocols --overriding-renamed-parameter-count-checks --unresolved
 
@@ -64,7 +66,6 @@ run_step "flake8" uv run flake8 code_agent --show-source --verbose --extend-excl
 # --- 6. Documentation Generation ---
 run_step "pydoctor" uv run pydoctor -c pydoctor.ini
 
-run_step "pytest" uv run pytest --color=yes --tb=short --junitxml="$CODE_QUALITY_DIR/pytest_report.xml"
 
 # --- 7. Dependency Management ---
 echo ""

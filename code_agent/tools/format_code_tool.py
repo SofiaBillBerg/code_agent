@@ -1,4 +1,5 @@
-# tools/format_code_tool.py
+"""Format code tool."""
+
 from __future__ import annotations
 
 from pathlib import Path

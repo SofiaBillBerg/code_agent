@@ -1,4 +1,3 @@
-# tests/test_capabilities.py
 """Tests for the OAP-inspired capability layer.
 
 Covers the capability contract (:mod:`code_agent.capabilities.base`), the

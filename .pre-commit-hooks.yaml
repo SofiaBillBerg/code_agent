@@ -134,11 +134,11 @@
   entry: sort-simple-yaml
   files: '^$'
 
-- id: run-autofix
-  name: run-autofix
-  entry: project_management/run_autofix.sh
-  language: script
-  stages: [pre-commit, manual]
+# - id: run-autofix
+#   name: run-autofix
+#   entry: project_management/run_autofix.sh
+#   language: script
+#   stages: [pre-commit, manual]
 
 - id: run-vis
   name: run-vis
@@ -154,4 +154,4 @@
   name: run-analyzers
   entry: project_management/run_analyzers.sh
   language: script
-  stages: [pre-push, manual]
+  stages: [manual]

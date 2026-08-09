@@ -1,4 +1,5 @@
-# tools/notebook_tool.py
+"""Tool to generate notebooks."""
+
 from __future__ import annotations
 
 from pathlib import Path

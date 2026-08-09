@@ -1,4 +1,3 @@
-# tests/test_graph.py
 """Unit tests for the LangGraph implementation.
 
 The tests build a small graph with a single ``action`` node that
@@ -130,7 +129,7 @@ def test_action_node_generates_tool_message(agent_graph: Any) -> None:
     assert tool_msgs[0].content == "dummy output"
 
 
-def test_action_node_returns_normal_ai_message(agent_graph):
+def test_action_node_returns_normal_ai_message(agent_graph) -> None:
     """If the LLM does not request a tool, the graph should return a normal AIMessage."""
     state = {"messages": [HumanMessage(content="Say hello")]}
 
@@ -142,7 +141,7 @@ def test_action_node_returns_normal_ai_message(agent_graph):
     assert ai_msgs[0].content == "Hello, world!"
 
 
-def test_graph_handles_llm_error(mock_llm, dummy_tool):
+def test_graph_handles_llm_error(mock_llm, dummy_tool) -> None:
     """If the LLM raises an exception, the graph should propagate it."""
     mock_llm.invoke.side_effect = RuntimeError("LLM failure")
     graph = build_graph(llm=mock_llm, tools=[dummy_tool])

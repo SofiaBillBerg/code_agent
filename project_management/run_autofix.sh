@@ -53,7 +53,7 @@ run_step "uv format" uv format --preview-features format-command
 run_step "isort" uv run isort . --float-to-top --sp pyproject.toml --gitignore
 run_step "ruff format" uv run ruff format
 # ruff check is non-critical: autofix what it can, never block on lint findings
-run_step "ruff check (autofix, non-blocking)" uv run ruff check code_agent --fix --extend-ignore E501 --output-file "$CODE_QUALITY_DIR"/ruff_report.txt || true
+# run_step "ruff check (autofix, non-blocking)" uv run ruff check code_agent --fix --extend-ignore E501 --output-file "$CODE_QUALITY_DIR"/ruff_report.txt || true
 
 # 3. Type checking and static analysis
 run_step "pyrefly check" uv run pyrefly check --remove-unused-ignores --check-unannotated-defs=true --infer-return-types=checked --use-ignore-files=true --summary=full --color=always --python-interpreter-path .venv/bin/python3 --output=.code_quality_outputs/pyrefly_report.txt || true

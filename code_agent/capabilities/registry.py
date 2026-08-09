@@ -1,4 +1,3 @@
-# capabilities/registry.py
 """Capability registry: registration, discovery and dispatch.
 
 The :class:`CapabilityRegistry` is the central entry point for invoking

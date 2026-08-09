@@ -1,4 +1,3 @@
-# ui/web.py
 """FastAPI web UI for the capability layer.
 
 Exposes the registered capabilities over HTTP so a browser (or any HTTP

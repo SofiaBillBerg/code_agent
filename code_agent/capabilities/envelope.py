@@ -1,4 +1,3 @@
-# capabilities/envelope.py
 """Invocation envelopes for the capability layer.
 
 These Pydantic v2 models define the request/response contract used to

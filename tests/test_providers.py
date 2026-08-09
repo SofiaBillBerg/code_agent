@@ -1,4 +1,3 @@
-# tests/test_providers.py
 """Tests for the provider-agnostic LLM layer.
 
 Covers the ``LLMProvider`` protocol and ``ProviderBase``

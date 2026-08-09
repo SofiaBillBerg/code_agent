@@ -1,4 +1,3 @@
-# providers/factory.py
 """Provider factory for the OAP-inspired layer.
 
 ``create_provider(config)`` is the single entry point for constructing an

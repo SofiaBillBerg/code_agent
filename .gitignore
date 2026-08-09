@@ -8,6 +8,9 @@ stubs/
 th*
 docs/visualizations/*.mmd
 .tmp
+**/pdf_docs
+mermaid-magic.json
+
 # CMake
 cmake-build-*/
 _extensions
@@ -223,3 +226,4 @@ docs/docs_web/
 mempalace.yaml
 entities.json
 /.tmp/
+pdf_docs/

@@ -17,6 +17,17 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "chromadb>=1.5.9",
+    "httpx2>=2.9.1",
+    "langchain>=1.3.14",
+    "langchain-ollama>=1.1.0",
+    "langchain-openai>=1.4.2",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "requests>=2.34.2",
+    "uvicorn>=0.52.1",
+]
 
 [build-system]
 requires = ["uv-build>=0.11.26,<0.12"]
@@ -32,8 +43,9 @@ dependencies = [
 
 [dependency-groups]
 default-base = [
-  { include-group = "agent-deps" },
-  { include-group = "dev" }
+    { include-group = "agent-deps" },
+    { include-group = "core" },
+    { include-group = "dev" }
   ]
 notebooks=[]
 agent-deps = [
@@ -43,7 +55,6 @@ agent-deps = [
     "click>=8.1.7",
     "gpt4all>=2.2.0",
     "langchain-chroma>=1.0.0",
-    "langchain-community>=0.4.1",
     "langchain-core>=0.2.0",
     "langchain-ollama>=0.1.0",
     "langchain>=1.0.4",
@@ -59,33 +70,38 @@ agent-deps = [
     "nbformat>=5.10.0",
     "jupyterlab-server>=2.28.0",
     "langchain-openai>=1.4.2",
+    "httpx2>=2.9.1",
+    "requests>=2.34.2",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "ollama>=0.6.2",
+    "markdown>=3.10.3",
+    "ipykernel>=7.3.0",
 ]
 
 dev = [
     "black>=24.3.0",
+    "coverage>=7.15.4",
+    "flake8>=7.3.0",
     "httpx2>=2.9.1",
     "isort>=5.13.2",
     "pandas-stubs==2.3.2.250926",
+    "pre-commit>=4.6.1",
+    "pylint>=4.0.6",
+    "pyrefly>=1.2.0",
+    "pytest-cov>=7.1.0",
     "pytest-mock>=3.14.0",
     "pytest>=8.2.0",
     "ruff>=0.4.0",
     "setuptools>=68.0",
     "wheel>=0.45.1",
 ]
-docs = [
-    "mkdocs-autorefs>=0.4.1",
-    "mkdocs-gen-files>=0.5.0",
-    "mkdocs-include-dir-to-nav>=1.0.0",
-    "mkdocs-macros-plugin>=0.7.0",
-    "mkdocs-material>=9.5.2",
-    "mkdocs-section-index>=0.3.1",
-    "mkdocs>=1.5.3",
-    "mkdocstrings-python>=0.24.0",
-    "mkdocstrings>=0.24.0",
-    "quarto>=0.1.0",
-]
+
 core = [
     "pip>=26.2.1",
+]
+docs = [
+    "quarto>=0.1.0",
 ]
 
 # [project.scripts]

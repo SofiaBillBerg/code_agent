@@ -1,4 +1,3 @@
-# providers/ollama.py
 """Ollama LLM provider for the OAP-inspired layer.
 
 Wraps ``langchain_ollama.ChatOllama`` behind the provider-agnostic

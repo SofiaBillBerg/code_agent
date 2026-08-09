@@ -6,7 +6,6 @@ from typing import Any
 
 from code_agent.agents.base_agent import build_agent
 from langchain_core.language_models import BaseChatModel
-from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
     BaseMessage,
@@ -42,7 +41,7 @@ class PersistentAgent:
         :param tools: The tools to use.
         :return: None
         """
-        if self._initialized:
+        if self._initialized:  # type: ignore[has-type]
             return
 
         self.agent: Runnable = build_agent(llm=llm, tools=tools)

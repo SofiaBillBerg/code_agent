@@ -1,4 +1,3 @@
-# capabilities/tool_adapter.py
 """Adapt LangChain ``BaseTool`` instances into :class:`Capability` objects.
 
 The :func:`tool_to_capability` factory wraps an existing LangChain tool so it

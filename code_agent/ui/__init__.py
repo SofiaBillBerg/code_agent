@@ -1,4 +1,3 @@
-# ui/__init__.py
 """UI layer: rich terminal interface for the capability layer.
 
 Exposes the public names of the rich CLI UI - the rendering helpers and the

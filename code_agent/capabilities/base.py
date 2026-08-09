@@ -1,4 +1,3 @@
-# capabilities/base.py
 """Core capability contract for the OAP-inspired layer.
 
 Defines the ``Capability`` protocol (the public interface every capability

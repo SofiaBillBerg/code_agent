@@ -1,6 +1,4 @@
-# tests/test_preview.py
-"""
-Test suite for the *code_agent* agent-construction utilities.
+"""Test suite for the *code_agent* agent-construction utilities.
 
 The focus is on the agent/LLM helpers:
 * :func:`code_agent.agents.base_agent.build_agent` - creates an agent instance.

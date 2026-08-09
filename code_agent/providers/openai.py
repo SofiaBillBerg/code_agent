@@ -1,4 +1,3 @@
-# providers/openai.py
 """OpenAI LLM provider for the OAP-inspired layer.
 
 Wraps ``langchain_openai.ChatOpenAI`` behind the provider-agnostic

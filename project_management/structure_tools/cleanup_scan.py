@@ -1,5 +1,5 @@
 """
-cleanup_scan.py
+cleanup_scan.py.
 
 A lightweight scanner to identify candidate files for archival in the repository.
 It does not delete anything. Instead, it writes a CSV and JSON report to `output/cleanup_report.*`.
@@ -108,7 +108,7 @@ def is_excluded(path: Path) -> bool:
      :param path: Path - Path to file to check for exclusion
      :returns: bool - True if the path should be excluded, False otherwise
     """
-    parts = {p for p in path.parts}
+    parts = set(path.parts)
     if bool(parts & EXCLUDE_DIRS):
         return True
     # Also exclude any explicit paths listed in ARCHIVE_EXCLUDES
@@ -117,10 +117,9 @@ def is_excluded(path: Path) -> bool:
     except Exception:
         rel = str(path)
     # Exact match or prefix match (exclude directories listed)
-    for ex in ARCHIVE_EXCLUDES:
-        if rel == ex or rel.startswith(ex + "\\"):
-            return True
-    return False
+    return any(
+        rel == ex or rel.startswith(ex + "\\") for ex in ARCHIVE_EXCLUDES
+    )
 
 
 def collect_files(root: Path) -> list[Path]:
@@ -284,7 +283,7 @@ def scan() -> tuple[list[dict], dict]:
     }
 
 
-def write_reports(rows: list[dict], extra: dict):
+def write_reports(rows: list[dict], extra: dict) -> None:
     outdir = ROOT / "output"
     outdir.mkdir(exist_ok=True)
     csvp = outdir / "cleanup_report.csv"
@@ -328,7 +327,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    def _add_exclude(s: str):
+    def _add_exclude(s: str) -> None:
         s2 = s.replace("/", "\\").lstrip(".\\/")
         ARCHIVE_EXCLUDES.add(s2)
 

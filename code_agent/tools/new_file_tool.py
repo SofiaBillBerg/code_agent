@@ -1,4 +1,5 @@
-# tools/new_file_tool.py
+"""Tool to generate new files."""
+
 from __future__ import annotations
 
 import logging

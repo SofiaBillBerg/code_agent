@@ -1,4 +1,3 @@
-# ui/cli_ui.py
 """Rich terminal UI for the capability layer.
 
 Renders the capability catalog, drives an interactive invocation session

@@ -52,7 +52,7 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
 
     cfg_file = Path(config_path)
     if cfg_file.is_dir():
-        cfg_file = cfg_file / "llm_config.json"
+        cfg_file /= "llm_config.json"
 
     if not cfg_file.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")

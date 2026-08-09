@@ -21,7 +21,7 @@ class NaturalLanguageTool(BaseTool):
     """
 
     llm: BaseChatModel | None = None
-    tools: list = []  # This will be set later by the agent
+    tools: list = []  # This will be set later by the agent  # ruff: ignore[mutable-class-default]
 
     def _run(self, query: str, **kwargs: Any) -> str:
         """Process a natural language query and delegate to the appropriate tool.

@@ -1,4 +1,5 @@
-# tools/linker_tool.py
+"""Tool to read files."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -42,7 +43,7 @@ class LinkerTool(BaseTool):
         :param kwargs: Additional arguments to pass to the parent class.
         :return: None
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)  # type: ignore[call-arg, arg-type]
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
         """Run the tool.
@@ -72,5 +73,9 @@ class LinkerTool(BaseTool):
             )
 
     async def _arun(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """Async version."""
+        """Async version.
+
+        :param kwargs: The arguments to pass to the tool.
+        :return: The result of the tool.
+        """
         return self._run(**kwargs)

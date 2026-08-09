@@ -1,4 +1,5 @@
-# tools/read_file_tool.py
+"""Tool to read files."""
+
 from __future__ import annotations
 
 from pathlib import Path

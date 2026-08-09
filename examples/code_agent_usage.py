@@ -1,5 +1,5 @@
 """
-Example: Using CodeAgent with LLM Integration
+Example: Using CodeAgent with LLM Integration.
 
 This script demonstrates how to use the enhanced CodeAgent
 with Ollama LLM integration for automated code and documentation generation.
@@ -135,7 +135,7 @@ def example_llm_generation() -> None:
         print("Make sure Ollama is running and the model is available")
 
 
-def example_documentation_generation():
+def example_documentation_generation() -> None:
     """Example 3: Generate documentation."""
     print("\n" + "=" * 60)
     print("Example 3: Documentation Generation")
@@ -160,7 +160,7 @@ def example_documentation_generation():
             print(f"Error generating documentation: {e}")
 
 
-def example_config_loading():
+def example_config_loading() -> None:
     """Example 4: Loading and using configuration."""
     print("\n" + "=" * 60)
     print("Example 4: Configuration Loading")
@@ -187,7 +187,7 @@ def example_config_loading():
         print(f"Error loading configuration: {e}")
 
 
-def example_article_evaluation():
+def example_article_evaluation() -> None:
     """Example 5: Article evaluation pipeline (conceptual)."""
     print("\n" + "=" * 60)
     print("Example 5: Article Evaluation Pipeline (Conceptual)")
@@ -226,7 +226,7 @@ def example_article_evaluation():
     )
 
 
-def main():
+def main() -> None:
     """Run all examples."""
     print("=" * 60)
     print("CodeAgent with LLM Integration - Examples")
