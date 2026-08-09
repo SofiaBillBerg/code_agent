@@ -96,7 +96,7 @@ format:
     fig-cap-location: bottom
     tbl-cap-location: top
     subtitle: "Documentation for The code_agent - an interactive, locally maintained LLM-powered assistant"
-    description: "The code_agent is a local, LLM‑driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
+    description: "The code_agent is a local, LLM-driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
 
   pdf:
     latex-output-dir: pdf_docs

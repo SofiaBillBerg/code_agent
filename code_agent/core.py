@@ -1,12 +1,12 @@
 """Core helper functions for the *code_agent* package.
 
 This module provides a very small public API that is used by the
-command‑line interface, the agent runtime and the test‑suite.  All
+command-line interface, the agent runtime and the test-suite.  All
 functions are intentionally pure - they do not depend on any global
-state - which makes them straightforward to unit‑test.
+state - which makes them straightforward to unit-test.
 
 The helpers are thin wrappers around :mod:`code_agent.file_generator`.
-They expose a slightly more user‑friendly name and a few convenience
+They expose a slightly more user-friendly name and a few convenience
 arguments such as ``overwrite``.
 """
 
@@ -18,7 +18,6 @@ from .exceptions import CodeAgentError
 from .file_generator import create_from_template as _create_from_template
 from .file_generator import py_to_ipynb, write_file
 from .scaffold import create_project_scaffold  # Re-export for public API
-
 
 __all__ = [
     "CodeAgentError",

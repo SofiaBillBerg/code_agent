@@ -14,14 +14,12 @@ available.
 
 from __future__ import annotations
 
-import json
-
 from collections.abc import Iterable
+import json
 from pathlib import Path
 from typing import Any
 
 from .exceptions import CodeAgentError
-
 
 try:  # Optional dependency - used only for the notebook path.
     import nbformat  # type: ignore
@@ -113,13 +111,13 @@ def _generate_ipynb_from_cells(
     The function is intentionally minimal - it creates a single
     code cell per element in ``cells``.  If :mod:`nbformat` is
     available, the notebook is created using the public API; otherwise a
-    hand‑crafted minimal structure is returned.
+    hand-crafted minimal structure is returned.
 
     :param cells: Iterable of cell contents.
     :return: Minimal Jupyter notebook dict.
     """
     if nbformat is None:
-        # Hand‑crafted minimal notebook - sufficient for the tests.
+        # Hand-crafted minimal notebook - sufficient for the tests.
         return {
             "cells": [
                 {
@@ -188,7 +186,7 @@ def py_to_ipynb(py_file: Path, output: Path | None = None) -> Path:
             # nbformat returned a string when used.
             write_file(output, nb_dict)
         else:
-            # hand‑crafted dict.
+            # hand-crafted dict.
             json_text = json.dumps(nb_dict, indent=2)
             write_file(output, json_text)
         return output

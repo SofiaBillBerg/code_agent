@@ -1,11 +1,12 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
-
 from pathlib import Path
 from typing import Any
 
+from code_agent.agents.base_agent import build_agent
 from langchain_core.language_models import BaseChatModel
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
     BaseMessage,
@@ -15,9 +16,6 @@ from langchain_core.messages import (
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from typing_extensions import Self
-
-from code_agent.agents.base_agent import build_agent
-
 
 class PersistentAgent:
     """A persistent agent that maintains state between sessions."""
@@ -151,7 +149,20 @@ class PersistentAgent:
 agent = None
 
 
-def get_persistent_agent(llm, tools: list[Any]) -> Any | None | PersistentAgent:
+def get_persistent_agent(
+    llm: BaseChatModel, tools: list[Any]
+) -> Any | PersistentAgent | None:
+    """
+    Get persistent agent.
+
+    :param llm: Description of llm
+    :param tools: Description of tools
+    :return: Description of return value.
+
+    Example::
+
+        >>> result = get_persistent_agent(llm="example_llm", tools="example_tools")
+    """
     global agent
     if agent is None:
         agent = PersistentAgent(llm=llm, tools=tools)

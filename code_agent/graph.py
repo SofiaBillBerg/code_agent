@@ -1,5 +1,4 @@
-"""
-This module defines the core agent graph using LangGraph.
+"""This module defines the core agent graph using LangGraph.
 The graph orchestrates the flow of conversation, tool use, and memory.
 
 The function `build_graph` is designed for direct use, but a thin
@@ -19,9 +18,7 @@ from langchain_core.tools import BaseTool
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
-
 # State definition
-
 
 class AgentState(TypedDict):
     """The conversational state.
@@ -46,7 +43,7 @@ def call_llm(state: AgentState, model: Runnable) -> AgentState:
     updated state.
 
     :param state: The current state of the graph.
-    :param model: A tool‑aware LLM instance.
+    :param model: A tool-aware LLM instance.
 
     :return: The updated AgentState that contains the new LLM message.
     """
@@ -75,7 +72,7 @@ def should_continue(state: AgentState) -> str:
 
 
 def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
-    """Build a LangGraph ``StateGraph`` for a tool‑aware agent.
+    """Build a LangGraph ``StateGraph`` for a tool-aware agent.
 
     :param llm: The underlying language model.
     :param tools: A list of tools that the agent can invoke.

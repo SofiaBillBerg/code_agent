@@ -9,22 +9,16 @@ the ``rich`` library.
 Every rendering function accepts an injectable
 :class:`rich.console.Console` so tests can capture output; the interactive
 loop accepts an injectable read-line callable for the same reason. Errors
-returned by the registry are rendered inline — raw stack traces are never
+returned by the registry are rendered inline - raw stack traces are never
 leaked to the user.
 """
 
 from __future__ import annotations
 
-import json
-import uuid
-
 from collections.abc import Callable
+import json
 from typing import Any
-
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
+import uuid
 
 from code_agent.capabilities.audit import Receipt
 from code_agent.capabilities.envelope import (
@@ -32,7 +26,10 @@ from code_agent.capabilities.envelope import (
     InvocationResponse,
 )
 from code_agent.capabilities.registry import CapabilityRegistry
-
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
 
 def _risk_style(risk_class: str) -> str:
     """Return a rich style token for a risk class.
@@ -265,8 +262,8 @@ def render_response(
 def render_receipt(receipt: Receipt, console: Console | None = None) -> None:
     """Render an audit receipt (hash-chained) as a rich panel.
 
-    Displays the receipt's linkage fields — ``prev_hash`` and
-    ``receipt_hash`` — so the tamper-evident chain is visible to the user.
+    Displays the receipt's linkage fields - ``prev_hash`` and
+    ``receipt_hash`` - so the tamper-evident chain is visible to the user.
 
     :param receipt: The receipt to display.
     :param console: Output console; defaults to a new :class:`Console`.

@@ -17,7 +17,7 @@ VIS_EXIT=$?
 # --- Aggregate Summary ---
 echo ""
 echo "========================================================"
-echo "  LOCAL CI — AGGREGATE SUMMARY"
+echo "  LOCAL CI - AGGREGATE SUMMARY"
 echo "========================================================"
 echo ""
 
@@ -54,6 +54,6 @@ else
     echo ""
     echo "  You can fix the issues and try again, or push anyway."
     echo "========================================================"
-    # Exit 0 — let the user decide
+    # Exit 0 - let the user decide
     exit 0
 fi

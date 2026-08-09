@@ -9,7 +9,6 @@ from pathlib import Path
 
 from code_agent.scaffold import create_project_scaffold
 
-
 def scaffold(root: Path, name: str = "project", overwrite: bool = False) -> str:
     """Create a scaffold for a new project.
 

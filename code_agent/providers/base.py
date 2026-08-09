@@ -1,8 +1,8 @@
 # providers/base.py
 """Provider-agnostic LLM contract for the OAP-inspired layer.
 
-Defines ``LLMProvider`` (the structural protocol every concrete provider —
-ollama, openai, ... — must satisfy) and ``ProviderBase`` (a convenient ABC
+Defines ``LLMProvider`` (the structural protocol every concrete provider -
+ollama, openai, ... - must satisfy) and ``ProviderBase`` (a convenient ABC
 that implements the protocol's ``bind_capabilities`` default). No concrete
 model backend is referenced here; providers are selected by config via
 ``providers/factory.py``.
@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import Any, Protocol, runtime_checkable
-
 
 @runtime_checkable
 class LLMProvider(Protocol):

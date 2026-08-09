@@ -1,4 +1,4 @@
-"""Command‑line interface for the **code_agent** package.
+"""Command-line interface for the **code_agent** package.
 
 The CLI is intentionally small - it only exposes the most common
 operations that a developer would want when working in a local
@@ -19,7 +19,7 @@ Implementation details
 * Uses **Typer** for argument parsing - it provides a pleasant
   developer experience (automatic ``--help`` generation, type checking
   and rich error messages).
-* All file‑system interactions are delegated to
+* All file-system interactions are delegated to
   :func:`code_agent.file_generator.write_file` and
   :func:`code_agent.file_generator.py_to_ipynb`.
 * ``scaffold`` uses :func:`code_agent.file_generator.create_project_scaffold`.
@@ -28,7 +28,7 @@ Implementation details
   with the default tools adapted via :func:`tool_to_capability`, then
   discover or dispatch through it.
 * ``serve`` selects a provider via :func:`create_provider` from the config
-  and runs a small read‑eval‑print loop against ``provider.complete``.
+  and runs a small read-eval-print loop against ``provider.complete``.
 * Errors are wrapped in :class:`code_agent.exceptions.CodeAgentError` to
 
 The CLI is intentionally **stateless** - it performs the requested
@@ -38,16 +38,12 @@ action and exits.  All heavy lifting is done by the helper functions.
 from __future__ import annotations
 
 import json
+from pathlib import Path
+import shutil
 import subprocess
 import sys
-import uuid
-
-from pathlib import Path
 from typing import Any
-
-import typer
-
-from langchain_core.tools import BaseTool
+import uuid
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
@@ -63,16 +59,18 @@ from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
 from code_agent.providers.factory import create_provider
 from code_agent.scaffold import create_project_scaffold
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.tools import BaseTool
+import typer
 
-
-app = typer.Typer(name="code_agent", help="Local LLM‑driven code assistant")
+app = typer.Typer(name="code_agent", help="Local LLM-driven code assistant")
 
 
 def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
-    """Build a registry populated with the default tool‑adapted capabilities.
+    """Build a registry populated with the default tool-adapted capabilities.
 
     Each default tool that can be constructed without an LLM is wrapped via
-    :func:`tool_to_capability` and registered under its kebab‑cased id. Tools
+    :func:`tool_to_capability` and registered under its kebab-cased id. Tools
     that require an LLM (e.g. ``search-explain``, ``generate-test``) are
     intentionally omitted so ``capabilities`` commands stay stateless and do
     not require a running model backend.
@@ -157,7 +155,7 @@ def capabilities_invoke(
     Builds an :class:`InvocationRequest` for ``capability_id`` with the
     supplied ``params`` (a JSON object), dispatches it through the registry
     and prints the resulting :class:`InvocationResponse` together with the
-    hash‑chained audit :class:`Receipt`. A non‑zero exit code is returned
+    hash-chained audit :class:`Receipt`. A non-zero exit code is returned
     when the dispatch reports an error.
 
     :param capability_id: Stable identifier of the capability to invoke.
@@ -179,6 +177,62 @@ def capabilities_invoke(
     _echo_response(response, receipt)
     if response.status == "error":
         raise typer.Exit(code=1)
+
+
+def _ensure_webapp_built() -> None:
+    """Build the React SPA into ``webapp/dist`` if it is missing.
+
+    ``dist/`` is gitignored, so a fresh checkout ships no built UI until the
+    frontend is compiled. When Node/npm are available we build it lazily so
+    ``code-agent serve --web`` works out of the box. A missing toolchain is
+    non-fatal: the API still serves, just without the static single-page app.
+    """
+    webapp_dir = Path(__file__).resolve().parent / "ui" / "webapp"
+    dist_dir = webapp_dir / "dist"
+    if dist_dir.is_dir():
+        return
+    if not webapp_dir.is_dir():
+        typer.echo(
+            "Note: webapp source not found; serving the API without the web UI.",
+            err=True,
+        )
+        return
+    npm = shutil.which("npm")
+    if npm is None:
+        typer.echo(
+            "Note: webapp/dist not found and npm is not on PATH; serving the "
+            "API without the web UI. Run `npm install && npm run build` in "
+            "code_agent/ui/webapp to build it.",
+            err=True,
+        )
+        return
+    typer.echo(
+        "Building web UI into webapp/dist (npm install && npm run build)..."
+    )
+    try:
+        subprocess.run(
+            [npm, "install"],
+            cwd=str(webapp_dir),
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            [npm, "run", "build"],
+            cwd=str(webapp_dir),
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+    ) as exc:  # pragma: no cover - environment dependent
+        detail = (getattr(exc, "stderr", "") or "").strip() or str(exc)
+        typer.echo(
+            f"Warning: failed to build web UI ({detail}); serving API without it.",
+            err=True,
+        )
 
 
 @app.command(help="Start the LLM provider selected by the config.")
@@ -207,9 +261,9 @@ def serve(
     """Start the provider selected by the config and serve prompts.
 
     Loads the config, constructs the provider via :func:`create_provider`
-    and runs a small read‑eval‑print loop: each line of input is sent to
+    and runs a small read-eval-print loop: each line of input is sent to
     ``provider.complete`` and the completion is printed. Type ``exit``,
-    ``quit`` or ``q`` (or press Ctrl‑C) to end the session.
+    ``quit`` or ``q`` (or press Ctrl-C) to end the session.
 
     With ``--web`` the command instead starts a local HTTP server for the
     web UI (``code_agent.ui.web``): ``GET /capabilities`` lists the
@@ -225,6 +279,7 @@ def serve(
     :return: None
     """
     if web:
+        _ensure_webapp_built()
         import uvicorn
 
         typer.echo(f"Web UI at http://{web_host}:{web_port}")
@@ -259,7 +314,7 @@ def serve(
             break
         try:
             response = provider.complete([{"role": "user", "content": prompt}])
-        except Exception as exc:  # noqa: BLE001 - surfaced to the user
+        except Exception as exc:
             typer.echo(f"Error: {exc}")
             continue
         typer.echo(response)
@@ -279,7 +334,7 @@ def create(
 
     The file is written atomically - a temporary file is written first
     and then renamed to the target path.  If the file already exists
-    and ``overwrite`` is not set, the command exits with a non‑zero
+    and ``overwrite`` is not set, the command exits with a non-zero
     status code.
 
     :param file_path: Path to the file to create.
@@ -303,11 +358,11 @@ def append(
         ..., exists=True, help="Path to the file to modify."
     ),
     content: str = typer.Option(..., help="Text to append to the file."),
-):
+) -> None:
     """Append ``content`` to ``file_path``.
 
     The function opens the file in append mode and writes the supplied
-    content.  File locking is *not* required for the use‑cases
+    content.  File locking is *not* required for the use-cases
     envisioned in this project.
 
     :param file_path: Path to the file to modify.
@@ -490,7 +545,7 @@ def chat(
 
 
 def _setup_agent_and_tools(
-    cfg: dict[str, Any], llm
+    cfg: dict[str, Any], llm: BaseChatModel
 ) -> tuple[Any, list[BaseTool], Path]:
     """Setup the agent and tools for the chat session.
 
@@ -504,7 +559,7 @@ def _setup_agent_and_tools(
     return agent, tools, root_dir
 
 
-def _show_startup_info(root_dir: Path, tools: list[BaseTool]):
+def _show_startup_info(root_dir: Path, tools: list[BaseTool]) -> None:
     """Show startup information for the chat session.
 
     :param root_dir: Root directory for the agent.

@@ -1,4 +1,5 @@
-# tools/__init__.py
+"""Tools for the code_agent package."""
+
 from __future__ import annotations
 
 from .edit_file_tool import EditFileTool
@@ -12,7 +13,6 @@ from .notebook_tool import NotebookTool
 from .r_tool import RScriptTool  # Added RScriptTool
 from .read_file_tool import ReadFileTool
 from .search_explain_tool import SearchExplainTool
-
 
 __all__ = [
     "EditFileTool",

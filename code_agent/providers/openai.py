@@ -10,17 +10,14 @@ from constructor arguments (the API key falls back to the
 
 from __future__ import annotations
 
-import os
-
 from collections.abc import Callable
 from dataclasses import dataclass
+import os
 from typing import Any
 
+from code_agent.providers.base import ProviderBase
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
-
-from code_agent.providers.base import ProviderBase
-
 
 @dataclass
 class OpenAIProvider(ProviderBase):

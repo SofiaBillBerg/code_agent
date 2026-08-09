@@ -6,11 +6,11 @@ All runtime configuration for the agent is centralised in a single
 sourced, in increasing precedence, from:
 
 1. the process environment variables, and
-2. a ``.env`` file at the project root (``OLLAMA_PORT``, ``OPENAI_API_KEY`` …).
+2. a ``.env`` file at the project root (``OLLAMA_PORT``, ``OPENAI_API_KEY`` ...).
 
 Sensible defaults live on the model so the application runs with zero
 configuration, while every value can be overridden per environment without
-touching code. Secrets (e.g. ``OPENAI_API_KEY``) are never hardcoded — they are
+touching code. Secrets (e.g. ``OPENAI_API_KEY``) are never hardcoded - they are
 read from the environment / ``.env`` only, satisfying the project's security
 requirement that provider credentials come from config, not source.
 
@@ -28,7 +28,6 @@ from typing import Any
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

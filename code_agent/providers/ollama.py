@@ -10,14 +10,11 @@ temperature) are read from config, never hardcoded.
 from __future__ import annotations
 
 import json
-
 from pathlib import Path
 from typing import Any
 
-from langchain_ollama import ChatOllama
-
 from code_agent.providers.base import ProviderBase
-
+from langchain_ollama import ChatOllama
 
 class OllamaProvider(ProviderBase):
     """Ollama-backed LLM provider.

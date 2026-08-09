@@ -52,7 +52,7 @@ run_vis_step() {
         echo "  ✓ $label passed"
     else
         local code=$?
-        echo "  ✗ $label failed (exit $code) — continuing..."
+        echo "  ✗ $label failed (exit $code) - continuing..."
         FAILURES+=("$label (exit $code)")
     fi
 }
@@ -82,7 +82,7 @@ while IFS= read -r -d '' file; do
       echo "    ✓ $full_class_name passed"
     else
       failed_classes+=("$full_class_name")
-      echo "    ✗ $full_class_name failed — continuing..."
+      echo "    ✗ $full_class_name failed - continuing..."
     fi
 
 
@@ -98,7 +98,7 @@ for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
     if [ -f "$mermaid_file" ]; then
         echo "  ▶ Formatting $mermaid_file"
         if ! mermaidfmt -w "$mermaid_file"; then
-            echo "    ✗ Formatting failed for $mermaid_file — continuing..."
+            echo "    ✗ Formatting failed for $mermaid_file - continuing..."
             FAILURES+=("Formatting failed for $mermaid_file")
         fi
     fi
@@ -110,7 +110,7 @@ for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
         svg_file="$SVG_DIR/$(basename "$mermaid_file" .mmd).svg"
         echo "  ▶ Converting $mermaid_file to $svg_file"
         if ! mmdc -i "$mermaid_file" -o "$svg_file"; then
-            echo "    ✗ Conversion failed for $mermaid_file — continuing..."
+            echo "    ✗ Conversion failed for $mermaid_file - continuing..."
             FAILURES+=("Conversion failed for $mermaid_file")
         fi
     fi
@@ -127,7 +127,7 @@ while IFS= read -r -d '' file; do
   find "$file" -type f -name "*.md" -print0 ! -path '*/.git/*' ! -path '*/.*/*' ! -path '*/lib/*' ! -path '*/dist/*' ! -path '*/win/*' ! -path '*/node_modules/*' ! -path '.venv/*' ! -path '*/build/*' | while read -r file; do
     echo "  ▶ Formatting $file"
     if ! mermaidfmt -w "$file"; then
-      echo "    ✗ Formatting failed for $file — continuing..."
+      echo "    ✗ Formatting failed for $file - continuing..."
       FAILURES+=("Formatting failed for $file")
     fi
   done

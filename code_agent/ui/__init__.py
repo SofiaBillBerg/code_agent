@@ -1,7 +1,7 @@
 # ui/__init__.py
 """UI layer: rich terminal interface for the capability layer.
 
-Exposes the public names of the rich CLI UI — the rendering helpers and the
+Exposes the public names of the rich CLI UI - the rendering helpers and the
 interactive ``run_cli_ui`` session driver.
 """
 
@@ -15,7 +15,6 @@ from .cli_ui import (
     render_response,
     run_cli_ui,
 )
-
 
 __all__ = [
     "render_catalog",

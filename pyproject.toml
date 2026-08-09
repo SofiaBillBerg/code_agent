@@ -41,7 +41,7 @@ agent-deps = [
     "uvicorn",
     "fastapi",
     "click>=8.1.7",
-    "gpt4all>=2.2.0",             # Added gpt4all
+    "gpt4all>=2.2.0",
     "langchain-chroma>=1.0.0",
     "langchain-community>=0.4.1",
     "langchain-core>=0.2.0",
@@ -145,21 +145,21 @@ extend-fixable = [
     "I",
     "B",
     "E",
-    "W505",
-    "E501",
+    "doc-line-too-long",
+    "line-too-long",
     "PTH",
-    "E501",
+    "line-too-long",
     "D",
 ] # This will allow Ruff to apply fixes for import-related issues.
 ignore = [
-    "E501",
-    "RUF100",
-    "BLE001",
-    "D401",
-    "TD002",
-    "CPY001",
-    "FIX002",
-    "ANN401",
+    "line-too-long",
+    "unused-noqa",
+    "blind-except",
+    "non-imperative-mood",
+    "missing-todo-author",
+    "missing-copyright-notice",
+    "line-contains-todo",
+    "any-type",
 ] # This will ignore the RUF100 error to enable the noga rule for Ruff.
 preview = true
 future-annotations = true
@@ -193,13 +193,13 @@ extend-select = [
 ]
 task-tags = ["TODO", "FIX", "BUG", "CHECK", "CONTROL"]
 extend-ignore = [
-    "FBT002",
-    "FBT001",
-    "PLR0913",
-    "D205",
-    "PLC0415",
-    "PLR0914",
-    "PLR0915",
+    "boolean-default-value-positional-argument",
+    "boolean-type-hint-positional-argument",
+    "too-many-arguments",
+    "missing-blank-line-after-summary",
+    "import-outside-top-level",
+    "too-many-locals",
+    "too-many-statements",
 ]
 
 [tool.ruff.lint.isort]
@@ -271,13 +271,13 @@ fix = true # This will enable Ruff's automatic fixing feature, `--fix` option.
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = [
-    "F401",
-    "F403",
-    "E501",
+    "unused-import",
+    "undefined-local-with-import-star",
+    "line-too-long",
     "T20",
 ] # Ignore unused imports and wildcard imports in Jupyter notebooks.
-"*test*.py" = ["S101", "PLR2004", "ARG", "INP001"]
-"*pyfunc*.py" = ["F401", "UP007", "UP045", "UP006", "E501"]
+"*test*.py" = ["assert", "magic-value-comparison", "ARG", "implicit-namespace-package"]
+"*pyfunc*.py" = ["unused-import", "non-pep604-annotation-union", "non-pep604-annotation-optional", "non-pep585-annotation", "line-too-long"]
 
 
 [tool.black]
@@ -405,7 +405,6 @@ search-path = ["./stubs", "code_agent/"]
 python-interpreter-path = ".venv/bin/python"
 # pyrefly mis-detects Pydantic v2 models and requires `model_config` as a
 # constructor argument; this only affects FileObject (a @dataclass) here.
-ignore = [{ code = "missing-argument" }]
 project-excludes = [
     "**/.[!/.]*",
     
@@ -603,5 +602,5 @@ strict = false
 
 # pyreverse  code_agent -d docs/visualizations  -S -A  -f ALL --colorized  -a 10 --color-palette [#ffe4e1,#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700] -o svg
 
-
 # uv export --format requirements.txt --output-file requirements.txt
+

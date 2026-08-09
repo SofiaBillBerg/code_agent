@@ -44,7 +44,7 @@ from code_agent.capabilities.tool_adapter import (  # noqa: E402
 
 
 try:
-    from langchain.tools import (  # noqa: F401  # type: ignore[import-not-found]
+    from langchain.tools import (  # ruff: ignore[unused-import]  # type: ignore[import-not-found]
         BaseTool,
     )
 except (ImportError, AttributeError):

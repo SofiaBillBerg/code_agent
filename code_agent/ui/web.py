@@ -25,19 +25,16 @@ Security notes:
 
 from __future__ import annotations
 
-import uuid
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+import uuid
 
 from code_agent.capabilities.envelope import InvocationRequest
 from code_agent.capabilities.registry import CapabilityRegistry
-
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"

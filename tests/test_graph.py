@@ -21,6 +21,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from langchain_classic.tools import BaseTool
 from langchain_core.messages import (
     AIMessage,
     BaseMessage,
@@ -31,7 +32,7 @@ from langchain_core.messages import (
 from langchain_core.tools import tool
 
 # Import the graph builder and the factory helper that creates an agent
-# with an in‑memory store.
+# with an in-memory store.
 from code_agent.graph import build_graph
 
 
@@ -45,13 +46,22 @@ def mock_llm() -> MagicMock:
     """Return a MagicMock that mimics a LangChain LLM.
 
     The mock returns a tool call when the prompt contains the word
-    ``"tool"`` (case‑insensitive).  Otherwise, it returns a plain
+    ``"tool"`` (case-insensitive).  Otherwise, it returns a plain
     ``AIMessage``.
+
+    :return: The mock LLM.
     """
     mock = MagicMock()
 
     # type: ignore[override]
     def _invoke(messages: list[BaseMessage]) -> BaseMessage:
+        """Return a tool call if the prompt contains the word ``"tool"``.
+
+        Otherwise, return a plain ``AIMessage``.
+
+        :param messages: The messages to process.
+        :return: The response message.
+        """
         prompt = messages[-1].content
         if "tool" in prompt.lower():
             return AIMessage(
@@ -72,15 +82,23 @@ def dummy_tool():
 
     @tool
     def dummy() -> str:
-        """Does nothing"""
+        """A dummy tool that returns a string.
+
+        :return: A dummy string.
+        """
         return "dummy output"
 
     return dummy
 
 
 @pytest.fixture
-def agent_graph(mock_llm, dummy_tool) -> Any:
-    """Create a CodeAgent wired with the mock LLM and an in‑memory store."""
+def agent_graph(mock_llm: MagicMock, dummy_tool: BaseTool) -> Any:
+    """Create a CodeAgent wired with the mock LLM and an in-memory store.
+
+    :param mock_llm: The mock LLM.
+    :param dummy_tool: The dummy tool.
+    :return: The agent graph.
+    """
     return build_graph(llm=mock_llm, tools=[dummy_tool])
 
 
@@ -89,8 +107,14 @@ def agent_graph(mock_llm, dummy_tool) -> Any:
 # ---------------------------------------------------------------------------
 
 
-def test_action_node_generates_tool_message(agent_graph):
-    """The action node should call the tool and return a ``ToolMessage``."""
+def test_action_node_generates_tool_message(agent_graph: Any) -> None:
+    """The action node should call the tool and return a ``ToolMessage``.
+
+    The graph should return a state with a ``ToolMessage`` in the messages.
+
+    :param agent_graph: The agent graph to test.
+    :return: None
+    """
     # type: ignore[arg-type]
     state = {"messages": [HumanMessage(content="Please call a tool")]}
 

@@ -1,4 +1,4 @@
-"""Top‑level package for *code_agent*."""
+"""Top-level package for *code_agent*."""
 
 from __future__ import annotations
 
@@ -24,7 +24,6 @@ from .providers.base import LLMProvider, ProviderBase
 from .providers.factory import create_provider
 from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
-
 
 # Explicitly expose the public API members
 __all__ = [

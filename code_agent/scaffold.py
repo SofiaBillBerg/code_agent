@@ -1,5 +1,4 @@
-"""
-Simple project scaffold generator for starting new projects from this template.
+"""Simple project scaffold generator for starting new projects from this template.
 Creates a minimal layout: `docs/`, `src/<name>/`, `tests/`, `.GitHub/workflows/`, `requirements.txt`,
 and sample files. Intentionally conservative and idempotent.
 """
@@ -10,7 +9,6 @@ from pathlib import Path
 
 from .exceptions import CodeAgentError
 from .file_generator import write_file
-
 
 DEFAULT_REQUIREMENTS = """# basic runtime requirements
 pandas

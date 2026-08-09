@@ -1,17 +1,15 @@
 # tools/format_code_tool.py
 from __future__ import annotations
 
+from pathlib import Path
 import shutil
 import subprocess
-
-from pathlib import Path
 from typing import Any, Literal
-
-from langchain.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
 
+from langchain.tools import BaseTool
+from pydantic import BaseModel, ConfigDict, Field
 
 class FormatCodeArgs(BaseModel):
     """Args for the format-code tool."""
@@ -37,7 +35,7 @@ class FormatCodeTool(BaseTool):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, root_dir: Path, **kwargs):
+    def __init__(self, root_dir: Path, **kwargs) -> None:
         """Initialize the tool.
 
         :param root_dir: The root directory of the project.

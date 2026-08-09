@@ -2,13 +2,11 @@
 
 import json
 import logging
-
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool
-
 
 logger = logging.getLogger(__name__)
 

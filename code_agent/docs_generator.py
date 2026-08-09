@@ -1,5 +1,4 @@
-"""
-Generate Quarto (.qmd) documentation files from repository structure.
+"""Generate Quarto (.qmd) documentation files from repository structure.
 This inspects files, extracts basic metadata and writes user-friendly .qmd pages
 (README.qmd, CODE_AGENT.qmd, FILES.qmd). Optionally uses an LLM to generate content.
 
@@ -12,10 +11,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from langchain_core.language_models.chat_models import BaseChatModel
-
 from .file_generator import write_file
 
+from langchain_core.language_models.chat_models import BaseChatModel
 
 def _gather_repo_info(root: Path) -> dict[str, list[str]]:
     """Gather information about files in the repository.
@@ -146,7 +144,7 @@ python -m code_agent.cli scaffold ./myproject --name=myproject
 def _render_files_qmd(info: dict[str, list[str]]) -> str:
     """Generate content for FILES.qmd.
 
-    param info: Dictionary containing file information from _gather_repo_info()
+    :param info: Dictionary containing file information from _gather_repo_info()
 
     :return: String containing the FILES.qmd content
     """

@@ -1,10 +1,10 @@
 ---
-title: "Code Agent – Core Components"
+title: "Code Agent - Core Components"
 author: "Sofia Billger Bergström"
 format: html
 ---
 
-# Code Agent – Core Components
+# Code Agent - Core Components
 
 This document explains the main building blocks of the Code Agent.
 

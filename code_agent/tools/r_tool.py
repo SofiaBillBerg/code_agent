@@ -1,15 +1,14 @@
-# tools/r_tool.py
+"""R script execution tool."""
+
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import tempfile
-
-from pathlib import Path
 from typing import Any
 
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
-
 
 class RScriptArgs(BaseModel):
     """Arguments for executing an R script."""

@@ -1,19 +1,18 @@
-# tools/search_explain_tool.py
+"""Search and explain tool for the code_agent package."""
+
 from __future__ import annotations
 
 import json
-import re
-
 from pathlib import Path
+import re
 from typing import Any, Literal
+
+from .edit_file_tool import FileObject
 
 from langchain.tools import BaseTool
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, ConfigDict, Field
-
-from .edit_file_tool import FileObject
-
 
 class SearchExplainArgs(BaseModel):
     """Arguments schema for searching and explaining code.

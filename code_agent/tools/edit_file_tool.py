@@ -1,16 +1,15 @@
-# tools/edit_file_tool.py
+"""Tool for editing existing files."""
+
 from __future__ import annotations
 
-import logging
-import shutil
-
 from dataclasses import dataclass
+import logging
 from pathlib import Path
+import shutil
 from typing import Literal
 
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
-
 
 log = logging.getLogger(__name__)
 
@@ -87,7 +86,7 @@ class EditFileTool(BaseTool):
             log.info(f"Backup created: {backup_path}")
             return "backup_created"
         except Exception as e:
-            log.error(f"Failed to create backup for {path}: {e}", exc_info=True)
+            log.exception(f"Failed to create backup for {path}: {e}")
             return "backup_failed"
 
     def _edit_replace(self, path: Path, content: str) -> None:

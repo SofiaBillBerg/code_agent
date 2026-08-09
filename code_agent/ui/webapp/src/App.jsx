@@ -76,7 +76,7 @@ export default function App() {
             <section>
                 <h2>Capabilities</h2>
                 {capabilities.length === 0 && !loadError ? (
-                    <p>Loading capabilities…</p>
+                    <p>Loading capabilities...</p>
                 ) : (
                     <ul style={{listStyle: "none", padding: 0}}>
                         {capabilities.map((c) => (
@@ -90,7 +90,7 @@ export default function App() {
                                         onChange={() => setSelectedId(c.id)}
                                     />
                                     <strong>{c.id}</strong>
-                                    <span style={{color: "#555"}}>— {c.intent || ""}</span>
+                                    <span style={{color: "#555"}}>- {c.intent || ""}</span>
                                 </label>
                             </li>
                         ))}
@@ -102,7 +102,7 @@ export default function App() {
                 <section>
                     <h2>Invoke: {selected.id}</h2>
                     <p style={{color: "#555"}}>
-                        Risk class: {selected.risk_class ?? "n/a"} · Input schema:{" "}
+                        Risk class: {selected.risk_class ?? "n/a"} . Input schema:{" "}
                         {selected.input_schema ? JSON.stringify(selected.input_schema) : "{}"}
                     </p>
                     <label htmlFor="params">Params (JSON)</label>
@@ -117,7 +117,7 @@ export default function App() {
                     />
                     <br/>
                     <button onClick={invoke} disabled={invoking} style={{marginTop: "0.6rem"}}>
-                        {invoking ? "Invoking…" : "Invoke"}
+                        {invoking ? "Invoking..." : "Invoke"}
                     </button>
                 </section>
             )}

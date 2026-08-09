@@ -13,7 +13,7 @@ cmake-build-*/
 _extensions
 # File-based project format
 *.iws
-
+!.pre-commit*
 # IntelliJ
 out/
 
@@ -36,10 +36,12 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+**/node_modules/
 .Python
 build/
 develop-eggs/
 dist/
+node_modules/
 downloads/
 eggs/
 .eggs/

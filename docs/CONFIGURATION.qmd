@@ -11,11 +11,11 @@ This page provides a comprehensive guide to configuring `code_agent`.
 (`code_agent/settings.py`) built on `pydantic_settings`. Values are resolved in
 the following order of precedence (later methods override earlier ones):
 
-1. **`.env` file** at the project root — the recommended place for your default
+1. **`.env` file** at the project root - the recommended place for your default
    configuration (connection details, model names, secrets).
-2. **Environment Variables** — override `.env` values, especially useful in
+2. **Environment Variables** - override `.env` values, especially useful in
    CI/CD environments or for temporary changes.
-3. **Programmatic Overrides** — pass a dictionary of options when creating the
+3. **Programmatic Overrides** - pass a dictionary of options when creating the
    LLM or agent in Python scripts.
 
 ## `.env` File

@@ -12,11 +12,10 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from langchain.tools import BaseTool
-from pydantic import BaseModel
-
 from .base import CapabilityBase, RiskClass
 
+from langchain.tools import BaseTool
+from pydantic import BaseModel
 
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (
@@ -53,7 +52,7 @@ def _infer_risk_class(tool: BaseTool) -> str:
     """Heuristically assign a risk class to a tool.
 
     Tools whose names contain read-only hints are treated as low risk;
-    everything else is medium risk. This is a simple heuristic — callers
+    everything else is medium risk. This is a simple heuristic - callers
     may override it with an explicit ``risk_class``.
 
     :param tool: The tool to classify.

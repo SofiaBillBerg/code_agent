@@ -10,15 +10,13 @@ and records every invocation as an audit :class:`Receipt`.
 from __future__ import annotations
 
 import time
-
 from typing import Any, Literal
-
-from pydantic import BaseModel, ValidationError
 
 from .audit import AuditLog, Receipt
 from .base import Capability, RiskClass
 from .envelope import InvocationRequest, InvocationResponse
 
+from pydantic import BaseModel, ValidationError
 
 class CapabilityRegistry:
     """Registry of capabilities with discovery and dispatch.
@@ -108,7 +106,7 @@ class CapabilityRegistry:
 
         try:
             result = capability.invoke(params)
-        except Exception as exc:  # noqa: BLE001 - surfaced in the response
+        except Exception as exc:
             return self._finish(
                 request,
                 started,

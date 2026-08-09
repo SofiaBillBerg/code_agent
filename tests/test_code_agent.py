@@ -1,4 +1,4 @@
-"""Minimal test‑suite for the *code_agent* package.
+"""Minimal test-suite for the *code_agent* package.
 
 The tests exercise the public API: the file helpers, the CLI, the
 scaffold generator and a very small dummy agent.  They run under
@@ -145,7 +145,7 @@ def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Tests for the agent factory (LLM‑independent)
+# Tests for the agent factory (LLM-independent)
 # ---------------------------------------------------------------------------
 
 

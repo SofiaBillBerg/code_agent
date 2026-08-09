@@ -1,5 +1,4 @@
-"""
-Main entry point for the Code Agent CLI.
+"""Main entry point for the Code Agent CLI.
 
 This script wires together the LLM, embeddings, vector store, and tool set,
 builds the LangGraph, and runs an interactive loop.
@@ -8,13 +7,17 @@ builds the LangGraph, and runs an interactive loop.
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable, Sequence
 import json
 import logging
-import sys
-
-from collections.abc import Callable, Sequence
 from pathlib import Path
+import sys
 from typing import Any
+
+# Local imports
+from code_agent.agents.base_agent import create_default_tools
+from code_agent.graph import build_graph
+from code_agent.settings import Settings, get_settings
 
 # LangChain imports
 from langchain_chroma import Chroma
@@ -25,12 +28,6 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool  # Added import for BaseTool
-
-# Local imports
-from code_agent.agents.base_agent import create_default_tools
-from code_agent.graph import build_graph
-from code_agent.settings import Settings, get_settings
-
 
 log = logging.getLogger(__name__)
 
@@ -70,9 +67,9 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
 def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     """Create an LLM instance from config, with graceful fallback.
 
-    The function supports an Ollama‑style backend and falls back to a
+    The function supports an Ollama-style backend and falls back to a
     lightweight dummy model that returns an error message when the real
-    LLM cannot be initialised.
+    LLM cannot be initialized.
 
     :param cfg: Either a :class:`~code_agent.settings.Settings` instance or a plain
         configuration dictionary (e.g. from :func:`load_config`).
@@ -111,7 +108,9 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
             _err: Exception
             _base_url: str
 
-            def __init__(self, err: Exception, base_url: str, **kwargs: Any):
+            def __init__(
+                self, err: Exception, base_url: str, **kwargs: Any
+            ) -> None:
                 """Initialise the fallback LLM.
 
                 :param err: The exception that caused the fallback.
@@ -153,7 +152,7 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
 
             @property
             def _llm_type(self) -> str:
-                """Return the type of the LLM.
+                """Access the type of the LLM.
 
                 :return: The type of the LLM.
                 """
@@ -247,7 +246,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         # Build the LangGraph
         app = build_graph(llm, tools)
 
-        # Vector store for retrieval‑augmented generation
+        # Vector store for retrieval-augmented generation
         memory_dir = root_dir / ".code_agent_memory"
         memory_dir.mkdir(exist_ok=True)
 

@@ -4,19 +4,17 @@ Receipts form a tamper-evident chain: each receipt's ``receipt_hash`` is
 computed over the previous receipt's hash plus the current invocation
 details, so altering any entry breaks every subsequent hash in the chain.
 
-This is *our own* OAP-inspired implementation — not a copy of the OAP spec.
+This is *our own* OAP-inspired implementation - not a copy of the OAP spec.
 """
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import hashlib
 import json
-
-from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import BaseModel
-
 
 class Receipt(BaseModel):
     """Immutable record of a single capability invocation.
@@ -107,7 +105,7 @@ class AuditLog:
 
     @property
     def last_hash(self) -> str:
-        """Return the hash of the most recently recorded receipt.
+        """Access the hash of the most recently recorded receipt.
 
         :return: The hash of the most recently recorded receipt.
         """

@@ -32,7 +32,7 @@ run_step() {
         echo "  ✓ $label passed"
     else
         local code=$?
-        echo "  ✗ $label failed (exit $code) — continuing..."
+        echo "  ✗ $label failed (exit $code) - continuing..."
         FAILURES+=("$label (exit $code)")
     fi
 }
@@ -72,9 +72,9 @@ run_step "pydoctor" uv run pydoctor -c pydoctor.ini
 
 # 6. Dependency management
 echo ""
-echo "▶ Locking and exporting dependencies..."
-run_step "uv lock" uv lock
-run_step "uv export" uv export --format requirements.txt --output-file requirements.txt -q
+#echo "▶ Locking and exporting dependencies..."
+#run_step "uv lock" uv lock
+#run_step "uv export" uv export --format requirements.txt --output-file requirements.txt -q
 run_step "pip install -e ." uv pip install -e .
 
 # --- Summary ---
