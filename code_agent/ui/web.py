@@ -1,0 +1,130 @@
+"""FastAPI web UI for the capability layer.
+
+Exposes the registered capabilities over HTTP so a browser (or any HTTP
+client) can list and invoke them:
+
+* ``GET /capabilities`` - lists the capability catalog. The catalog comes
+  from the same registry builder the CLI's ``capabilities list`` command
+  uses, so the web view always matches the CLI view.
+* ``POST /invoke`` - dispatches an :class:`InvocationRequest` through the
+  :class:`CapabilityRegistry` and returns the :class:`InvocationResponse`
+  plus the hash-chained audit :class:`Receipt` as JSON.
+
+The built React single-page app (``webapp/dist``) is mounted statically at
+the root when present, so ``code-agent serve --web`` can host the whole UI
+from a single process.
+
+Security notes:
+
+* Every invocation is validated by the capability's own ``input_model``;
+  invalid params are rejected with HTTP 400 before any tool runs.
+* Requests, params and results are never logged, so secrets and API keys
+  cannot leak through the web server.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+import uuid
+
+from code_agent.capabilities.envelope import InvocationRequest
+from code_agent.capabilities.registry import CapabilityRegistry
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+# Directory of the built React app (created by ``npm run build`` in webapp/).
+_DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
+
+_REGISTRY: CapabilityRegistry | None = None
+
+
+def get_registry() -> CapabilityRegistry:
+    """Return the shared capability registry, building it lazily on first use.
+
+    The registry is built once per process so the audit receipt chain stays
+    continuous across requests. It reuses the CLI's ``_build_registry``
+    helper, guaranteeing ``GET /capabilities`` matches ``capabilities list``.
+
+    :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
+    """
+    global _REGISTRY
+    if _REGISTRY is None:
+        # Imported lazily to avoid a circular import: ``cli.py`` imports
+        # this module inside ``serve --web``, by which time ``cli.py`` has
+        # finished loading and ``_build_registry`` is defined.
+        from code_agent.cli import _build_registry
+
+        _REGISTRY = _build_registry()
+    return _REGISTRY
+
+
+@dataclass
+class InvokeBody(BaseModel):
+    """JSON request body for ``POST /invoke``.
+
+    Attributes:
+        capability_id: Stable identifier of the capability to invoke.
+        params: JSON object of parameters for the capability.
+    """
+
+    capability_id: str
+    params: dict[str, Any] = Field(default_factory=dict)
+
+
+app = FastAPI(
+    title="Code Agent Web UI",
+    description=(
+        "Web interface for the code_agent capability layer: list "
+        "capabilities and invoke them through the audited registry."
+    ),
+    version="0.1.0",
+)
+
+
+@app.get("/capabilities")
+def list_capabilities() -> list[dict[str, Any]]:
+    """Return metadata for every registered capability.
+
+    :return: A JSON list of capability metadata dicts (id, intent, risk_class,
+        input_schema) from the shared registry.
+    """
+    return get_registry().discover()
+
+
+@app.post("/invoke")
+def invoke_capability(body: InvokeBody) -> dict[str, Any]:
+    """Dispatch an invocation and return the response plus audit receipt.
+
+    Args:
+        body: Parsed request body (capability_id and params).
+
+    :return: A JSON object with ``response`` (the :class:`InvocationResponse`)
+        and ``receipt`` (the audit :class:`Receipt`) fields.
+
+    :raises HTTPException: 400 when the capability is unknown, high-risk, or the
+            params fail validation.
+    """
+    request = InvocationRequest(
+        request_id=uuid.uuid4().hex,
+        capability_id=body.capability_id,
+        params=body.params,
+        caller="web",
+    )
+    response, receipt = get_registry().dispatch(request)
+    if response.status == "error":
+        raise HTTPException(status_code=400, detail=response.error)
+    return {
+        "response": response.model_dump(),
+        "receipt": receipt.model_dump(),
+    }
+
+
+# Serve the built React app at the root when it exists. API routes registered
+# above take precedence, so the SPA only handles paths that are not API calls.
+if _DIST_DIR.is_dir():
+    app.mount(
+        "/", StaticFiles(directory=str(_DIST_DIR), html=True), name="webapp"
+    )

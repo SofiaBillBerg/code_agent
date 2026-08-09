@@ -38,14 +38,12 @@ uv pip install -e .[dev]
 
 ## 3. Configuration
 
-Before running the agent, make sure your `code_agent/config/llm_config.json` is set up to use the model you have
-downloaded. For example:
+Before running the agent, copy `.env.example` to `.env` at the project root and
+set `OLLAMA_MODEL` to the model you have downloaded. For example:
 
-```json
-{
-  "ollama_model": "llama3",
-  "temperature": 0.7
-}
+```dotenv
+OLLAMA_MODEL=llama3
+TEMPERATURE=0.7
 ```
 
 ## 4. Basic Usage

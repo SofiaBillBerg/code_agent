@@ -1,6 +1,4 @@
-"""
-This module is reserved for general utility functions.
-"""
+"""This module is reserved for general utility functions."""
 
 from __future__ import annotations
 

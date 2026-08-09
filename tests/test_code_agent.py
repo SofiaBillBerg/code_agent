@@ -1,4 +1,4 @@
-"""Minimal test‑suite for the *code_agent* package.
+"""Minimal test-suite for the *code_agent* package.
 
 The tests exercise the public API: the file helpers, the CLI, the
 scaffold generator and a very small dummy agent.  They run under
@@ -13,10 +13,12 @@ implementation.
 from __future__ import annotations
 
 import json
+
 from pathlib import Path
 from typing import Any
 
 import pytest
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
@@ -26,7 +28,12 @@ from typer.testing import CliRunner
 
 from code_agent.agents.base_agent import build_agent
 from code_agent.cli import app as cli_app
-from code_agent.core import (append_file, create_file, create_from_template, create_project_scaffold, py_to_ipynb, )
+from code_agent.core import (
+    append_file,
+    create_file,
+    create_from_template,
+    create_project_scaffold,
+)
 from code_agent.file_generator import write_file
 from code_agent.main import load_config
 
@@ -41,19 +48,13 @@ def runner() -> CliRunner:
 # ---------------------------------------------------------------------------
 
 
-def test_write_and_read(tmp_path: Path) -> None:
-    p = tmp_path / "hello.txt"
-    write_file(p, "Hello, world!")
-    assert p.read_text(encoding = "utf-8") == "Hello, world!"
-
-
 def test_create_file_overwrite(tmp_path: Path) -> None:
     p = tmp_path / "foo.py"
     create_file(p, "a = 1")
     with pytest.raises(Exception):
         create_file(p, "b = 2")
     # overwrite=True should succeed
-    create_file(p, "b = 2", overwrite = True)
+    create_file(p, "b = 2", overwrite=True)
     assert p.read_text() == "b = 2"
 
 
@@ -68,16 +69,8 @@ def test_create_from_template(tmp_path: Path) -> None:
     template = tmp_path / "template.txt"
     template.write_text("Hello, {name}!")
     dest = tmp_path / "dest.txt"
-    create_from_template(template, dest, replace_vars = {"name": "Alice"})
+    create_from_template(template, dest, replace_vars={"name": "Alice"})
     assert dest.read_text() == "Hello, Alice!"
-
-
-def test_py_to_ipynb(tmp_path: Path) -> None:
-    src = tmp_path / "script.py"
-    src.write_text("# %%\nprint('hello')")
-    nb = py_to_ipynb(src, src.with_suffix(".ipynb"))
-    assert nb.suffix == ".ipynb"
-    assert nb.is_file()
 
 
 def test_create_project_scaffold(tmp_path: Path) -> None:
@@ -97,8 +90,8 @@ def test_create_project_scaffold(tmp_path: Path) -> None:
 def test_cli_create(runner: CliRunner, tmp_path: Path) -> None:
     file_path = tmp_path / "new.txt"
     result = runner.invoke(
-            cli_app, ["create", str(file_path), "--content", "Hello"]
-            )
+        cli_app, ["create", str(file_path), "--content", "Hello"]
+    )
     assert result.exit_code == 0
     assert file_path.read_text() == "Hello"
 
@@ -107,16 +100,16 @@ def test_cli_append(runner: CliRunner, tmp_path: Path) -> None:
     file_path = tmp_path / "out.txt"
     write_file(file_path, "first\n")
     result = runner.invoke(
-            cli_app, ["append", str(file_path), "--content", "second\n"]
-            )
+        cli_app, ["append", str(file_path), "--content", "second\n"]
+    )
     assert result.exit_code == 0
     assert file_path.read_text() == "first\nsecond\n"
 
 
 def test_cli_scaffold(runner: CliRunner, tmp_path: Path) -> None:
     result = runner.invoke(
-            cli_app, ["scaffold", str(tmp_path), "--name", "demo"]
-            )
+        cli_app, ["scaffold", str(tmp_path), "--name", "demo"]
+    )
     assert result.exit_code == 0
     assert (tmp_path / "src" / "demo").exists()
     assert (tmp_path / "tests").exists()
@@ -142,9 +135,7 @@ def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
     (output_dir / "README.qmd").write_text("Test content")
 
     # Run the command
-    result = runner.invoke(
-            cli_app, ["docs", f"--output-dir={str(output_dir)}"]
-            )
+    result = runner.invoke(cli_app, ["docs", f"--output-dir={output_dir!s}"])
 
     # Check results
     assert result.exit_code == 0
@@ -154,22 +145,26 @@ def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Tests for the agent factory (LLM‑independent)
+# Tests for the agent factory (LLM-independent)
 # ---------------------------------------------------------------------------
 
 
 class DummyLLM(BaseChatModel):
     def _generate(
-            self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any, ) -> ChatResult:
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        **kwargs: Any,
+    ) -> ChatResult:
         return ChatResult(
-                generations = [ChatGeneration(
-                        message = AIMessage(content = "Hello from DummyLLM")
-                        )]
-                )
+            generations=[
+                ChatGeneration(message=AIMessage(content="Hello from DummyLLM"))
+            ]
+        )
 
     def bind_tools(
-            self, tools: list[BaseTool], **kwargs: Any
-            ) -> Runnable[Any, BaseMessage]:
+        self, tools: list[BaseTool], **kwargs: Any
+    ) -> Runnable[Any, BaseMessage]:
         return self
 
     @property
@@ -182,15 +177,13 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
     dummy_llm_instance = DummyLLM()
     # No tools needed for this basic test
     agent_runnable = build_agent(dummy_llm_instance, [])
-    assert isinstance(
-            agent_runnable, Runnable
-            ), "build_agent should return a Runnable"
+    assert isinstance(agent_runnable, Runnable), (
+        "build_agent should return a Runnable"
+    )
     assert agent_runnable is not None, "Agent Runnable should not be None"
 
     # Test a basic invocation
-    result = agent_runnable.invoke(
-            {"messages": [HumanMessage(content = "test")]}
-            )
+    result = agent_runnable.invoke({"messages": [HumanMessage(content="test")]})
     final_message = result["messages"][-1]
     assert isinstance(final_message, AIMessage)
     assert final_message.content == "Hello from DummyLLM"

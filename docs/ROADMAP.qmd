@@ -47,7 +47,7 @@ The development of `code-agent` is guided by these principles:
       handling in the chat interface.
     - **Streaming Output**: Ensure that all tool outputs and LLM "thinking" steps are streamed back to the user in
       real-time for better transparency.
-    - **Configuration Wizard**: A command to help users set up their `llm_config.json` for the first time.
+    - **Configuration Wizard**: A command to help users set up their `.env` for the first time.
 
 ## Medium-Term Goals (3-6 Months)
 

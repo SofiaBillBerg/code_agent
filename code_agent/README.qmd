@@ -49,4 +49,4 @@ pytest
 
 ## Configuration
 
-Edit `code_agent/config/llm_config.json` for LLM settings. Default model: `gpt-oss:20b-cloud`
+Edit `.env` at the project root for LLM settings. Default model: `gpt-oss:20b-cloud`

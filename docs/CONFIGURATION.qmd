@@ -7,27 +7,29 @@ This page provides a comprehensive guide to configuring `code_agent`.
 
 ## Configuration Methods
 
-`code_agent` can be configured in three ways, in the following order of precedence (later methods override earlier
-ones):
+`code_agent` is configured through a single typed `Settings` model
+(`code_agent/settings.py`) built on `pydantic_settings`. Values are resolved in
+the following order of precedence (later methods override earlier ones):
 
-1. **Configuration File**: A JSON file (`llm_config.json`) located in `code_agent/config/`. This is the recommended way
-   to set your default configuration.
-2. **Environment Variables**: Overrides settings from the configuration file, especially useful in CI/CD environments or
-   for temporary changes.
-3. **Programmatic Overrides**: You can pass a dictionary of configuration options when creating the LLM or agent in
-   Python scripts.
+1. **`.env` file** at the project root - the recommended place for your default
+   configuration (connection details, model names, secrets).
+2. **Environment Variables** - override `.env` values, especially useful in
+   CI/CD environments or for temporary changes.
+3. **Programmatic Overrides** - pass a dictionary of options when creating the
+   LLM or agent in Python scripts.
 
-## Configuration File
+## `.env` File
 
-The primary configuration file is `code_agent/config/llm_config.json`. Here is an example with commonly used options:
+The primary configuration lives in a `.env` file at the project root (a
+committed `.env.example` documents every available key). Here is an example with
+commonly used options:
 
-```json
-{
-  "ollama_host": "localhost",
-  "ollama_port": 11434,
-  "ollama_model": "llama3",
-  "temperature": 0.7
-}
+```dotenv
+OLLAMA_SCHEME=http
+OLLAMA_HOST=localhost
+OLLAMA_PORT=11434
+OLLAMA_MODEL=llama3
+TEMPERATURE=0.7
 ```
 
 ### Options
@@ -41,18 +43,19 @@ The primary configuration file is `code_agent/config/llm_config.json`. Here is a
 
 ## Environment Variables
 
-You can override any of the options in the configuration file using environment variables. The environment variables are
-named by prefixing the option name with `CODE_AGENT_`.
+You can override any setting using an environment variable with the same name as
+the `Settings` field, upper-cased (no prefix):
 
-* `CODE_AGENT_OLLAMA_HOST`
-* `CODE_AGENT_OLLAMA_PORT`
-* `CODE_AGENT_OLLAMA_MODEL`
-* `CODE_AGENT_TEMPERATURE`
+* `OLLAMA_HOST`
+* `OLLAMA_PORT`
+* `OLLAMA_MODEL`
+* `TEMPERATURE`
+* `OPENAI_API_KEY` (and `OPENAI_MODEL`, `OPENAI_BASE_URL`)
 
-For example, to use a different Ollama model, you could set the following environment variable:
+For example, to use a different Ollama model:
 
 ```bash
-export CODE_AGENT_OLLAMA_MODEL="another-model:latest"
+export OLLAMA_MODEL="another-model:latest"
 ```
 
 ## Programmatic Overrides

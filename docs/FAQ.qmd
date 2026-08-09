@@ -20,9 +20,10 @@ there are no API costs associated with using the agent.
 
 ## 3. Can I use a different local LLM?
 
-**Yes.** The agent is configured via the `code_agent/config/llm_config.json` file. You can change the `ollama_model` to
-any other model you have available in Ollama (e.g., `llama3`, `codellama`, etc.). The `create_llm` function is designed
-to be easily adaptable to other local LLM providers as well.
+**Yes.** The agent is configured via the `.env` file at the project root (see
+`.env.example`). You can change `OLLAMA_MODEL` to any other model you have
+available in Ollama (e.g., `llama3`, `codellama`, etc.). The `create_llm`
+function is designed to be easily adaptable to other local LLM providers as well.
 
 ## 4. What happens if the Ollama server is not running?
 

@@ -34,15 +34,28 @@ def scaffold_root(tmp_path: Path) -> Path:
 
 def _assert_expected_files(root: Path, project_name: str) -> None:
     """Assert that *root* contains the expected scaffold files and directories."""
+    expected_dirs = [
+        "docs",
+        "docs/styles",
+        f"src/{project_name}",
+        "tests",
+        ".github/workflows",
+    ]
 
-    expected_dirs = ["docs", "docs/styles", f"src/{project_name}", "tests", ".github/workflows", ]
-
-    expected_files = ["README.qmd", "requirements.txt", "docs/index.qmd", "tests/test_smoke.py",
-                      f"src/{project_name}/__init__.py", ".github/workflows/ci.yml", ]
+    expected_files = [
+        "README.qmd",
+        "requirements.txt",
+        "docs/index.qmd",
+        "tests/test_smoke.py",
+        f"src/{project_name}/__init__.py",
+        ".github/workflows/ci.yml",
+    ]
 
     for dir_path in expected_dirs:
         full_path = root / dir_path
-        assert (full_path.is_dir()), f"Expected directory {dir_path} to be created"
+        assert full_path.is_dir(), (
+            f"Expected directory {dir_path} to be created"
+        )
 
     for file_path in expected_files:
         full_path = root / file_path
@@ -61,8 +74,8 @@ def test_create_project_scaffold_overwrite(scaffold_root: Path) -> None:
     # Act: create the scaffold with the overwrite flag.
     project_name = "my_project"
     root_str = create_project_scaffold(
-            str(scaffold_root), project_name = project_name, overwrite = True
-            )
+        str(scaffold_root), project_name=project_name, overwrite=True
+    )
     root = Path(root_str)
 
     # Assert: the root is returned as a Path and exists.
@@ -70,7 +83,9 @@ def test_create_project_scaffold_overwrite(scaffold_root: Path) -> None:
     assert root.exists() and root.is_dir(), "Root directory should exist"
 
     # The README should contain the new content.
-    assert ("Generated scaffold" in readme_path.read_text()), "README.qmd content did not match the expected value"
+    assert "Generated scaffold" in readme_path.read_text(), (
+        "README.qmd content did not match the expected value"
+    )
 
     # All the default scaffold files should still be present.
     _assert_expected_files(root, project_name)
@@ -86,8 +101,8 @@ def test_create_project_scaffold_no_overwrite(scaffold_root: Path) -> None:
     project_name = "my_project"
     with pytest.raises(FileExistsError):
         create_project_scaffold(
-                str(scaffold_root), project_name = project_name, overwrite = False
-                )
+            str(scaffold_root), project_name=project_name, overwrite=False
+        )
 
 
 def test_create_project_scaffold_success(scaffold_root: Path) -> None:
@@ -98,8 +113,8 @@ def test_create_project_scaffold_success(scaffold_root: Path) -> None:
     """
     project_name = "my_project"
     root_str = create_project_scaffold(
-            str(scaffold_root), project_name = project_name
-            )
+        str(scaffold_root), project_name=project_name
+    )
     root = Path(root_str)
     assert isinstance(root, Path), "Returned root should be a pathlib.Path"
     assert root.exists() and root.is_dir(), "Root directory should exist"
@@ -119,8 +134,9 @@ def test_create_project_scaffold_invalid_root(scaffold_root: Path) -> None:
 
     with pytest.raises(CodeAgentError):
         create_project_scaffold(
-                str(file_as_root), project_name = "my_project", overwrite = True
-                )
+            str(file_as_root), project_name="my_project", overwrite=True
+        )
+
 
 # ---------------------------------------------------------------------------
 # End of file

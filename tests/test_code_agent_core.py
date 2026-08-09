@@ -1,12 +1,12 @@
-"""
-Unit tests for the public helpers in `code_agent.core`.
-"""
+"""Unit tests for the public helpers in `code_agent.core`."""
 
 import textwrap
+
 from pathlib import Path
 from typing import Any
 
 import pytest
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
@@ -25,16 +25,22 @@ def dummy_llm() -> BaseChatModel:
 
     class DummyLLM(BaseChatModel):
         def _generate(
-                self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any, ) -> ChatResult:
+            self,
+            messages: list[BaseMessage],
+            stop: list[str] | None = None,
+            **kwargs: Any,
+        ) -> ChatResult:
             return ChatResult(
-                    generations = [ChatGeneration(
-                            message = AIMessage(content = "Hello from DummyLLM")
-                            )]
+                generations=[
+                    ChatGeneration(
+                        message=AIMessage(content="Hello from DummyLLM")
                     )
+                ]
+            )
 
         def bind_tools(
-                self, tools: list[BaseTool], **kwargs: Any
-                ) -> Runnable[Any, BaseMessage]:
+            self, tools: list[BaseTool], **kwargs: Any
+        ) -> Runnable[Any, BaseMessage]:
             return self
 
         @property
@@ -46,10 +52,10 @@ def dummy_llm() -> BaseChatModel:
 
 def test_create_and_append(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
     # We need to create an agent to get the root_dir for tools
-    tools = create_default_tools(root_dir = str(tmp_path), llm = dummy_llm)
+    tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
     build_agent(
-            llm = dummy_llm, tools = tools
-            )  # Agent is not directly used here, but its creation sets up the context
+        llm=dummy_llm, tools=tools
+    )  # Agent is not directly used here, but its creation sets up the context
 
     # Test creating a file
     file_path = tmp_path / "hello.md"
@@ -60,15 +66,15 @@ def test_create_and_append(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
     append_file(file_path, "\nMore")
 
     # Verify content
-    content = file_path.read_text(encoding = "utf-8")
+    content = file_path.read_text(encoding="utf-8")
     assert "# Hi" in content
     assert "More" in content
 
 
 def test_templates_and_nb(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
     # Agent creation to ensure context is set up
-    tools = create_default_tools(root_dir = str(tmp_path), llm = dummy_llm)
-    build_agent(llm = dummy_llm, tools = tools)
+    tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
+    build_agent(llm=dummy_llm, tools=tools)
 
     # Test template creation
     template_path = tmp_path / "template.txt"
@@ -76,8 +82,8 @@ def test_templates_and_nb(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
 
     output_path = tmp_path / "output.md"
     result_path = create_from_template(
-            template_path, output_path, replace_vars = {"title": "Test Title"}
-            )
+        template_path, output_path, replace_vars={"title": "Test Title"}
+    )
     assert result_path.exists()
 
     # Test Python to notebook conversion
@@ -96,21 +102,21 @@ def tmp_file(tmp_path: Path) -> Path:
 
 def test_write_and_append(tmp_file: Path) -> None:
     write_file(tmp_file, "line1\n")
-    assert tmp_file.read_text() == "line1\n"
+    assert tmp_file.read_text(encoding="utf-8") == "line1\n"
 
     append_file(tmp_file, "line2\n")
-    assert tmp_file.read_text() == "line1\nline2\n"
+    assert tmp_file.read_text(encoding="utf-8") == "line1\nline2\n"
 
 
 def test_convert_py_to_nb(tmp_path: Path) -> None:
     """The notebook should contain the original code as a code cell."""
     script_path = tmp_path / "script.py"
     script = textwrap.dedent(
-            """
+        """
                     def greet():
                         return "hello"
                     """
-            )
+    )
     script_path.write_text(script)
     notebook_path = py_to_ipynb(script_path, tmp_path / "greet.ipynb")
     assert notebook_path.exists()
@@ -123,7 +129,7 @@ def test_convert_py_to_nb(tmp_path: Path) -> None:
 def test_generate_docs_no_llm(tmp_path: Path) -> None:
     """The docs generator should create a minimal output folder."""
     output_dir = tmp_path / "docs"
-    docs = generate_quarto_docs(output_dir = output_dir, use_llm = False)
+    docs = generate_quarto_docs(output_dir=output_dir, use_llm=False)
     assert output_dir.exists(), "Docs output directory should exist"
     # Basic check: a README.qmd file is produced
     assert len(docs) > 0

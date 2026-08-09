@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-Example: Using CodeAgent with LLM Integration
+Example: Using CodeAgent with LLM Integration.
 
 This script demonstrates how to use the enhanced CodeAgent
 with Ollama LLM integration for automated code and documentation generation.
@@ -8,6 +7,7 @@ with Ollama LLM integration for automated code and documentation generation.
 
 import os
 import sys
+
 from pathlib import Path
 from typing import Any
 
@@ -17,9 +17,15 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 
-from code_agent import (build_agent, create_from_template, create_llm, write_file, )
+from code_agent import (
+    build_agent,
+    create_from_template,
+    create_llm,
+    write_file,
+)
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.main import load_config
+
 
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -27,25 +33,34 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Dummy LLM for examples that don't require a real Ollama server
 class DummyLLM(BaseChatModel):
+    """Dummy LLM that always returns the same message."""
+
     def _generate(
-            self, messages: list[BaseMessage], stop: list[str] | None = None, **kwargs: Any, ) -> ChatResult:
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        """Dummy LLM that always returns the same message."""
         return ChatResult(
-                generations = [ChatGeneration(
-                        message = AIMessage(content = "Hello from DummyLLM")
-                        )]
-                )
+            generations=[
+                ChatGeneration(message=AIMessage(content="Hello from DummyLLM"))
+            ]
+        )
 
     def bind_tools(
-            self, tools: list[BaseTool], **kwargs: Any
-            ) -> Runnable[Any, BaseMessage]:
+        self, tools: list[BaseTool], **kwargs: Any
+    ) -> Runnable[Any, BaseMessage]:
+        """Mock implementation of bind_tools."""
         return self
 
     @property
     def _llm_type(self) -> str:
+        """Return type of llm."""
         return "dummy-chat-model"
 
 
-def example_basic_file_operations():
+def example_basic_file_operations() -> None:
     """Example 1: Basic file operations without LLM."""
     print("\n" + "=" * 60)
     print("Example 1: Basic File Operations")
@@ -57,8 +72,8 @@ def example_basic_file_operations():
         # Create agent with default config
         # We need to create a dummy LLM and tools to build the agent runnable
         llm = DummyLLM()
-        tools = create_default_tools(root_dir = str(tmpdir), llm = llm)
-        build_agent(llm = llm, tools = tools)
+        tools = create_default_tools(root_dir=str(tmpdir), llm=llm)
+        build_agent(llm=llm, tools=tools)
 
         # Change to the temporary directory
         os.chdir(tmpdir)
@@ -70,7 +85,7 @@ def example_basic_file_operations():
 
         # Append to it
         # Note: append_file is a direct utility, not part of the agent_runnable
-        with open(file_path, "a", encoding = "utf-8") as f:
+        with Path(file_path).open("a", encoding="utf-8") as f:
             f.write("\nThis is additional content.")
         print("✓ Appended to file")
 
@@ -83,18 +98,18 @@ def example_basic_file_operations():
         # This part of the example is conceptual for the old agent structure.
         # For LCEL, you'd invoke a tool for preview.
         print(
-                "\nPreview edit functionality would be invoked via a tool in LCEL."
-                )
+            "\nPreview edit functionality would be invoked via a tool in LCEL."
+        )
 
 
-def example_llm_generation():
+def example_llm_generation() -> None:
     """Example 2: Using LLM for content generation."""
     print("\n" + "=" * 60)
     print("Example 2: LLM Content Generation")
     print("=" * 60)
     print(
-            "Note: This example requires a running Ollama server with the 'gpt-oss:20b-cloud' model."
-            )
+        "Note: This example requires a running Ollama server with the 'gpt-oss:20b-cloud' model."
+    )
 
     try:
         cfg = load_config()
@@ -104,19 +119,23 @@ def example_llm_generation():
         # The llm object itself is a Runnable
 
         # Generate content with LLM
-        prompt = ("Write a Python function to calculate the factorial of a number.")
+        prompt = (
+            "Write a Python function to calculate the factorial of a number."
+        )
         print(f"Prompt: {prompt}")
         print("Generating...")
 
         response = llm.invoke(prompt)
-        result = (response.content if hasattr(response, "content") else str(response))
+        result = (
+            response.content if hasattr(response, "content") else str(response)
+        )
         print(f"✓ Generated content (first 200 chars):\n{result[:200]}...")
     except Exception as e:
         print(f"Error generating content: {e}")
         print("Make sure Ollama is running and the model is available")
 
 
-def example_documentation_generation():
+def example_documentation_generation() -> None:
     """Example 3: Generate documentation."""
     print("\n" + "=" * 60)
     print("Example 3: Documentation Generation")
@@ -131,7 +150,9 @@ def example_documentation_generation():
         try:
             # Generate docs
             files = generate_quarto_docs(
-                    output_dir = Path(tmpdir), overwrite = True, )
+                output_dir=Path(tmpdir),
+                overwrite=True,
+            )
             print(f"✓ Generated {len(files)} documentation files:")
             for f in files:
                 print(f"  - {Path(f).name}")
@@ -139,7 +160,7 @@ def example_documentation_generation():
             print(f"Error generating documentation: {e}")
 
 
-def example_config_loading():
+def example_config_loading() -> None:
     """Example 4: Loading and using configuration."""
     print("\n" + "=" * 60)
     print("Example 4: Configuration Loading")
@@ -166,58 +187,60 @@ def example_config_loading():
         print(f"Error loading configuration: {e}")
 
 
-def example_article_evaluation():
+def example_article_evaluation() -> None:
     """Example 5: Article evaluation pipeline (conceptual)."""
     print("\n" + "=" * 60)
     print("Example 5: Article Evaluation Pipeline (Conceptual)")
     print("=" * 60)
 
     print(
-            """
+        """
         The article evaluation pipeline works as follows:
-    
+
         1. Load articles CSV with doc_id, text, summary, etc.
         2. Run PCC analysis to classify articles
         3. Call LLM (via llm_inference.generate_exclusion_reason) to generate reasons
         4. Save results to tmp_batch_results.csv
         5. Merge results back into articles using fill_exclusion_reasons.py
-    
+
         Example commands:
-    
+
             # Run full analysis
             export OLLAMA_MODEL=gemma2:2b
             export USE_LLM=1
             python run_full_analysis.py
-    
+
             # Fill reasons into articles
             python fill_exclusion_reasons.py \\
                 data/articles.csv \\
                 output/tmp_batch_results.csv \\
                 output/articles_with_reasons.csv
-    
+
         Key features:
         - ✓ Automatic doc_id normalization
         - ✓ Retry logic with exponential backoff
         - ✓ Lock files to prevent duplicate processing
         - ✓ Progress logging
         - ✓ Graceful error handling
-            """, )
+            """,
+    )
 
 
-def main():
+def main() -> None:
     """Run all examples."""
     print("=" * 60)
     print("CodeAgent with LLM Integration - Examples")
     print("=" * 60)
     print("\nThese examples demonstrate the enhanced CodeAgent functionality.")
-    print(
-            "Note: LLM examples use simulation mode to avoid requiring Ollama.\n"
-            )
+    print("Note: LLM examples use simulation mode to avoid requiring Ollama.\n")
 
-    examples = [("Basic File Operations", example_basic_file_operations),
-            ("LLM Content Generation", example_llm_generation),
-            ("Documentation Generation", example_documentation_generation),
-            ("Configuration Loading", example_config_loading), ("Article Evaluation", example_article_evaluation), ]
+    examples = [
+        ("Basic File Operations", example_basic_file_operations),
+        ("LLM Content Generation", example_llm_generation),
+        ("Documentation Generation", example_documentation_generation),
+        ("Configuration Loading", example_config_loading),
+        ("Article Evaluation", example_article_evaluation),
+    ]
 
     for i, (name, func) in enumerate(examples, 1):
         try:

@@ -1,25 +1,34 @@
-# ci/run_agent.py
 """Run agent on staged files for CI."""
 
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
-from ..agents.base_agent import build_agent, create_default_tools
-from ..main import create_llm, load_config
-
+from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.main import create_llm, load_config
 
 def get_staged_files() -> list[str]:
-    """Get list of staged files from git."""
+    """Get list of staged files from git.
+
+    :return: List of staged file paths
+    """
     result = subprocess.run(
-            ["git", "diff", "--name-only", "--cached", "--diff-filter=ACM"], capture_output = True, text = True, )
+        ["git", "diff", "--name-only", "--cached", "--diff-filter=ACM"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
     return [f.strip() for f in result.stdout.split("\n") if f.strip()]
 
 
-def main():
-    """Run agent review on staged files."""
+def main() -> None:
+    """Run agent review on staged files.
+
+    This script is intended to be run as part of a CI pipeline.
+    It will review all staged files and save the review to .ci/llm_review.txt.
+    """
     staged = get_staged_files()
 
     if not staged:
@@ -32,8 +41,8 @@ def main():
     cfg = load_config()
     llm = create_llm(cfg)
     root_dir = Path(cfg.get("root_dir", ".")).resolve()
-    tools = create_default_tools(root_dir = str(root_dir), llm = llm)
-    agent = build_agent(llm = llm, tools = tools)
+    tools = create_default_tools(root_dir=str(root_dir), llm=llm)
+    agent = build_agent(llm=llm, tools=tools)
 
     # Create review prompt
     files_list = "\n".join(f"- {f}" for f in staged)
@@ -54,10 +63,14 @@ Provide a comprehensive review."""
 
     # Save review
     review_path = Path(".ci/llm_review.txt")
-    review_path.parent.mkdir(exist_ok = True)
+    review_path.parent.mkdir(exist_ok=True)
 
-    output = (response.get("output", str(response)) if isinstance(response, dict) else str(response))
-    review_path.write_text(output, encoding = "utf-8")
+    output = (
+        response.get("output", str(response))
+        if isinstance(response, dict)
+        else str(response)
+    )
+    review_path.write_text(output, encoding="utf-8")
 
     print(f"Review saved to {review_path}")
 
