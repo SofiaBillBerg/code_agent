@@ -50,8 +50,7 @@ def test_generate_test_tool_executes(sample_py: Path) -> None:
     test_files = list(tests_dir.glob("test_*.py"))
     assert test_files, "No test file was generated"
 
-    # The test file should reference the original function
-    assert "def test_placeholder" in test_files[0].read_text()
+    assert "def test_sample_smoke" in test_files[0].read_text()
 
 
 def test_generate_test_tool_invalid_file(tmp_path: Path) -> None:

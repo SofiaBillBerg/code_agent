@@ -33,7 +33,6 @@ from code_agent.core import (
     create_file,
     create_from_template,
     create_project_scaffold,
-    py_to_ipynb,
 )
 from code_agent.file_generator import write_file
 from code_agent.main import load_config
@@ -47,12 +46,6 @@ def runner() -> CliRunner:
 # ---------------------------------------------------------------------------
 # Tests for the core helpers
 # ---------------------------------------------------------------------------
-
-
-def test_write_and_read(tmp_path: Path) -> None:
-    p = tmp_path / "hello.txt"
-    write_file(p, "Hello, world!")
-    assert p.read_text(encoding="utf-8") == "Hello, world!"
 
 
 def test_create_file_overwrite(tmp_path: Path) -> None:
@@ -78,14 +71,6 @@ def test_create_from_template(tmp_path: Path) -> None:
     dest = tmp_path / "dest.txt"
     create_from_template(template, dest, replace_vars={"name": "Alice"})
     assert dest.read_text() == "Hello, Alice!"
-
-
-def test_py_to_ipynb(tmp_path: Path) -> None:
-    src = tmp_path / "script.py"
-    src.write_text("# %%\nprint('hello')")
-    nb = py_to_ipynb(src, src.with_suffix(".ipynb"))
-    assert nb.suffix == ".ipynb"
-    assert nb.is_file()
 
 
 def test_create_project_scaffold(tmp_path: Path) -> None:

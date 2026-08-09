@@ -309,7 +309,7 @@ def test_create_provider_selects_openai_provider() -> None:
     assert isinstance(provider, OpenAIProvider)
     assert provider.name == "openai"
     assert provider.model == "gpt-4o"
-    assert provider.api_key == "test-key"
+    assert provider.api_key.get_secret_value() == "test-key"
 
 
 def test_create_provider_openai_forwards_config_options() -> None:
@@ -325,7 +325,7 @@ def test_create_provider_openai_forwards_config_options() -> None:
         }),
     )
     assert provider.model == "gpt-4o"
-    assert provider.api_key == "k"
+    assert provider.api_key.get_secret_value() == "k"
     assert provider.base_url == "https://example.test/v1"
 
 
@@ -468,7 +468,7 @@ def test_openai_provider_explicit_api_key_wins_over_environment(
     """An explicit api_key must take precedence over the environment."""
     monkeypatch.setenv("OPENAI_API_KEY", "env-key")
     provider = OpenAIProvider(model="gpt-4o", api_key="explicit")
-    assert provider.api_key == "explicit"
+    assert provider.api_key.get_secret_value() == "explicit"
 
 
 def test_openai_provider_reads_api_key_from_environment(
@@ -477,4 +477,4 @@ def test_openai_provider_reads_api_key_from_environment(
     """Without an api_key, OPENAI_API_KEY must be read from the environment."""
     monkeypatch.setenv("OPENAI_API_KEY", "env-key")
     provider = OpenAIProvider(model="gpt-4o")
-    assert provider.api_key == "env-key"
+    assert provider.api_key.get_secret_value() == "env-key"

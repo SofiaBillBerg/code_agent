@@ -1,13 +1,18 @@
 # tests/test_file_generator.py
 """
 Unit tests for the low‑level file helpers in ``code_agent.file_generator``.
+
+This is the canonical home for ``write_file`` and ``py_to_ipynb`` coverage;
+other test modules exercise those helpers only incidentally (e.g. via the
+CLI or agent integration tests), so the dedicated unit coverage lives here
+to avoid duplication.
 """
 
 from pathlib import Path
 
 import pytest
 
-# Import the helpers from the package
+from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
 
 
@@ -28,6 +33,19 @@ def test_write_text_file_overwrite(tmp_file: Path) -> None:
     write_file(content="first", target=tmp_file)
     write_file(content="second", target=tmp_file, mode="w")
     assert tmp_file.read_text() == "second"
+
+
+def test_write_file_to_directory(tmp_path: Path) -> None:
+    """Attempting to write to a directory should raise ``CodeAgentError``."""
+    with pytest.raises(CodeAgentError, match="Cannot write to a directory"):
+        write_file(tmp_path, "content")
+
+
+def test_write_file_invalid_path() -> None:
+    """Provide an invalid path (e.g. a file name with a null byte)."""
+    invalid = "invalid\0name.txt"
+    with pytest.raises(Exception):  # OSError on linux, ValueError on Windows
+        write_file(invalid, "data")
 
 
 def test_script_to_notebook(tmp_path: Path) -> None:
