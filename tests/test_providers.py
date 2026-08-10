@@ -29,7 +29,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fallback: load the real provider modules without optional langchain deps
 # ---------------------------------------------------------------------------
@@ -74,9 +73,11 @@ def _stub_langchain_module(module_name: str, class_name: str) -> None:
     sys.modules[module_name] = stub
 
 
-def _load_provider_modules() -> tuple[
-    types.ModuleType, types.ModuleType, types.ModuleType, types.ModuleType
-]:
+def _load_provider_modules() -> (
+    tuple[
+        types.ModuleType, types.ModuleType, types.ModuleType, types.ModuleType
+    ]
+):
     """Load the real provider modules without optional langchain packages.
 
     Returns the ``base``, ``factory``, ``ollama`` and ``openai`` modules in
@@ -270,10 +271,12 @@ def test_create_provider_selects_ollama_provider() -> None:
     """An ``ollama`` config must yield an OllamaProvider (no network)."""
     provider = cast(
         Any,
-        _factory_mod.create_provider({
-            "provider": "ollama",
-            "model": "gpt-oss:20b-cloud",
-        }),
+        _factory_mod.create_provider(
+            {
+                "provider": "ollama",
+                "model": "gpt-oss:20b-cloud",
+            }
+        ),
     )
     assert isinstance(provider, OllamaProvider)
     assert provider.name == "ollama"
@@ -288,10 +291,12 @@ def test_create_provider_defaults_to_ollama_when_key_missing() -> None:
 
 def test_create_provider_defaults_to_ollama_when_key_is_none() -> None:
     """A None provider key must also fall back to the default."""
-    provider = _factory_mod.create_provider({
-        "provider": None,
-        "model": "gpt-oss:20b-cloud",
-    })
+    provider = _factory_mod.create_provider(
+        {
+            "provider": None,
+            "model": "gpt-oss:20b-cloud",
+        }
+    )
     assert isinstance(provider, OllamaProvider)
 
 
@@ -299,11 +304,13 @@ def test_create_provider_selects_openai_provider() -> None:
     """An ``openai`` config must yield an OpenAIProvider (no network)."""
     provider = cast(
         Any,
-        _factory_mod.create_provider({
-            "provider": "openai",
-            "model": "gpt-4o",
-            "api_key": "test-key",
-        }),
+        _factory_mod.create_provider(
+            {
+                "provider": "openai",
+                "model": "gpt-4o",
+                "api_key": "test-key",
+            }
+        ),
     )
     assert isinstance(provider, OpenAIProvider)
     assert provider.name == "openai"
@@ -315,13 +322,15 @@ def test_create_provider_openai_forwards_config_options() -> None:
     """Known config keys must be forwarded to the OpenAI adapter."""
     provider = cast(
         Any,
-        _factory_mod.create_provider({
-            "provider": "openai",
-            "model": "gpt-4o",
-            "api_key": "k",
-            "base_url": "https://example.test/v1",
-            "temperature": 0.5,
-        }),
+        _factory_mod.create_provider(
+            {
+                "provider": "openai",
+                "model": "gpt-4o",
+                "api_key": "k",
+                "base_url": "https://example.test/v1",
+                "temperature": 0.5,
+            }
+        ),
     )
     assert provider.model == "gpt-4o"
     assert provider.api_key.get_secret_value() == "k"
@@ -330,10 +339,12 @@ def test_create_provider_openai_forwards_config_options() -> None:
 
 def test_create_provider_normalizes_provider_name() -> None:
     """Provider names must be case- and whitespace-insensitive."""
-    provider = _factory_mod.create_provider({
-        "provider": "  OLLAMA  ",
-        "model": "m",
-    })
+    provider = _factory_mod.create_provider(
+        {
+            "provider": "  OLLAMA  ",
+            "model": "m",
+        }
+    )
     assert isinstance(provider, OllamaProvider)
 
 
@@ -349,10 +360,12 @@ def test_create_provider_dispatches_to_registered_factory(
     monkeypatch.setattr(
         _factory_mod, "_PROVIDER_FACTORIES", {"fake": _fake_provider_factory}
     )
-    provider = _factory_mod.create_provider({
-        "provider": "fake",
-        "name": "stub",
-    })
+    provider = _factory_mod.create_provider(
+        {
+            "provider": "fake",
+            "name": "stub",
+        }
+    )
     assert isinstance(provider, FakeProvider)
     assert provider.name == "stub"
 
@@ -419,12 +432,14 @@ def test_ollama_provider_bind_capabilities_returns_self() -> None:
 
 def test_ollama_provider_from_config_builds_connection_details() -> None:
     """from_config must read the ollama_* keys and build the base URL."""
-    provider = OllamaProvider.from_config({
-        "model": "m",
-        "ollama_scheme": "https",
-        "ollama_host": "server",
-        "ollama_port": 8080,
-    })
+    provider = OllamaProvider.from_config(
+        {
+            "model": "m",
+            "ollama_scheme": "https",
+            "ollama_host": "server",
+            "ollama_port": 8080,
+        }
+    )
     assert provider.model == "m"
     assert provider.base_url == "https://server:8080"
 

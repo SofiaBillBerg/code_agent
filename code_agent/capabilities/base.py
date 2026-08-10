@@ -23,9 +23,9 @@ class RiskClass:
     approval before execution.
     """
 
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
+    LOW: ClassVar[str] = "low"
+    MEDIUM: ClassVar[str] = "medium"
+    HIGH: ClassVar[str] = "high"
 
 
 @runtime_checkable

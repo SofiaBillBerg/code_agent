@@ -4,15 +4,15 @@ This module exposes the public functions :func:`load_config` and
 :func:`create_llm` that the CLI, the agent runtime and the test-suite all
 share.  The interactive chat loop lives in :mod:`code_agent.cli` instead,
 so ``python -m code_agent`` routes there through :mod:`code_agent.__main__`.
-"""  # noqa: E501
+"""  # ruff: noqa: E501
 
 from __future__ import annotations
 
 import json
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
-from collections.abc import Sequence
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
@@ -20,7 +20,6 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic_settings import BaseSettings
 
 from code_agent.settings import Settings, get_settings
-
 
 __all__ = ["create_llm", "load_config"]
 
@@ -43,7 +42,7 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
         ``llm_config.json`` inside.
 
     :returns: Parsed configuration dictionary.
-    """  # noqa: E501
+    """  # ruff: noqa: E501
     if config_path is None:
         return get_settings().model_dump()
 
@@ -83,17 +82,12 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     # an invalid port would otherwise slip through and fail only at request
     # time.  Validate eagerly so bad configs route to the graceful
     # ``_FallbackLLM`` instead of hanging on a connection.
-    port = cfg.get("ollama_port", 11434)
-    try:
-        int(port)
-    except (TypeError, ValueError):
-        raise ValueError(f"Invalid ollama_port: {port!r}")
-
     try:
         from code_agent.providers.ollama import _chat_ollama_from_config
 
         return _chat_ollama_from_config(cfg)
     except Exception as exc:  # pragma: no cover - fallback path
+        port = cfg.get("ollama_port", 11434)
         base_url = (
             f"{cfg.get('ollama_scheme', 'http')}://"
             f"{cfg.get('ollama_host', 'localhost')}:{port}"
@@ -122,14 +116,16 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 run_manager: Any = None,
                 **kwargs: Any,
             ) -> ChatResult:
-                content = json.dumps({
-                    "error": "LLM unavailable",
-                    "details": (
-                        f"Failed to initialise ChatOllama. "
-                        f"Error: {self._err}. "
-                        f"Base URL: {self._base_url}."
-                    ),
-                })
+                content = json.dumps(
+                    {
+                        "error": "LLM unavailable",
+                        "details": (
+                            f"Failed to initialise ChatOllama. "
+                            f"Error: {self._err}. "
+                            f"Base URL: {self._base_url}."
+                        ),
+                    }
+                )
                 return ChatResult(
                     generations=[
                         ChatGeneration(message=AIMessage(content=content))

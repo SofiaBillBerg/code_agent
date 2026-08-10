@@ -26,7 +26,8 @@ class OpenAIProvider(ProviderBase):
     Attributes:
         name: Stable provider identifier, ``"openai"``.
         model: OpenAI model name, e.g. ``"gpt-4o"``.
-        api_key: OpenAI API key, or ``None`` when read from ``OPENAI_API_KEY``.
+        api_key: OpenAI API key as a :class:`pydantic.SecretStr`, or ``None``
+            when read from ``OPENAI_API_KEY``.
         base_url: Optional base URL for the API, e.g. for proxies or
             emulators such as ``"https://api.openai.com/v1"``.
     """
@@ -36,39 +37,44 @@ class OpenAIProvider(ProviderBase):
     def __init__(
         self,
         model: str,
-        api_key: SecretStr | Callable[[], str] | None = None,
+        api_key: str | Callable[[], str] | None = None,
         base_url: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the OpenAI provider.
 
         :param model: OpenAI model name to use for completions.
-        :param api_key: OpenAI API key. When ``None`` it is read from the  ``OPENAI_API_KEY`` environment variable.
-        :param base_url: Optional base URL for the API, e.g. when using a proxy or service emulator.
-        :param **kwargs: Extra options forwarded to ``ChatOpenAI``, e.g. ``temperature``, ``max_tokens``, ``stream``.
+        :param api_key: OpenAI API key. When ``None`` it is read from the
+            ``OPENAI_API_KEY`` environment variable.
+        :param base_url: Optional base URL for the API, e.g. when using a
+            proxy or service emulator.
+        :param **kwargs: Extra options forwarded to ``ChatOpenAI``, e.g.
+            ``temperature``, ``max_tokens``, ``stream``.
         :return: The initialized provider.
         """
         if api_key is None:
-            api_key = os.getenv("OPENAI_API_KEY", "")
+            api_key = os.environ.get("OPENAI_API_KEY")
             if api_key is None:
                 raise ValueError(
                     "OpenAI API key is required. Set CODE_AGENT_OPENAI_API_KEY "
                     "in .env or pass api_key explicitly."
                 )
-        elif isinstance(api_key, str):
-            api_key = SecretStr(api_key)
+
+        # Store as SecretStr so the key never leaks via repr/logging.
+        self.api_key = (
+            SecretStr(api_key) if isinstance(api_key, str) else api_key
+        )
 
         self.model = model
-        self.api_key = api_key
         self.base_url = base_url
-        # ChatOpenAI expects a plain string (or lazy callable), not a SecretStr.
-        client_api_key = (
-            api_key.get_secret_value()
-            if isinstance(api_key, SecretStr)
-            else api_key
-        )
+
+        # ChatOpenAI accepts SecretStr directly; pass it through so the
+        # underlying SDK handles redaction without extra conversion.
         self._client = ChatOpenAI(
-            model=model, api_key=client_api_key, base_url=base_url, **kwargs
+            model=model,
+            api_key=self.api_key,
+            base_url=base_url,
+            **kwargs,
         )
 
     def complete(self, messages: list[dict[str, Any]]) -> str:

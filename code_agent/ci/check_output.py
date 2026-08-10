@@ -7,7 +7,6 @@ import sys
 
 from pathlib import Path
 
-
 REVIEW_PATH = Path(".ci/llm_review.txt")
 
 if not REVIEW_PATH.exists():

@@ -49,6 +49,12 @@ from typing import Any
 import typer
 
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+)
 from langchain_core.tools import BaseTool
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
@@ -66,6 +72,23 @@ from code_agent.main import create_llm, load_config
 from code_agent.providers.factory import create_provider
 from code_agent.scaffold import create_project_scaffold
 
+# Module-level Typer argument/option definitions to avoid
+# "function-call-in-default-argument" lint warnings.
+FILE_PATH_ARG_CREATE: Path = typer.Argument(
+    ..., exists=False, help="Path to the file to create."
+)
+FILE_PATH_ARG_APPEND: Path = typer.Argument(
+    ..., exists=True, help="Path to the file to modify."
+)
+PYTHON_SRC_ARG: Path = typer.Argument(
+    ..., exists=True, help="Python script to convert."
+)
+NOTEBOOK_DST_ARG: Path = typer.Argument(
+    ..., exists=False, help="Target notebook path."
+)
+SCAFFOLD_TARGET_ARG: Path = typer.Argument(
+    ..., exists=False, help="Target directory for the scaffold."
+)
 
 app = typer.Typer(name="code_agent", help="Local LLM-driven code assistant")
 
@@ -239,6 +262,68 @@ def _ensure_webapp_built() -> None:
         )
 
 
+def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
+    """Load tools from configured MCP servers.
+
+    Reads ``mcp_servers`` from *cfg* (a JSON-encoded list of server
+    configs) and imports tools via ``langchain_mcp_adapters`` when
+    available.  Missing dependencies or malformed configs are logged
+    and skipped so the rest of the agent still works.
+
+    :param cfg: Configuration mapping, typically from :func:`load_config`.
+    :return: A list of :class:`BaseTool` instances from MCP servers.
+    """
+    raw: str | None = cfg.get("mcp_servers")
+    if not raw:
+        return []
+
+    try:
+        servers: list[dict[str, Any]] = json.loads(raw)
+    except json.JSONDecodeError:
+        typer.echo(
+            "Warning: invalid mcp_servers JSON; skipping MCP tools.", err=True
+        )
+        return []
+
+    if not servers:
+        return []
+
+    try:
+        mcp_adapters = __import__(
+            "langchain_mcp_adapters", fromlist=["load_mcp_tools"]
+        )
+        load_mcp_tools = mcp_adapters.load_mcp_tools
+    except ImportError:
+        typer.echo(
+            "Warning: langchain-mcp-adapters not installed; skipping MCP tools. "
+            "Install it with: pip install langchain-mcp-adapters",
+            err=True,
+        )
+        return []
+
+    tools: list[BaseTool] = []
+    for server_cfg in servers:
+        server_type = server_cfg.get("type")
+        if server_type not in {"stdio", "http"}:
+            typer.echo(
+                f"Warning: unsupported MCP server type {server_type!r}; skipping.",
+                err=True,
+            )
+            continue
+        try:
+            server_tools = load_mcp_tools(server_cfg)
+            tools.extend(server_tools)
+            typer.echo(
+                f"Loaded {len(server_tools)} tool(s) from MCP server ({server_type})."
+            )
+        except Exception as exc:  # pragma: no cover - external dependency
+            typer.echo(
+                f"Warning: failed to load MCP tools from {server_cfg}: {exc}",
+                err=True,
+            )
+    return tools
+
+
 @app.command(help="Start the LLM provider selected by the config.")
 def serve(
     config_path: str | None = typer.Option(
@@ -246,7 +331,7 @@ def serve(
         help="Optional path to a JSON configuration file (overrides .env settings).",
     ),
     web: bool = typer.Option(
-        False,
+        False,  # ruff: ignore [boolean-type-hint-positional-argument]
         "--web",
         is_flag=True,
         help="Serve the web UI instead of the console loop.",
@@ -296,14 +381,33 @@ def serve(
         return
 
     try:
-        cfg = load_config(config_path)
-        provider = create_provider(cfg)
-    except Exception as exc:  # pragma: no cover - exercised via tests
-        raise CodeAgentError(str(exc)) from exc
+        from code_agent.agents.base_agent import create_default_tools
+        from code_agent.main import create_llm
 
-    model = getattr(provider, "model", "unknown")
-    typer.echo(f"Serving provider '{provider.name}' (model: {model}).")
+        cfg = load_config(config_path)
+        llm = create_llm(cfg)
+        tools = create_default_tools(root_dir=str(Path.cwd()), llm=llm)
+
+        # Inject MCP tools if configured
+        mcp_tools = _load_mcp_tools(cfg)
+        if mcp_tools:
+            tools.extend(mcp_tools)
+
+        agent = build_agent(llm=llm, tools=tools)
+
+        model_name = getattr(
+            llm, "model", getattr(cfg, "ollama_model", "unknown")
+        )
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        raise CodeAgentError(f"Failed to initialize agent: {exc}") from exc
+
+    typer.echo(
+        f"Serving agent with model '{model_name}' and {len(tools)} tools."
+    )
     typer.echo("Type 'exit', 'quit' or 'q' to end the session.")
+    typer.echo("Type 'tools' to list available tools.")
+
+    conversation_history: list[dict[str, Any]] = []
 
     while True:
         try:
@@ -316,22 +420,58 @@ def serve(
         if prompt.lower() in {"exit", "quit", "q"}:
             typer.echo("Goodbye!")
             break
+        if prompt.lower() == "tools":
+            typer.echo(f"Available tools: {', '.join(t.name for t in tools)}")
+            continue
+        if prompt.lower() == "clear":
+            conversation_history = []
+            typer.echo("Conversation history cleared.")
+            continue
         try:
-            response = provider.complete([{"role": "user", "content": prompt}])
+            from langchain_core.messages import HumanMessage, SystemMessage
+
+            messages = [SystemMessage(content=cfg.get("system_prompt", ""))]
+            for entry in conversation_history:
+                if entry["role"] == "assistant":
+                    messages.append(AIMessage(content=entry["content"]))
+                elif entry["role"] == "user":
+                    messages.append(HumanMessage(content=entry["content"]))
+            messages.append(HumanMessage(content=prompt))
+
+            response = agent.invoke({"messages": messages})
+
+            # Find the last AIMessage (skip ToolMessages from intermediate steps)
+            ai_messages = [
+                msg
+                for msg in response["messages"]
+                if isinstance(msg, AIMessage)
+            ]
+            if not ai_messages:
+                response_content = "(no text response)"
+            else:
+                response_content = ai_messages[-1].content or "(empty response)"
+
+            conversation_history.append({"role": "user", "content": prompt})
+            conversation_history.append(
+                {
+                    "role": "assistant",
+                    "content": response_content,
+                }
+            )
         except Exception as exc:
             typer.echo(f"Error: {exc}")
             continue
-        typer.echo(response)
+        typer.echo(f"Agent: {response_content}")
 
 
 @app.command(help="Create a new file with the supplied content.")
 def create(
-    file_path: Path = typer.Argument(
-        ..., exists=False, help="Path to the file to create."
-    ),
+    file_path: Path = FILE_PATH_ARG_CREATE,
     content: str = typer.Option(..., help="Content to write into the file."),
     overwrite: bool = typer.Option(
-        False, is_flag=True, help="Allow overwriting an existing file."
+        False,  # ruff: ignore [boolean-type-hint-positional-argument]
+        is_flag=True,
+        help="Allow overwriting an existing file.",
     ),
 ) -> None:
     """Create ``file_path`` with ``content``.
@@ -358,9 +498,7 @@ def create(
 
 @app.command(help="Append text to an existing file.")
 def append(
-    file_path: Path = typer.Argument(
-        ..., exists=True, help="Path to the file to modify."
-    ),
+    file_path: Path = FILE_PATH_ARG_APPEND,
     content: str = typer.Option(..., help="Text to append to the file."),
 ) -> None:
     """Append ``content`` to ``file_path``.
@@ -384,9 +522,7 @@ def append(
 
 @app.command(help="Create a minimal project scaffold.")
 def scaffold(
-    target: Path = typer.Argument(
-        ..., exists=False, help="Target directory for the scaffold."
-    ),
+    target: Path = SCAFFOLD_TARGET_ARG,
     project_name: str = typer.Option(
         "sample_project",
         "--name",
@@ -428,10 +564,8 @@ def scaffold(
 
 @app.command(help="Convert a Python script to a Jupyter notebook.")
 def py2ipynb(
-    src: Path = typer.Argument(
-        ..., exists=True, help="Python script to convert."
-    ),
-    dst: Path = typer.Argument(..., exists=False, help="Target notebook path."),
+    src: Path = PYTHON_SRC_ARG,
+    dst: Path = NOTEBOOK_DST_ARG,
 ) -> None:
     """Create a minimal Jupyter notebook from a Python file.
 
@@ -455,7 +589,8 @@ def docs(
         "docs", help="Directory to write docs into."
     ),
     overwrite: bool = typer.Option(
-        True, help="Overwrite existing files in the output directory."
+        True,  # ruff: ignore [boolean-type-hint-positional-argument]
+        help="Overwrite existing files in the output directory.",
     ),
 ) -> None:
     """Generate a minimal set of QMD files and render the Quarto site.
@@ -507,38 +642,69 @@ def chat(
 
         _show_startup_info(root_dir, tools)
 
-        conversation_state = {"messages": []}
+        from langchain_core.messages import (
+            AIMessage,
+            HumanMessage,
+            SystemMessage,
+        )
+
+        system_prompt = cfg.get("system_prompt", "")
+        if system_prompt:
+            system_prompt = system_prompt.format(root_dir=root_dir)
+        conversation_messages: list[Any] = (
+            [SystemMessage(content=system_prompt)] if system_prompt else []
+        )
 
         # Main chat loop
         while True:
             try:
                 user_input = input("You: ").strip()
-
-                # Handle lifecycle and simple commands separately
-                cont, conversation_state = _handle_command(
-                    user_input, conversation_state, tools
-                )
-                if not cont:
-                    break
-                if conversation_state is None:
-                    # command handled (like 'help' or 'tools')
-                    continue
-
-                # Add user message and query the agent
-                conversation_state["messages"].append(("human", user_input))
-                print("\n🤖 Thinking...")
-                try:
-                    response = agent.invoke(conversation_state)
-                    conversation_state = _display_agent_response(
-                        response, conversation_state
-                    )
-                except Exception as e:
-                    print(f"\n❌ Error processing your request: {e!s}\n")
-                    continue
-
+            except EOFError:
+                print("\nGoodbye!")
+                break
             except KeyboardInterrupt:
                 print("\n\n👋 Session ended by user. Goodbye!")
                 break
+
+            try:
+                # Handle lifecycle and simple commands separately
+                cont, cmd_result = _handle_command(
+                    user_input, conversation_messages, tools
+                )
+                if not cont:
+                    break
+                if cmd_result is not None:
+                    # command handled (like 'help' or 'tools')
+                    conversation_messages = cmd_result
+                    continue
+
+                # Add user message and query the agent
+                conversation_messages.append(HumanMessage(content=user_input))
+                print("\n🤖 Thinking...")
+                try:
+                    response = agent.invoke({"messages": conversation_messages})
+
+                    # Find the last AIMessage (skip ToolMessages from intermediate steps)
+                    ai_messages = [
+                        msg
+                        for msg in response["messages"]
+                        if isinstance(msg, AIMessage)
+                    ]
+                    if not ai_messages:
+                        response_text = "(no text response)"
+                    else:
+                        response_text = (
+                            ai_messages[-1].content or "(empty response)"
+                        )
+
+                    conversation_messages.append(
+                        AIMessage(content=response_text)
+                    )
+                    print(f"\n🛠️  Agent response:\n{response_text}")
+                    print("=" * 50 + "\n")
+                except Exception as e:
+                    print(f"\n❌ Error processing your request: {e!s}\n")
+                    continue
             except Exception as e:
                 print(f"\n❌ An unexpected error occurred: {e!s}\n")
                 continue
@@ -581,23 +747,23 @@ def _show_startup_info(root_dir: Path, tools: list[BaseTool]) -> None:
 
 def _handle_command(
     user_input: str,
-    conversation_state: dict[Any, Any] | None,
+    conversation_messages: list[Any],
     tools: list,
-) -> tuple[bool, dict[Any, Any] | None]:
-    """Handle simple chat commands. Returns (continue_session, conversation_state or None).
+) -> tuple[bool, list[Any] | None]:
+    """Handle simple chat commands. Returns (continue_session, messages or None).
 
     If a command is handled that should not continue into agent invocation (help, tools, clear),
     the function returns (True, None). If the session should end, returns (False, _).
-    Otherwise, returns (True, conversation_state) to proceed.
+    Otherwise, returns (True, conversation_messages) to proceed.
 
     :param user_input: User input string.
-    :param conversation_state: Current conversation state.
+    :param conversation_messages: Current conversation messages list.
     :param tools: List of available tools.
-    :return: Tuple of (continue_session, conversation_state or None)
+    :return: Tuple of (continue_session, conversation_messages or None)
     """
     if user_input.lower() in {"exit", "quit", "q"}:
         print("\nGoodbye!")
-        return False, conversation_state
+        return False, conversation_messages
 
     if user_input.lower() == "help":
         print("\nAvailable commands:")
@@ -612,7 +778,7 @@ def _handle_command(
 
     if user_input.lower() == "clear":
         print("Conversation history cleared.\n")
-        return True, None
+        return True, []
 
     if user_input.lower() == "tools":
         print("\nAvailable tools:")
@@ -624,10 +790,12 @@ def _handle_command(
     if not user_input:
         return True, None
 
-    return True, conversation_state
+    return True, None
 
 
-def _display_agent_response(response: Any, conversation_state) -> dict | Any:
+def _display_agent_response(
+    response: Any, conversation_state: dict[str, Any]
+) -> dict | Any:
     """Display the agent's response to the user.
 
     :param response: Response from the agent.

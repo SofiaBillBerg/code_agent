@@ -6,23 +6,26 @@ format: html
 
 # File-level Overview
 
-This document provides a high-level summary of the key files and directories in the `code-agent` repository.
+This document provides a high-level summary of the key files and directories in the `code_agent` repository.
 
 | File / Directory               | Purpose                                              | Key Functions / Components          |
 |--------------------------------|------------------------------------------------------|-------------------------------------|
-| `code_agent/main.py`           | Main application entry point for interactive chat.   | `main()`, `_main_loop()`            |
-| `code_agent/cli.py`            | Typer-based command-line interface.                  | `app` (Typer app)                   |
-| `code_agent/graph.py`          | LangGraph implementation for the agent's logic.      | `build_graph()`                     |
-| `code_agent/agents/`           | Agent-related classes and factories.                 | `build_agent`, `PersistentAgent`    |
-| `code_agent/tools/`            | Directory containing all agent tools.                | `NewFileTool`, `EditFileTool`, etc. |
-| `code_agent/scaffold.py`       | Project scaffolding logic.                           | `create_project_scaffold()`         |
+| `code_agent/cli.py`            | Typer-based command-line interface.                  | `app` (Typer app), `serve`, `chat`  |
+| `code_agent/main.py`           | Library helpers: `load_config()` and `create_llm()`. | `load_config()`, `create_llm()`     |
+| `code_agent/settings.py`       | Pydantic Settings model with `.env` support.         | `Settings`, `get_settings()`        |
+| `code_agent/graph.py`          | LangGraph StateGraph for agent orchestration.        | `build_graph()`, `AgentState`       |
+| `code_agent/agents/`           | Agent factories and persistent session manager.      | `build_agent`, `PersistentAgent`    |
+| `code_agent/tools/`            | LangChain BaseTool implementations.                  | `NewFileTool`, `EditFileTool`, etc. |
+| `code_agent/capabilities/`     | OAP-inspired capability/audit layer.                 | `CapabilityRegistry`, `tool_to_capability` |
+| `code_agent/providers/`        | LLM backend abstraction.                             | `OllamaProvider`, `OpenAIProvider`  |
+| `code_agent/scaffold.py`       | Project skeleton generator.                          | `create_project_scaffold()`         |
 | `code_agent/docs_generator.py` | Quarto documentation generation.                     | `generate_quarto_docs()`            |
-| `code_agent/file_generator.py` | Low-level file writing utilities.                    | `write_file()`, `py_to_ipynb()`     |
-| `code_agent/exceptions.py`     | Custom exception types for the application.          | `CodeAgentError`                    |
+| `code_agent/file_generator.py` | Atomic file I/O utilities.                           | `write_file()`, `create_file()`, `append_file()`, `py_to_ipynb()` |
+| `code_agent/exceptions.py`     | Custom exception types.                              | `CodeAgentError`                    |
+| `code_agent/ui/web.py`         | FastAPI web server with auth + React SPA.            | `app`, `/capabilities`, `/invoke`   |
 | `docs/`                        | Quarto documentation source files.                   | -                                   |
-| `tests/`                       | Pytest unit and integration tests.                   | -                                   |
+| `tests/`                       | Pytest unit and integration tests.                   | 103 tests                           |
 | `pyproject.toml`               | Build system and dependency configuration (PEP 621). | -                                   |
-| `_quarto.yml`                  | Quarto project configuration for the docs website.   | -                                   |
-| `requirements.txt`             | Core runtime dependencies.                           | -                                   |
+| `_quarto.yml`                  | Quarto project configuration.                       | -                                   |
 
 Each module is documented in its own file header. For more details, see the **[CODE_AGENT](CODE_AGENT.qmd)** document.

@@ -43,12 +43,13 @@ class SearchExplainTool(BaseTool):
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"
     )
-    args_schema: type[BaseModel] = SearchExplainArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    args_schema: type[BaseModel] = (
+        SearchExplainArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     llm: BaseChatModel
+    max_hits: int = 10
     root: Path
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(
         self,
@@ -65,11 +66,13 @@ class SearchExplainTool(BaseTool):
         :param kwargs: Additional keyword arguments.
         :return: None
         """
+
         super().__init__(
             root=Path(root_dir).expanduser().resolve(),
             llm=llm_instance,
             **kwargs,
-        )
+        )  # ruff: ignore [ARG002]
+        self.max_hits = max_hits
 
     def _read_ipynb_preview(self, path: Path) -> str:
         """Read the preview of an IPython notebook file.
@@ -184,7 +187,7 @@ class SearchExplainTool(BaseTool):
         if not path.is_file():
             return False
         try:
-            if path.stat().st_size > 2000000:  # 2MB
+            if path.stat().st_size > _MAX_FILE_SIZE:  # 2MB
                 return False
         except Exception:
             return False

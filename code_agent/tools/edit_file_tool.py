@@ -7,11 +7,10 @@ import shutil
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel, ConfigDict, Field
 
 log = logging.getLogger(__name__)
 
@@ -67,17 +66,22 @@ class EditFileTool(BaseTool):
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"
     )
-    args_schema: type[BaseModel] = EditFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+
+    args_schema: type[BaseModel] = (
+        EditFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     root: Path
 
-    def __init__(self, root_dir: Path, **kwargs) -> None:
+    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
         """Initialize the tool with a root directory.
 
         :param root_dir: Root directory for file operations.
         :param kwargs: Additional keyword arguments.
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(
+            root=Path(root_dir).expanduser().resolve(), **kwargs
+        )  # ruff: ignore [ARG002]
 
     def _backup_file(self, path: Path) -> str:
         """Create a backup of the file.
@@ -92,8 +96,8 @@ class EditFileTool(BaseTool):
             shutil.copy(path, backup_path)
             log.info(f"Backup created: {backup_path}")
             return "backup_created"
-        except Exception as e:
-            log.exception(f"Failed to create backup for {path}: {e}")
+        except Exception:
+            log.exception("Failed to create backup for {path}: ")
             return "backup_failed"
 
     def _edit_replace(self, path: Path, content: str) -> None:

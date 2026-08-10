@@ -10,7 +10,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
 
-
 #  Arguments schema
 
 
@@ -32,11 +31,11 @@ class LinkerTool(BaseTool):
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"
     )
-    args_schema: type[BaseModel] = LinkerArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    args_schema: type[BaseModel] = (
+        LinkerArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     root: Path
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, root_dir: Path, **kwargs: dict[str, Any]) -> None:
         """Initialize the tool.
@@ -45,7 +44,9 @@ class LinkerTool(BaseTool):
         :param kwargs: Additional arguments to pass to the parent class.
         :return: None
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)  # type: ignore[call-arg, arg-type]
+        super().__init__(
+            root=Path(root_dir).expanduser().resolve(), **kwargs
+        )  # ruff: ignore [ARG002]  # type: ignore[call-arg, arg-type]
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
         """Run the tool.

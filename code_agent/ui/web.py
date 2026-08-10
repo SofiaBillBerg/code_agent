@@ -36,10 +36,9 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
-from code_agent.capabilities.envelope import InvocationRequest
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.settings import get_settings
-
 
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
@@ -56,7 +55,7 @@ def get_registry() -> CapabilityRegistry:
 
     :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
     """
-    global _REGISTRY
+    global _REGISTRY  # ruff: ignore [F822]
     if _REGISTRY is None:
         # Imported lazily to avoid a circular import: ``cli.py`` imports
         # this module inside ``serve --web``, by which time ``cli.py`` has
@@ -73,9 +72,19 @@ class AuthMiddleware:
     """Reject requests that lack a valid auth token when one is configured."""
 
     def __init__(self, app: Any) -> None:
+        """Initialize the middleware with the ASGI app.
+
+        :param app: The ASGI application to wrap.
+        """
         self.app = app
 
     async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        """Handle an ASGI request.
+
+        :param scope: ASGI connection scope.
+        :param receive: ASGI receive callable.
+        :param send: ASGI send callable.
+        """
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -121,7 +130,7 @@ def list_capabilities() -> list[dict[str, Any]]:
 
 
 @app.post("/invoke")
-def invoke_capability(body: InvocationRequest) -> dict[str, Any]:
+def invoke_capability(body: InvokeBody) -> dict[str, Any]:
     """Dispatch an invocation and return the response plus audit receipt.
 
     :param body: Parsed request body (capability_id and params).

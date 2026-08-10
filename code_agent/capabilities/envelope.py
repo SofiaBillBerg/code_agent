@@ -34,6 +34,18 @@ class InvocationRequest(BaseModel):
     )
 
 
+class InvokeBody(BaseModel):
+    """JSON request body for ``POST /invoke``.
+
+    Attributes:
+        capability_id: Stable identifier of the capability to invoke.
+        params: JSON object of parameters for the capability.
+    """
+
+    capability_id: str
+    params: dict[str, Any] = Field(default_factory=dict)
+
+
 class InvocationResponse(BaseModel):
     """The result of invoking a capability.
 

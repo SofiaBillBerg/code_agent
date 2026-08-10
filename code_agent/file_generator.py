@@ -22,7 +22,6 @@ from typing import Any
 
 from .exceptions import CodeAgentError
 
-
 try:  # Optional dependency - used only for the notebook path.
     import nbformat  # type: ignore
 except Exception:  # pragma: no cover - handled at runtime

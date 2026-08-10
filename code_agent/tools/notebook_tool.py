@@ -36,11 +36,13 @@ class NotebookTool(BaseTool):
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"
     )
-    args_schema: type[BaseModel] = NotebookArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    args_schema: type[BaseModel] = (
+        NotebookArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     root: Path
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    root: Path
 
     def __init__(self, root_dir: Path, **kwargs: Any) -> None:
         """Initializes the NotebookTool with the given root directory.
@@ -49,7 +51,9 @@ class NotebookTool(BaseTool):
         :param **kwargs: Additional keyword arguments.
         :return: None
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(
+            root=Path(root_dir).expanduser().resolve(), **kwargs
+        )  # ruff: ignore [ARG002]
 
     def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
         """Creates or edits a Jupyter notebook.

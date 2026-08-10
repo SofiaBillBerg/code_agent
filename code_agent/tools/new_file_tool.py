@@ -11,7 +11,7 @@ import logging
 import shutil
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
@@ -19,7 +19,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from code_agent.file_generator import create_file
 
 from .edit_file_tool import FileObject
-
 
 log = logging.getLogger(__name__)
 
@@ -49,20 +48,24 @@ class NewFileTool(BaseTool):
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"
     )
-    args_schema: type[BaseModel] = NewFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    args_schema: type[BaseModel] = (
+        NewFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     root: Path
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    root: Path
 
-    def __init__(self, root_dir: Path, **kwargs) -> None:
+    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
         """Initialize the NewFileTool with the root directory.
 
         :param root_dir: The root directory for file operations.
         :param kwargs: Additional keyword arguments.
         :return: None
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(
+            root=Path(root_dir).expanduser().resolve(), **kwargs
+        )  # ruff: ignore [ARG002]
 
     def _run(
         self, file_path: str, content: str, overwrite: bool = False
@@ -114,7 +117,7 @@ class NewFileTool(BaseTool):
                 FileObject(path=full_path, contents=content, status="created"),
             )
         except Exception as e:
-            log.exception(f"Error creating file {full_path}: {e}")
+            log.exception(f"Error creating file {full_path}: ")
             return (
                 f"❌ Error creating file: {e}",
                 FileObject(path=full_path, contents="", status="error"),

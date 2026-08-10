@@ -1,4 +1,4 @@
-"""Unit tests for the public helpers in `code_agent.core`."""
+"""Unit tests for the public helpers in `code_agent.file_generator`."""
 
 import textwrap
 
@@ -115,12 +115,10 @@ def test_write_and_append(tmp_file: Path) -> None:
 def test_convert_py_to_nb(tmp_path: Path) -> None:
     """The notebook should contain the original code as a code cell."""
     script_path = tmp_path / "script.py"
-    script = textwrap.dedent(
-        """
+    script = textwrap.dedent("""
                     def greet():
                         return "hello"
-                    """
-    )
+                    """)
     script_path.write_text(script)
     notebook_path = py_to_ipynb(script_path, tmp_path / "greet.ipynb")
     assert notebook_path.exists()

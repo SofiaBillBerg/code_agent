@@ -34,7 +34,6 @@ from langchain_core.tools import tool
 # with an in-memory store.
 from code_agent.graph import build_graph
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

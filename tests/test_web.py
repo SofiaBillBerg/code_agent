@@ -21,7 +21,6 @@ from fastapi.testclient import TestClient
 from code_agent import cli
 from code_agent.ui.web import _DIST_DIR, app
 
-
 # Path to the React SPA build dir, derived from the CLI module so it stays in
 # sync with where ``serve --web`` actually looks for it.
 _WEBAPP_DIR = Path(cli.__file__).resolve().parent / "ui" / "webapp"

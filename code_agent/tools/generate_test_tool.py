@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
@@ -33,20 +33,24 @@ class GenerateTestTool(BaseTool):
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"
     )
-    args_schema: type[BaseModel] = GenerateTestArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    args_schema: type[BaseModel] = (
+        GenerateTestArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     root: Path
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    root: Path
 
-    def __init__(self, root_dir: Path, **kwargs) -> None:
+    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
         """Initialize the tool with the root directory.
 
         :param root_dir: The root directory of the project.
         :param kwargs: Additional arguments to pass to the parent class.
         :return: None
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(
+            root=Path(root_dir).expanduser().resolve(), **kwargs
+        )  # ruff: ignore [ARG002]
 
     def _run(
         self, file_path: str, tests_dir: str = "tests"

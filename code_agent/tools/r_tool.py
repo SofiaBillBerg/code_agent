@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RScriptArgs(BaseModel):
@@ -26,7 +26,10 @@ class RScriptTool(BaseTool):
         "Use this tool to execute R code. "
         "Provide the R code as a string. The tool will return the standard output and standard error."
     )
-    args_schema: type[BaseModel] = RScriptArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+
+    args_schema: type[BaseModel] = (
+        RScriptArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     def _run(self, code: str) -> str:
         """Executes the given R code and returns the output."""

@@ -7,7 +7,7 @@ from typing import Any
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class GeneralChatArgs(BaseModel):
@@ -27,18 +27,21 @@ class GeneralChatTool(BaseTool):
         "Use this tool as a last resort if no other tool is appropriate for the user's query. "
         "It is for general conversation, questions, and answering 'how-to' style inquiries."
     )
-    args_schema: type[BaseModel] = GeneralChatArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+
+    args_schema: type[BaseModel] = (
+        GeneralChatArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     llm: BaseChatModel
 
-    def __init__(self, llm_instance: BaseChatModel, **kwargs) -> None:
+    def __init__(self, llm_instance: BaseChatModel, **kwargs: Any) -> None:
         """Initialize the tool with the LLM instance.
 
         :param llm_instance: The LLM instance to use for generating responses.
         :param kwargs: Additional keyword arguments.
         :return: None
         """
-        super().__init__(llm=llm_instance, **kwargs)
+        super().__init__(llm=llm_instance, **kwargs)  # ruff: ignore [ARG002]
 
     def _run(self, query: str) -> str:
         """Send the query directly to the LLM for a conversational response.

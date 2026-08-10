@@ -25,37 +25,37 @@ committed `.env.example` documents every available key). Here is an example with
 commonly used options:
 
 ```dotenv
-OLLAMA_SCHEME=http
-OLLAMA_HOST=localhost
-OLLAMA_PORT=11434
-OLLAMA_MODEL=llama3
-TEMPERATURE=0.7
+CODE_AGENT_OLLAMA_SCHEME=http
+CODE_AGENT_OLLAMA_HOST=localhost
+CODE_AGENT_OLLAMA_PORT=11434
+CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b-cloud
+CODE_AGENT_TEMPERATURE=0.7
 ```
 
 ### Options
 
-* `ollama_host`: The hostname or IP address of the Ollama server. Defaults to `localhost`.
-* `ollama_port`: The port on which the Ollama server is running. Defaults to `11434`.
-* `ollama_model`: The name of the Ollama model to use (e.g., `"llama3"`, `"codellama"`). This model is used for both
+* `CODE_AGENT_OLLAMA_HOST`: The hostname or IP address of the Ollama server. Defaults to `localhost`.
+* `CODE_AGENT_OLLAMA_PORT`: The port on which the Ollama server is running. Defaults to `11434`.
+* `CODE_AGENT_OLLAMA_MODEL`: The name of the Ollama model to use (e.g., `"gpt-oss:20b-cloud"`). This model is used for both
   chat and embeddings.
-* `temperature`: The sampling temperature for the LLM. Higher values result in more creative but less predictable
+* `CODE_AGENT_TEMPERATURE`: The sampling temperature for the LLM. Higher values result in more creative but less predictable
   responses. Defaults to `0.7`.
 
 ## Environment Variables
 
 You can override any setting using an environment variable with the same name as
-the `Settings` field, upper-cased (no prefix):
+the `Settings` field, upper-cased with the `CODE_AGENT_` prefix:
 
-* `OLLAMA_HOST`
-* `OLLAMA_PORT`
-* `OLLAMA_MODEL`
-* `TEMPERATURE`
-* `OPENAI_API_KEY` (and `OPENAI_MODEL`, `OPENAI_BASE_URL`)
+* `CODE_AGENT_OLLAMA_HOST`
+* `CODE_AGENT_OLLAMA_PORT`
+* `CODE_AGENT_OLLAMA_MODEL`
+* `CODE_AGENT_TEMPERATURE`
+* `CODE_AGENT_OPENAI_API_KEY` (and `CODE_AGENT_OPENAI_MODEL`, `CODE_AGENT_OPENAI_BASE_URL`)
 
 For example, to use a different Ollama model:
 
 ```bash
-export OLLAMA_MODEL="another-model:latest"
+export CODE_AGENT_OLLAMA_MODEL="another-model:latest"
 ```
 
 ## Programmatic Overrides

@@ -41,7 +41,6 @@ from code_agent.capabilities.tool_adapter import (  # noqa: E402
     tool_to_capability,
 )
 
-
 try:
     from langchain.tools import (  # ruff: ignore[unused-import]  # type: ignore[import-not-found]
         BaseTool,

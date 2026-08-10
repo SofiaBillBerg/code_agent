@@ -24,7 +24,6 @@ import re
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDE_DIRS = {
     ".venv",
@@ -261,13 +260,15 @@ def scan() -> tuple[list[dict], dict]:
         if p.stem.lower() in dup:
             notes = "duplicate_basename"
             category = "duplicate_same_basename"
-        report_rows.append({
-            "path": rel,
-            "size": size,
-            "sha1": sha1,
-            "category": category,
-            "notes": notes,
-        })
+        report_rows.append(
+            {
+                "path": rel,
+                "size": size,
+                "sha1": sha1,
+                "category": category,
+                "notes": notes,
+            }
+        )
 
     meta = {
         "root": str(ROOT),

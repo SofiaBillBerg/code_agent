@@ -102,23 +102,27 @@ class PersistentAgent:
         self.conversation_history.append({"role": "user", "content": message})
 
         try:
-            response = self.agent.invoke({
-                "messages": self._history_to_messages()
-            })
+            response = self.agent.invoke(
+                {"messages": self._history_to_messages()}
+            )
             response_content = response["messages"][-1].content
-            self.conversation_history.append({
-                "role": "assistant",
-                "content": response_content,
-            })
+            self.conversation_history.append(
+                {
+                    "role": "assistant",
+                    "content": response_content,
+                }
+            )
             self._save_state()
             return response_content
 
         except Exception as e:
             error_msg = f"❌ Error: {e!s}"
-            self.conversation_history.append({
-                "role": "error",
-                "content": error_msg,
-            })
+            self.conversation_history.append(
+                {
+                    "role": "error",
+                    "content": error_msg,
+                }
+            )
             self._save_state()
             return error_msg
 
@@ -165,7 +169,7 @@ def get_persistent_agent(
 
         >>> result = get_persistent_agent(llm="example_llm", tools="example_tools")
     """
-    global agent
+    global agent  # ruff: ignore [undefined-export]
     if agent is None:
         agent = PersistentAgent(llm=llm, tools=tools)
     return agent

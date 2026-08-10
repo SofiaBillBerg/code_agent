@@ -9,7 +9,6 @@ with the signature `(RunnableConfig) -> Runnable`.
 
 from __future__ import annotations
 
-import logging
 from typing import TypedDict, cast
 
 from langchain_core.language_models import BaseChatModel
@@ -19,7 +18,7 @@ from langchain_core.tools import BaseTool
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
-logger = logging.getLogger(__name__)
+# State definition
 
 
 class AgentState(TypedDict):
@@ -54,20 +53,6 @@ def call_llm(state: AgentState, model: Runnable) -> AgentState:
     return {"messages": state["messages"] + [response]}
 
 
-def clear_messages(state: dict) -> dict:
-    """Clear all messages from memory while preserving other state structure.
-
-    This function resets the message list to an empty list, effectively
-    clearing the agent's short-term memory of previous conversations.
-
-    :param state: The current graph state (passed as a regular dict for this node).
-
-    :return: A new state with messages cleared but same TypedDict structure.
-    """
-    logger.info("Clearing conversation memory - resetting message history")
-    return {"messages": []}
-
-
 def should_continue(state: AgentState) -> str:
     """Decide the next node.
 
@@ -78,47 +63,13 @@ def should_continue(state: AgentState) -> str:
 
     :return: The name of the next node.
     """
-    last = state["messages"][-1] if state.get("messages") else None
-
-    if isinstance(last, AIMessage):
-        tool_calls = getattr(last, "tool_calls", [])
-
-        # Check if any tool call is a 'clear_memory' action
-        for tc in tool_calls:
-            func_name = getattr(tc.get("function"), "name", "")
-            if func_name == "clear_messages":
-                return "memory_clear"
-
-        if last.tool_calls:
-            return "action"
-
+    last = state["messages"][-1]
+    if isinstance(last, AIMessage) and last.tool_calls:
+        return "action"
     return END
 
 
-# ---------------------------------------------------------------------------
-# Tool definitions for graph execution
-# ---------------------------------------------------------------------------
-
-
-def clear_memory_tool(state: dict) -> dict:
-    """Tool function that clears agent memory.
-
-    This is a standalone tool definition that can be used by the LLM to
-    request clearing of conversation history. When called, it invokes
-    `clear_messages` node which resets messages while keeping state structure intact.
-
-    :param state: The current graph state dictionary.
-
-    :return: State with messages cleared (will trigger routing via should_continue).
-    """
-    # This tool will be invoked by the LLM when requested to clear memory
-    logger.info("clear_memory_tool called - delegating to clear_messages node")
-    return {"messages": []}
-
-
-# ---------------------------------------------------------------------------
 # Graph construction
-# ---------------------------------------------------------------------------
 
 
 def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
@@ -134,32 +85,22 @@ def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
 
     graph = StateGraph(AgentState)  # type: ignore
 
-    # Nodes - including memory clearing functionality
+    # Nodes
     graph.add_node("agent", lambda state: call_llm(state, model))
     graph.add_node("action", ToolNode(tools))
-
-    # Add dedicated node for clearing messages (preserves TypedDict structure)
-    graph.add_node("memory_clear", clear_messages)
 
     # Entry point
     graph.set_entry_point("agent")
 
-    # Conditional routing with memory clearing path
+    # Conditional routing
     graph.add_conditional_edges(
         "agent",
         should_continue,
-        {
-            "action": "action",
-            END: END,
-            "memory_clear": "memory_clear",
-        },
+        {"action": "action", END: END},
     )
 
-    # Return to agent after a regular tool call
+    # Return to agent after a tool call
     graph.add_edge("action", "agent")
-
-    # After clearing memory, return control back to the LLM for fresh start
-    graph.add_edge("memory_clear", "agent")
 
     # Compile the graph
     return graph.compile()
@@ -189,10 +130,4 @@ def graph_factory(config: RunnableConfig) -> Runnable:
 
 
 # ``__all__`` ensures we only export the public API.
-__all__ = [
-    "AgentState",
-    "build_graph",
-    "graph_factory",
-    "clear_messages",
-    "should_continue",
-]
+__all__ = ["AgentState", "build_graph", "graph_factory"]

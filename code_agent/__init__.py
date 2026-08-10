@@ -28,7 +28,6 @@ from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
 from .scaffold import create_project_scaffold
 
-
 # Explicitly expose the public API members
 __all__ = [
     "AuditLog",
@@ -47,7 +46,6 @@ __all__ = [
     "Receipt",
     "RiskClass",
     "append_file",
-    "build_agent",
     "build_agent",
     "create_default_tools",
     "create_file",

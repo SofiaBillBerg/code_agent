@@ -84,7 +84,7 @@ agent_runnable = build_agent(llm=llm, tools=tools)
 Once you have `agent_runnable`, you can interact with it using its `invoke` or `stream` methods.
 
 ```python
-from code_agent.main import Runnable,HumanMessage
+from langchain_core.messages import HumanMessage
 # Assuming agent_runnable is already created as shown above
 response = agent_runnable.invoke({"messages": [HumanMessage(content="Hello, agent!")]})
 

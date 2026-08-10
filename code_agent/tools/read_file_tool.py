@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from langchain_core.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReadFileArgs(BaseModel):
@@ -25,7 +25,10 @@ class ReadFileTool(BaseTool):
         "Use this tool to read the entire content of a file. "
         "Provide a 'file_path' to the file you want to inspect."
     )
-    args_schema: type[BaseModel] = ReadFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+
+    args_schema: type[BaseModel] = (
+        ReadFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
+    )
 
     root: Path
 
@@ -36,7 +39,9 @@ class ReadFileTool(BaseTool):
         :param kwargs: Additional keyword arguments.
         :return: None
         """
-        super().__init__(root=Path(root_dir).expanduser().resolve(), **kwargs)
+        super().__init__(
+            root=Path(root_dir).expanduser().resolve(), **kwargs
+        )  # ruff: ignore [ARG002]
 
     def _run(self, file_path: str) -> str:
         """Reads the content of the specified file.

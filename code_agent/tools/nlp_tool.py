@@ -9,7 +9,6 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +22,9 @@ class NaturalLanguageTool(BaseTool):
     """
 
     llm: BaseChatModel | None = None
-    tools: list = []  # This will be set later by the agent  # ruff: ignore[mutable-class-default]
+    tools: list = (
+        []
+    )  # This will be set later by the agent  # ruff: ignore[mutable-class-default]
 
     def _run(self, query: str, **kwargs: Any) -> str:
         """Process a natural language query and delegate to the appropriate tool.
@@ -107,18 +108,20 @@ Valid JSON Response:"""
             tool_call = json.loads(content)
 
             if not isinstance(tool_call, dict) or "tool" not in tool_call:
-                return json.dumps({
-                    "error": "LLM failed to select a valid tool."
-                })
+                return json.dumps(
+                    {"error": "LLM failed to select a valid tool."}
+                )
 
             return json.dumps(tool_call)
 
         except json.JSONDecodeError as e:
             logger.error(f"JSONDecodeError: {e}. LLM response was: {content}")
-            return json.dumps({
-                "error": "Invalid JSON format from LLM.",
-                "raw_response": content,
-            })
+            return json.dumps(
+                {
+                    "error": "Invalid JSON format from LLM.",
+                    "raw_response": content,
+                }
+            )
         except Exception as e:
             logger.error(f"Error in NaturalLanguageTool: {e}")
             return json.dumps({"error": f"An unexpected error occurred: {e!s}"})

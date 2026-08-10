@@ -24,9 +24,7 @@ def sample_py(tmp_path: Path) -> Path:
     :return: Path to a sample Python file.
     """
     file = tmp_path / "sample.py"
-    file.write_text(
-        textwrap.dedent(
-            """
+    file.write_text(textwrap.dedent("""
                             def add(a, b):
                                 '''
                                 Add two numbers together.
@@ -36,9 +34,7 @@ def sample_py(tmp_path: Path) -> Path:
                                 :return: Sum of a and b.
                                 '''
                                 return a + b
-                            """
-        )
-    )
+                            """))
     return file
 
 
@@ -51,9 +47,9 @@ def test_generate_test_tool_executes(sample_py: Path) -> None:
     tool = GenerateTestTool(root_dir=sample_py.parent)
     # The tool returns a string confirming the test file was created.
     result, _ = tool._run(str(sample_py))  # _run returns a tuple
-    assert "Generated test scaffold" in result, (
-        "Tool should confirm test file creation"
-    )
+    assert (
+        "Generated test scaffold" in result
+    ), "Tool should confirm test file creation"
 
     # Verify that the tests folder exists
     tests_dir = sample_py.parent / "tests"

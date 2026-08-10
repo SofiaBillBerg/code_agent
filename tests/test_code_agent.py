@@ -32,10 +32,10 @@ from code_agent.file_generator import (
     append_file,
     create_file,
     create_from_template,
-    create_project_scaffold,
     write_file,
 )
 from code_agent.main import load_config
+from code_agent.scaffold import create_project_scaffold
 
 
 @pytest.fixture
@@ -177,9 +177,9 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
     dummy_llm_instance = DummyLLM()
     # No tools needed for this basic test
     agent_runnable = build_agent(dummy_llm_instance, [])
-    assert isinstance(agent_runnable, Runnable), (
-        "build_agent should return a Runnable"
-    )
+    assert isinstance(
+        agent_runnable, Runnable
+    ), "build_agent should return a Runnable"
     assert agent_runnable is not None, "Agent Runnable should not be None"
 
     # Test a basic invocation

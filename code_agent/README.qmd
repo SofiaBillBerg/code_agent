@@ -7,39 +7,119 @@ format: html
 
 A local, LLM-driven code assistant for scaffolding projects, editing files, and generating documentation.
 
-Built on **LangChain** with **local Ollama** backend.
+Built on **LangChain** + **LangGraph** with a **local Ollama** backend. The agent has full filesystem access through its tools and can read, create, edit, and append files directly.
 
 ## Features
 
-- File operations (create, edit, scaffold)
-- LLM-powered code generation
-- Project scaffolding
-- Cross-platform support
+- **Agentic coding**: LangGraph-powered agent with tools for read, write, edit, scaffold, search, and more
+- **Filesystem access**: Full read/write/edit/create access through dedicated tools — no claiming it can't access files
+- **Project scaffolding**: Generate project structures from templates
+- **Documentation generation**: Auto-generate Quarto docs from your codebase
+- **Web UI**: Optional FastAPI + React interface for browser-based interaction
+- **MCP integration**: Load tools from external MCP servers (stdio or HTTP)
+- **Persistent sessions**: Conversation history saved to disk
+- **Typed configuration**: Pydantic Settings with `.env` support, all keys prefixed `CODE_AGENT_`
 
 ## Installation
 
 ```bash
-pip install -e .[dev]
+# Clone and install in editable mode
+git clone <repo-url> && cd code_agent
+uv pip install -e .
 ```
+
+### Dependencies
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/) for package management
+- [Ollama](https://ollama.com/) running locally (or OpenAI-compatible API)
 
 ## Quick Start
 
 ```bash
-# Interactive CLI
-python -m code_agent.cli chat
+# Interactive agent session (uses Ollama by default)
+python -m code_agent serve
 
 # Create a file
-python -m code_agent.cli create myfile.txt --content="Hello World"
+python -m code_agent create myfile.txt --content="Hello World"
+
+# Append to a file
+python -m code_agent append myfile.txt --content="More content"
 
 # Generate project scaffold
-python -m code_agent.cli scaffold myproject --name=myproject
+python -m code_agent scaffold myproject --name=myproject
+
+# Convert Python script to Jupyter notebook
+python -m code_agent py2ipynb analysis.py analysis.ipynb
+
+# Start web UI
+python -m code_agent serve --web --web-port 8000
+
+# List available capabilities
+python -m code_agent capabilities list
 ```
 
-## Documentation
+## Configuration
 
-- See the main [README (source)](../docs/README.qmd) and [Project Quickstart (source)](../docs/QUICKSTART.qmd) for
-  detailed
-  documentation.
+Edit `.env` at the project root:
+
+```dotenv
+CODE_AGENT_OLLAMA_SCHEME=http
+CODE_AGENT_OLLAMA_HOST=localhost
+CODE_AGENT_OLLAMA_PORT=11434
+CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b-cloud
+CODE_AGENT_TEMPERATURE=0.7
+```
+
+### MCP Servers
+
+Configure external MCP servers in `.env` as JSON:
+
+```dotenv
+CODE_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
+```
+
+Supported types: `stdio` (with `command`, `args`, `env`) and `http` (with `url`).
+
+## Architecture
+
+```
+code_agent/
+├── agents/            # Agent factories and persistent session manager
+│   ├── base_agent.py  # build_agent(), create_default_tools()
+│   └── persistent_agent.py  # Singleton agent with disk-persisted history
+├── capabilities/      # OAP-inspired capability/audit layer
+│   ├── audit.py       # Hash-chained audit receipts
+│   ├── base.py        # CapabilityBase, RiskClass
+│   ├── envelope.py    # InvocationRequest/Response
+│   ├── registry.py    # CapabilityRegistry
+│   └── tool_adapter.py # Tool → Capability adapter
+├── docs_generator.py  # Quarto documentation generation
+├── file_generator.py  # Atomic file I/O: write, create, append, py→ipynb
+├── graph.py           # LangGraph StateGraph for agent orchestration
+├── main.py            # Library: load_config(), create_llm()
+├── providers/         # LLM backend abstraction
+│   ├── ollama.py      # Ollama provider
+│   ├── openai.py      # OpenAI provider
+│   └── factory.py     # Provider factory
+├── scaffold.py        # Project skeleton generator
+├── settings.py        # Pydantic Settings (CODE_AGENT_ prefixed env vars)
+├── tools/             # LangChain BaseTool implementations
+│   ├── edit_file_tool.py
+│   ├── read_file_tool.py
+│   ├── new_file_tool.py
+│   ├── search_explain_tool.py
+│   ├── generate_test_tool.py
+│   ├── format_code_tool.py
+│   ├── notebook_tool.py
+│   ├── linker_tool.py
+│   ├── r_tool.py
+│   └── general_chat_tool.py
+├── ui/                # Web + CLI UI
+│   ├── web.py         # FastAPI server with auth
+│   └── cli_ui.py      # CLI UI helpers
+└── cli.py             # Typer CLI entry point
+```
 
 ## Testing
 
@@ -47,6 +127,12 @@ python -m code_agent.cli scaffold myproject --name=myproject
 pytest
 ```
 
-## Configuration
+103 tests covering unit, integration, web, UI, capabilities, and graph layers.
 
-Edit `.env` at the project root for LLM settings. Default model: `gpt-oss:20b-cloud`
+## Documentation
+
+- [Configuration](docs/CONFIGURATION.qmd) — `.env` setup, env vars, programmatic overrides
+- [Usage](docs/USAGE.qmd) — CLI examples and Python API walkthrough
+- [Tools](docs/TOOLS.qmd) — Agent tool reference
+- [API](docs/API.qmd) — Public API reference
+- [Files Overview](docs/FILES.qmd) — Module-level map

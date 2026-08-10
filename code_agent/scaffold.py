@@ -10,7 +10,6 @@ from pathlib import Path
 from .exceptions import CodeAgentError
 from .file_generator import write_file
 
-
 DEFAULT_REQUIREMENTS = """# basic runtime requirements
 pandas
 nbformat
