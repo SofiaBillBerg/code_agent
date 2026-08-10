@@ -15,6 +15,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
 
+_MAX_FILE_SIZE: int = 2 * 1024 * 1024  # 2MB
+
 
 class SearchExplainArgs(BaseModel):
     """Arguments schema for searching and explaining code.
@@ -36,9 +38,8 @@ class SearchExplainTool(BaseTool):
 
     name: str = "search-explain"
     description: str = (
-        "Search for a specific string or pattern in local text files and "
-        "summarize the snippets (and their file names). Return the summary as "
-        "a string and a FileObject containing the first hit's path."
+        "Search the codebase for a term or regex, then summarize matching files and snippets. "
+        "Use this when the user asks to find, locate, or explain code across multiple files."
     )
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"

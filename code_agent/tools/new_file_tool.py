@@ -40,10 +40,9 @@ class NewFileTool(BaseTool):
 
     name: str = "new-file"
     description: str = (
-        "Use this tool to create a new file with specified content. "
-        "Provide a 'file_path' and the 'content' for the file. "
-        "Example: {'tool': 'new-file', 'arguments': {'file_path': 'src/new_module.py', 'content': '# "
-        "New Python module\\n'}}"
+        "Create a new file with the given content. "
+        "Use this when the user asks to create a file that does not exist yet. "
+        "Pass the path relative to the project root."
     )
     response_format: Literal["content", "content_and_artifact"] = (
         "content_and_artifact"

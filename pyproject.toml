@@ -3,7 +3,7 @@ name = "code-agent"
 version = "0.1.0"
 description = "Local LLM-driven code assistant for project scaffolding and file operations"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Sofia Billger Bergström" }]
@@ -11,10 +11,12 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.15",
+
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -78,6 +80,7 @@ agent-deps = [
     "markdown>=3.10.3",
     "ipykernel>=7.3.0",
     "langchain-mcp-adapters>=0.3.2",
+    "deepagents>=0.7.5",
 ]
 
 dev = [
@@ -424,7 +427,7 @@ python-interpreter-path = ".venv/bin/python"
 # constructor argument; this only affects FileObject (a @dataclass) here.
 project-excludes = [
     "**/.[!/.]*",
-    
+
     "_extensions",
     ".*/",
     "**/tests",
@@ -472,7 +475,7 @@ exclude = [
     "**/build",
     "**/dist",
     ".venv",
-    
+
     "_extensions",
     ".*/",
     "**/*cache*",
@@ -620,4 +623,3 @@ strict = false
 # pyreverse  code_agent -d docs/visualizations  -S -A  -f ALL --colorized  -a 10 --color-palette [#ffe4e1,#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700] -o svg
 
 # uv export --format requirements.txt --output-file requirements.txt
-

@@ -684,10 +684,11 @@ def chat(
                 try:
                     response = agent.invoke({"messages": conversation_messages})
 
-                    # Find the last AIMessage (skip ToolMessages from intermediate steps)
+                    # create_agent returns {"messages": [...]}
+                    response_messages = response.get("messages", [])
                     ai_messages = [
                         msg
-                        for msg in response["messages"]
+                        for msg in response_messages
                         if isinstance(msg, AIMessage)
                     ]
                     if not ai_messages:
@@ -697,9 +698,7 @@ def chat(
                             ai_messages[-1].content or "(empty response)"
                         )
 
-                    conversation_messages.append(
-                        AIMessage(content=response_text)
-                    )
+                    conversation_messages = response_messages
                     print(f"\n🛠️  Agent response:\n{response_text}")
                     print("=" * 50 + "\n")
                 except Exception as e:

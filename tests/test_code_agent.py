@@ -26,6 +26,8 @@ from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from typer.testing import CliRunner
 
+from langchain_core.utils.uuid import uuid7
+
 from code_agent.agents.base_agent import build_agent
 from code_agent.cli import app as cli_app
 from code_agent.file_generator import (
@@ -183,7 +185,11 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
     assert agent_runnable is not None, "Agent Runnable should not be None"
 
     # Test a basic invocation
-    result = agent_runnable.invoke({"messages": [HumanMessage(content="test")]})
+    config = {"configurable": {"thread_id": str(uuid7())}}
+    result = agent_runnable.invoke(
+        {"messages": [HumanMessage(content="test")]},
+        config=config,
+    )
     final_message = result["messages"][-1]
     assert isinstance(final_message, AIMessage)
     assert final_message.content == "Hello from DummyLLM"

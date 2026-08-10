@@ -1,198 +1,67 @@
-"""This module defines the core agent graph using LangGraph.
-The graph orchestrates the flow of conversation, tool use, and memory.
+"""Agent graph implementation using LangChain's create_agent.
 
-The function `build_graph` is designed for direct use, but a thin
-wrapper called `graph_factory` is also provided so the graph can be
-loaded via `langgraph_api.utils.load_graph` which expects a callable
-with the signature `(RunnableConfig) -> Runnable`.
+This replaces the previous custom StateGraph with the supported
+LangChain agent harness, including:
+- Proper tool registration via create_agent
+- Checkpointer for conversation memory (InMemorySaver)
+- Human-in-the-loop middleware for sensitive tools
 """
 
 from __future__ import annotations
 
-import logging
-from typing import TypedDict, cast
-
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-from langgraph.graph import END, StateGraph
-from langgraph.prebuilt import ToolNode
-
-logger = logging.getLogger(__name__)
-
-
-class AgentState(TypedDict):
-    """The conversational state.
-
-    Attributes
-     ----------
-     messages:
-         A sequence of chat messages that represents the conversation
-         history.
-    """
-
-    messages: list[BaseMessage]
-
-
-# ---------------------------------------------------------------------------
-# Node functions
-# ---------------------------------------------------------------------------
-
-
-def call_llm(state: AgentState, model: Runnable) -> AgentState:
-    """Invoke the LLM with the full conversation history and return the
-    updated state.
-
-    :param state: The current state of the graph.
-    :param model: A tool-aware LLM instance.
-
-    :return: The updated AgentState that contains the new LLM message.
-    """
-    response = model.invoke(state["messages"])
-    # Preserve the conversation history
-    return {"messages": state["messages"] + [response]}
-
-
-def clear_messages(state: dict) -> dict:
-    """Clear all messages from memory while preserving other state structure.
-
-    This function resets the message list to an empty list, effectively
-    clearing the agent's short-term memory of previous conversations.
-
-    :param state: The current graph state (passed as a regular dict for this node).
-
-    :return: A new state with messages cleared but same TypedDict structure.
-    """
-    logger.info("Clearing conversation memory - resetting message history")
-    return {"messages": []}
-
-
-def should_continue(state: AgentState) -> str:
-    """Decide the next node.
-
-    If the last LLM message contains a tool call, we route to the
-    ``action`` node; otherwise we finish the conversation.
-
-    :param state: The current state of the graph.
-
-    :return: The name of the next node.
-    """
-    last = state["messages"][-1] if state.get("messages") else None
-
-    if isinstance(last, AIMessage):
-        tool_calls = getattr(last, "tool_calls", [])
-
-        # Check if any tool call is a 'clear_memory' action
-        for tc in tool_calls:
-            func_name = getattr(tc.get("function"), "name", "")
-            if func_name == "clear_messages":
-                return "memory_clear"
-
-        if last.tool_calls:
-            return "action"
-
-    return END
-
-
-# ---------------------------------------------------------------------------
-# Tool definitions for graph execution
-# ---------------------------------------------------------------------------
-
-
-def clear_memory_tool(state: dict) -> dict:
-    """Tool function that clears agent memory.
-
-    This is a standalone tool definition that can be used by the LLM to
-    request clearing of conversation history. When called, it invokes
-    `clear_messages` node which resets messages while keeping state structure intact.
-
-    :param state: The current graph state dictionary.
-
-    :return: State with messages cleared (will trigger routing via should_continue).
-    """
-    # This tool will be invoked by the LLM when requested to clear memory
-    logger.info("clear_memory_tool called - delegating to clear_messages node")
-    return {"messages": []}
-
-
-# ---------------------------------------------------------------------------
-# Graph construction
-# ---------------------------------------------------------------------------
+from langchain.agents import create_agent
+from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langgraph.checkpoint.memory import InMemorySaver
 
 
 def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
-    """Build a LangGraph ``StateGraph`` for a tool-aware agent.
+    """Build a LangChain agent with the given LLM and tools.
+
+    Uses create_agent with:
+    - InMemorySaver checkpointer for conversation memory
+    - HumanInTheLoopMiddleware for write/edit/format/notebook/r-script tools
 
     :param llm: The underlying language model.
     :param tools: A list of tools that the agent can invoke.
-
-    :returns: The compiled graph ready for execution.
+    :returns: A compiled agent runnable ready for execution.
     """
-    # Bind tools to the LLM
-    model = llm.bind_tools(tools)
+    tool_names = {t.name for t in tools}
+    interrupt_on = {}
 
-    graph = StateGraph(AgentState)  # type: ignore
+    if "edit-file" in tool_names:
+        interrupt_on["edit-file"] = True
+    if "new-file" in tool_names:
+        interrupt_on["new-file"] = True
+    if "format-code" in tool_names:
+        interrupt_on["format-code"] = True
+    if "notebook" in tool_names:
+        interrupt_on["notebook"] = True
+    if "r-script" in tool_names:
+        interrupt_on["r-script"] = True
 
-    # Nodes - including memory clearing functionality
-    graph.add_node("agent", lambda state: call_llm(state, model))
-    graph.add_node("action", ToolNode(tools))
+    middleware = []
+    if interrupt_on:
+        middleware.append(
+            HumanInTheLoopMiddleware(
+                interrupt_on=interrupt_on,
+                description_prefix="Tool execution requires approval",
+            )
+        )
 
-    # Add dedicated node for clearing messages (preserves TypedDict structure)
-    graph.add_node("memory_clear", clear_messages)
-
-    # Entry point
-    graph.set_entry_point("agent")
-
-    # Conditional routing with memory clearing path
-    graph.add_conditional_edges(
-        "agent",
-        should_continue,
-        {
-            "action": "action",
-            END: END,
-            "memory_clear": "memory_clear",
-        },
+    return create_agent(
+        model=llm,
+        tools=list(tools),
+        checkpointer=InMemorySaver(),
+        middleware=middleware,
+        system_prompt=(
+            "You are a coding agent. Use tools for every filesystem action.\n"
+            "All file operations are relative to the project root unless the user provides an absolute path.\n"
+            "ALWAYS use tools for filesystem operations. Never describe hypothetical files or directories.\n"
+            "When asked to read, create, edit, or search files, call the appropriate tool immediately.\n"
+            "Do not summarize or fabricate file contents you have not read.\n"
+            "Keep responses concise and actionable."
+        ),
     )
-
-    # Return to agent after a regular tool call
-    graph.add_edge("action", "agent")
-
-    # After clearing memory, return control back to the LLM for fresh start
-    graph.add_edge("memory_clear", "agent")
-
-    # Compile the graph
-    return graph.compile()
-
-
-# ---------------------------------------------------------------------------
-# Wrapper for langgraph_api.utils.load_graph
-# ---------------------------------------------------------------------------
-
-
-def graph_factory(config: RunnableConfig) -> Runnable:
-    """Return a runnable graph from a :class:`RunnableConfig`.
-
-    ``langgraph_api`` expects a callable that accepts a single
-    ``RunnableConfig`` argument.  The configuration is expected to
-    contain ``configurable`` entries ``llm`` (``BaseChatModel``)
-    and ``tools`` (``List[BaseTool]``).
-
-    :param config: The configuration for the graph.
-    :returns: The compiled graph ready for execution.
-    """
-    cfg = config.get("configurable", {})
-    llm: BaseChatModel = cfg["llm"]
-    tools = cast(list[BaseTool], cfg["tools"])
-
-    return build_graph(llm, tools)
-
-
-# ``__all__`` ensures we only export the public API.
-__all__ = [
-    "AgentState",
-    "build_graph",
-    "graph_factory",
-    "clear_messages",
-    "should_continue",
-]
