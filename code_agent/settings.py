@@ -5,18 +5,20 @@ All runtime configuration for the agent is centralised in a single
 sourced, in increasing precedence, from:
 
 1. the process environment variables, and
-2. a ``.env`` file at the project root (``OLLAMA_PORT``, ``OPENAI_API_KEY`` ...).
+2. a ``.env`` file at the project root (``CODE_AGENT_OLLAMA_PORT``,
+   ``CODE_AGENT_OPENAI_API_KEY`` ...).
 
 Sensible defaults live on the model so the application runs with zero
 configuration, while every value can be overridden per environment without
-touching code. Secrets (e.g. ``OPENAI_API_KEY``) are never hardcoded - they are
-read from the environment / ``.env`` only, satisfying the project's security
-requirement that provider credentials come from config, not source.
+touching code. Secrets (e.g. ``CODE_AGENT_OPENAI_API_KEY``) are never
+hardcoded - they are read from the environment / ``.env`` only, satisfying
+the project's security requirement that provider credentials come from
+config, not source.
 
-Field names map to upper-case environment variables by default
-(``ollama_port`` -> ``OLLAMA_PORT``). The provider layer reads the same values
-from the ``model_dump()`` dict using the ``ollama_*`` / ``openai_*`` key
-convention, so this module is the single source of truth.
+Field names map to upper-case environment variables with the ``CODE_AGENT_``
+prefix (``ollama_port`` -> ``CODE_AGENT_OLLAMA_PORT``). The provider layer
+reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
+``openai_*`` key convention, so this module is the single source of truth.
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ from typing import Any
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

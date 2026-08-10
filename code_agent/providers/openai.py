@@ -9,16 +9,17 @@ from constructor arguments (the API key falls back to the
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
 import os
+
+from collections.abc import Callable
 from typing import Any
 
-from code_agent.providers.base import ProviderBase
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
-@dataclass
+from code_agent.providers.base import ProviderBase
+
+
 class OpenAIProvider(ProviderBase):
     """OpenAI-backed LLM provider.
 
@@ -48,7 +49,12 @@ class OpenAIProvider(ProviderBase):
         :return: The initialized provider.
         """
         if api_key is None:
-            api_key = SecretStr(os.environ["OPENAI_API_KEY"])
+            api_key = os.getenv("OPENAI_API_KEY", "")
+            if api_key is None:
+                raise ValueError(
+                    "OpenAI API key is required. Set CODE_AGENT_OPENAI_API_KEY "
+                    "in .env or pass api_key explicitly."
+                )
         elif isinstance(api_key, str):
             api_key = SecretStr(api_key)
 

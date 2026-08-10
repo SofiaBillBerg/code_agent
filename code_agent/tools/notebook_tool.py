@@ -5,12 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal, cast
 
-from .edit_file_tool import FileObject
-
-from langchain.tools import BaseTool
 import nbformat
+
+from langchain_core.tools import BaseTool
 from nbformat import NotebookNode
 from pydantic import BaseModel, ConfigDict, Field
+
+from .edit_file_tool import FileObject
+
 
 class NotebookArgs(BaseModel):
     """Arguments for the notebook tool."""

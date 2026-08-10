@@ -28,13 +28,13 @@ from typer.testing import CliRunner
 
 from code_agent.agents.base_agent import build_agent
 from code_agent.cli import app as cli_app
-from code_agent.core import (
+from code_agent.file_generator import (
     append_file,
     create_file,
     create_from_template,
     create_project_scaffold,
+    write_file,
 )
-from code_agent.file_generator import write_file
 from code_agent.main import load_config
 
 

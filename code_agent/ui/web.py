@@ -20,20 +20,26 @@ Security notes:
   invalid params are rejected with HTTP 400 before any tool runs.
 * Requests, params and results are never logged, so secrets and API keys
   cannot leak through the web server.
+* When ``CODE_AGENT_AUTH_TOKEN`` is set, every request must include a matching
+  ``X-CodeAgent-Auth-Token`` header. Without it, the server returns HTTP 401.
+  This prevents unauthenticated remote access when the server is bound to a
+  non-loopback interface.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import uuid
+
 from pathlib import Path
 from typing import Any
-import uuid
+
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 
 from code_agent.capabilities.envelope import InvocationRequest
 from code_agent.capabilities.registry import CapabilityRegistry
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from code_agent.settings import get_settings
+
 
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
@@ -61,17 +67,33 @@ def get_registry() -> CapabilityRegistry:
     return _REGISTRY
 
 
-@dataclass
-class InvokeBody(BaseModel):
-    """JSON request body for ``POST /invoke``.
+# Optional authentication middleware. When ``CODE_AGENT_AUTH_TOKEN`` is set,
+# every request must carry a matching ``X-CodeAgent-Auth-Token`` header.
+class AuthMiddleware:
+    """Reject requests that lack a valid auth token when one is configured."""
 
-    Attributes:
-        capability_id: Stable identifier of the capability to invoke.
-        params: JSON object of parameters for the capability.
-    """
+    def __init__(self, app: Any) -> None:
+        self.app = app
 
-    capability_id: str
-    params: dict[str, Any] = Field(default_factory=dict)
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = {k.decode(): v.decode() for k, v in scope.get("headers", [])}
+        token = headers.get("x-codeagent-auth-token")
+        expected = get_settings().auth_token
+
+        if expected is not None and token != expected:
+            from fastapi.responses import JSONResponse
+
+            response = JSONResponse(
+                content={"detail": "Unauthorized"}, status_code=401
+            )
+            await response(scope, receive, send)
+            return
+
+        await self.app(scope, receive, send)
 
 
 app = FastAPI(
@@ -82,6 +104,10 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
+
+# Attach auth middleware when an auth token is configured.
+if get_settings().auth_token is not None:
+    app.add_middleware(AuthMiddleware)
 
 
 @app.get("/capabilities")
@@ -95,17 +121,17 @@ def list_capabilities() -> list[dict[str, Any]]:
 
 
 @app.post("/invoke")
-def invoke_capability(body: InvokeBody) -> dict[str, Any]:
+def invoke_capability(body: InvocationRequest) -> dict[str, Any]:
     """Dispatch an invocation and return the response plus audit receipt.
 
-    Args:
-        body: Parsed request body (capability_id and params).
+    :param body: Parsed request body (capability_id and params).
 
     :return: A JSON object with ``response`` (the :class:`InvocationResponse`)
         and ``receipt`` (the audit :class:`Receipt`) fields.
 
     :raises HTTPException: 400 when the capability is unknown, high-risk, or the
-            params fail validation.
+            params fail validation. 401 when ``CODE_AGENT_AUTH_TOKEN`` is set
+            but the request does not include a matching header.
     """
     request = InvocationRequest(
         request_id=uuid.uuid4().hex,

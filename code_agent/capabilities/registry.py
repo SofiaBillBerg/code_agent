@@ -9,13 +9,15 @@ and records every invocation as an audit :class:`Receipt`.
 from __future__ import annotations
 
 import time
+
 from typing import Any, Literal
+
+from pydantic import BaseModel, ValidationError
 
 from .audit import AuditLog, Receipt
 from .base import Capability, RiskClass
 from .envelope import InvocationRequest, InvocationResponse
 
-from pydantic import BaseModel, ValidationError
 
 class CapabilityRegistry:
     """Registry of capabilities with discovery and dispatch.
@@ -155,12 +157,16 @@ class CapabilityRegistry:
     def _to_dict(result: Any) -> dict[str, Any]:
         """Normalize an invocation result to a JSON-serializable dict.
 
+        Uses ``mode="json"`` so that Pydantic models recursively convert
+        non-JSON-safe types (e.g. ``Path``, ``datetime``, ``Enum``) into
+        plain Python types before the dict is returned to the caller.
+
         :param result: The capability's output, typically an ``output_model``
                 instance.
-        :return: A dict representation of the result.
+        :return: A JSON-serializable dict representation of the result.
         """
         if isinstance(result, BaseModel):
-            return result.model_dump()
+            return result.model_dump(mode="json")
         if isinstance(result, dict):
             return result
         return {"value": result}

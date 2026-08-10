@@ -5,12 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from .edit_file_tool import FileObject
-
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, ConfigDict, Field
 
+from .edit_file_tool import FileObject
+
+
 #  Arguments schema
+
 
 class LinkerArgs(BaseModel):
     """Arguments for reading file contents."""

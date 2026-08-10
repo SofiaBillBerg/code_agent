@@ -9,9 +9,9 @@ repos:
       #   entry: project_management/run_autofix.sh
       #   language: script
       #   stages: [pre-commit, manual]
-      - id: pre-push-quick
-        name: pre-push-quick
-        entry: pre-push-quick
+      - id: pre-commit-quick
+        name: pre-commit-quick
+        entry: project_management/pre-commit-quick.sh
         language: script
         stages: [pre-push, manual]
       - id: run-formatters

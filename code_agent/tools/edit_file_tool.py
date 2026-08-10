@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
-from pathlib import Path
 import shutil
+
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
+
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +45,11 @@ class EditFileArgs(BaseModel):
 
 class EditFileTool(BaseTool):
     """Tool for editing existing files.
+
+    Replace and append modes delegate to :mod:`code_agent.file_generator` and
+    :mod:`code_agent.core` so that atomic writes and path normalization are
+    centralized. Patch mode remains custom because it handles marker-based
+    insertion unique to this tool.
 
     :param root_dir: Root directory for file operations.
     :param args_schema: Pydantic model class for validating and parsing tool input.

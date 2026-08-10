@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
 
+from pathlib import Path
+
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.main import create_llm, load_config
+
 
 def get_staged_files() -> list[str]:
     """Get list of staged files from git.

@@ -14,12 +14,14 @@ available.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 import json
+
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
 from .exceptions import CodeAgentError
+
 
 try:  # Optional dependency - used only for the notebook path.
     import nbformat  # type: ignore
@@ -194,3 +196,47 @@ def py_to_ipynb(py_file: Path, output: Path | None = None) -> Path:
         raise CodeAgentError(
             f"Failed to write notebook {output!s}: {exc}"
         ) from exc
+
+
+def create_file(
+    path: Path | str,
+    content: str,
+    *,
+    overwrite: bool = False,
+) -> Path:
+    """Create *path* and write *content*.
+
+    This is a convenience wrapper around :func:`write_file` that adds an
+    overwrite guard: by default an existing file raises
+    :class:`CodeAgentError` unless ``overwrite=True`` is passed.
+
+    :param path: Target file path.
+    :param content: Text to write.
+    :param overwrite: If ``False`` (the default) an existing file will raise
+        a :class:`CodeAgentError`.
+    :return: Absolute path of the created file.
+    """
+    path = Path(path).expanduser().resolve()
+    if path.exists() and not overwrite:
+        raise CodeAgentError(
+            f"File {path!s} already exists - use overwrite=True to replace it"
+        )
+    return write_file(path, content)
+
+
+def append_file(path: Path | str, content: str) -> Path:
+    """Append *content* to *path*.
+
+    The function opens the file in append mode, writes the content and
+    returns the absolute file path.  The file must already exist.
+
+    :param path: Target file path.
+    :param content: Text to append.
+    :return: Absolute path of the modified file.
+    """
+    path = Path(path).expanduser().resolve()
+    if not path.exists():
+        raise CodeAgentError(f"File {path!s} does not exist - cannot append")
+    with path.open("a", encoding="utf-8") as fp:
+        fp.write(content)
+    return path

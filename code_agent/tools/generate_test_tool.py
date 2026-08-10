@@ -5,10 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from langchain_core.tools import BaseTool
+from pydantic import BaseModel, ConfigDict, Field
+
 from .edit_file_tool import FileObject
 
-from langchain.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
 
 class GenerateTestArgs(BaseModel):
     """Arguments for the generate-test tool."""

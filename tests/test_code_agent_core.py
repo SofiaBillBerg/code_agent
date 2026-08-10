@@ -14,9 +14,13 @@ from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.core import append_file, create_from_template
 from code_agent.docs_generator import generate_quarto_docs
-from code_agent.file_generator import py_to_ipynb, write_file
+from code_agent.file_generator import (
+    append_file,
+    create_from_template,
+    py_to_ipynb,
+    write_file,
+)
 
 
 @pytest.fixture

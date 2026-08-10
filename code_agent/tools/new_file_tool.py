@@ -1,16 +1,25 @@
-"""Tool to generate new files."""
+"""Tool to create new files.
+
+Delegates actual file creation to :func:`code_agent.core.create_file`
+so that atomic writes, parent-directory creation and overwrite checks
+are centralized in one place.
+"""
 
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 import shutil
+
+from pathlib import Path
 from typing import Literal
+
+from langchain_core.tools import BaseTool
+from pydantic import BaseModel, ConfigDict, Field
+
+from code_agent.file_generator import create_file
 
 from .edit_file_tool import FileObject
 
-from langchain.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
 
 log = logging.getLogger(__name__)
 
@@ -60,6 +69,9 @@ class NewFileTool(BaseTool):
     ) -> tuple[str, FileObject]:
         """Create a new file at the specified path with the given content.
 
+        Actual file creation is delegated to :func:`code_agent.core.create_file`
+        so that atomic writes and parent-directory creation are centralized.
+
         :param file_path: The path where the new file should be created.
         :param content: The content to be written into the new file.
         :param overwrite: Whether to overwrite the file if it already exists.
@@ -74,30 +86,22 @@ class NewFileTool(BaseTool):
         full_path = self.root / file_path
 
         try:
+            # Create a backup before overwriting if the file already exists.
             backup_status = "no_backup"
-            if full_path.exists():
-                if not overwrite:
-                    return (
-                        f"❌ File already exists: {full_path}. Use 'overwrite=True' to replace it.",
-                        FileObject(path=full_path, contents="", status="error"),
+            if full_path.exists() and overwrite:
+                backup_path = full_path.with_suffix(full_path.suffix + ".bak")
+                try:
+                    shutil.copy(full_path, backup_path)
+                    backup_status = "backup_created"
+                    log.info(f"Backup created for overwrite: {backup_path}")
+                except Exception as e:
+                    backup_status = "backup_failed"
+                    log.exception(
+                        f"Failed to create backup for {full_path} during overwrite: {e}"
                     )
-                else:
-                    # Create a backup before overwriting
-                    backup_path = full_path.with_suffix(
-                        full_path.suffix + ".bak"
-                    )
-                    try:
-                        shutil.copy(full_path, backup_path)
-                        backup_status = "backup_created"
-                        log.info(f"Backup created for overwrite: {backup_path}")
-                    except Exception as e:
-                        backup_status = "backup_failed"
-                        log.exception(
-                            f"Failed to create backup for {full_path} during overwrite: {e}"
-                        )  # Continue with the creation, but report backup failure
 
-            full_path.parent.mkdir(parents=True, exist_ok=True)
-            full_path.write_text(content, encoding="utf-8")
+            # Delegate actual file creation to the shared helper.
+            create_file(full_path, content, overwrite=overwrite)
 
             message = f"✅ Successfully created {full_path}"
             if backup_status == "backup_failed":

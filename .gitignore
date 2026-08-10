@@ -2,7 +2,8 @@
 .idea/
 *.iml
 *.ipr
-.*
+
+.repowise
 apidocs
 stubs/
 th*
@@ -226,4 +227,8 @@ docs/docs_web/
 mempalace.yaml
 entities.json
 /.tmp/
+notes/ # Private user notes
+.*/
+/.*/  # Ignore hidden directories or only-local related files
+
 pdf_docs/

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# pre-commit-quick.sh - naming intentional
 # Pre-hook: runs all checks in graceful mode and shows aggregate summary.
 # Each sub-script exits 0 even on failures, so we collect results and decide at the end.
 

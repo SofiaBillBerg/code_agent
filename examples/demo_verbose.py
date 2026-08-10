@@ -1,4 +1,6 @@
-from langchain.messages import HumanMessage
+from __future__ import annotations
+
+from langchain_core.messages import HumanMessage
 
 from code_agent.agents.persistent_agent import get_persistent_agent
 

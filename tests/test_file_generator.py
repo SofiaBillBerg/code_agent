@@ -61,7 +61,7 @@ def test_write_file_invalid_path() -> None:
     :return: None
     """
     invalid = "invalid\0name.txt"
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception):  # ruff: ignore[assert-raises-exception]
         write_file(invalid, "content")
 
 

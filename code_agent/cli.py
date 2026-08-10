@@ -38,12 +38,18 @@ action and exits.  All heavy lifting is done by the helper functions.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
-from typing import Any
 import uuid
+
+from pathlib import Path
+from typing import Any
+
+import typer
+
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.tools import BaseTool
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
@@ -59,9 +65,7 @@ from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
 from code_agent.providers.factory import create_provider
 from code_agent.scaffold import create_project_scaffold
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.tools import BaseTool
-import typer
+
 
 app = typer.Typer(name="code_agent", help="Local LLM-driven code assistant")
 

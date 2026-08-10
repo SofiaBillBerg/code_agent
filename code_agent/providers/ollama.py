@@ -9,11 +9,44 @@ temperature) are read from config, never hardcoded.
 from __future__ import annotations
 
 import json
+
 from pathlib import Path
 from typing import Any
 
-from code_agent.providers.base import ProviderBase
 from langchain_ollama import ChatOllama
+
+from code_agent.providers.base import ProviderBase
+from code_agent.settings import as_config_dict
+
+
+#: Shared helper so the provider layer and ``main.create_llm`` build
+#: ``ChatOllama`` from the same config keys.  Keeping this in one place
+#: means key renames or constructor signature changes only need updating
+#: once.
+def _chat_ollama_from_config(config: dict[str, Any]) -> ChatOllama:
+    """Construct a ``ChatOllama`` from a config mapping.
+
+    Reads ``ollama_model`` / ``model``, ``ollama_scheme``, ``ollama_host``,
+    ``ollama_port`` and the generation keys ``temperature``, ``max_tokens``,
+    ``stream``.  The legacy ``llm_config.json`` keys (``ollama_*``) take
+    precedence over the bare ``model`` / ``temperature`` etc. keys.
+
+    :param config: Configuration mapping, typically from :func:`code_agent.settings.as_config_dict`.
+    :return: A configured ``ChatOllama`` instance.
+    """
+    model = config.get("ollama_model") or config.get(
+        "model", "gpt-oss:20b-cloud"
+    )
+    scheme = config.get("ollama_scheme", "http")
+    host = config.get("ollama_host", "localhost")
+    port = config.get("ollama_port", 11434)
+    base_url = f"{scheme}://{host}:{port}"
+    kwargs: dict[str, Any] = {}
+    for key in ("temperature", "max_tokens", "stream"):
+        if key in config:
+            kwargs[key] = config[key]
+    return ChatOllama(model=model, base_url=base_url, **kwargs)
+
 
 class OllamaProvider(ProviderBase):
     """Ollama-backed LLM provider.
@@ -84,28 +117,20 @@ class OllamaProvider(ProviderBase):
         ``ollama_*`` connection keys from ``config`` (or the default config
         file when ``config`` is ``None``).
 
-        :param config: Configuration mapping. When ``None`` the default ``code_agent/config/llm_config.json`` is loaded.
+        :param config: Configuration mapping. When ``None`` the typed application settings are used, falling back to ``llm_config.json`` if settings are unavailable.
         :return: A configured ``OllamaProvider`` instance.
         """
         if config is None:
             config = cls._load_default_config()
 
-        # Prefer the explicit ``ollama_model`` key; fall back to the bare
-        # ``model`` key for backward compatibility with older configs/tests.
-        model = config.get("ollama_model") or config.get(
-            "model", "gpt-oss:20b-cloud"
+        client = _chat_ollama_from_config(config)
+        return cls(
+            model=client.model,
+            base_url=client.base_url,
+            temperature=config.get("temperature", 0.7),
+            max_tokens=config.get("max_tokens", 6000),
+            stream=config.get("stream", True),
         )
-        scheme = config.get("ollama_scheme", "http")
-        host = config.get("ollama_host", "localhost")
-        port = config.get("ollama_port", 11434)
-        base_url = f"{scheme}://{host}:{port}"
-
-        kwargs: dict[str, Any] = {}
-        for key in ("temperature", "max_tokens", "stream"):
-            if key in config:
-                kwargs[key] = config[key]
-
-        return cls(model=model, base_url=base_url, **kwargs)
 
     @staticmethod
     def _load_default_config() -> dict[str, Any]:
@@ -118,9 +143,7 @@ class OllamaProvider(ProviderBase):
         :return: The default configuration mapping.
         """
         try:
-            from code_agent.settings import get_settings
-
-            return get_settings().model_dump()
+            return as_config_dict()
         except Exception:
             path = (
                 Path(__file__).resolve().parent.parent

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import difflib
+
 from pathlib import Path
+
 
 def generate_diff(
     old_content: str,
