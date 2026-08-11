@@ -26,6 +26,7 @@ from code_agent import (
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.main import load_config
 
+
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

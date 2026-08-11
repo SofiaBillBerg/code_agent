@@ -8,23 +8,25 @@ are centralized in one place.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 import shutil
 
-from pathlib import Path
-from typing import Any, Literal
-
-from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
+from .edit_file_tool import FileObject
 
 from code_agent.file_generator import create_file
-
-from .edit_file_tool import FileObject
+from langchain_core.tools import BaseTool, tool
+from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)
 
 
 class NewFileArgs(BaseModel):
-    """Arguments for creating a new file."""
+    """Arguments for creating a new file.
+
+    Attributes:
+        file_path: The full path, including the filename, where the new file should be created.
+        content: The content to be written into the new file.
+    """
 
     file_path: str = Field(
         ...,
@@ -35,39 +37,31 @@ class NewFileArgs(BaseModel):
     )
 
 
-class NewFileTool(BaseTool):
-    """Tool for creating new files."""
+def make_new_file_tool(root_dir: Path) -> BaseTool:
+    """Create a ``new-file`` tool bound to ``root_dir``.
 
-    name: str = "new-file"
-    description: str = (
-        "Create a new file with the given content. "
-        "Use this when the user asks to create a file that does not exist yet. "
-        "Pass the path relative to the project root."
+    The root directory is captured in the closure at construction time so the
+    tool is a plain :func:`@tool`-decorated function (no custom ``BaseTool``
+    subclass fields), which is how recent langchain-core expects tools to be
+    registered.
+
+    :param root_dir: The root directory for file operations.
+    :return: A LangChain tool that creates new files.
+    """
+    root = Path(root_dir).expanduser().resolve()
+
+    @tool(
+        "new-file",
+        args_schema=NewFileArgs,
+        response_format="content_and_artifact",
+        description=(
+            "Create a new file with the given content. "
+            "Use this when the user asks to create a file that does not exist yet. "
+            "Pass the path relative to the project root."
+        ),
     )
-    response_format: Literal["content", "content_and_artifact"] = (
-        "content_and_artifact"
-    )
-    args_schema: type[BaseModel] = (
-        NewFileArgs  # pyrefly: ignore[bad-override-mutable-attribute]
-    )
-
-    root: Path
-
-    root: Path
-
-    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
-        """Initialize the NewFileTool with the root directory.
-
-        :param root_dir: The root directory for file operations.
-        :param kwargs: Additional keyword arguments.
-        :return: None
-        """
-        super().__init__(
-            root=Path(root_dir).expanduser().resolve(), **kwargs
-        )  # ruff: ignore [ARG002]
-
-    def _run(
-        self, file_path: str, content: str, overwrite: bool = False
+    def new_file(
+        file_path: str, content: str, overwrite: bool = False
     ) -> tuple[str, FileObject]:
         """Create a new file at the specified path with the given content.
 
@@ -85,7 +79,7 @@ class NewFileTool(BaseTool):
                 FileObject(path=Path(), contents="", status="error"),
             )
 
-        full_path = self.root / file_path
+        full_path = root / file_path
 
         try:
             # Create a backup before overwriting if the file already exists.
@@ -122,8 +116,4 @@ class NewFileTool(BaseTool):
                 FileObject(path=full_path, contents="", status="error"),
             )
 
-    async def _arun(
-        self, file_path: str, content: str, overwrite: bool = False
-    ) -> tuple[str, FileObject]:
-        """Async version."""
-        return self._run(file_path, content, overwrite)
+    return new_file

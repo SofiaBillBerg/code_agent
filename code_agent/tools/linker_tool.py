@@ -3,82 +3,69 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal
-
-from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
 
 from .edit_file_tool import FileObject
 
-#  Arguments schema
+from langchain_core.tools import BaseTool, tool
+from pydantic import BaseModel, Field
 
 
 class LinkerArgs(BaseModel):
-    """Arguments for reading file contents."""
+    """Arguments for reading file contents.
+
+    Attributes:
+        file_path: Path to file to read.
+    """
 
     file_path: str = Field(..., description="Path to file to read")
 
 
-# Tool definition
-class LinkerTool(BaseTool):
-    """Tool for reading file contents."""
+def make_linker_tool(root_dir: Path) -> BaseTool:
+    """Create a ``linker`` tool bound to ``root_dir``.
 
-    name: str = "linker"
-    description: str = (
-        "Read and return the full contents of a file. "
-        "Returns file contents as string and FileObject artifact."
+    The root directory is captured in the closure at construction time so the
+    tool is a plain :func:`@tool`-decorated function (no custom ``BaseTool``
+    subclass fields), which is how recent langchain-core expects tools to be
+    registered.
+
+    :param root_dir: The root directory to use for file operations.
+    :return: A LangChain tool that reads file contents.
+    """
+    root = Path(root_dir).expanduser().resolve()
+
+    @tool(
+        "linker",
+        args_schema=LinkerArgs,
+        response_format="content_and_artifact",
+        description=(
+            "Read and return the full contents of a file. "
+            "Returns file contents as string and FileObject artifact."
+        ),
     )
-    response_format: Literal["content", "content_and_artifact"] = (
-        "content_and_artifact"
-    )
-    args_schema: type[BaseModel] = (
-        LinkerArgs  # pyrefly: ignore[bad-override-mutable-attribute]
-    )
+    def linker(file_path: str) -> tuple[str, FileObject]:
+        """Read and return the full contents of a file.
 
-    root: Path
-
-    def __init__(self, root_dir: Path, **kwargs: dict[str, Any]) -> None:
-        """Initialize the tool.
-
-        :param root_dir: The root directory to use for file operations.
-        :param kwargs: Additional arguments to pass to the parent class.
-        :return: None
+        :param file_path: Path to the file to read.
+        :return: A tuple of the file contents and a :class:`FileObject` artifact.
         """
-        super().__init__(
-            root=Path(root_dir).expanduser().resolve(), **kwargs
-        )  # ruff: ignore [ARG002]  # type: ignore[call-arg, arg-type]
+        full_path = root / file_path
 
-    def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """Run the tool.
-
-        :param kwargs: The arguments to pass to the tool.
-        :return: The result of the tool.
-        """
-        file_path_str: str = kwargs.get("file_path", "")
-        file_path = self.root / file_path_str
-
-        if not file_path.exists():
+        if not full_path.exists():
             return (
-                f"❌ File not found: {file_path}",
-                FileObject(path=file_path, contents="", status="error"),
+                f"❌ File not found: {full_path}",
+                FileObject(path=full_path, contents="", status="error"),
             )
 
         try:
-            contents = file_path.read_text(encoding="utf-8")
+            contents = full_path.read_text(encoding="utf-8")
             return (
                 contents,
-                FileObject(path=file_path, contents=contents, status="read"),
+                FileObject(path=full_path, contents=contents, status="read"),
             )
         except Exception as e:
             return (
                 f"❌ Error reading file: {e}",
-                FileObject(path=file_path, contents="", status="error"),
+                FileObject(path=full_path, contents="", status="error"),
             )
 
-    async def _arun(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """Async version.
-
-        :param kwargs: The arguments to pass to the tool.
-        :return: The result of the tool.
-        """
-        return self._run(**kwargs)
+    return linker

@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
-from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
+from langchain_core.tools import BaseTool, tool
+from pydantic import BaseModel, Field
 
 
 class GeneralChatArgs(BaseModel):
-    """Arguments for a general chat query."""
+    """Arguments for a general chat query.
+
+    This class defines the schema for the arguments required to perform a general chat query.
+    It includes a single field for the user's query or message.
+
+    Attributes:
+        query: The user's question or message for a general chat response.
+    """
 
     query: str = Field(
         ...,
@@ -19,31 +24,27 @@ class GeneralChatArgs(BaseModel):
     )
 
 
-class GeneralChatTool(BaseTool):
-    """A tool for general conversation and questions."""
+def make_general_chat_tool(llm: BaseChatModel) -> BaseTool:
+    """Create a ``general-chat`` tool bound to ``llm``.
 
-    name: str = "general-chat"
-    description: str = (
-        "Use this tool as a last resort if no other tool is appropriate for the user's query. "
-        "It is for general conversation, questions, and answering 'how-to' style inquiries."
+    The LLM is captured in the closure at construction time so the tool is a
+    plain :func:`@tool`-decorated function (no custom ``BaseTool`` subclass
+    fields), which is how recent langchain-core expects tools to be registered.
+
+    :param llm: The LLM instance to use for generating responses.
+    :return: A LangChain tool for general conversation.
+    """
+    chat_model = llm
+
+    @tool(
+        "general-chat",
+        args_schema=GeneralChatArgs,
+        description=(
+            "Use this tool as a last resort if no other tool is appropriate for the user's query. "
+            "It is for general conversation, questions, and answering 'how-to' style inquiries."
+        ),
     )
-
-    args_schema: type[BaseModel] = (
-        GeneralChatArgs  # pyrefly: ignore[bad-override-mutable-attribute]
-    )
-
-    llm: BaseChatModel
-
-    def __init__(self, llm_instance: BaseChatModel, **kwargs: Any) -> None:
-        """Initialize the tool with the LLM instance.
-
-        :param llm_instance: The LLM instance to use for generating responses.
-        :param kwargs: Additional keyword arguments.
-        :return: None
-        """
-        super().__init__(llm=llm_instance, **kwargs)  # ruff: ignore [ARG002]
-
-    def _run(self, query: str) -> str:
+    def general_chat(query: str) -> str:
         """Send the query directly to the LLM for a conversational response.
 
         :param query: The user's query or message.
@@ -57,19 +58,11 @@ User's query: "{query}"
 Your response:"""
 
         try:
-            response = self.llm.invoke([HumanMessage(content=prompt)])
+            response = chat_model.invoke([HumanMessage(content=prompt)])
             if hasattr(response, "content"):
                 return str(response.content)
             return str(response)
         except Exception as e:
             return f"❌ Error during general chat: {e}"
 
-    async def _arun(self, **kwargs: Any) -> str:
-        """Async version.
-
-        :param kwargs: Keyword arguments.
-        :return: The LLM's response.
-        """
-        # Simplified for now
-        query = kwargs.get("query", "")
-        return self._run(query)
+    return general_chat

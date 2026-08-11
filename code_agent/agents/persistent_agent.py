@@ -3,7 +3,7 @@
 import json
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import (
@@ -14,7 +14,6 @@ from langchain_core.messages import (
 )
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-from typing_extensions import Self
 
 from code_agent.agents.base_agent import build_agent
 
@@ -102,27 +101,23 @@ class PersistentAgent:
         self.conversation_history.append({"role": "user", "content": message})
 
         try:
-            response = self.agent.invoke(
-                {"messages": self._history_to_messages()}
-            )
+            response = self.agent.invoke({
+                "messages": self._history_to_messages()
+            })
             response_content = response["messages"][-1].content
-            self.conversation_history.append(
-                {
-                    "role": "assistant",
-                    "content": response_content,
-                }
-            )
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": response_content,
+            })
             self._save_state()
             return response_content
 
         except Exception as e:
             error_msg = f"❌ Error: {e!s}"
-            self.conversation_history.append(
-                {
-                    "role": "error",
-                    "content": error_msg,
-                }
-            )
+            self.conversation_history.append({
+                "role": "error",
+                "content": error_msg,
+            })
             self._save_state()
             return error_msg
 

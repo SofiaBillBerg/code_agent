@@ -14,12 +14,15 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic_settings import BaseSettings
 
 from code_agent.settings import Settings, get_settings
+
 
 __all__ = ["create_llm", "load_config"]
 
@@ -32,14 +35,20 @@ __all__ = ["create_llm", "load_config"]
 def load_config(config_path: str | None = None) -> dict[str, Any]:
     """Load configuration as a dictionary.
 
-    When *config_path* is provided the JSON file at that location is loaded
-    (legacy override).  When it is ``None`` the typed application settings are
-    returned instead, so the ``.env`` file / environment remain the single
-    source of truth.
+    When *config_path* is provided the JSON or YAML file at that location is
+    loaded (legacy override).  When it is ``None`` the typed application
+    settings are returned instead, so the ``.env`` file / environment remain
+    the single source of truth.
 
-    :param config_path: Optional path to a JSON configuration file.  If the
-        path points to a directory, the function will look for
-        ``llm_config.json`` inside.
+    Supported extensions are ``.json``, ``.yaml`` and ``.yml``; the loader
+    is chosen from the file suffix.  A ``FileNotFoundError`` is raised when
+    the target does not exist, and a ``ValueError`` for unsupported
+    extensions.
+
+    :param config_path: Optional path to a JSON/YAML configuration file.  If
+        the path points to a directory, the function will look for
+        ``llm_config.json``, ``llm_config.yaml`` or ``llm_config.yml``
+        inside, in that order.
 
     :returns: Parsed configuration dictionary.
     """  # ruff: noqa: E501
@@ -48,13 +57,33 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
 
     cfg_file = Path(config_path)
     if cfg_file.is_dir():
-        cfg_file /= "llm_config.json"
+        for candidate in (
+            "llm_config.json",
+            "llm_config.yaml",
+            "llm_config.yml",
+        ):
+            probe = cfg_file / candidate
+            if probe.exists():
+                cfg_file = probe
+                break
+        else:
+            raise FileNotFoundError(
+                f"No llm_config.json/yaml/yml found in directory: {config_path}"
+            )
 
     if not cfg_file.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
+    suffix = cfg_file.suffix.lower()
     with cfg_file.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        if suffix == ".json":
+            return json.load(f)
+        if suffix in {".yaml", ".yml"}:
+            return yaml.safe_load(f)
+        raise ValueError(
+            f"Unsupported config file extension: {suffix!r} "
+            f"(expected .json, .yaml or .yml)"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -105,6 +134,13 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 base_url: str,
                 **kwargs: Any,
             ) -> None:
+                """Initialise the fallback LLM.
+
+                :param err: The exception that caused the fallback.
+                :param base_url: The base URL of the Ollama server.
+                :param kwargs: Additional keyword arguments.
+                :return: None
+                """
                 super().__init__(**kwargs)
                 self._err = err
                 self._base_url = base_url
@@ -116,16 +152,23 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 run_manager: Any = None,
                 **kwargs: Any,
             ) -> ChatResult:
-                content = json.dumps(
-                    {
-                        "error": "LLM unavailable",
-                        "details": (
-                            f"Failed to initialise ChatOllama. "
-                            f"Error: {self._err}. "
-                            f"Base URL: {self._base_url}."
-                        ),
-                    }
-                )
+                """Generate a response to the given messages.
+
+                :param messages: The messages to generate a response to.
+                :param stop: A list of strings to stop generation on.
+                :param run_manager: The run manager.
+                :param kwargs: Additional keyword arguments.
+                :return: A :class:`~langchain_core.messages.ChatResult`
+                    instance.
+                """
+                content = json.dumps({
+                    "error": "LLM unavailable",
+                    "details": (
+                        f"Failed to initialise ChatOllama. "
+                        f"Error: {self._err}. "
+                        f"Base URL: {self._base_url}."
+                    ),
+                })
                 return ChatResult(
                     generations=[
                         ChatGeneration(message=AIMessage(content=content))
@@ -134,7 +177,7 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
 
             @property
             def _llm_type(self) -> str:
-                """Return type of llm.
+                """Access the type of llm.
 
                 :return: Returns "fallback"
                 """
@@ -145,6 +188,12 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 tools: Sequence[Any],
                 **kwargs: Any,
             ) -> Any:
+                """Bind tools to the LLM.
+
+                :param tools: The tools to bind.
+                :param kwargs: Additional keyword arguments.
+                :return: The LLM with the tools bound.
+                """
                 return self
 
         return _FallbackLLM(exc, base_url)

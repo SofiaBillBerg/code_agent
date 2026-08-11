@@ -8,6 +8,8 @@ the tool's ``_run`` with the same keyword arguments LangChain would pass.
 
 from __future__ import annotations
 
+import inspect
+
 from collections.abc import Callable
 from typing import Any
 
@@ -15,6 +17,7 @@ from langchain_core.tools import BaseTool
 from pydantic import BaseModel
 
 from .base import CapabilityBase, RiskClass
+
 
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (
@@ -64,17 +67,42 @@ def _infer_risk_class(tool: BaseTool) -> str:
     return RiskClass.MEDIUM
 
 
+def _run_requires_config(tool: BaseTool) -> bool:
+    """Whether the tool's ``_run`` requires a keyword-only ``config`` argument.
+
+    Recent langchain-core versions made ``config`` a required keyword-only
+    argument of ``StructuredTool._run``, so calling ``_run(**kwargs)``
+    directly raises a ``TypeError``. Tools with that signature must be
+    invoked through the public ``invoke`` API instead, which supplies
+    ``config`` internally.
+
+    :param tool: The LangChain tool to inspect.
+    :return: ``True`` when ``_run`` declares a ``config`` parameter.
+    """
+    run = getattr(tool, "_run", None)
+    if not callable(run):
+        return False
+    try:
+        return "config" in inspect.signature(run).parameters
+    except (TypeError, ValueError):
+        # Uninspectable callables (e.g. MagicMock) keep the _run-first path.
+        return False
+
+
 def _make_execute(tool: BaseTool) -> Callable[[BaseModel], BaseModel]:
     """Build the ``_execute`` implementation delegating to a tool.
 
     The returned callable mirrors ``CapabilityBase._execute``: it receives
-    validated parameters and returns an ``output_model`` instance. It invokes
-    the tool's synchronous ``_run`` unchanged, falling back to the public
-    ``invoke`` only for tools that do not implement ``_run``.
+    validated parameters and returns an ``output_model`` instance. Tools
+    whose ``_run`` requires a ``config`` argument (as in recent
+    langchain-core) are invoked through the public ``invoke`` API, which
+    supplies ``config`` internally; all other tools keep the original
+    ``_run``-first delegation with an ``invoke`` fallback.
 
     :param tool: The LangChain tool to delegate to.
     :return: A callable from validated params to a :class:`ToolResult`.
     """
+    use_invoke = _run_requires_config(tool)
 
     def execute(params: BaseModel) -> BaseModel:
         """Execute the tool with the given parameters.
@@ -83,10 +111,13 @@ def _make_execute(tool: BaseTool) -> Callable[[BaseModel], BaseModel]:
         :return: A :class:`ToolResult` wrapping the tool's output.
         """
         tool_args = params.model_dump()
-        try:
-            output = tool._run(**tool_args)
-        except NotImplementedError:
+        if use_invoke:
             output = tool.invoke(tool_args)
+        else:
+            try:
+                output = tool._run(**tool_args)
+            except NotImplementedError:
+                output = tool.invoke(tool_args)
         return ToolResult(output=output)
 
     return execute

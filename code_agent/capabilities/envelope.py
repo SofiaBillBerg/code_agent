@@ -8,7 +8,7 @@ giving a uniform, auditable interface across all capabilities.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -30,7 +30,7 @@ class InvocationRequest(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict)
     caller: str | None = None
     created_at: str = Field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(UTC).isoformat()
     )
 
 

@@ -67,9 +67,9 @@ def test_build_agent_returns_runnable(
     tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
 
     agent_runnable = build_agent(llm=dummy_llm, tools=tools)
-    assert isinstance(
-        agent_runnable, Runnable
-    ), "build_agent should return a Runnable"
+    assert isinstance(agent_runnable, Runnable), (
+        "build_agent should return a Runnable"
+    )
     assert agent_runnable is not None, "Agent Runnable should not be None"
 
 
@@ -89,9 +89,9 @@ def test_build_agent_with_invalid_config(tmp_path: Path) -> None:
     # build_agent should still return a Runnable
     tools = create_default_tools(root_dir=str(tmp_path), llm=llm)
     agent_runnable = build_agent(llm=llm, tools=tools)
-    assert isinstance(
-        agent_runnable, Runnable
-    ), "build_agent should return a Runnable even with invalid LLM config"
+    assert isinstance(agent_runnable, Runnable), (
+        "build_agent should return a Runnable even with invalid LLM config"
+    )
 
     # The agent runnable is created successfully; errors would surface
     # at invocation time when the backend is actually contacted.
@@ -113,7 +113,7 @@ def test_write_file_and_agent_integration(
     tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
     agent_runnable = build_agent(llm=dummy_llm, tools=tools)
 
-    assert isinstance(
-        agent_runnable, Runnable
-    ), "build_agent should return a Runnable"
+    assert isinstance(agent_runnable, Runnable), (
+        "build_agent should return a Runnable"
+    )
     assert agent_runnable is not None, "Agent Runnable should not be None"

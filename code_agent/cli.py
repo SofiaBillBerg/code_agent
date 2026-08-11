@@ -38,24 +38,12 @@ action and exits.  All heavy lifting is done by the helper functions.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-import uuid
-
-from pathlib import Path
 from typing import Any
-
-import typer
-
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import (
-    AIMessage,
-    BaseMessage,
-    HumanMessage,
-    SystemMessage,
-)
-from langchain_core.tools import BaseTool
+import uuid
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
@@ -69,8 +57,11 @@ from code_agent.docs_generator import generate_quarto_docs
 from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
-from code_agent.providers.factory import create_provider
 from code_agent.scaffold import create_project_scaffold
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.tools import BaseTool
+import typer
 
 # Module-level Typer argument/option definitions to avoid
 # "function-call-in-default-argument" lint warnings.
@@ -213,6 +204,8 @@ def _ensure_webapp_built() -> None:
     frontend is compiled. When Node/npm are available we build it lazily so
     ``code-agent serve --web`` works out of the box. A missing toolchain is
     non-fatal: the API still serves, just without the static single-page app.
+
+    :return: None
     """
     webapp_dir = Path(__file__).resolve().parent / "ui" / "webapp"
     dist_dir = webapp_dir / "dist"
@@ -430,7 +423,9 @@ def serve(
         try:
             from langchain_core.messages import HumanMessage, SystemMessage
 
-            messages = [SystemMessage(content=cfg.get("system_prompt", ""))]
+            messages: list[BaseMessage] = [
+                SystemMessage(content=cfg.get("system_prompt", ""))
+            ]
             for entry in conversation_history:
                 if entry["role"] == "assistant":
                     messages.append(AIMessage(content=entry["content"]))
@@ -452,12 +447,10 @@ def serve(
                 response_content = ai_messages[-1].content or "(empty response)"
 
             conversation_history.append({"role": "user", "content": prompt})
-            conversation_history.append(
-                {
-                    "role": "assistant",
-                    "content": response_content,
-                }
-            )
+            conversation_history.append({
+                "role": "assistant",
+                "content": response_content,
+            })
         except Exception as exc:
             typer.echo(f"Error: {exc}")
             continue
@@ -509,6 +502,7 @@ def append(
 
     :param file_path: Path to the file to modify.
     :param content: Text to append to the file.
+    :return: None
     """
     try:
         file_path.write_text(

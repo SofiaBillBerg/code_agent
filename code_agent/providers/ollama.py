@@ -89,7 +89,7 @@ class OllamaProvider(ProviderBase):
         """Generate a completion for the given chat ``messages``.
 
         :param messages: Chat history as a list of ``{"role": ..., "content": ...}`` message dicts.
-        :return The model's text completion.
+        :return: The model's text completion.
         :raises RuntimeError: If the Ollama backend fails to produce a response.
         """
         try:

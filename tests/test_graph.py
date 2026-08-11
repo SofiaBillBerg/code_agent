@@ -14,15 +14,13 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-from langchain_core.messages import (
-    AIMessage,
-    HumanMessage,
-    ToolMessage,
-)
+
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_core.utils.uuid import uuid7
 
 from code_agent.graph import build_graph
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -107,9 +105,9 @@ def test_agent_invokes_tool(agent_graph: Any) -> None:
     tool_msgs = [
         m for m in final_state.get("messages", []) if isinstance(m, ToolMessage)
     ]
-    assert (
-        len(tool_msgs) >= 1
-    ), "Expected at least one ToolMessage in the final state"
+    assert len(tool_msgs) >= 1, (
+        "Expected at least one ToolMessage in the final state"
+    )
 
     # Verify that the tool call was made correctly.
     assert tool_msgs[0].name == "dummy"

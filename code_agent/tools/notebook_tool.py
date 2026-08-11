@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal, cast
-
-import nbformat
-
-from langchain_core.tools import BaseTool
-from nbformat import NotebookNode
-from pydantic import BaseModel, ConfigDict, Field
+from typing import cast
 
 from .edit_file_tool import FileObject
 
+from langchain_core.tools import BaseTool, tool
+import nbformat
+from nbformat import NotebookNode
+from pydantic import BaseModel, Field
+
 
 class NotebookArgs(BaseModel):
-    """Arguments for the notebook tool."""
+    """Arguments for the notebook tool.
+
+    Attributes:
+        file_path: Path to the notebook to create or edit.
+        content: Markdown or code content to insert.
+        mode: Mode: create|append|replace.
+    """
 
     file_path: str = Field(
         ..., description="Path to the notebook to create or edit"
@@ -24,48 +29,40 @@ class NotebookArgs(BaseModel):
     mode: str = Field("create", description="Mode: create|append|replace")
 
 
-class NotebookTool(BaseTool):
-    """Tool for creating and editing Jupyter notebooks."""
+def make_notebook_tool(root_dir: Path) -> BaseTool:
+    """Create a ``notebook`` tool bound to ``root_dir``.
 
-    name: str = "notebook"
-    description: str = (
-        "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
-        "append: add a markdown cell with content; replace: replace entire notebook with given "
-        "content."
+    The root directory is captured in the closure at construction time so the
+    tool is a plain :func:`@tool`-decorated function (no custom ``BaseTool``
+    subclass fields), which is how recent langchain-core expects tools to be
+    registered.
+
+    :param root_dir: The root directory for the notebook tool.
+    :return: A LangChain tool that creates and edits Jupyter notebooks.
+    """
+    root = Path(root_dir).expanduser().resolve()
+
+    @tool(
+        "notebook",
+        args_schema=NotebookArgs,
+        response_format="content_and_artifact",
+        description=(
+            "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
+            "append: add a markdown cell with content; replace: replace entire notebook with given "
+            "content."
+        ),
     )
-    response_format: Literal["content", "content_and_artifact"] = (
-        "content_and_artifact"
-    )
-    args_schema: type[BaseModel] = (
-        NotebookArgs  # pyrefly: ignore[bad-override-mutable-attribute]
-    )
+    def notebook(
+        file_path: str, content: str = "", mode: str = "create"
+    ) -> tuple[str, FileObject]:
+        """Create or edit a Jupyter notebook.
 
-    root: Path
-
-    root: Path
-
-    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
-        """Initializes the NotebookTool with the given root directory.
-
-        :param root_dir (str | Path): The root directory for the notebook tool.
-        :param **kwargs: Additional keyword arguments.
-        :return: None
-        """
-        super().__init__(
-            root=Path(root_dir).expanduser().resolve(), **kwargs
-        )  # ruff: ignore [ARG002]
-
-    def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """Creates or edits a Jupyter notebook.
-
-        :param **kwargs: Keyword arguments containing the file path, content, and mode.
+        :param file_path: Path to the notebook to create or edit.
+        :param content: Markdown or code content to insert.
+        :param mode: Mode: create|append|replace.
         :return: A tuple containing the result message and a FileObject.
         """
-        file_path: str = kwargs.get("file_path", "")
-        content: str = kwargs.get("content", "")
-        mode: str = kwargs.get("mode", "create")
-
-        nb_path = self.root / file_path
+        nb_path = root / file_path
         try:
             if mode == "create":
                 nb = nbformat.v4.new_notebook()
@@ -123,6 +120,4 @@ class NotebookTool(BaseTool):
                 FileObject(path=nb_path, contents="", status="error"),
             )
 
-    async def _arun(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """Use the tool asynchronously."""
-        return self._run(**kwargs)
+    return notebook

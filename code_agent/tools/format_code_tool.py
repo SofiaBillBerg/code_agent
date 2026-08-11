@@ -2,68 +2,63 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import shutil
 import subprocess
 
-from pathlib import Path
-from typing import Any, Literal
-
-from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
-
 from .edit_file_tool import FileObject
+
+from langchain_core.tools import BaseTool, tool
+from pydantic import BaseModel, Field
 
 
 class FormatCodeArgs(BaseModel):
-    """Args for the format-code tool."""
+    """Args for the format-code tool.
+
+    Attributes:
+        file_path: Path to the file to format.
+        mode: Mode: auto|python|r
+    """
 
     file_path: str = Field(..., description="Path to the file to format")
     mode: str = Field("auto", description="Mode: auto|python|r")
 
 
-class FormatCodeTool(BaseTool):
-    """Format a source file."""
+def make_format_code_tool(root_dir: Path) -> BaseTool:
+    """Create a ``format-code`` tool bound to ``root_dir``.
 
-    name: str = "format-code"
-    description: str = (
-        "Format a source file. For python files, run black and isort if available. "
-        "For R files, optionally run styler if available. Returns a FileObject."
+    The root directory is captured in the closure at construction time so the
+    tool is a plain :func:`@tool`-decorated function (no custom ``BaseTool``
+    subclass fields), which is how recent langchain-core expects tools to be
+    registered.
+
+    :param root_dir: The root directory of the project.
+    :return: A LangChain tool that formats source files.
+    """
+    root = Path(root_dir).expanduser().resolve()
+
+    @tool(
+        "format-code",
+        args_schema=FormatCodeArgs,
+        response_format="content_and_artifact",
+        description=(
+            "Format a source file. For python files, run black and isort if available. "
+            "For R files, optionally run styler if available. Returns a FileObject."
+        ),
     )
-    response_format: Literal["content", "content_and_artifact"] = (
-        "content_and_artifact"
-    )
-    args_schema: type[BaseModel] = (
-        FormatCodeArgs  # pyrefly: ignore[bad-override-mutable-attribute]
-    )
-
-    root: Path
-
-    root: Path
-
-    def __init__(self, root_dir: Path, **kwargs: Any) -> None:
-        """Initialize the tool.
-
-        :param root_dir: The root directory of the project.
-        :param kwargs: Additional arguments.
-        :return: None
-        """
-        super().__init__(
-            root=Path(root_dir).expanduser().resolve(), **kwargs
-        )  # ruff: ignore [ARG002]
-
-    def _run(self, **kwargs: Any) -> tuple[str, FileObject]:
+    def format_code(
+        file_path: str, mode: str = "auto"
+    ) -> tuple[str, FileObject]:
         """Format a source file.
 
         If the file is a Python file, run black and isort if available.
         If the file is an R file, optionally run styler if available.
 
-        :param kwargs : file path
-        :param mode : auto|python|r
-        :return:
+        :param file_path: Path to the file to format.
+        :param mode: Mode: auto|python|r
+        :return: Tuple of (message, FileObject).
         """
-        file_path: str = kwargs.get("file_path", "")
-        mode: str = kwargs.get("mode", "auto")
-        p = self.root / file_path
+        p = root / file_path
         if not p.exists():
             return (
                 f"❌ File not found: {p}",
@@ -77,11 +72,11 @@ class FormatCodeTool(BaseTool):
             elif ext in {".r", ".R"}:
                 mode = "r"
 
-        # Delegate formatting to helper methods to reduce complexity
+        # Delegate formatting to helper functions to reduce complexity
         if mode == "python":
-            ok, msg = self._format_python(p)
+            ok, msg = _format_python(p)
         elif mode == "r":
-            ok, msg = self._format_r(p)
+            ok, msg = _format_r(p)
         else:
             return (
                 f"❌ Unknown mode: {mode}",
@@ -100,39 +95,35 @@ class FormatCodeTool(BaseTool):
             FileObject(path=p, contents=new_contents, status="formatted"),
         )
 
-    def _format_python(self, p: Path) -> tuple[bool, str]:
-        """Run python formatters (isort, black) if available.
+    return format_code
 
-        :param p: Path to the file to format.
-        :return: (success, message).
-        """
-        try:
-            if shutil.which("isort"):
-                subprocess.run(["isort", str(p)], check=False)
-            if shutil.which("black"):
-                subprocess.run(["black", str(p)], check=False)
-            return True, ""
-        except Exception as e:
-            return False, str(e)
 
-    def _format_r(self, p: Path) -> tuple[bool, str]:
-        """Run R styler via Rscript if available.
+def _format_python(p: Path) -> tuple[bool, str]:
+    """Run python formatters (isort, black) if available.
 
-        :param p: Path to the file to format.
-        :return: (success, message).
-        """
-        try:
-            if shutil.which("Rscript"):
-                rcmd = f"styler::style_file('{p!s}')"
-                subprocess.run(["Rscript", "-e", rcmd], check=False)
-            return True, ""
-        except Exception as e:
-            return False, str(e)
+    :param p: Path to the file to format.
+    :return: (success, message).
+    """
+    try:
+        if shutil.which("isort"):
+            subprocess.run(["isort", str(p)], check=False)
+        if shutil.which("black"):
+            subprocess.run(["black", str(p)], check=False)
+        return True, ""
+    except Exception as e:
+        return False, str(e)
 
-    async def _arun(self, **kwargs: Any) -> tuple[str, FileObject]:
-        """Async wrapper for _run.
 
-        :param kwargs: Keyword arguments for _run.
-        :return: Tuple of (message, FileObject).
-        """
-        return self._run(**kwargs)
+def _format_r(p: Path) -> tuple[bool, str]:
+    """Run R styler via Rscript if available.
+
+    :param p: Path to the file to format.
+    :return: (success, message).
+    """
+    try:
+        if shutil.which("Rscript"):
+            rcmd = f"styler::style_file('{p!s}')"
+            subprocess.run(["Rscript", "-e", rcmd], check=False)
+        return True, ""
+    except Exception as e:
+        return False, str(e)

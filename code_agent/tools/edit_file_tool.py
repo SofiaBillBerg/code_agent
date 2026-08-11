@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import logging
-import shutil
 from dataclasses import dataclass
+import logging
 from pathlib import Path
-from typing import Any
 
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
@@ -16,7 +14,13 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class FileObject:
-    """Artifact representing a file."""
+    """Artifact representing a file.
+
+    Attributes:
+        path: Path to the file, relative to the project root.
+        contents: Content of the file.
+        status: Status of the file, either "success" or "error".
+    """
 
     path: Path
     contents: str
@@ -24,7 +28,13 @@ class FileObject:
 
 
 class EditFileArgs(BaseModel):
-    """Arguments for editing a file."""
+    """Arguments for editing a file.
+
+    Attributes:
+        file_path: Path to the file to edit, relative to the project root.
+        new_content: New content for the file.
+        mode: Edit mode: replace, append, or patch.
+    """
 
     file_path: str = Field(
         ...,
@@ -47,9 +57,15 @@ def edit_file(
 
     Use this when the user asks to change, fix, update, or append to a file.
     Pass the path relative to the project root.
+
+    :param file_path: Path to the file to edit, relative to the project root.
+    :param new_content: New content for the file.
+    :param mode: Edit mode: replace, append, or patch.
+    :param root_dir: Root directory of the project.
+    :return: Success or error message.
     """
     if root_dir is None:
-        root_dir = Path(".").resolve()
+        root_dir = Path().resolve()
 
     full_path = (root_dir / file_path).resolve()
 

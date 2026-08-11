@@ -40,6 +40,7 @@ from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.settings import get_settings
 
+
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
 
@@ -55,7 +56,7 @@ def get_registry() -> CapabilityRegistry:
 
     :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
     """
-    global _REGISTRY  # ruff: ignore [F822]
+    global _REGISTRY  # ruff: ignore [undefined-export]
     if _REGISTRY is None:
         # Imported lazily to avoid a circular import: ``cli.py`` imports
         # this module inside ``serve --web``, by which time ``cli.py`` has

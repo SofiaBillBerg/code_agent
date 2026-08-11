@@ -1,6 +1,6 @@
 """Typed application configuration loaded from environment / ``.env``.
 
-All runtime configuration for the agent is centralised in a single
+All runtime configuration for the agent is centralized in a single
 :class:`Settings` model built on ``pydantic_settings.BaseSettings``. Values are
 sourced, in increasing precedence, from:
 
@@ -29,6 +29,7 @@ from typing import Any
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -69,6 +70,10 @@ class Settings(BaseSettings):
     Every field has a safe default so the agent runs out of the box; override
     any value with an environment variable or a ``.env`` entry at the project
     root. Unknown environment variables are ignored (``extra="ignore"``).
+
+    See the ``DEFAULT_SYSTEM_PROMPT`` docstring for details on the prompt.
+
+    :args: Passed to ``pydantic.BaseSettings``.
     """
 
     model_config = SettingsConfigDict(

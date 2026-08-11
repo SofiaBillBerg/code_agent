@@ -7,5 +7,6 @@ When run as `python -m code_agent`, it starts the Typer CLI defined in
 
 from code_agent.cli import main
 
+
 if __name__ == "__main__":
     main()

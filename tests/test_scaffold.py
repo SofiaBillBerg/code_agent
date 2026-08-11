@@ -53,9 +53,9 @@ def _assert_expected_files(root: Path, project_name: str) -> None:
 
     for dir_path in expected_dirs:
         full_path = root / dir_path
-        assert (
-            full_path.is_dir()
-        ), f"Expected directory {dir_path} to be created"
+        assert full_path.is_dir(), (
+            f"Expected directory {dir_path} to be created"
+        )
 
     for file_path in expected_files:
         full_path = root / file_path
@@ -83,9 +83,9 @@ def test_create_project_scaffold_overwrite(scaffold_root: Path) -> None:
     assert root.exists() and root.is_dir(), "Root directory should exist"
 
     # The README should contain the new content.
-    assert (
-        "Generated scaffold" in readme_path.read_text()
-    ), "README.qmd content did not match the expected value"
+    assert "Generated scaffold" in readme_path.read_text(), (
+        "README.qmd content did not match the expected value"
+    )
 
     # All the default scaffold files should still be present.
     _assert_expected_files(root, project_name)

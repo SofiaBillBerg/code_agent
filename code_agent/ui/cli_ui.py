@@ -51,7 +51,7 @@ def _risk_style(risk_class: str) -> str:
 def _coerce_param(raw: str, prop: dict[str, Any]) -> Any:
     """Coerce raw user input to the JSON-schema declared type.
 
-    Unparseable values fall back to the raw string rather than aborting the
+    Unparsable values fall back to the raw string rather than aborting the
     session, keeping interactive input robust.
 
     :param raw: The raw string entered by the user.

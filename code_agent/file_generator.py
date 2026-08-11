@@ -14,18 +14,20 @@ available.
 
 from __future__ import annotations
 
-import json
-
 from collections.abc import Iterable
+import json
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 from .exceptions import CodeAgentError
 
+#: Optional Jupyter notebook dependency; ``None`` when unavailable.
+nbformat: ModuleType | None
 try:  # Optional dependency - used only for the notebook path.
     import nbformat  # type: ignore
 except Exception:  # pragma: no cover - handled at runtime
-    nbformat = None  # type: ignore[assignment]
+    nbformat = None
 
 __all__ = ["create_from_template", "py_to_ipynb", "write_file"]
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -79,7 +79,7 @@ class AuditLog:
 
         :return: The created receipt, chained to the previous one.
         """
-        timestamp = datetime.now(timezone.utc).isoformat()
+        timestamp = datetime.now(UTC).isoformat()
         receipt_hash = _hash(
             self._last_hash, request_id, capability_id, status, timestamp
         )

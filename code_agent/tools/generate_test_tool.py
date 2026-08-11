@@ -3,20 +3,28 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
 
 class GenerateTestArgs(BaseModel):
-    """Arguments for the generate-test tool."""
+    """Arguments for the generate-test tool.
+
+    Attributes:
+        file_path: Path to the module/file to generate tests for.
+        tests_dir: Directory to place generated tests.
+        root_dir: Root directory the file is relative to (optional).
+    """
 
     file_path: str = Field(
         ..., description="Path to the module/file to generate tests for"
     )
     tests_dir: str = Field(
         "tests", description="Directory to place generated tests"
+    )
+    root_dir: Path | None = Field(
+        None, description="Root directory the file is relative to (optional)"
     )
 
 
@@ -27,9 +35,14 @@ def generate_test(
     """Generate a basic pytest test file for a given Python module.
 
     Creates a tests/ directory and a test_<module>.py scaffold.
+
+    :param file_path: Path to the module/file to generate tests for.
+    :param tests_dir: Directory to place generated tests.
+    :param root_dir: Root directory the file is relative to (optional).
+    :return: Message indicating success or failure.
     """
     if root_dir is None:
-        root_dir = Path(".").resolve()
+        root_dir = Path.cwd()
 
     src = (root_dir / file_path).resolve()
     if not src.exists():

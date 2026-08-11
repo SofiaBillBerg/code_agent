@@ -31,6 +31,7 @@ from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.ui import cli_ui
 from code_agent.ui.web import app
 
+
 # ---------------------------------------------------------------------------
 # Dummy capabilities (no network required)
 # ---------------------------------------------------------------------------

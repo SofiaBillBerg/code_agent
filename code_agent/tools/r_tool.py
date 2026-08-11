@@ -2,37 +2,48 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import tempfile
 
-from pathlib import Path
-from typing import Any
-
-from langchain_core.tools import BaseTool
-from pydantic import BaseModel, ConfigDict, Field
+from langchain_core.tools import BaseTool, tool
+from pydantic import BaseModel, Field
 
 
 class RScriptArgs(BaseModel):
-    """Arguments for executing an R script."""
+    """Arguments for executing an R script.
+
+    Attributes:
+        code: The R code to be executed.
+    """
 
     code: str = Field(..., description="The R code to be executed.")
 
 
-class RScriptTool(BaseTool):
-    """A tool for executing R code."""
+def make_r_script_tool() -> BaseTool:
+    """Create an ``r-script`` tool for executing R code.
 
-    name: str = "r-script"
-    description: str = (
-        "Use this tool to execute R code. "
-        "Provide the R code as a string. The tool will return the standard output and standard error."
+    The tool is a plain :func:`@tool`-decorated function (no custom
+    ``BaseTool`` subclass fields), which is how recent langchain-core expects
+    tools to be registered.
+
+    :return: A LangChain tool that executes R code.
+    """
+
+    @tool(
+        "r-script",
+        args_schema=RScriptArgs,
+        description=(
+            "Use this tool to execute R code. "
+            "Provide the R code as a string. The tool will return the standard output and standard error."
+        ),
     )
+    def r_script(code: str) -> str:
+        """Execute the given R code and return its output.
 
-    args_schema: type[BaseModel] = (
-        RScriptArgs  # pyrefly: ignore[bad-override-mutable-attribute]
-    )
-
-    def _run(self, code: str) -> str:
-        """Executes the given R code and returns the output."""
+        :param code: The R code to be executed.
+        :return: The output of the R script execution.
+        """
         with tempfile.NamedTemporaryFile(
             encoding="utf-8", mode="w", suffix=".R", delete=False
         ) as temp_file:
@@ -67,7 +78,4 @@ class RScriptTool(BaseTool):
             # Clean up the temporary file
             Path(temp_file_path).unlink()
 
-    async def _arun(self, **kwargs: Any) -> str:
-        """Async version."""
-        code = kwargs.get("code", "")
-        return self._run(code)
+    return r_script

@@ -1,35 +1,82 @@
-"""Agent graph implementation using LangChain's create_agent.
+"""Agent graph implementation.
 
-This replaces the previous custom StateGraph with the supported
-LangChain agent harness, including:
-- Proper tool registration via create_agent
-- Checkpointer for conversation memory (InMemorySaver)
-- Human-in-the-loop middleware for sensitive tools
+Two agent harnesses are supported:
+
+* ``create_agent`` (default) - LangChain's ``create_agent`` with an
+  :class:`InMemorySaver` checkpointer and a
+  :class:`HumanInTheLoopMiddleware` that pauses sensitive tools for approval,
+* ``deepagents`` - :func:`code_agent.deepagents_agent.build_deep_agent`,
+  a DeepAgents (LangGraph) agent with the real working directory mounted at
+  ``/workspace/``, built-in filesystem tools and permission-based
+  human-in-the-loop review.
+
+Both expose the same :class:`~langchain_core.runnables.Runnable` interface.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Any, Literal
+
+from langchain.agents import create_agent
+from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-from langchain.agents import create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 
 
-def build_graph(llm: BaseChatModel, tools: list[BaseTool]) -> Runnable:
-    """Build a LangChain agent with the given LLM and tools.
+Harness = Literal["create_agent", "deepagents"]
 
-    Uses create_agent with:
-    - InMemorySaver checkpointer for conversation memory
-    - HumanInTheLoopMiddleware for write/edit/format/notebook/r-script tools
+
+def build_graph(
+    llm: BaseChatModel,
+    tools: list[BaseTool],
+    *,
+    harness: Harness = "create_agent",
+    root_dir: str | Path = ".",
+    system_prompt: str | None = None,
+    **kwargs: Any,
+) -> Runnable:
+    """Build an agent graph with the given LLM and tools.
+
+    The harness is selected with *harness*:
+
+    * ``"create_agent"`` (default) - LangChain's ``create_agent`` with an
+      :class:`InMemorySaver` checkpointer and a
+      :class:`HumanInTheLoopMiddleware` that pauses
+      write/edit/format/notebook/r-script tools for approval.
+    * ``"deepagents"`` - :func:`code_agent.deepagents_agent.build_deep_agent`
+      with the real working directory mounted at ``/workspace/``, built-in
+      filesystem tools and permission-based HITL.  Custom tools whose names
+      collide with the built-ins are dropped (the built-ins win).
 
     :param llm: The underlying language model.
     :param tools: A list of tools that the agent can invoke.
+    :param harness: Which agent harness to build.
+    :param root_dir: Working directory mounted at ``/workspace/`` when
+        *harness* is ``"deepagents"``.
+    :param system_prompt: Optional system prompt override (deepagents only;
+        the ``create_agent`` harness always uses its built-in prompt).
+    :param kwargs: Extra keyword arguments forwarded to the harness builder
+        (e.g. ``permissions``, ``interrupt_on``, ``profile``).  Only the
+        ``deepagents`` harness consumes them.
     :returns: A compiled agent runnable ready for execution.
     """
+    if harness == "deepagents":
+        from code_agent.deepagents_agent import build_deep_agent
+
+        return build_deep_agent(
+            llm=llm,
+            tools=tools,
+            root_dir=root_dir,
+            system_prompt=system_prompt,
+            **kwargs,
+        )
+
     tool_names = {t.name for t in tools}
-    interrupt_on = {}
+    interrupt_on: dict[str, bool | InterruptOnConfig] = {}
 
     if "edit-file" in tool_names:
         interrupt_on["edit-file"] = True

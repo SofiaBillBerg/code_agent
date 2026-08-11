@@ -24,9 +24,8 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-from typer.testing import CliRunner
-
 from langchain_core.utils.uuid import uuid7
+from typer.testing import CliRunner
 
 from code_agent.agents.base_agent import build_agent
 from code_agent.cli import app as cli_app
@@ -179,9 +178,9 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
     dummy_llm_instance = DummyLLM()
     # No tools needed for this basic test
     agent_runnable = build_agent(dummy_llm_instance, [])
-    assert isinstance(
-        agent_runnable, Runnable
-    ), "build_agent should return a Runnable"
+    assert isinstance(agent_runnable, Runnable), (
+        "build_agent should return a Runnable"
+    )
     assert agent_runnable is not None, "Agent Runnable should not be None"
 
     # Test a basic invocation

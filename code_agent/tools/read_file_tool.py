@@ -3,14 +3,19 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
 
 class ReadFileArgs(BaseModel):
-    """Arguments for reading a file."""
+    """Arguments for reading a file.
+
+    Attributes:
+        file_path: Path to the file to read, relative to the project root.
+        offset: Line number to start reading from (1-indexed).
+        limit: Maximum number of lines to read.
+    """
 
     file_path: str = Field(
         ...,
@@ -37,9 +42,14 @@ def read_file(
 
     Use this whenever the user asks to inspect, summarize, or review a file.
     Pass the path relative to the project root.
+
+    :param file_path: Path to the file to read, relative to the project root.
+    :param offset: Line number to start reading from (1-indexed).
+    :param limit: Maximum number of lines to read.
+    :param root_dir: The root directory of the project.
     """
     if root_dir is None:
-        root_dir = Path(".").resolve()
+        root_dir = Path().resolve()
 
     if not file_path:
         return "❌ Error: 'file_path' cannot be empty."

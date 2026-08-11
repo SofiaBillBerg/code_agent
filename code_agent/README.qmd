@@ -12,7 +12,7 @@ Built on **LangChain** + **LangGraph** with a **local Ollama** backend. The agen
 ## Features
 
 - **Agentic coding**: LangGraph-powered agent with tools for read, write, edit, scaffold, search, and more
-- **Filesystem access**: Full read/write/edit/create access through dedicated tools — no claiming it can't access files
+- **Filesystem access**: Full read/write/edit/create access through dedicated tools - no claiming it can't access files
 - **Project scaffolding**: Generate project structures from templates
 - **Documentation generation**: Auto-generate Quarto docs from your codebase
 - **Web UI**: Optional FastAPI + React interface for browser-based interaction
@@ -131,8 +131,8 @@ pytest
 
 ## Documentation
 
-- [Configuration](docs/CONFIGURATION.qmd) — `.env` setup, env vars, programmatic overrides
-- [Usage](docs/USAGE.qmd) — CLI examples and Python API walkthrough
-- [Tools](docs/TOOLS.qmd) — Agent tool reference
-- [API](docs/API.qmd) — Public API reference
-- [Files Overview](docs/FILES.qmd) — Module-level map
+- [Configuration](docs/CONFIGURATION.qmd) - `.env` setup, env vars, programmatic overrides
+- [Usage](docs/USAGE.qmd) - CLI examples and Python API walkthrough
+- [Tools](docs/TOOLS.qmd) - Agent tool reference
+- [API](docs/API.qmd) - Public API reference
+- [Files Overview](docs/FILES.qmd) - Module-level map

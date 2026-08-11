@@ -4,25 +4,39 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
+from code_agent.graph import Harness, build_graph
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 
-from code_agent.graph import build_graph
-
 __all__ = ["build_agent", "create_default_tools"]
 
 
-def build_agent(llm: BaseChatModel, tools: Iterable[BaseTool]) -> Runnable:
+def build_agent(
+    llm: BaseChatModel,
+    tools: Iterable[BaseTool],
+    *,
+    harness: Harness = "create_agent",
+    root_dir: str | Path = ".",
+    **kwargs: Any,
+) -> Runnable:
     """Builds a LangChain runnable with tools bound to the LLM.
 
     :param llm: The language model to use.
     :param tools: The tools to bind to the LLM.
+    :param harness: Agent harness to use - ``"create_agent"`` (default) or
+        ``"deepagents"``.
+    :param root_dir: Working directory mounted at ``/workspace/`` when
+        *harness* is ``"deepagents"``.
+    :param kwargs: Extra keyword arguments forwarded to the harness builder.
 
     :return: A LangChain runnable.
     """
-    return build_graph(llm, list(tools))
+    return build_graph(
+        llm, list(tools), harness=harness, root_dir=root_dir, **kwargs
+    )
 
 
 def create_default_tools(
@@ -35,40 +49,71 @@ def create_default_tools(
 
     :return: A list of default tools.
     """
+    from functools import wraps
+
     from code_agent.tools import (
-        EditFileTool,
-        FormatCodeTool,
-        GeneralChatTool,
-        GenerateTestTool,
-        LinkerTool,
-        NewFileTool,
-        NotebookTool,
-        ReadFileTool,
-        RScriptTool,
-        SearchExplainTool,
+        edit_file,
+        generate_test,
+        make_format_code_tool,
+        make_general_chat_tool,
+        make_linker_tool,
+        make_new_file_tool,
+        make_notebook_tool,
+        make_r_script_tool,
+        make_search_explain_tool,
+        read_file,
     )
+    from langchain_core.tools import StructuredTool
 
     root_path = Path(root_dir) if root_dir else Path.cwd()
 
+    def bind_root_dir(tool: BaseTool) -> BaseTool:
+        """Bind the configured root directory to a function-based tool.
+
+        LangGraph's ``ToolNode`` introspects the underlying callable to find
+        injected arguments, which ``functools.partial`` objects do not
+        support.  A ``functools.wraps`` closure keeps the original signature
+        (``get_type_hints`` follows ``__wrapped__``) while binding ``root_dir``.
+
+        :param tool: The tool to bind the root directory to.
+        :return: The tool with the root directory bound.
+        """
+        func = getattr(tool, "func", None) or tool.invoke
+        root = root_path
+
+        @wraps(func)
+        def _bound(*args: Any, **kwargs: Any) -> Any:
+            """The bound root_dir always wins over any caller-supplied value so tools cannot escape the configured working directory.
+
+            :param args: The arguments to pass to the function.
+            :param kwargs: The keyword arguments to pass to the function.
+            :return: The result of the function.
+            """
+            kwargs.pop("root_dir", None)
+            return func(*args, root_dir=root, **kwargs)
+
+        return StructuredTool.from_function(
+            func=_bound,
+            name=tool.name,
+            description=tool.description,
+            args_schema=tool.args_schema,
+        )
+
     standard_tools: list[BaseTool | None] = [
-        ReadFileTool(root_dir=root_path),
-        EditFileTool(root_dir=root_path),
+        bind_root_dir(read_file),
+        bind_root_dir(edit_file),
         (
-            SearchExplainTool(root_dir=root_path, llm_instance=llm)
+            make_search_explain_tool(root_dir=root_path, llm=llm)
             if llm
             else None
         ),
-        LinkerTool(root_dir=root_path),
-        NewFileTool(root_dir=root_path),
-        (
-            GenerateTestTool(root_dir=root_path, llm_instance=llm)
-            if llm
-            else None
-        ),
-        FormatCodeTool(root_dir=root_path),
-        (NotebookTool(root_dir=root_path, llm_instance=llm) if llm else None),
-        (GeneralChatTool(llm_instance=llm) if llm else None),
-        RScriptTool(),
+        make_linker_tool(root_dir=root_path),
+        make_new_file_tool(root_dir=root_path),
+        bind_root_dir(generate_test),
+        make_format_code_tool(root_dir=root_path),
+        make_notebook_tool(root_dir=root_path),
+        (make_general_chat_tool(llm=llm) if llm else None),
+        make_r_script_tool(),
     ]
 
     tools: list[BaseTool] = [

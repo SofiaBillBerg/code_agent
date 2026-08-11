@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import textwrap
+
 from pathlib import Path
 
 import pytest
@@ -14,7 +15,8 @@ from code_agent.tools.generate_test_tool import generate_test
 def sample_py(tmp_path: Path) -> Path:
     """Create a tiny Python module that can be used as input."""
     file = tmp_path / "sample.py"
-    file.write_text(textwrap.dedent("""
+    file.write_text(
+        textwrap.dedent("""
                             def add(a, b):
                                 '''
                                 Add two numbers together.
@@ -24,22 +26,21 @@ def sample_py(tmp_path: Path) -> Path:
                                 :return: Sum of a and b.
                                 '''
                                 return a + b
-                            """))
+                            """)
+    )
     return file
 
 
 def test_generate_test_tool_executes(sample_py: Path) -> None:
     """Running the tool should create a tests/ directory with a test module."""
-    result = generate_test.invoke(
-        {
-            "file_path": str(sample_py),
-            "root_dir": str(sample_py.parent),
-            "tests_dir": "tests",
-        }
+    result = generate_test.invoke({
+        "file_path": str(sample_py),
+        "root_dir": str(sample_py.parent),
+        "tests_dir": "tests",
+    })
+    assert "Generated test scaffold" in result, (
+        "Tool should confirm test file creation"
     )
-    assert (
-        "Generated test scaffold" in result
-    ), "Tool should confirm test file creation"
 
     tests_dir = sample_py.parent / "tests"
     assert tests_dir.exists() and tests_dir.is_dir()
@@ -54,10 +55,8 @@ def test_generate_test_tool_invalid_file(tmp_path: Path) -> None:
     non_py = tmp_path / "not_py.txt"
     non_py.write_text("just text")
     with pytest.raises(ValueError, match="is not a Python file"):
-        generate_test.invoke(
-            {
-                "file_path": str(non_py),
-                "root_dir": str(tmp_path),
-                "tests_dir": "tests",
-            }
-        )
+        generate_test.invoke({
+            "file_path": str(non_py),
+            "root_dir": str(tmp_path),
+            "tests_dir": "tests",
+        })
