@@ -28,18 +28,16 @@ Security notes:
 
 from __future__ import annotations
 
-import uuid
-
 from pathlib import Path
 from typing import Any
-
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
+import uuid
 
 from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.settings import get_settings
-
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
@@ -118,6 +116,20 @@ app = FastAPI(
 # Attach auth middleware when an auth token is configured.
 if get_settings().auth_token is not None:
     app.add_middleware(AuthMiddleware)
+
+# CORS for local Vite dev and preview origins so the SPA can call the API.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-CodeAgent-Auth-Token"],
+)
 
 
 @app.get("/capabilities")

@@ -10,27 +10,39 @@ import React, { useEffect, useState } from "react";
 export default function App() {
 	const [capabilities, setCapabilities] = useState([]);
 	const [loadError, setLoadError] = useState(null);
+	const [loadingCapabilities, setLoadingCapabilities] = useState(true);
 	const [selectedId, setSelectedId] = useState("");
 	const [paramsText, setParamsText] = useState("{}");
 	const [result, setResult] = useState(null);
 	const [error, setError] = useState(null);
 	const [invoking, setInvoking] = useState(false);
 
+	const loadCapabilities = async () => {
+		setLoadingCapabilities(true);
+		setLoadError(null);
+		try {
+			const res = await fetch("/capabilities");
+			if (!res.ok) {
+				throw new Error(
+					`GET /capabilities failed with status ${res.status}`,
+				);
+			}
+			const data = await res.json();
+			setCapabilities(data);
+			if (data.length > 0) {
+				setSelectedId(data[0].id);
+			}
+		} catch (err) {
+			setLoadError(
+				err.message || "Failed to reach the backend. Is `code-agent serve --web` running?",
+			);
+		} finally {
+			setLoadingCapabilities(false);
+		}
+	};
+
 	useEffect(() => {
-		fetch("/capabilities")
-			.then((res) => {
-				if (!res.ok) {
-					throw new Error(`GET /capabilities failed with status ${res.status}`);
-				}
-				return res.json();
-			})
-			.then((data) => {
-				setCapabilities(data);
-				if (data.length > 0) {
-					setSelectedId(data[0].id);
-				}
-			})
-			.catch((err) => setLoadError(String(err.message || err)));
+		loadCapabilities();
 	}, []);
 
 	const selected = capabilities.find((c) => c.id === selectedId);
@@ -83,6 +95,11 @@ export default function App() {
 				<p style={{ color: "#b00020" }}>
 					Failed to load capabilities: {loadError}
 				</p>
+			)}
+			{loadError && (
+				<button onClick={loadCapabilities} style={{ marginTop: "0.4rem" }}>
+					Retry
+				</button>
 			)}
 
 			<section>

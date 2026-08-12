@@ -8,6 +8,12 @@ import { defineConfig } from "vite";
 // React plugin supplies the JSX transform and Fast Refresh for `npm run dev`.
 export default defineConfig({
 	plugins: [react()],
+	server: {
+		proxy: {
+			"/capabilities": "http://localhost:8000",
+			"/invoke": "http://localhost:8000",
+		},
+	},
 	build: {
 		outDir: "dist",
 		emptyOutDir: true,
