@@ -30,7 +30,6 @@ from typing import Any
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -119,6 +118,19 @@ class Settings(BaseSettings):
     # stdio:  {"type": "stdio", "command": "...", "args": [...], "env": {...}}
     # http:   {"type": "http", "url": "https://..."}
     mcp_servers: str | None = None
+
+    # --- DeepAgents harness profiles ---------------------------------------
+    # Declare harness profiles as either a JSON string or a dict mapping
+    # ``provider:model`` keys to profile kwargs accepted by
+    # :class:`deepagents.HarnessProfile`.  When set,
+    # :func:`code_agent.profiles.register_profiles_from_settings` registers
+    # them before graph construction so the harness can tune prompts,
+    # tool visibility, and middleware per model.
+    #
+    # Example JSON::
+    #
+    #   {"ollama:gpt-oss:20b": {"system_prompt_suffix": "Be concise."}}
+    profiles: str | dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def _split_combined_ollama_host(self) -> Settings:

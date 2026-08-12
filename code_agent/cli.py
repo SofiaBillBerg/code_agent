@@ -318,13 +318,13 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
 
 
 @app.command(help="Start the LLM provider selected by the config.")
-def serve(
+def serve(  # ruff: ignore [complex-structure]
     config_path: str | None = typer.Option(
         None,
         help="Optional path to a JSON configuration file (overrides .env settings).",
     ),
     web: bool = typer.Option(
-        False,  # ruff: ignore [boolean-type-hint-positional-argument]
+        False,  # ruff: ignore [boolean-positional-value-in-call]
         "--web",
         is_flag=True,
         help="Serve the web UI instead of the console loop.",
@@ -373,7 +373,7 @@ def serve(
         )
         return
 
-    try:
+    try:  # ruff: ignore [too-many-statements-in-try-clause]
         from code_agent.agents.base_agent import create_default_tools
         from code_agent.main import create_llm
 
@@ -391,6 +391,7 @@ def serve(
         model_name = getattr(
             llm, "model", getattr(cfg, "ollama_model", "unknown")
         )
+        thread_id = str(uuid.uuid4())
     except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(f"Failed to initialize agent: {exc}") from exc
 
@@ -420,7 +421,7 @@ def serve(
             conversation_history = []
             typer.echo("Conversation history cleared.")
             continue
-        try:
+        try:  # ruff: ignore [too-many-statements-in-try-clause]
             from langchain_core.messages import HumanMessage, SystemMessage
 
             messages: list[BaseMessage] = [
@@ -433,7 +434,10 @@ def serve(
                     messages.append(HumanMessage(content=entry["content"]))
             messages.append(HumanMessage(content=prompt))
 
-            response = agent.invoke({"messages": messages})
+            response = agent.invoke(
+                {"messages": messages},
+                config={"configurable": {"thread_id": thread_id}},
+            )
 
             # Find the last AIMessage (skip ToolMessages from intermediate steps)
             ai_messages = [
@@ -462,7 +466,7 @@ def create(
     file_path: Path = FILE_PATH_ARG_CREATE,
     content: str = typer.Option(..., help="Content to write into the file."),
     overwrite: bool = typer.Option(
-        False,  # ruff: ignore [boolean-type-hint-positional-argument]
+        False,  # ruff: ignore [boolean-positional-value-in-call]
         is_flag=True,
         help="Allow overwriting an existing file.",
     ),
@@ -524,7 +528,7 @@ def scaffold(
         help="Project name used in scaffold files.",
     ),
     overwrite: bool = typer.Option(
-        False,
+        False,  # ruff: ignore [boolean-positional-value-in-call]
         is_flag=True,
         help="Overwrite existing files in the target directory.",
     ),
@@ -583,7 +587,7 @@ def docs(
         "docs", help="Directory to write docs into."
     ),
     overwrite: bool = typer.Option(
-        True,  # ruff: ignore [boolean-type-hint-positional-argument]
+        True,  # ruff: ignore [boolean-positional-value-in-call]
         help="Overwrite existing files in the output directory.",
     ),
 ) -> None:
@@ -610,9 +614,9 @@ def docs(
 
 
 @app.command(help="Start an interactive chat session with the code agent.")
-def chat(
+def chat(  # ruff: ignore [complex-structure]
     verbose: bool = typer.Option(
-        False,
+        False,  # ruff: ignore [boolean-positional-value-in-call]
         "--verbose",
         "-v",
         help="Show verbose streaming 'thinking' output from the agent.",
@@ -623,7 +627,7 @@ def chat(
     :param verbose: Show verbose streaming 'thinking' output from the agent.
     :return: None
     """
-    try:
+    try:  # ruff: ignore [too-many-statements-in-try-clause]
         cfg = load_config()
         llm = create_llm(cfg)
 
@@ -648,6 +652,7 @@ def chat(
         conversation_messages: list[Any] = (
             [SystemMessage(content=system_prompt)] if system_prompt else []
         )
+        thread_id = str(uuid.uuid4())
 
         # Main chat loop
         while True:
@@ -660,7 +665,7 @@ def chat(
                 print("\n\n👋 Session ended by user. Goodbye!")
                 break
 
-            try:
+            try:  # ruff: ignore [too-many-statements-in-try-clause]
                 # Handle lifecycle and simple commands separately
                 cont, cmd_result = _handle_command(
                     user_input, conversation_messages, tools
@@ -675,8 +680,11 @@ def chat(
                 # Add user message and query the agent
                 conversation_messages.append(HumanMessage(content=user_input))
                 print("\n🤖 Thinking...")
-                try:
-                    response = agent.invoke({"messages": conversation_messages})
+                try:  # ruff: ignore [too-many-statements-in-try-clause]
+                    response = agent.invoke(
+                        {"messages": conversation_messages},
+                        config={"configurable": {"thread_id": thread_id}},
+                    )
 
                     # create_agent returns {"messages": [...]}
                     response_messages = response.get("messages", [])
