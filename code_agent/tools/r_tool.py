@@ -9,7 +9,6 @@ import tempfile
 from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
-
 class RScriptArgs(BaseModel):
     """Arguments for executing an R script.
 
@@ -50,7 +49,7 @@ def make_r_script_tool() -> BaseTool:
             temp_file.write(code)
             temp_file_path = temp_file.name
 
-        try:
+        try:  # ruff: ignore [too-many-statements-in-try-clause]
             result = subprocess.run(
                 ["Rscript", temp_file_path],
                 capture_output=True,

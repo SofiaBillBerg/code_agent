@@ -12,7 +12,6 @@ import nbformat
 from nbformat import NotebookNode
 from pydantic import BaseModel, Field
 
-
 class NotebookArgs(BaseModel):
     """Arguments for the notebook tool.
 

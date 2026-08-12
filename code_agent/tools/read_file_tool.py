@@ -7,7 +7,6 @@ from pathlib import Path
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
-
 class ReadFileArgs(BaseModel):
     """Arguments for reading a file.
 
@@ -49,7 +48,7 @@ def read_file(
     :param root_dir: The root directory of the project.
     """
     if root_dir is None:
-        root_dir = Path().resolve()
+        root_dir = Path.cwd()
 
     if not file_path:
         return "❌ Error: 'file_path' cannot be empty."

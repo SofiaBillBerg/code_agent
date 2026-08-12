@@ -9,7 +9,6 @@ from .edit_file_tool import FileObject
 from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
-
 class LinkerArgs(BaseModel):
     """Arguments for reading file contents.
 

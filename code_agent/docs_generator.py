@@ -11,10 +11,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from langchain_core.language_models.chat_models import BaseChatModel
-
 from .file_generator import write_file
 
+from langchain_core.language_models.chat_models import BaseChatModel
 
 def _gather_repo_info(root: Path) -> dict[str, list[str]]:
     """Gather information about files in the repository.
