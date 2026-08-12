@@ -37,11 +37,14 @@ action and exits.  All heavy lifting is done by the helper functions.
 
 from __future__ import annotations
 
+import itertools
 import json
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import threading
+import time
 from typing import Any
 import uuid
 
@@ -82,6 +85,96 @@ SCAFFOLD_TARGET_ARG: Path = typer.Argument(
 )
 
 app = typer.Typer(name="code_agent", help="Local LLM-driven code assistant")
+
+
+# ---------------------------------------------------------------------------
+# Terminal UX helpers for the chat command
+# ---------------------------------------------------------------------------
+
+def _stream_agent_response(
+    agent: Any,
+    messages: list[Any],
+    thread_id: str,
+) -> str:
+    """Run the agent and stream visible progress to the terminal.
+
+    Uses :meth:`Runnable.astream_events` when available so the user sees:
+    - a spinner while the run is in flight
+    - tool start/end events
+    - streamed assistant tokens
+
+    Falls back to blocking :meth:`Runnable.invoke` when the runnable does
+    not support event streaming.
+
+    :param agent: Compiled LangChain/LangGraph runnable.
+    :param messages: Conversation messages to send.
+    :param thread_id: Thread id for the checkpointer/config.
+    :return: The final assistant text, or ``"(no text response)"`` when no
+        assistant message is produced.
+    """
+    final_text_parts: list[str] = []
+    final_messages: list[Any] = []
+
+    spinner_running = True
+    spinner_text = itertools.cycle(["Thinking", "Working", "Running"])
+
+    def _spin() -> None:
+        while spinner_running:
+            label = next(spinner_text)
+            print(f"\r\033[K{label}...", end="", flush=True)
+            time.sleep(0.35)
+
+    thread = threading.Thread(target=_spin, daemon=True)
+    thread.start()
+
+    try:
+        stream_fn = getattr(agent, "astream_events", None)
+        if stream_fn is None:
+            raise AttributeError("astream_events")
+
+        for event in stream_fn(
+            {"messages": messages},
+            config={"configurable": {"thread_id": thread_id}},
+            version="v2",
+        ):
+            kind = event.get("event")
+            data = event.get("data", {})
+            if kind == "on_tool_start":
+                name = data.get("input", {}).get("query") or data.get("name") or "tool"
+                print(f"\r\033[K🔧 Tool start: {name}")
+            elif kind == "on_tool_end":
+                print(f"\r\033[K✅ Tool end")
+            elif kind == "on_chat_model_stream":
+                chunk = data.get("chunk")
+                if chunk is not None:
+                    content = getattr(chunk, "content", None)
+                    if content:
+                        print(content, end="", flush=True)
+                        final_text_parts.append(content)
+            elif kind == "on_chain_end" and data.get("output"):
+                output = data["output"]
+                if isinstance(output, dict):
+                    final_messages = output.get("messages", [])
+    except Exception:
+        response = agent.invoke(
+            {"messages": messages},
+            config={"configurable": {"thread_id": thread_id}},
+        )
+        if isinstance(response, dict):
+            final_messages = response.get("messages", [])
+    finally:
+        spinner_running = False
+        thread.join(timeout=1)
+        print("\r\033[K", end="", flush=True)
+
+    if final_text_parts:
+        return "".join(final_text_parts)
+
+    if final_messages:
+        for msg in reversed(final_messages):
+            if hasattr(msg, "content") and getattr(msg, "content", None):
+                return str(msg.content)
+    return "(no text response)"
 
 
 def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
@@ -681,26 +774,11 @@ def chat(  # ruff: ignore [complex-structure]
                 conversation_messages.append(HumanMessage(content=user_input))
                 print("\n🤖 Thinking...")
                 try:  # ruff: ignore [too-many-statements-in-try-clause]
-                    response = agent.invoke(
-                        {"messages": conversation_messages},
-                        config={"configurable": {"thread_id": thread_id}},
+                    response_text = _stream_agent_response(
+                        agent=agent,
+                        messages=conversation_messages,
+                        thread_id=thread_id,
                     )
-
-                    # create_agent returns {"messages": [...]}
-                    response_messages = response.get("messages", [])
-                    ai_messages = [
-                        msg
-                        for msg in response_messages
-                        if isinstance(msg, AIMessage)
-                    ]
-                    if not ai_messages:
-                        response_text = "(no text response)"
-                    else:
-                        response_text = (
-                            ai_messages[-1].content or "(empty response)"
-                        )
-
-                    conversation_messages = response_messages
                     print(f"\n🛠️  Agent response:\n{response_text}")
                     print("=" * 50 + "\n")
                 except Exception as e:

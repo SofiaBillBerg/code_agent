@@ -94,17 +94,22 @@ class PersistentAgent:
     def chat(self, message: str) -> str:
         """Process a message and return a response.
 
+        Prefers event streaming when the underlying runnable supports it so
+        intermediate tool calls can be surfaced through the chat interface.
+        Falls back to blocking invocation when streaming is unavailable.
+
         :param message: The message to process.
         :return: The response from the agent.
         """
         self.conversation_history.append({"role": "user", "content": message})
 
         try:
-            response = self.agent.invoke(
-                {"messages": self._history_to_messages()},
-                config={"configurable": {"thread_id": self.thread_id}},
-            )
-            response_content = response["messages"][-1].content
+            stream_fn = getattr(self.agent, "astream_events", None)
+            if stream_fn is not None:
+                response_content = self._chat_stream(stream_fn)
+            else:
+                response_content = self._chat_invoke()
+
             self.conversation_history.append({
                 "role": "assistant",
                 "content": response_content,
@@ -120,6 +125,43 @@ class PersistentAgent:
             })
             self._save_state()
             return error_msg
+
+    def _chat_invoke(self) -> str:
+        """Run a blocking invoke and return the last assistant message content.
+
+        :return: The response content from the agent.
+        """
+        response = self.agent.invoke(
+            {"messages": self._history_to_messages()},
+            config={"configurable": {"thread_id": self.thread_id}},
+        )
+        messages = response.get("messages", []) if isinstance(response, dict) else []
+        for msg in reversed(messages):
+            if hasattr(msg, "content") and getattr(msg, "content", None):
+                return str(msg.content)
+        return "(no text response)"
+
+    def _chat_stream(self, stream_fn: Any) -> str:
+        """Stream agent events and return the final assistant text.
+
+        :param stream_fn: Callable that yields agent event dicts.
+        :return: The assembled assistant response text.
+        """
+        final_text_parts: list[str] = []
+        for event in stream_fn(
+            {"messages": self._history_to_messages()},
+            config={"configurable": {"thread_id": self.thread_id}},
+            version="v2",
+        ):
+            data = event.get("data", {})
+            if event.get("event") == "on_chat_model_stream":
+                chunk = data.get("chunk")
+                if chunk is not None:
+                    content = getattr(chunk, "content", None)
+                    if content:
+                        print(content, end="", flush=True)
+                        final_text_parts.append(content)
+        return "".join(final_text_parts) or "(no text response)"
 
     def _history_to_messages(self) -> list[BaseMessage]:
         """Convert stored conversation history into LangChain messages.

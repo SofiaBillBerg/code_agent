@@ -1,41 +1,43 @@
 ---
-title: "Usage"
-author: "Sofia Billger Bergström"
-format: html
 ---
+title: "Usage Examples"  
+author: "Sofia Billger Bergström"  
+format: html  
+---  
 
-This page provides a variety of examples to demonstrate how to use `code_agent` for common development tasks.
+# Usage Examples
 
-## CLI Usage
+This page provides a variety of examples to demonstrate how to use `code_agent` for common development tasks via CLI, Python API, and interactive sessions.
 
-The command-line interface is perfect for quick, one-off tasks.
+## 🏗️ Project Scaffolding
 
-### Scaffold a New Web Application
-
-Create a new project named `my_web_app` designed for a Flask application.
-
-```bash
-# Create the project directory and scaffold the structure
-mkdir my_web_app
-code-agent scaffold ./my_web_app --name my_web_app
-```
-
-This will create a full project structure inside the `my_web_app` directory.
-
-### Create and Populate a File
-
-Now, let's create a basic Flask application file. Since passing multiline strings can be tricky in some terminals, it's
-often easier to do this in two steps.
+### Create a New Web Application
 
 ```bash
-# 1. Create an empty file
-code-agent create ./my_web_app/src/my_web_app/app.py --content ""
+# Scaffold a new Flask project with standard structure  
+mkdir my_web_app && cd my_web_app
+code-agent scaffold ./my_web_app --name MyWebApp  
 
-# 2. Use the interactive agent or your editor to add the Flask content
+tree  # Shows: src/, tests/, docs/ directories created automatically
 ```
-```python
-# Flask app content
-"""
+
+The generated scaffold includes:
+- `src/my_web_app/app.py` - Application entry point
+- `tests/test_app.py` - Sample smoke test  
+- `docs/docs_web/index.qmd` - Quarto documentation source
+- `.github/workflows/ci.yml` - CI configuration for GitHub Actions  
+
+## 📝 File Creation & Editing
+
+### Create Files via CLI
+
+```bash
+# Method 1: Create empty file, then edit interactively or with agent  
+code-agent create ./my_web_app/src/my_web_app/app.py --content ""  
+
+# Method 2: Use the agent to populate content directly  
+echo "Add this Flask app:" > temp.txt  
+cat << 'EOF' >> temp.txt
 from flask import Flask
 
 app = Flask(__name__)
@@ -46,107 +48,229 @@ def hello_world():
 
 if __name__ == '__main__':
     app.run(debug=True)
-"""
+EOF  
+
+code-agent create ./my_web_app/src/my_web_app/app.py --content "$(cat temp.txt)"  
+rm temp.txt  # Clean up temporary file
 ```
 
-### Convert a Script to a Notebook
+### Edit Files Interactively
 
-If you have a Python script for data analysis, you can easily convert it to a Jupyter notebook to visualize the results.
+Start the agent and give it natural language instructions:
 
-```python
-# Your script, analysis.py
-# %%
-import pandas as pd
-import matplotlib.pyplot as plt
-
-# %%
-data = {'col1': [1, 2], 'col2': [3, 4]}
-df = pd.DataFrame(data)
-print(df)
-
-# %%
-plt.plot(df['col1'], df['col2'])
-plt.show()
-```
-
-Run the conversion command:
 ```bash
-code-agent py2ipynb analysis.py analysis.ipynb
+code-agent chat << 'MSG'
+You need to add a utility function that calculates factorial. 
+Add this to my_web_app/utils.py with signature `def factorial(n):`. 
+Make sure to handle edge cases (n < 0, n = 0).  
+Then create docstring explaining the algorithm and complexity analysis.
+
+# Agent will:
+1. Check if utils.py exists using read-file tool
+2. Create it if missing or use edit-file with append mode
+3. Write new function + comprehensive documentation
+MSG
 ```
-This will create `analysis.ipynb` with three distinct cells.
 
-## Interactive Agent Session
+## 🔄 Template-Based Generation
 
-For more complex or iterative tasks, the interactive agent is the best tool.
+### Convert Python to Jupyter Notebook
 
-Start the agent:
+If you have a script with `#%%` cell markers, convert it interactively:
+
+```bash
+# Your analysis.py contains multiple cells marked with #%%  
+code-agent py2ipynb analysis.py analysis.ipynb  
+
+ls -lh  # Shows notebook created (typically ~50-100KB)
+jupyter nbconvert --to html analysis.ipynb    # Optional: preview HTML output
+```
+
+The agent will detect `#%%` markers and create a proper `.ipynb` with distinct cells.
+
+## 🧪 Generate Tests Automatically  
+
+```bash  
+# For src/my_web_app/app.py, ask the agent to generate tests:  
+code-agent chat << 'MSG'  
+Generate pytest tests for my_module.py that test:
+1. factorial(0) = 1 (base case)
+2. factorial(5) = 120 
+3. Handle negative input gracefully  
+4. Test edge cases and error handling  
+
+Create the file at tests/test_my_module.py with proper fixture setup.  
+MSG
+```
+
+## 🎨 Format Code Automatically  
+
+Run formatters via CLI or agent:
+
+```bash
+# Using Black for Python files (default)  
+code-agent format-code ./my_web_app/src/my_web_app/app.py  # Reformats to PEP8 style  
+
+# For R code, use styler if available  
+code-agent r-script << 'RSCRIPT'
+library(styler)
+styler::style_file("utils.R")  # Format R source file
+RSCRIPT
+```
+
+## 🤖 Interactive Agent Sessions
+
+For complex or iterative tasks, the chat interface is ideal:
+
+### Live Terminal Feedback
+
+The CLI chat now streams progress directly in your terminal:
+- a spinner while the agent is working
+- tool-call start/end lines as tools run
+- streamed assistant text instead of one final block
+- graceful handling when the model returns empty content
+
+Run it normally:
 
 ```bash
 code-agent chat
 ```
-You can now give instructions to the agent in plain English.
 
-**Example:**
+For more internal output, use verbose mode:
+
+```bash
+code-agent chat --verbose
 ```
-You: Create a new file named 'utils.py' in the 'src/my_web_app' directory.
+
+### Example Session Flow  
+
+```bash  
+code-agent chat << 'MSG'
+I'm building a Flask app. Help me add features step-by-step:
+
+1. First, create utils.py with helper functions (factorial, fibonacci)
+2. Add type hints and docstrings to each function 
+3. Write unit tests for factorial() covering edge cases  
+4. Format all Python files using Black  
+
+After each change, summarize what you did so I can review before continuing.
+
+# The agent will:
+- Create new file if missing (new-file tool)
+- Edit existing files with proper diff tracking
+- Generate test scaffolds automatically
+- Invoke formatters on changed modules  
+MSG
 ```
-The agent will use the `new-file` tool to create the file.
 
-## Python API Usage
+## 🐍 Python API Integration  
 
-The Python API gives you full control to integrate `code_agent` into your own applications and scripts. This example
-shows how to use the agent to add a function to an existing file.
+The full power of `code_agent` is available through its Python API. This example shows integration into custom scripts:
+
+### Complete Workflow Example  
 
 ```python
-from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.main import create_llm, load_config
-from code_agent.file_generator import write_file
-from langchain_core.messages import HumanMessage
+"""Example: Use the agent to add a function via natural language."""  
+
+from code_agent.agents.base_agent import build_agent, create_default_tools  
+from code_agent.main import load_config, create_llm  
+from code_agent.file_generator import write_file  
+from langchain_core.messages import HumanMessage  
 from pathlib import Path
 import os
 
-# --- 1. Setup ---
-# Create a temporary project directory for this example
-project_dir = Path("./api_project_example")
-project_dir.mkdir(exist_ok=True)
-os.chdir(project_dir)
+# --- 1. Setup: Load config and initialize LLM ---
+project_dir = Path("./api_project_example")  
+if not project_dir.exists():
+    project_dir.mkdir(parents=True)  
 
-# Load configuration and create LLM
-config = load_config()
-llm = create_llm(config)
+os.chdir(project_dir)  
 
-# Create an initial file to be edited
-initial_file = Path("my_module.py")
-write_file(initial_file, "# This is a module for utility functions.\n")
+config = load_config()           # Loads from .env or defaults    
+llm = create_llm(config)         # Default: ChatOllama + GPT4AllEmbeddings
 
-# Create tools and build the agent
-tools = create_default_tools(root_dir=".", llm=llm)
+# Create initial file  
+initial_file = Path("my_module.py")  
+write_file(initial_file, "# Utility functions module\n\n")  
+
+# --- 2. Prepare Agent with Tools ---
+tools = create_default_tools(root_dir=".", llm=lll)  
 agent_app = build_agent(llm=llm, tools=tools)
 
-# --- 2. Define the Task ---
+# --- 3. Define Task via Natural Language Prompt ---
 prompt = (
-    "Add a Python function to 'my_module.py' that takes two numbers and returns their sum. "
-    "The function should be named 'add_numbers'."
-)
+    "Add a Python function to 'my_module.py' that takes two numbers and returns their sum.\n"
+    "- Function name: add_numbers\n"  
+    "- Include type hints\n" 
+    "- Add comprehensive docstring with examples\n"
+    "- Handle edge cases gracefully
+")
 
-print(f"--- Prompting Agent ---\n{prompt}\n-------------------------")
+print("--- Prompting Agent ---\n", prompt)  
 
-# --- 3. Invoke the Agent ---
-# The agent will process the prompt, select the 'edit-file' tool, and apply the change.
-response = agent_app.invoke({"messages": [HumanMessage(content=prompt)]})
+# --- 4. Invoke the Agent ---
+response = agent_app.invoke({  
+    "messages": [HumanMessage(content=prompt)]  
+})
 
-# --- 4. Verify the Result ---
-final_content = initial_file.read_text()
-print(f"\n--- Final Content of {initial_file} ---")
-print(final_content)
-print("------------------------------------")
+# Print any thoughts/reasoning if available (optional logging for debugging):  
+if hasattr(response, 'intermediate_steps'):  
+    print("\n--- Agent Reasoning Steps ---")    
+    for step in response.intermediate_steps:
+        # Log each tool invocation and its result...  
 
-# Clean up the temporary directory
-os.chdir("..")
-# You would typically remove the directory in a real script, but we leave it for inspection
-# import shutil
-# shutil.rmtree(project_dir)
+# --- 5. Verify Result ---
+final_content = initial_file.read_text()  
+print(f"\nFinal content of {initial_file}:") 
+print("=" * 60)  
+print(final_content)  
+print("=" * 60)
 
 ```
-This example demonstrates a complete, end-to-end workflow using the Python API to modify a file based on a natural
-language prompt.
+
+### Advanced: Stream Responses for Real-Time Feedback  
+
+```python
+# For CLI streaming (similar to what `code-agent chat` uses):  
+for event in agent_app.stream({"messages": [HumanMessage(content=prompt)]}):    
+    print(event, end="")  # Process events as they arrive
+    
+# You can also handle specific message types:  
+if isinstance(event, AIMessage):
+    if hasattr(event, 'tool_calls'):   # Agent is selecting a tool to use...
+        pass  
+elif isinstance(event, HumanMessage): 
+    # User response or final answer received  
+```
+
+## 💡 Tips for Best Results  
+
+### Prompt Engineering Examples  
+
+Good prompts help the agent understand your intent:
+
+| ❌ Vague | ✅ Specific & Actionable         |  
+|---------|----------------------------------|
+|"Add a function" | "Create `calculate_average(data)` that computes mean of list, returns None if empty"  |  
+|"Fix this bug"   | "The factorial(0) should return 1. Add base case and test it at tests/test_utils.py line 25" |  
+
+### Using Tool Names Directly (Advanced)
+
+If you know the exact tool name:
+
+```python
+from langchain_core.tools import BaseTool  
+# Or use agent's internal mapping if exposed...
+tool_response = tools["edit-file"].invoke({  
+    "path": "./my_module.py", 
+    "content": "# Updated content with new function\n",  # Your edit logic here    
+})
+```
+
+--- 
+
+## See Also  
+
+- [API Reference](./API.qmd) - Complete Python API documentation  
+- [TOOLS](./TOOLS.qmd) - Detailed descriptions of each tool's capabilities  
+- [FEATURES](./FEATURES.qmd) - Overview of all available features and use cases  

@@ -50,3 +50,7 @@ Docker.
 4. Add your new tool to the `create_default_tools` function in `code_agent/agents/base_agent.py`.
 
 See the existing tools for examples.
+
+## 7. Why does `code-agent chat` sometimes look empty or delayed?
+
+The chat interface now streams live output when possible. If the final model reply is empty, the CLI shows `(empty response)` instead of a blank line. If your backend does not support streaming, the interface falls back to a normal blocking request automatically. Use `--verbose` if you want more visible agent activity during execution.
