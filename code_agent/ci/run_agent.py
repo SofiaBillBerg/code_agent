@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import sys
 
-from pathlib import Path
-
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.main import create_llm, load_config
+from langchain_core.messages import AIMessage, HumanMessage
+
+THREAD_ID = "ci-run"
 
 
 def get_staged_files() -> list[str]:
@@ -61,16 +63,22 @@ Check for:
 Provide a comprehensive review."""
 
     # Run review
-    response = agent.invoke({"input": prompt})
+    response = agent.invoke(
+        {"messages": [HumanMessage(content=prompt)]},
+        config={"configurable": {"thread_id": THREAD_ID}},
+    )
 
     # Save review
     review_path = Path(".ci/llm_review.txt")
     review_path.parent.mkdir(exist_ok=True)
 
+    ai_messages = [
+        msg
+        for msg in response.get("messages", [])
+        if isinstance(msg, AIMessage)
+    ]
     output = (
-        response.get("output", str(response))
-        if isinstance(response, dict)
-        else str(response)
+        str(ai_messages[-1].content) if ai_messages else str(response)
     )
     review_path.write_text(output, encoding="utf-8")
 
