@@ -1,10 +1,11 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
-
 from pathlib import Path
 from typing import Any, Self
+import uuid
 
+from code_agent.agents.base_agent import build_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
@@ -14,9 +15,6 @@ from langchain_core.messages import (
 )
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-
-from code_agent.agents.base_agent import build_agent
-
 
 class PersistentAgent:
     """A persistent agent that maintains state between sessions."""
@@ -49,6 +47,7 @@ class PersistentAgent:
         self.agent: Runnable = build_agent(llm=llm, tools=tools)
         self.conversation_history: list[dict[str, str]] = []
         self.settings: dict[str, Any] = {}
+        self.thread_id = str(uuid.uuid4())
         self._initialized = True
         self._load_state()
 
@@ -101,9 +100,10 @@ class PersistentAgent:
         self.conversation_history.append({"role": "user", "content": message})
 
         try:
-            response = self.agent.invoke({
-                "messages": self._history_to_messages()
-            })
+            response = self.agent.invoke(
+                {"messages": self._history_to_messages()},
+                config={"configurable": {"thread_id": self.thread_id}},
+            )
             response_content = response["messages"][-1].content
             self.conversation_history.append({
                 "role": "assistant",
