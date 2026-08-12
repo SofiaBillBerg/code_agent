@@ -2,9 +2,10 @@
 title: "Code Agent"
 author: "Sofia Billger Bergström"
 ---
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -38,11 +39,13 @@ You can now type queries, e.g.:
 > Add a new function to utils.py
 ```
 
+
+
 ## Architecture
 
 ```mermaid
 flowchart LR
-  CLI(Typer CLI) --\u003e Main(Main driver)
+  CLI(Typer CLI) -- Main(Main driver)
   Main --\u003e Graph(LangGraph)
   Graph --\u003e Tools
   Graph --\u003e Memory(Chroma vector store)

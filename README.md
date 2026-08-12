@@ -51,7 +51,7 @@ For a deeper dive, see the following sections:
   the project.
 - **[LICENSE](./LICENSE)** - Project licensing information.
 - **[ROADMAP](docs/ROADMAP.qmd)** - Future plans and development.
-- **[CHANGELOG](docs/CHANGELOG.qmd)** - Version history and changes.
+- **[CHANGELOG](CHANGELOG.qmd)** - Version history and changes.
 - **[Agent Workflow](docs/AGENT_WORKFLOW.qmd)**
 - **[Class Visualizations](docs/visualizations/svg/classes.svg)** - Visual representation of class relationships. All class diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.
 - **[Package Visualizations](docs/visualizations/svg/packages.svg)** - Visual representation of package relationships. All package diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.

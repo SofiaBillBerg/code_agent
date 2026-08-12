@@ -2,6 +2,7 @@ project:
   type: website
   output-dir: docs/docs_web
   render:
+    - "CHANGELOG.qmd"
     - "docs/*.qmd"
     - "docs/*.md"
     - "docs/*.ipynb"
@@ -63,7 +64,7 @@ website:
         - text: "Contributing"
           href: docs/CONTRIBUTING.qmd
         - text: "News & Changelog"
-          href: docs/CHANGELOG.qmd
+          href: CHANGELOG.qmd
         - text: "FAQ & Troubleshooting"
           href: docs/FAQ.qmd
 

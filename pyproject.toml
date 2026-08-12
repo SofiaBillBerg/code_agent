@@ -165,10 +165,9 @@ extend-fixable = [
     "I",
     "B",
     "E",
-    "doc-line-too-long",
+    "W505",
     "line-too-long",
     "PTH",
-    "line-too-long",
     "D",
 ] # This will allow Ruff to apply fixes for import-related issues.
 ignore = [
