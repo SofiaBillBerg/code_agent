@@ -37,6 +37,7 @@ action and exits.  All heavy lifting is done by the helper functions.
 
 from __future__ import annotations
 
+import asyncio
 import itertools
 import json
 from pathlib import Path
@@ -45,7 +46,7 @@ import subprocess
 import sys
 import threading
 import time
-from typing import Any
+from typing import Any, cast
 import uuid
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
@@ -61,9 +62,11 @@ from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
 from code_agent.scaffold import create_project_scaffold
+from code_agent.settings import PROJECT_ROOT
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.tools import BaseTool
+from langchain_mcp_adapters.sessions import Connection
 import typer
 
 # Module-level Typer argument/option definitions to avoid
@@ -91,7 +94,8 @@ app = typer.Typer(name="code_agent", help="Local LLM-driven code assistant")
 # Terminal UX helpers for the chat command
 # ---------------------------------------------------------------------------
 
-def _stream_agent_response(
+
+def _stream_agent_response(  # ruff: ignore[complex-structure]
     agent: Any,
     messages: list[Any],
     thread_id: str,
@@ -119,6 +123,7 @@ def _stream_agent_response(
     spinner_text = itertools.cycle(["Thinking", "Working", "Running"])
 
     def _spin() -> None:
+        """Spin the spinner until the agent run completes."""
         while spinner_running:
             label = next(spinner_text)
             print(f"\r\033[K{label}...", end="", flush=True)
@@ -127,7 +132,7 @@ def _stream_agent_response(
     thread = threading.Thread(target=_spin, daemon=True)
     thread.start()
 
-    try:
+    try:  # ruff: ignore[too-many-statements-in-try-clause]
         stream_fn = getattr(agent, "astream_events", None)
         if stream_fn is None:
             raise AttributeError("astream_events")
@@ -140,10 +145,14 @@ def _stream_agent_response(
             kind = event.get("event")
             data = event.get("data", {})
             if kind == "on_tool_start":
-                name = data.get("input", {}).get("query") or data.get("name") or "tool"
+                name = (
+                    data.get("input", {}).get("query")
+                    or data.get("name")
+                    or "tool"
+                )
                 print(f"\r\033[K🔧 Tool start: {name}")
             elif kind == "on_tool_end":
-                print(f"\r\033[K✅ Tool end")
+                print("\r\033[K✅ Tool end")
             elif kind == "on_chat_model_stream":
                 chunk = data.get("chunk")
                 if chunk is not None:
@@ -348,13 +357,126 @@ def _ensure_webapp_built() -> None:
         )
 
 
+def _normalize_mcp_servers(raw: str) -> list[dict[str, Any]]:
+    """Parse MCP server configs from inline JSON or a file path.
+
+    Supports:
+    * Inline JSON array of server configs
+    * Inline JSON object ``{ "mcpServers": { name: cfg, ... } }``
+    * Path to a JSON file containing either of the above shapes
+    """
+    value = raw.strip()
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError:
+        parsed = None
+
+    if isinstance(parsed, list):
+        servers = parsed
+    elif isinstance(parsed, dict):
+        if "mcpServers" in parsed:
+            servers = [
+                {"name": name, **cfg}
+                for name, cfg in parsed["mcpServers"].items()
+            ]
+        else:
+            servers = [parsed]
+    else:
+        servers = None
+
+    if servers is None:
+        path = Path(value)
+        if not path.is_absolute():
+            path = PROJECT_ROOT / path
+        if not path.is_file():
+            typer.echo(
+                f"Warning: mcp_servers file not found: {path}; skipping MCP tools.",
+                err=True,
+            )
+            return []
+        try:
+            parsed = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            typer.echo(
+                "Warning: invalid mcp_servers file JSON; skipping MCP tools.",
+                err=True,
+            )
+            return []
+
+        if isinstance(parsed, list):
+            servers = parsed
+        elif isinstance(parsed, dict):
+            if "mcpServers" in parsed:
+                servers = [
+                    {"name": name, **cfg}
+                    for name, cfg in parsed["mcpServers"].items()
+                ]
+            else:
+                servers = [parsed]
+        else:
+            servers = []
+
+    return [cfg for cfg in servers if cfg.get("enabled") is not False]
+
+
+def _to_langchain_connection(cfg: dict[str, Any]) -> dict[str, Any]:
+    """Normalize an MCP server config to a langchain-mcp-adapters connection dict.
+
+    :param cfg: A server config object.
+    :return: A connection dict for langchain-mcp-adapters.
+    """
+    cfg = dict(cfg)
+    cfg.pop("name", None)
+    cfg.pop("enabled", None)
+
+    mcp_type = cfg.pop("type", None)
+    transport = None
+    if mcp_type == "remote":
+        transport = "http"
+    elif mcp_type == "local":
+        transport = "stdio"
+    elif mcp_type in {"stdio", "sse", "http", "streamable_http", "websocket"}:
+        transport = mcp_type
+
+    if not transport:
+        if "url" in cfg:
+            transport = "http"
+        elif "command" in cfg:
+            transport = "stdio"
+
+    if transport:
+        cfg["transport"] = transport
+
+    if "environment" in cfg:
+        cfg["env"] = cfg.pop("environment")
+
+    command = cfg.get("command")
+    if isinstance(command, list):
+        head = command[0]
+        if isinstance(head, str) and " " in head:
+            cfg["command"] = head.split()[0]
+            cfg.setdefault("args", head.split()[1:] + command[1:])
+        else:
+            cfg["command"] = head
+            cfg.setdefault("args", command[1:])
+
+    if transport == "http":
+        cfg.pop("oauth", None)
+
+    return cfg
+
+
 def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
     """Load tools from configured MCP servers.
 
-    Reads ``mcp_servers`` from *cfg* (a JSON-encoded list of server
-    configs) and imports tools via ``langchain_mcp_adapters`` when
-    available.  Missing dependencies or malformed configs are logged
-    and skipped so the rest of the agent still works.
+    Reads ``mcp_servers`` from *cfg*. The value may be either:
+
+    * a JSON-encoded MCP server config object, or
+    * a path to a JSON file containing a server config object.
+
+    Tools are imported via ``langchain_mcp_adapters`` when available.
+    Missing dependencies or malformed configs are logged and skipped
+    so the rest of the agent still works.
 
     :param cfg: Configuration mapping, typically from :func:`load_config`.
     :return: A list of :class:`BaseTool` instances from MCP servers.
@@ -363,22 +485,12 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
     if not raw:
         return []
 
-    try:
-        servers: list[dict[str, Any]] = json.loads(raw)
-    except json.JSONDecodeError:
-        typer.echo(
-            "Warning: invalid mcp_servers JSON; skipping MCP tools.", err=True
-        )
-        return []
-
+    servers = _normalize_mcp_servers(str(raw))  # type: ignore
     if not servers:
         return []
 
     try:
-        mcp_adapters = __import__(
-            "langchain_mcp_adapters", fromlist=["load_mcp_tools"]
-        )
-        load_mcp_tools = mcp_adapters.load_mcp_tools
+        from langchain_mcp_adapters.tools import load_mcp_tools
     except ImportError:
         typer.echo(
             "Warning: langchain-mcp-adapters not installed; skipping MCP tools. "
@@ -387,27 +499,49 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
         )
         return []
 
-    tools: list[BaseTool] = []
-    for server_cfg in servers:
-        server_type = server_cfg.get("type")
-        if server_type not in {"stdio", "http"}:
-            typer.echo(
-                f"Warning: unsupported MCP server type {server_type!r}; skipping.",
-                err=True,
-            )
-            continue
-        try:
-            server_tools = load_mcp_tools(server_cfg)
+    async def _load() -> list[BaseTool]:
+        """Async helper to load tools from MCP servers.
+
+        :return: A list of :class:`BaseTool` instances from MCP servers.
+        """
+        tools: list[BaseTool] = []
+        for server_cfg in servers:
+            connection = _to_langchain_connection(server_cfg)
+            transport = connection.get("transport")
+            if transport not in {
+                "stdio",
+                "sse",
+                "http",
+                "streamable_http",
+                "websocket",
+            }:
+                typer.echo(
+                    f"Warning: unsupported MCP server transport {transport!r}; skipping.",
+                    err=True,
+                )
+                continue
+            server_name = server_cfg.get("name", transport)
+            try:
+                server_tools = await load_mcp_tools(
+                    None, connection=cast(Connection, connection)
+                )
+            except Exception as exc:  # pragma: no cover - external dependency
+                typer.echo(
+                    f"Warning: failed to load MCP tools from {server_name}: {exc}",
+                    err=True,
+                )
+                continue
             tools.extend(server_tools)
             typer.echo(
-                f"Loaded {len(server_tools)} tool(s) from MCP server ({server_type})."
+                f"Loaded {len(server_tools)} tool(s) from MCP server ({server_name})."
             )
-        except Exception as exc:  # pragma: no cover - external dependency
-            typer.echo(
-                f"Warning: failed to load MCP tools from {server_cfg}: {exc}",
-                err=True,
-            )
-    return tools
+        return tools
+
+    try:
+        return asyncio.run(_load())
+    except Exception as exc:  # pragma: no cover - defensive guard
+        typer.echo(f"Warning: failed to load MCP tools: {exc}", err=True)
+        return []
 
 
 @app.command(help="Start the LLM provider selected by the config.")
@@ -733,11 +867,7 @@ def chat(  # ruff: ignore [complex-structure]
 
         _show_startup_info(root_dir, tools)
 
-        from langchain_core.messages import (
-            AIMessage,
-            HumanMessage,
-            SystemMessage,
-        )
+        from langchain_core.messages import HumanMessage, SystemMessage
 
         system_prompt = cfg.get("system_prompt", "")
         if system_prompt:
@@ -804,6 +934,7 @@ def _setup_agent_and_tools(
     """
     root_dir = Path(cfg.get("root_dir", ".")).resolve()
     tools = create_default_tools(root_dir=str(root_dir), llm=llm)
+    tools.extend(_load_mcp_tools(cfg))
     agent = build_agent(llm=llm, tools=tools)
     return agent, tools, root_dir
 

@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 
 from code_agent import cli
 from code_agent.ui.web import _DIST_DIR, app
+from langchain_core.messages import AIMessage, HumanMessage
 
 
 # Path to the React SPA build dir, derived from the CLI module so it stays in
@@ -142,3 +143,54 @@ def test_ensure_webapp_built_runs_npm_when_dist_missing(_dist_absent) -> None:
     commands = [c.args[0] for c in run.call_args_list]
     assert commands[0][:2] == ["/usr/bin/npm", "install"]
     assert commands[-1][:3] == ["/usr/bin/npm", "run", "build"]
+
+
+def test_chat_returns_assistant_reply(client: TestClient) -> None:
+    """POST /chat returns a non-empty assistant response and a thread id."""
+    fake_agent = mock.Mock()
+    fake_agent.invoke.return_value = {
+        "messages": [AIMessage(content="hi")]
+    }
+    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+        response = client.post("/chat", json={"message": "hello"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["response"] == "hi"
+    assert payload["thread_id"] == "thread-1"
+
+
+def test_chat_uses_provided_thread_id(client: TestClient) -> None:
+    """POST /chat passes through an explicit thread_id when provided."""
+    fake_agent = mock.Mock()
+    fake_agent.invoke.return_value = {
+        "messages": [AIMessage(content="ok")]
+    }
+    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+        response = client.post("/chat", json={"message": "hello", "thread_id": "custom-thread"})
+    assert response.status_code == 200
+    assert response.json()["thread_id"] == "custom-thread"
+    fake_agent.invoke.assert_called_once()
+    config = fake_agent.invoke.call_args[1]["config"]["configurable"]
+    assert config["thread_id"] == "custom-thread"
+
+
+def test_chat_falls_back_to_last_non_ai_message(client: TestClient) -> None:
+    """POST /chat returns the last message content when no AIMessage is present."""
+    fake_agent = mock.Mock()
+    fake_agent.invoke.return_value = {
+        "messages": [HumanMessage(content="ignored"), AIMessage(content="")]
+    }
+    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+        response = client.post("/chat", json={"message": "hello"})
+    assert response.status_code == 200
+    assert response.json()["response"] == "(no text response)"
+
+
+def test_chat_returns_no_text_response_when_empty(client: TestClient) -> None:
+    """POST /chat returns a fallback string when the agent returns no messages."""
+    fake_agent = mock.Mock()
+    fake_agent.invoke.return_value = {}
+    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+        response = client.post("/chat", json={"message": "hello"})
+    assert response.status_code == 200
+    assert response.json()["response"] == "(no text response)"

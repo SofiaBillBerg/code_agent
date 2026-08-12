@@ -27,6 +27,11 @@ Built on **LangChain** + **LangGraph** with a **local Ollama** backend. The agen
 git clone <repo-url> && cd code_agent
 uv pip install -e .
 ```
+```bash
+# Build the web UI
+cd code_agent/ui/webapp
+ npm run build
+```
 
 ### Dependencies
 
@@ -73,10 +78,14 @@ CODE_AGENT_TEMPERATURE=0.7
 
 ### MCP Servers
 
-Configure external MCP servers in `.env` as JSON:
+Configure external MCP servers in `.env` as either inline JSON or a path to a JSON file:
 
 ```dotenv
+# Inline JSON (array of server configs)
 CODE_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
+
+# Or a path to a JSON file
+CODE_AGENT_MCP_SERVERS=mcp.json
 ```
 
 Supported types: `stdio` (with `command`, `args`, `env`) and `http` (with `url`).

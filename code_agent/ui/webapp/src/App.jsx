@@ -1,82 +1,78 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-/**
- * Code Agent Web UI main view.
- *
- * Lists the registered capabilities, lets the user pick one, enter JSON
- * params, and invoke it. The server returns the invocation response plus
- * the audited receipt, both rendered here.
- */
+const STORAGE_KEY = "code_agent_chat_history";
+
+function loadHistory() {
+	try {
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (raw) return JSON.parse(raw);
+	} catch {
+		// ignore corrupt history
+	}
+	return [];
+}
+
+function saveHistory(history) {
+	try {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+	} catch {
+		// ignore storage failures
+	}
+}
+
 export default function App() {
-	const [capabilities, setCapabilities] = useState([]);
-	const [loadError, setLoadError] = useState(null);
-	const [loadingCapabilities, setLoadingCapabilities] = useState(true);
-	const [selectedId, setSelectedId] = useState("");
-	const [paramsText, setParamsText] = useState("{}");
-	const [result, setResult] = useState(null);
+	const [history, setHistory] = useState(() => loadHistory());
+	const [input, setInput] = useState("");
+	const [sending, setSending] = useState(false);
 	const [error, setError] = useState(null);
-	const [invoking, setInvoking] = useState(false);
-
-	const loadCapabilities = async () => {
-		setLoadingCapabilities(true);
-		setLoadError(null);
-		try {
-			const res = await fetch("/capabilities");
-			if (!res.ok) {
-				throw new Error(
-					`GET /capabilities failed with status ${res.status}`,
-				);
-			}
-			const data = await res.json();
-			setCapabilities(data);
-			if (data.length > 0) {
-				setSelectedId(data[0].id);
-			}
-		} catch (err) {
-			setLoadError(
-				err.message || "Failed to reach the backend. Is `code-agent serve --web` running?",
-			);
-		} finally {
-			setLoadingCapabilities(false);
-		}
-	};
+	const messagesRef = useRef(null);
 
 	useEffect(() => {
-		loadCapabilities();
-	}, []);
+		saveHistory(history);
+	}, [history]);
 
-	const selected = capabilities.find((c) => c.id === selectedId);
-
-	const invoke = async () => {
-		setInvoking(true);
-		setError(null);
-		setResult(null);
-		let params;
-		try {
-			params = JSON.parse(paramsText || "{}");
-		} catch (err) {
-			setError(`Params are not valid JSON: ${err.message}`);
-			setInvoking(false);
-			return;
+	useEffect(() => {
+		if (messagesRef.current) {
+			messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
 		}
+	}, [history, sending]);
+
+	const send = async () => {
+		const message = input.trim();
+		if (!message || sending) return;
+		setInput("");
+		setError(null);
+		setSending(true);
+		const nextHistory = [
+			...history,
+			{ role: "user", content: message },
+		];
+		setHistory(nextHistory);
 		try {
-			const res = await fetch("/invoke", {
+			const res = await fetch("/chat", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ capability_id: selectedId, params }),
+				body: JSON.stringify({ message }),
 			});
 			const body = await res.json();
 			if (!res.ok) {
-				throw new Error(
-					(body && body.detail) ||
-						`POST /invoke failed with status ${res.status}`,
-				);
+				throw new Error(body?.detail || `POST /chat failed with status ${res.status}`);
 			}
-			setResult(body);
+			setHistory([
+				...nextHistory,
+				{ role: "assistant", content: body.response },
+			]);
 		} catch (err) {
 			setError(String(err.message || err));
 		} finally {
-			setInvoking(false);
+			setSending(false);
+		}
+	};
+
+	const onKeyDown = (event) => {
+		if (event.key === "Enter" && !event.shiftKey) {
+			event.preventDefault();
+			send();
 		}
 	};
 
@@ -87,113 +83,114 @@ export default function App() {
 				margin: "0 auto",
 				padding: "1.5rem",
 				fontFamily: "system-ui, sans-serif",
+				height: "100vh",
+				display: "flex",
+				flexDirection: "column",
 			}}
 		>
-			<h1>Code Agent Web UI</h1>
-
-			{loadError && (
-				<p style={{ color: "#b00020" }}>
-					Failed to load capabilities: {loadError}
+			<header style={{ marginBottom: "1rem" }}>
+				<h1 style={{ margin: 0 }}>Code Agent Chat</h1>
+				<p style={{ margin: "0.25rem 0 0", color: "#555" }}>
+					Chat with the agent. It can read, edit, and create files for you.
 				</p>
-			)}
-			{loadError && (
-				<button onClick={loadCapabilities} style={{ marginTop: "0.4rem" }}>
-					Retry
-				</button>
-			)}
+			</header>
 
-			<section>
-				<h2>Capabilities</h2>
-				{capabilities.length === 0 && !loadError ? (
-					<p>Loading capabilities...</p>
-				) : (
-					<ul style={{ listStyle: "none", padding: 0 }}>
-						{capabilities.map((c) => (
-							<li key={c.id} style={{ marginBottom: "0.4rem" }}>
-								<label
-									style={{
-										display: "flex",
-										gap: "0.5rem",
-										alignItems: "baseline",
-									}}
-								>
-									<input
-										type="radio"
-										name="capability"
-										value={c.id}
-										checked={selectedId === c.id}
-										onChange={() => setSelectedId(c.id)}
-									/>
-									<strong>{c.id}</strong>
-									<span style={{ color: "#555" }}>- {c.intent || ""}</span>
-								</label>
-							</li>
-						))}
-					</ul>
+			<section
+				ref={messagesRef}
+				style={{
+					flex: 1,
+					overflowY: "auto",
+					border: "1px solid #e5e5e5",
+					borderRadius: 8,
+					padding: "1rem",
+					background: "#fafafa",
+				}}
+			>
+				{history.length === 0 && (
+					<p style={{ color: "#777" }}>
+						No messages yet. Try: "Create a Python module with a factorial function."
+					</p>
+				)}
+				{history.map((item, index) => (
+					<div
+						key={index}
+						style={{
+							marginBottom: "0.75rem",
+							display: "flex",
+							justifyContent: item.role === "user" ? "flex-end" : "flex-start",
+						}}
+					>
+						<div
+							style={{
+								background: item.role === "user" ? "#e5f0ff" : "#ffffff",
+								border: "1px solid #e5e5e5",
+								borderRadius: 8,
+								padding: "0.6rem 0.8rem",
+								maxWidth: "75%",
+								whiteSpace: "pre-wrap",
+								wordBreak: "break-word",
+							}}
+						>
+							<div style={{ fontSize: "0.75rem", color: "#888", marginBottom: "0.2rem" }}>
+								{item.role === "user" ? "You" : "Agent"}
+							</div>
+							<div>{item.content}</div>
+						</div>
+					</div>
+				))}
+				{sending && (
+					<div style={{ marginBottom: "0.75rem", display: "flex", justifyContent: "flex-start" }}>
+						<div
+							style={{
+								background: "#ffffff",
+								border: "1px solid #e5e5e5",
+								borderRadius: 8,
+								padding: "0.6rem 0.8rem",
+								color: "#777",
+							}}
+						>
+							Thinking...
+						</div>
+					</div>
 				)}
 			</section>
 
-			{selected && (
-				<section>
-					<h2>Invoke: {selected.id}</h2>
-					<p style={{ color: "#555" }}>
-						Risk class: {selected.risk_class ?? "n/a"} . Input schema:{" "}
-						{selected.input_schema
-							? JSON.stringify(selected.input_schema)
-							: "{}"}
-					</p>
-					<label htmlFor="params">Params (JSON)</label>
-					<br />
-					<textarea
-						id="params"
-						value={paramsText}
-						onChange={(e) => setParamsText(e.target.value)}
-						rows={4}
-						style={{
-							width: "100%",
-							fontFamily: "monospace",
-							marginTop: "0.3rem",
-						}}
-						spellCheck={false}
-					/>
-					<br />
-					<button
-						onClick={invoke}
-						disabled={invoking}
-						style={{ marginTop: "0.6rem" }}
-					>
-						{invoking ? "Invoking..." : "Invoke"}
-					</button>
-				</section>
+			{error && (
+				<p style={{ color: "#b00020", marginTop: "0.6rem" }}>{error}</p>
 			)}
 
-			{error && <p style={{ color: "#b00020" }}>{error}</p>}
-
-			{result && (
-				<section>
-					<h2>Result</h2>
-					<h3>Response</h3>
-					<pre
-						style={{
-							background: "#f6f6f6",
-							padding: "0.8rem",
-							overflow: "auto",
-						}}
-					>
-						{JSON.stringify(result.response, null, 2)}
-					</pre>
-					<h3>Receipt</h3>
-					<pre
-						style={{
-							background: "#f6f6f6",
-							padding: "0.8rem",
-							overflow: "auto",
-						}}
-					>
-						{JSON.stringify(result.receipt, null, 2)}
-					</pre>
-				</section>
-			)}
+			<div style={{ marginTop: "0.8rem", display: "flex", gap: "0.5rem" }}>
+				<textarea
+					value={input}
+					onChange={(e) => setInput(e.target.value)}
+					onKeyDown={onKeyDown}
+					placeholder="Type a message..."
+					rows={2}
+					disabled={sending}
+					style={{
+						flex: 1,
+						resize: "vertical",
+						padding: "0.6rem",
+						borderRadius: 6,
+						border: "1px solid #ccc",
+						fontFamily: "inherit",
+					}}
+				/>
+				<button
+					onClick={send}
+					disabled={sending || !input.trim()}
+					style={{
+						padding: "0.6rem 1rem",
+						borderRadius: 6,
+						border: "none",
+						background: "#111",
+						color: "#fff",
+						cursor: sending ? "not-allowed" : "pointer",
+					}}
+				>
+					{sending ? "Sending..." : "Send"}
+				</button>
+			</div>
 		</div>
 	);
 }

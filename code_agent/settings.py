@@ -24,6 +24,7 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 from __future__ import annotations
 
 from functools import lru_cache
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -72,7 +73,12 @@ class Settings(BaseSettings):
 
     See the ``DEFAULT_SYSTEM_PROMPT`` docstring for details on the prompt.
 
-    :args: Passed to ``pydantic.BaseSettings``.
+    :param model_config: Passed to ``pydantic.BaseSettings``.
+
+    .. note::
+        Provider credentials are **not** hardcoded - they are read from the
+        environment / ``.env`` only, satisfying the project's security
+        requirement that provider credentials come from config, not source.
     """
 
     model_config = SettingsConfigDict(
@@ -83,26 +89,26 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    # --- Provider selection -------------------------------------------------
+    #: --- Provider selection -------------------------------------------------
     provider: str = "ollama"
 
-    # --- Ollama connection --------------------------------------------------
+    #: --- Ollama connection --------------------------------------------------
     ollama_scheme: str = "http"
     ollama_host: str = "localhost"
     ollama_port: int = 11434
     ollama_model: str = "gpt-oss:20b"
 
-    # --- OpenAI (optional; falls back to the OPENAI_API_KEY env var) --------
+    #: --- OpenAI (optional; falls back to the OPENAI_API_KEY env var) --------
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o"
     openai_base_url: str | None = None
 
-    # --- Sampling / generation ---------------------------------------------
+    #: --- Sampling / generation ---------------------------------------------
     temperature: float = 0.7
     max_tokens: int = 6000
     stream: bool = True
 
-    # --- Application behavior ---------------------------------------------
+    #: --- Application behavior ---------------------------------------------
     auth_token: str | None = None
     root_dir: str = "."
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
@@ -111,25 +117,50 @@ class Settings(BaseSettings):
     max_iterations: int = 50
     max_execution_time: int = 5000
 
-    # --- MCP integration --------------------------------------------------
-    # JSON-encoded list of MCP server configs. Each entry needs at least
-    # ``type`` ("stdio" | "http") and the connection details for that type:
-    #
-    # stdio:  {"type": "stdio", "command": "...", "args": [...], "env": {...}}
-    # http:   {"type": "http", "url": "https://..."}
+    #: --- Checkpointer storage path ----------------------------------------
+    #: Absolute or ``~``-relative path where the SqliteSaver writes
+    #: ``agent_state.db``.  The directory is created on startup if it does
+    #: not exist.  Maps to ``CODE_AGENT_CHECKPOINT_DIR``.
+    checkpoint_dir: str = "~/.code_agent/checkpoints/"
+
+    #: --- SSE streaming toggle ----------------------------------------------
+    #: When ``False`` the ``/chat/stream`` endpoint returns HTTP 501
+    #: (not implemented), allowing operators to disable streaming without a
+    #: code change.  Maps to ``CODE_AGENT_STREAM_ENABLED``.
+    stream_enabled: bool = True
+
+    #: --- Available provider list -------------------------------------------
+    #: JSON array of provider configuration objects, each containing at
+    #: minimum ``"name"`` and ``"model"`` keys.  Additional keys are forwarded
+    #: to the provider factory unchanged.  When ``None`` no provider list is
+    #: configured and the ``/providers`` endpoint returns an empty array.
+    #: Maps to ``CODE_AGENT_PROVIDER_LIST``.
+    #:
+    #: Example value (set via environment variable or ``.env``)::
+    #:
+    #:   CODE_AGENT_PROVIDER_LIST='[{"name":"ollama","model":"gpt-oss:20b"}]'
+    provider_list: list[dict] | None = None
+
+    #: --- MCP integration --------------------------------------------------
+    #: JSON-encoded list of MCP server configs, or a path to a JSON file
+    #: containing that list. Each entry needs at least ``type``
+    #: ("stdio" | "http") and the connection details for that type:
+    #:
+    #: stdio:  {"type": "stdio", "command": "...", "args": [...], "env": {...}}
+    #: http:   {"type": "http", "url": "https://..."}
     mcp_servers: str | None = None
 
-    # --- DeepAgents harness profiles ---------------------------------------
-    # Declare harness profiles as either a JSON string or a dict mapping
-    # ``provider:model`` keys to profile kwargs accepted by
-    # :class:`deepagents.HarnessProfile`.  When set,
-    # :func:`code_agent.profiles.register_profiles_from_settings` registers
-    # them before graph construction so the harness can tune prompts,
-    # tool visibility, and middleware per model.
-    #
-    # Example JSON::
-    #
-    #   {"ollama:gpt-oss:20b": {"system_prompt_suffix": "Be concise."}}
+    #: --- DeepAgents harness profiles ---------------------------------------
+    #: Declare harness profiles as either a JSON string or a dict mapping
+    #: ``provider:model`` keys to profile kwargs accepted by
+    #: :class:`deepagents.HarnessProfile`.  When set,
+    #: :func:`code_agent.profiles.register_profiles_from_settings` registers
+    #: them before graph construction so the harness can tune prompts,
+    #: tool visibility, and middleware per model.
+    #:
+    #: Example JSON::
+    #:
+    #:   {"ollama:gpt-oss:20b": {"system_prompt_suffix": "Be concise."}}
     profiles: str | dict[str, Any] | None = None
 
     @model_validator(mode="after")
@@ -148,6 +179,35 @@ class Settings(BaseSettings):
             if port.isdigit():
                 self.ollama_host = head
                 self.ollama_port = int(port)
+        return self
+
+    @model_validator(mode="after")
+    def _validate_checkpoint_dir(self) -> Settings:
+        """Ensure ``checkpoint_dir`` can be created/accessed on the filesystem.
+
+        Expands ``~`` in the path and attempts to create the directory (and
+        any missing parents) with ``mkdir(parents=True, exist_ok=True)``.  If
+        the operation fails for any reason -- permissions error, read-only
+        filesystem, invalid path -- a WARNING is logged via the module-level
+        logger and the validator returns ``self`` unchanged.  It **never**
+        raises so that the server starts regardless of filesystem issues.
+
+        :returns: ``self`` (the validated :class:`Settings` instance).
+        """
+        # Expand any leading ``~`` to the user's home directory so that
+        # Path.mkdir works correctly on the resolved absolute path.
+        expanded = Path(self.checkpoint_dir).expanduser()
+        try:
+            # Create the directory tree if any part of it is missing.
+            expanded.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:  # ruff: ignore[blind-except] -- intentional broad catch
+            # Log at WARNING rather than raising: a bad path should not
+            # prevent the server from starting (Requirement 6.4).
+            logging.getLogger(__name__).warning(
+                "checkpoint_dir %r is not accessible: %s",
+                str(expanded),
+                exc,
+            )
         return self
 
 

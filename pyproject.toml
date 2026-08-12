@@ -165,7 +165,7 @@ extend-fixable = [
     "I",
     "B",
     "E",
-    "W505",
+    "doc-line-too-long",
     "line-too-long",
     "PTH",
     "D",
@@ -271,7 +271,7 @@ skip-magic-trailing-comma = false
 [tool.ruff]
 src = [
     "code_agent",
-] # Allow imports relative to the "app", "scripts" and "utils" directories.
+]
 extend-exclude = [
     "_build",
     ".venv",
@@ -283,8 +283,8 @@ extend-exclude = [
     "build",
     ".ipynb_checkpoints",
     "*support-libs",
-] # This will tell Ruff to exclude these directories when linting and formatting.
-line-length = 80 # This will set the maximum line length to 80 characters
+]
+line-length = 80
 fix = true # This will enable Ruff's automatic fixing feature, `--fix` option.
 
 
@@ -296,7 +296,7 @@ fix = true # This will enable Ruff's automatic fixing feature, `--fix` option.
     "T20",
 ] # Ignore unused imports and wildcard imports in Jupyter notebooks.
 "*test*.py" = ["assert", "magic-value-comparison", "ARG", "implicit-namespace-package"]
-"*pyfunc*.py" = ["unused-import", "non-pep604-annotation-union", "non-pep604-annotation-optional", "non-pep585-annotation", "line-too-long"]
+"project_management/*.py" = ["unused-import", "non-pep604-annotation-union", "non-pep604-annotation-optional", "non-pep585-annotation", "line-too-long"]
 
 
 [tool.black]
@@ -317,7 +317,9 @@ max-line-length = 100
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
-
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 15.
+max-complexity = 15
 
 [tool.ruff.lint.pylint]
 max-nested-blocks = 20
@@ -328,6 +330,7 @@ max-returns = 20
 max-statements = 100
 max-locals = 20
 max-args = 40
+max-statements-in-try = 15
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
 
@@ -366,7 +369,6 @@ ignore-words-list = [
 
 [tool.spacy.cli]
 "en-core-web-sm==3.8.0" = "@ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
-#  "en-core-web-trf @ https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.8.0/en_core_web_trf-3.8.0-py3-none-any.whl"
 
 [tool.mypy]
 disallow_any_generics = true
@@ -462,9 +464,6 @@ import_paths = ["code_agent/", "stubs/", ".venv/"]
 #find-unused = true
 #find-unused-attributes = true
 #
-
-
-[tool.monkeytype]
 
 
 [tool.pytype]

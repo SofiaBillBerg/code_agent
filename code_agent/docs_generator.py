@@ -66,11 +66,12 @@ def _render_readme_qmd(info: dict[str, list[str]]) -> str:
         "\n## Contents\n",
         "* Top-level Python modules and scripts (auto-detected)",
     ]
+    num_lines = 50
 
     # Add Python files
     for p in info["py_files"][:50]:
         lines.append(f"- `{p}`")
-    if len(info["py_files"]) > 50:
+    if len(info["py_files"]) > num_lines:
         lines.append(f"- ... ({len(info['py_files']) - 50} more)")
 
     # Add data files section

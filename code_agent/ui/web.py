@@ -32,17 +32,28 @@ from pathlib import Path
 from typing import Any
 import uuid
 
+from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.main import create_llm, load_config
 from code_agent.settings import get_settings
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+)
+from pydantic import BaseModel
 
 # Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
 
 _REGISTRY: CapabilityRegistry | None = None
+_AGENT: Any | None = None
+_AGENT_THREAD_ID: str | None = None
 
 
 def get_registry() -> CapabilityRegistry:
@@ -54,15 +65,33 @@ def get_registry() -> CapabilityRegistry:
 
     :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
     """
-    global _REGISTRY  # ruff: ignore [undefined-export]
+    global _REGISTRY  # ruff: ignore[global-statement, undefined-export]
     if _REGISTRY is None:
-        # Imported lazily to avoid a circular import: ``cli.py`` imports
-        # this module inside ``serve --web``, by which time ``cli.py`` has
-        # finished loading and ``_build_registry`` is defined.
         from code_agent.cli import _build_registry
 
         _REGISTRY = _build_registry()
     return _REGISTRY
+
+
+def get_agent() -> Any:
+    """Return a shared agent runnable, building it lazily on first use.
+
+    The agent is initialized from the same config path the CLI ``serve``
+    command uses, so ``POST /chat`` matches the console agent behavior.
+
+    :return: A compiled LangChain/LangGraph runnable.
+    """
+    global _AGENT, _AGENT_THREAD_ID  # ruff: ignore[global-statement, undefined-export]
+    if _AGENT is None:
+        from code_agent.cli import _load_mcp_tools
+
+        cfg = load_config()
+        llm = create_llm(cfg)
+        tools = create_default_tools(root_dir=str(Path.cwd()), llm=llm)
+        tools.extend(_load_mcp_tools(cfg))
+        _AGENT = build_agent(llm=llm, tools=tools)
+        _AGENT_THREAD_ID = str(uuid.uuid4())
+    return _AGENT, _AGENT_THREAD_ID
 
 
 # Optional authentication middleware. When ``CODE_AGENT_AUTH_TOKEN`` is set,
@@ -74,6 +103,7 @@ class AuthMiddleware:
         """Initialize the middleware with the ASGI app.
 
         :param app: The ASGI application to wrap.
+        :return: None
         """
         self.app = app
 
@@ -83,6 +113,7 @@ class AuthMiddleware:
         :param scope: ASGI connection scope.
         :param receive: ASGI receive callable.
         :param send: ASGI send callable.
+        :return: None
         """
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -130,6 +161,74 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "X-CodeAgent-Auth-Token"],
 )
+
+
+class ChatMessage(BaseModel):
+    """A single chat message with role and content.
+
+    Attributes:
+        role: The role of the message sender (e.g., "user", "assistant").
+        content: The content of the message.
+    """
+
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    """A request to send a chat message to the agent.
+
+    Attributes:
+        message: The user message to send.
+        thread_id: Optional thread ID for conversational state.
+    """
+
+    message: str
+    thread_id: str | None = None
+
+
+class ChatResponse(BaseModel):
+    """A response from the agent containing the reply and thread ID.
+
+    Attributes:
+        response: The assistant's response.
+        thread_id: The active thread ID.
+    """
+
+    response: str
+    thread_id: str
+
+
+@app.post("/chat")
+def chat(request: ChatRequest) -> ChatResponse:
+    """Send a chat message to the agent and return the assistant reply.
+
+    Builds the shared agent on first use and keeps a single thread id for
+    conversational state across requests.
+
+    :param request: Parsed chat request containing the user message.
+    :return: The assistant response and the active thread id.
+    """
+    agent, thread_id = get_agent()
+    effective_thread = request.thread_id or thread_id
+
+    history = [
+        SystemMessage(content="You are a helpful code agent."),
+        HumanMessage(content=request.message),
+    ]
+    response = agent.invoke(
+        {"messages": history},
+        config={"configurable": {"thread_id": effective_thread}},
+    )
+    messages: list[BaseMessage] = response.get("messages", []) if isinstance(response, dict) else []
+    response_content = "(no text response)"
+    for msg in reversed(messages):
+        if isinstance(msg, AIMessage):
+            content = getattr(msg, "content", None)
+            if content:
+                response_content = str(content)
+            break
+    return ChatResponse(response=response_content, thread_id=effective_thread)
 
 
 @app.get("/capabilities")

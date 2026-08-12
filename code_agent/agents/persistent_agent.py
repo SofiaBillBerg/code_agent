@@ -135,7 +135,7 @@ class PersistentAgent:
             {"messages": self._history_to_messages()},
             config={"configurable": {"thread_id": self.thread_id}},
         )
-        messages = response.get("messages", []) if isinstance(response, dict) else []
+        messages: list[BaseMessage] = response.get("messages", []) if isinstance(response, dict) else []
         for msg in reversed(messages):
             if hasattr(msg, "content") and getattr(msg, "content", None):
                 return str(msg.content)
@@ -206,7 +206,7 @@ def get_persistent_agent(
 
         >>> result = get_persistent_agent(llm="example_llm", tools="example_tools")
     """
-    global agent  # ruff: ignore [undefined-export]
+    global agent  # ruff: ignore[global-statement, undefined-export]
     if agent is None:
         agent = PersistentAgent(llm=llm, tools=tools)
     return agent
