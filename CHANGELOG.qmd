@@ -7,9 +7,15 @@ A log of the meaningful changes to the `code-agent` project.
 
 ## v0.3.0 (Unreleased)
 
-- **Aligned Decisions Log Pathing**: Standardized architecture-decisions references to the canonical `decisions/decisions-log.md` across project context, navigation guidance, and contributor docs.
+- **DeepAgents Migration**: Continued migration to DeepAgents architecture with middleware support, improving agent coordination and tool routing.
+- **Thread Routing Fixes**: Added `thread_id` support to serve, chat, CI agent invocation, and agent config for proper tool routing.
+- **Webapp Improvements**: Added CORS middleware, retry logic, and Vite proxy for web development; aligned `@vitejs/plugin-react` with Vite 8 and enabled on-demand UI builds.
+- **Testing**: Added deepagents profile and thread accumulation tests to improve coverage.
+- **Code Quality**: Removed duplicated functions and dead code, updated docstrings, normalized imports, and enforced consistent formatting across `code_agent`.
+- **Documentation**: Relocated changelog to project root and updated references across project context and navigation docs.
+- **Dependencies**: Updated project dependencies to current versions.
 
-## v0.2.0 (Current)
+## v0.2.0 (2025-11-10)
 
 - **Refactored Core Logic to use LangGraph**: The agent's control flow is now managed by a `StateGraph`, providing a
   more robust and transparent orchestration of tools and LLM calls.
@@ -24,7 +30,7 @@ A log of the meaningful changes to the `code-agent` project.
 - **Comprehensive Documentation**: Overhauled the entire documentation to be specific to `code-agent`, with detailed
   guides on features, tools, and architecture.
 
-## v0.1.0
+## v0.1.0 (2025-11-09)
 
 - **Initial Release**: First version of the project.
 - **Core Components**: Included basic file I/O, project scaffolding, and a simple agent structure.
