@@ -256,6 +256,26 @@ def test_web_capabilities_listed(web_client: TestClient) -> None:
     assert "add" in ids
 
 
+def test_web_capabilities_proxied_through_vite_target(monkeypatch: pytest.MonkeyPatch) -> None:
+    """GET /capabilities returns JSON when called through the Vite proxy target."""
+    monkeypatch.setattr(
+        "code_agent.ui.web.get_registry", _make_registry, raising=True
+    )
+
+    from fastapi.testclient import TestClient
+
+    from code_agent.ui.web import app as web_app
+
+    proxy_client = TestClient(web_app, base_url="http://localhost:5173")
+    response = proxy_client.get("/capabilities")
+    assert response.status_code == 200
+    catalog = response.json()
+    assert isinstance(catalog, list)
+    ids = {entry["id"] for entry in catalog}
+    assert "ping" in ids
+    assert "add" in ids
+
+
 def test_web_invoke_returns_response_and_receipt(
     web_client: TestClient,
 ) -> None:
