@@ -1,11 +1,11 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
-import uuid
-
 from pathlib import Path
 from typing import Any, Self
+import uuid
 
+from code_agent.agents.base_agent import build_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
@@ -15,9 +15,6 @@ from langchain_core.messages import (
 )
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-
-from code_agent.agents.base_agent import build_agent
-
 
 class PersistentAgent:
     """A persistent agent that maintains state between sessions."""
