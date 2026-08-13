@@ -44,7 +44,7 @@ echo "Current working directory: $(pwd)"
 echo "Creating output directories..."
 CODE_QUALITY_DIR=".code_quality_outputs"
 mkdir -p "$CODE_QUALITY_DIR" stubs
-echo "Output directories created: $CODE_QUALITY_DIR, stubs"
+echo "Output directories created: $CODE_QUALITY_DIR"
 
 # --- 3. Run tests
 run_step "pytest" uv run pytest --color=yes --tb=short --junitxml="$CODE_QUALITY_DIR/pytest_report.xml"
@@ -61,7 +61,7 @@ else
 		echo "   ✗ $f"
 	done
 	echo ""
-	echo "You can review errors above and decide which to fix."
+	echo "You can review errors above and decide which to fix, saved to $CODE_QUALITY_DIR/pytest_report.xml."
 	echo "============================================"
 	exit 0
 fi

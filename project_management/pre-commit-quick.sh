@@ -3,12 +3,13 @@
 # Pre-hook: runs all checks in graceful mode and shows aggregate summary.
 # Each sub-script exits 0 even on failures, so we collect results and decide at the end.
 
+chmod +x ./project_management/run_autofix.sh
+chmod +x ./project_management/run_tests.sh
+
 echo "Local CI: Running code quality checks before pushing..."
 echo ""
 
 # Run formatters (exits 0 even on failures)
-chmod +x ./project_management/run_autofix.sh
-chmod +x ./project_management/run_tests.sh
 ./project_management/run_autofix.sh
 FORMATTERS_EXIT=$?
 
@@ -34,7 +35,7 @@ else
 	echo "  ✓ run_autofix.sh completed (see above for details)"
 fi
 
-# Check visualization result
+# Check tesy result
 if [ $TESTS_EXIT -ne 0 ]; then
 	echo "  ✗ run_tests.sh exited with code $TESTS_EXIT"
 	TOTAL_FAILURES=$((TOTAL_FAILURES + 1))

@@ -1,5 +1,4 @@
 ---
----
 title: "Code Agent"  
 author: "Sofia Billger Bergström"  
 ---  
@@ -66,7 +65,7 @@ See [FEATURES](./FEATURES.qmd) for detailed capability lists:
 
 ## Public API
 
-The package exports these main functions from [`code_agent/__init__.py`](../src/code_agent):
+The package exports these main functions from [`code_agent/__init__.py`](../code_agent):
 
 ```python
 from code_agent import (  # Core agent building & orchestration
@@ -91,8 +90,8 @@ See [API Reference](./API.qmd) for complete documentation.
 For a full guide with configuration options, see [QUICKSTART](./QUICKSTART.qmd). Briefly:
 
 1. **Prerequisites**: Python 3.10+, Ollama running locally (or OpenAI API key), `uv` package manager
-2. Pull model: `ollama pull llama3`  
-3. Configure `.env`: Set `OLLAMA_MODEL=llama3`, etc.  
+2. Pull model: `ollama pull qwen3.5`  
+3. Configure `.env`: Set `OLLAMA_MODEL=qwen3.5`, etc.  
 4. Run agent: `code-agent chat` or use Python API  
 
 ## Documentation Structure
@@ -109,14 +108,14 @@ For a full guide with configuration options, see [QUICKSTART](./QUICKSTART.qmd).
 |CONFIGURATION                   | Environment variables, settings model details                           |
 |[ROADMAP](./ROADMAP.qmd)        | Development plans and upcoming features                                 | 
 |CHANGELOG                       | Version history                                                          |   
-[FAQ]((docs/FAQ.qmd))            | Common questions and troubleshooting                                     |
+[FAQ]((./FAQ.qmd))            | Common questions and troubleshooting                                     |
 
 ## Getting Help
 
 - Read the [QUICKSTART guide](./QUICKSTART.qmd) for installation
 - Check [USAGE examples](./USAGE.qmd) for common workflows  
 - See [TOOLS documentation](./TOOLS.qmd) to understand agent capabilities  
-- Review [FAQ](docs/FAQ.qmd) for troubleshooting tips  
+- Review [FAQ](./FAQ.qmd) for troubleshooting tips  
 
 --- 
 

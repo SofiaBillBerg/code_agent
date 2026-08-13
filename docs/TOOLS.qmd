@@ -4,7 +4,7 @@ author: "Sofia Billger Bergström"
 format: html
 output: 
   html:
-    css: docs/styles/custom.css
+    css: styles/custom.css
 ---
 
 # A Guide to Agent Tools
@@ -24,6 +24,7 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 - **Why it's useful**: This is the primary tool for creating new source files, documentation, or any other text-based file in your project.
 - **Agent Usage**:
   > **User**: "Create a new Python file named `utils.py` in the `src` directory with a function that adds two numbers."
+  Resource:  [`code_agent//utils/utils.py`](../code_agent/utils/utils.py).
 
 ### `edit-file`
 - **Purpose**: Modifies an existing file. It supports three modes:
@@ -32,7 +33,8 @@ Here is a comprehensive list of the tools that come with `code_agent`.
     - `patch`: Intelligently inserts content, often used for updating specific sections.
 - **Why it's useful**: Use this tool to add new functions to existing code, update documentation, or correct errors.
 - **Agent Usage**:
-  > **User**: "Add a new function to `src/utils.py` that subtracts two numbers."
+  > **User**: "Add a new function to `code_agent/utils/utils.py` that subtracts two numbers."
+  Resource:  [`code_agent//utils/utils.py`](../code_agent/utils/utils.py).
 
 ### `read-file`
 - **Purpose**: Reads the content of a specified file.
@@ -50,13 +52,13 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 - **Purpose**: Generates a new `pytest` test file for a given Python source file.
 - **Why it's useful**: Automates the tedious process of creating boilerplate test code.
 - **Agent Usage**:
-  > **User**: "Generate tests for `src/utils.py`."
+  > **User**: "Generate tests for  [`code_agent//utils/utils.py`](../code_agent/utils/utils.py)."
 
 ### `format-code`
 - **Purpose**: Formats a code file using standard formatters (like Black or Ruff).
 - **Why it's useful**: Helps maintain a consistent and readable code style across the project.
 - **Agent Usage**:
-  > **User**: "Format the file `src/utils.py`."
+  > **User**: "Format the file [`code_agent//utils/utils.py`](../code_agent/utils/utils.py)."
 
 ### `notebook`
 - **Purpose**: Executes Python code in a sandboxed, notebook-like environment.
@@ -69,6 +71,7 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 - **Why it's useful**: Helps visualize the structure of your codebase, which is essential for large-scale refactoring.
 - **Agent Usage**:
   > **User**: "What are the dependencies for `code_agent/main.py`?"
+  Reference: [code_agent/main.py](../code_agent/main.py)
 
 ### `r-script`
 - **Purpose**: Executes R code.
@@ -81,7 +84,7 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 One of the most powerful features of `code_agent` is its extensibility.
 
 ### 1. Create the Tool Class
-Create a new file in the `code_agent/tools/` directory. Your tool should be a class that inherits from `BaseTool` and defines its `name`, `description`, and `_run` method.
+Create a new file in the [`code_agent/tools/`](../code_agent/tools/) directory. Your tool should be a class that inherits from `BaseTool` and defines its `name`, `description`, and `_run` method.
 
 ```python
 # In code_agent/tools/my_custom_tool.py
@@ -97,7 +100,7 @@ class MyCustomTool(BaseTool):
 ```
 
 ### 2. Register the New Tool
-Add your new tool to the `create_default_tools` function in `code_agent/agents/base_agent.py`.
+Add your new tool to the `create_default_tools` function in [`code_agent/agents/base_agent.py`](../code_agent/agents/base_agent.py).
 
 ```python
 # In code_agent/agents/base_agent.py

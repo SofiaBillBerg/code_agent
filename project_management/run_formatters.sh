@@ -51,7 +51,8 @@ echo "Output directories created: $CODE_QUALITY_DIR, stubs"
 run_step "uv format" uv format
 run_step "isort" uv run isort . --float-to-top --sp pyproject.toml --gitignore
 run_step "ruff format" uv run ruff format
-
+# ruff check is non-critical: autofix what it can, never block on lint findings
+run_step "ruff check (autofix, non-blocking)" uv run ruff check code_agent --fix --extend-ignore E501 --output-file "$CODE_QUALITY_DIR"/ruff_report.txt || true
 # --- 4. Type Checking and Static Analysis ---
 run_step "pyrefly check" uv run pyrefly check --remove-unused-ignores --check-unannotated-defs=true --infer-return-types=checked --use-ignore-files=true --summary=full --dependency-graph="$CODE_QUALITY_DIR/pyrefly_deps_graph.json" --color=always --python-interpreter-path .venv/bin/python3 --output="$CODE_QUALITY_DIR/pyrefly_report.txt"
 
@@ -85,7 +86,7 @@ else
 		echo "   ✗ $f"
 	done
 	echo ""
-	echo "You can review errors above and decide which to fix."
+	echo "You can review errors above and decide which to fix, saved to: $CODE_QUALITY_DIR/pyrefly_deps_graph.json, $CODE_QUALITY_DIR/pyrefly_report.txt, $CODE_QUALITY_DIR/flake_report.txt, $CODE_QUALITY_DIR"/ruff_report.txt ,  apidocs/ and $CODE_QUALITY_DIR/.pytyped."
 	echo "============================================"
 	exit 0
 fi

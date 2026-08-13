@@ -16,7 +16,6 @@ from starlette.responses import StreamingResponse
 
 from code_agent.ui.web import app, ChatRequest
 
-
 # Tag: Feature: agent-core-enhancement, Property 14: SSE stream properly formatted event
 
 
@@ -31,9 +30,23 @@ class TestStreamingEndpoint:
 
         An SSE event line should be formatted as:
         data: {"type": "message", "content": "..."}
+
+        :raises AssertionError if any event lacks 'data: ' prefix
+        :return: None
         """
         # Arrange: Create mock streaming generator
         async def mock_generator() -> AsyncGenerator[str]:
+            """Mock generator yielding properly formatted SSE events.
+
+
+            Note: In practice, this would come from an async LLM generator.
+            For testing, we simulate the expected output format.
+            See: https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation
+            See also: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format
+            See: https://github.com/whatwg/html/issues/3967
+
+            :yield is the key here - it must be properly formatted
+            """
             yield "data: {\"type\": \"message\", \"content\": \"Hello\"}\n"
             yield "data: {\"type\": \"done\", \"content\": null}\n"
 
@@ -51,6 +64,14 @@ class TestStreamingEndpoint:
         """Property 14 variant: SSE event data contains valid JSON.
 
         The payload after 'data: ' should be parseable as JSON.
+
+        See: https://json.org/
+        See: https://www.jsonrpc.org/specification
+        See: https://en.wikipedia.org/wiki/JSON#JSON_vs._JavaScript
+
+        See: https://tools.ietf.org/html/rfc7159
+
+        :raises ValueError if invalid JSON
         """
         # Arrange
         raw_event = 'data: {"type": "message", "content": "test"}\n'
@@ -64,7 +85,18 @@ class TestStreamingEndpoint:
         assert isinstance(data["type"], str)
 
     def test_streaming_response_is_streaming_response(self) -> None:
-        """Example test: /chat/stream returns StreamingResponse."""
+        """Example test: /chat/stream returns StreamingResponse.
+
+
+        #: https://fastapi.tiangolo.com/advanced/custom-response/#streamingresponse
+        #: https://www.starlette.io/responses/#streamingresponse
+
+
+        See: https://github.com/encode/starlette/blob/master/starlette/responses.py
+
+        :raises AssertionError if not StreamingResponse
+        :return: None
+        """
         # This test verifies the endpoint returns correct response type
         client = TestClient(app)
 

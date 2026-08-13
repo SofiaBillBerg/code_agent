@@ -11,7 +11,7 @@ This page provides a reference for the public API of the `code_agent` package.
 
 ## Public Exports
 
-The following is exported from [`code_agent`](../src/code_agent/__init__.py):
+The following is exported from [`code_agent`](../code_agent/__init__.py):
 
 ```python
 from code_agent import (
@@ -44,7 +44,7 @@ from code_agent import (
 Creates an LLM instance based on configuration from `.env`.
 
 **Parameters:**
-- `cfg`: Configuration dict or [`Settings`](settings.py). Defaults to loading from project root.
+- `cfg`: Configuration dict or [`Settings`](../code_agent/settings.py). Defaults to loading from project root.
 
 **Returns:** 
 A LangChain-compatible chat model (e.g., `ChatOllama`).
@@ -131,7 +131,7 @@ Creates files from templates with variable substitution.
 - **kwargs**: Variables for `{name}` style replacement in template strings
 
 **Returns:** 
-Path to created file (or raises [`FileCreationError`](exceptions.py) on failure).
+Path to created file (or raises [`FileCreationError`](../code_agent/exceptions.py) on failure).
 
 ```python
 from code_agent import create_from_template
@@ -187,7 +187,7 @@ The file helpers use atomic writes with diff tracking for rollback capability:
 - **`edit_file(path, fn)`**: Calls `fn(content)` and applies changes; tracks edits via audit log
 - **`append_file(path, text)`**: Appends to existing files without overwriting
 
-All operations are logged through the [`CapabilityRegistry`](capabilities/registry.py) for auditing. See [TOOLS](./TOOLS.qmd) for tool-specific details.
+All operations are logged through the [`CapabilityRegistry`](../code_agent/capabilities/registry.py) for auditing. See [TOOLS](./TOOLS.qmd) for tool-specific details.
 
 --- 
 

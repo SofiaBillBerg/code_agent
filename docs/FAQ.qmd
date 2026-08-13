@@ -44,10 +44,10 @@ Docker.
 
 ## 6. How do I add a new tool to the agent?
 
-1. Create a new Python file in the `code_agent/tools/` directory.
+1. Create a new Python file in the [`code_agent/tools/`](../code_agent/tools/) directory.
 2. Define a new class that inherits from `langchain_core.tools.BaseTool`.
 3. Implement the `_run` method with your tool's logic.
-4. Add your new tool to the `create_default_tools` function in `code_agent/agents/base_agent.py`.
+4. Add your new tool to the `create_default_tools` function in [`code_agent/agents/base_agent.py`](../code_agent/agents/base_agent.py) .
 
 See the existing tools for examples.
 

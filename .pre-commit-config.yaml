@@ -13,22 +13,27 @@ repos:
         name: pre-commit-quick
         entry: project_management/pre-commit-quick.sh
         language: script
-        stages: [pre-push, manual]
+        stages: [pre-commit]
       - id: run-formatters
         name: run-formatters
         entry: project_management/run_formatters.sh
         language: script
-        stages: [pre-push, manual]
+        stages: [manual]
       - id: run-vis
         name: run-vis
         entry: project_management/run_vis.sh
         language: script
-        stages: [pre-push, manual]
+        stages: [manual]
       - id: run-analyzers
         name: run-analyzers
         entry: project_management/run_analyzers.sh
         language: script
         stages: [manual]
+      - id: pre-push
+        name: pre-push
+        entry: pre-push
+        language: script
+        stages: [pre-push]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -55,4 +60,4 @@ repos:
     rev: v3.21.2
     hooks:
       - id: pyupgrade
-        args: [ --py310-plus ]
+        args: [ --py311-plus ]

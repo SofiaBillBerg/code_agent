@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# pre-push -- placed here intentionally
+# pre-push  — placed here intentionally
 # Pre-hook: runs all checks in graceful mode and shows aggregate summary.
 # Each sub-script exits 0 even on failures, so we collect results and decide at the end.
 
 echo "Local CI: Running code quality checks before pushing..."
 echo ""
+
+chmod +x ./project_management/run_formatters.sh
+chmod +x ./project_management/run_vis.sh
+chmod +x ./project_management/run_tests.sh
 
 # Run formatters (exits 0 even on failures)
 ./project_management/run_formatters.sh

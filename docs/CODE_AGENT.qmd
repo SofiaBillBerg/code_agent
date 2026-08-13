@@ -3,16 +3,18 @@ title: "Code Agent"
 author: "Sofia Billger Bergström"
 format: html
 date: 2025-11-10
-css: docs/styles/custom.css
+css: styles/custom.css
 ---
 
 # Code Agent
 
-`code_agent` is a lightweight, LLM-driven assistant that can scaffold projects, edit files, generate documentation, and operate as an interactive chatbot.
+`code_agent` is a lightweight, LLM-driven assistant that can scaffold
+projects, edit files, generate documentation, and operate as an
+interactive chatbot.
 
 ## Quick Start
 
-```bash
+``` bash
 # Install dependencies (uv is recommended)
 uv venv .venv
 source .venv/bin/activate
@@ -48,3 +50,17 @@ The package exports these main functions and classes:
 - `create_from_template`
 - `create_llm`
 - `create_project_scaffold`
+
+![Classes diagram for code_agent]
+
+  [Classes diagram for code_agent]: visualizations/svg/classes.svg
+  {#code-agent-class-diagram .class-diagram
+  fig-alt="A mermaid generated class diagram for code_agent"
+  width="682"}
+
+![Package overview diagram for code_agent]
+
+  [Package overview diagram for code_agent]: visualizations/svg/packages.svg
+  {#code-agent-package-diagram .class-diagram
+  fig-alt="A mermaid generated package overview diagram for code_agent"
+  width="679" height="172"}

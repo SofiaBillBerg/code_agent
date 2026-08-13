@@ -8,23 +8,24 @@ This page provides a comprehensive guide to configuring `code_agent`.
 ## Configuration Methods
 
 `code_agent` is configured through a single typed `Settings` model
-(`code_agent/settings.py`) built on `pydantic_settings`. Values are resolved in
-the following order of precedence (later methods override earlier ones):
+(`code_agent/settings.py`) built on `pydantic_settings`. Values are
+resolved in the following order of precedence (later methods override
+earlier ones):
 
-1. **`.env` file** at the project root - the recommended place for your default
-   configuration (connection details, model names, secrets).
-2. **Environment Variables** - override `.env` values, especially useful in
-   CI/CD environments or for temporary changes.
-3. **Programmatic Overrides** - pass a dictionary of options when creating the
-   LLM or agent in Python scripts.
+1.  **`.env` file** at the project root - the recommended place for your
+    default configuration (connection details, model names, secrets).
+2.  **Environment Variables** - override `.env` values, especially
+    useful in CI/CD environments or for temporary changes.
+3.  **Programmatic Overrides** - pass a dictionary of options when
+    creating the LLM or agent in Python scripts.
 
 ## `.env` File
 
 The primary configuration lives in a `.env` file at the project root (a
-committed `.env.example` documents every available key). Here is an example with
-commonly used options:
+committed `.env.example` documents every available key). Here is an
+example with commonly used options:
 
-```dotenv
+``` dotenv
 CODE_AGENT_OLLAMA_SCHEME=http
 CODE_AGENT_OLLAMA_HOST=localhost
 CODE_AGENT_OLLAMA_PORT=11434
@@ -34,36 +35,41 @@ CODE_AGENT_TEMPERATURE=0.7
 
 ### Options
 
-* `CODE_AGENT_OLLAMA_HOST`: The hostname or IP address of the Ollama server. Defaults to `localhost`.
-* `CODE_AGENT_OLLAMA_PORT`: The port on which the Ollama server is running. Defaults to `11434`.
-* `CODE_AGENT_OLLAMA_MODEL`: The name of the Ollama model to use (e.g., `"gpt-oss:20b-cloud"`). This model is used for both
-  chat and embeddings.
-* `CODE_AGENT_TEMPERATURE`: The sampling temperature for the LLM. Higher values result in more creative but less predictable
-  responses. Defaults to `0.7`.
+- `CODE_AGENT_OLLAMA_HOST`: The hostname or IP address of the Ollama
+  server. Defaults to `localhost`.
+- `CODE_AGENT_OLLAMA_PORT`: The port on which the Ollama server is
+  running. Defaults to `11434`.
+- `CODE_AGENT_OLLAMA_MODEL`: The name of the Ollama model to use (e.g.,
+  `"gpt-oss:20b-cloud"`). This model is used for both chat and
+  embeddings.
+- `CODE_AGENT_TEMPERATURE`: The sampling temperature for the LLM. Higher
+  values result in more creative but less predictable responses.
+  Defaults to `0.7`.
 
 ## Environment Variables
 
-You can override any setting using an environment variable with the same name as
-the `Settings` field, upper-cased with the `CODE_AGENT_` prefix:
+You can override any setting using an environment variable with the same
+name as the `Settings` field, upper-cased with the `CODE_AGENT_` prefix:
 
-* `CODE_AGENT_OLLAMA_HOST`
-* `CODE_AGENT_OLLAMA_PORT`
-* `CODE_AGENT_OLLAMA_MODEL`
-* `CODE_AGENT_TEMPERATURE`
-* `CODE_AGENT_OPENAI_API_KEY` (and `CODE_AGENT_OPENAI_MODEL`, `CODE_AGENT_OPENAI_BASE_URL`)
+- `CODE_AGENT_OLLAMA_HOST`
+- `CODE_AGENT_OLLAMA_PORT`
+- `CODE_AGENT_OLLAMA_MODEL`
+- `CODE_AGENT_TEMPERATURE`
+- `CODE_AGENT_OPENAI_API_KEY` (and `CODE_AGENT_OPENAI_MODEL`,
+  `CODE_AGENT_OPENAI_BASE_URL`)
 
 For example, to use a different Ollama model:
 
-```bash
+``` bash
 export CODE_AGENT_OLLAMA_MODEL="another-model:latest"
 ```
 
 ## Programmatic Overrides
 
-When creating the LLM instance in a Python script, you can pass a dictionary of configuration overrides to the
-`create_llm` function.
+When creating the LLM instance in a Python script, you can pass a
+dictionary of configuration overrides to the `create_llm` function.
 
-```python
+``` python
 from code_agent.main import create_llm, load_config
 
 # Load base configuration
@@ -76,3 +82,9 @@ config["temperature"] = 0.9
 # Create LLM with overrides
 llm = create_llm(config)
 ```
+
+![Class diagram for code_agent Settings]
+
+  [Class diagram for code_agent Settings]: visualizations/svg/code_agent.settings.Settings.svg
+  {.class-diagram fig-alt="Class diagram for code_agent Settings
+  " width="637"}
