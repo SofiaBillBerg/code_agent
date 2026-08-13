@@ -19,21 +19,18 @@ lazy and ``complete()`` is always exercised against a mocked client.
 from __future__ import annotations
 
 import importlib.util
+from pathlib import Path
 import sys
 import types
-
-from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import MagicMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fallback: load the real provider modules without optional langchain deps
 # ---------------------------------------------------------------------------
-
 
 def _is_importable(module_name: str) -> bool:
     """Return True when *module_name* can be imported from this environment."""
@@ -135,14 +132,13 @@ OllamaProvider: Any
 OpenAIProvider: Any
 
 try:  # ruff: ignore [module-import-not-at-top-of-file]  (imports follow the fallback helpers by design)
-    import code_agent.providers.factory as _factory_mod  # ruff: ignore [module-import-not-at-top-of-file]
-    import code_agent.providers.ollama as _ollama_mod  # ruff: ignore [module-import-not-at-top-of-file]
-    import code_agent.providers.openai as _openai_mod  # ruff: ignore [module-import-not-at-top-of-file]
-
     from code_agent.providers.base import (  # ruff: ignore [module-import-not-at-top-of-file]
         LLMProvider,
         ProviderBase,
     )
+    import code_agent.providers.factory as _factory_mod  # ruff: ignore [module-import-not-at-top-of-file]
+    import code_agent.providers.ollama as _ollama_mod  # ruff: ignore [module-import-not-at-top-of-file]
+    import code_agent.providers.openai as _openai_mod  # ruff: ignore [module-import-not-at-top-of-file]
 except ImportError:
     # Minimal environment: load the real provider source files directly.
     _base_mod, _factory_mod, _ollama_mod, _openai_mod = _load_provider_modules()

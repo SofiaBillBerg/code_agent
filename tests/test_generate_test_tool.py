@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import textwrap
 
-from pathlib import Path
-
-import pytest
-
 from code_agent.tools.generate_test_tool import generate_test
-
+import pytest
 
 @pytest.fixture
 def sample_py(tmp_path: Path) -> Path:

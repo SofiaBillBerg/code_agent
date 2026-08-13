@@ -13,20 +13,9 @@ implementation.
 from __future__ import annotations
 
 import json
-
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
-
-import pytest
-
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
-from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
-from langchain_core.utils.uuid import uuid7
-from typer.testing import CliRunner
 
 from code_agent.agents.base_agent import build_agent
 from code_agent.cli import app as cli_app
@@ -38,7 +27,14 @@ from code_agent.file_generator import (
 )
 from code_agent.main import load_config
 from code_agent.scaffold import create_project_scaffold
-
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.runnables import Runnable
+from langchain_core.tools import BaseTool
+from langchain_core.utils.uuid import uuid7
+import pytest
+from typer.testing import CliRunner
 
 @pytest.fixture
 def runner() -> CliRunner:

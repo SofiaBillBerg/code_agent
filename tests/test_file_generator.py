@@ -8,11 +8,9 @@ to avoid duplication.
 
 from pathlib import Path
 
-import pytest
-
 from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
-
+import pytest
 
 @pytest.fixture
 def tmp_file(tmp_path: Path) -> Path:

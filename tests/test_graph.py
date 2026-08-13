@@ -16,26 +16,22 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import BaseTool, tool
-from langchain_core.utils.uuid import uuid7
-from typing_extensions import override
-
 from code_agent.deepagents_agent import (
     build_deep_agent,
     make_backend,
     make_default_permissions,
 )
 from code_agent.graph import build_graph
-
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import BaseTool, tool
+from langchain_core.utils.uuid import uuid7
+import pytest
+from typing_extensions import override
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
 
 @pytest.fixture
 def mock_llm() -> MagicMock:

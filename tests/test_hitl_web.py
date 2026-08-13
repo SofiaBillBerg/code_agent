@@ -6,24 +6,20 @@ Tests for the /chat/resume endpoint and related HITL functionality.
 from __future__ import annotations
 
 import asyncio
-
 from typing import Literal
 
-import pytest
-
+from code_agent.ui.web import _hitl_decisions, _pending_hitl, app
 from fastapi.testclient import TestClient
+import hypothesis
 from hypothesis import given, settings
 from hypothesis import strategies as st
-
-from code_agent.ui.web import _hitl_decisions, _pending_hitl, app
-
+import pytest
 
 # Tag: Feature: agent-core-enhancement, Property 6: HITL resume signals the pending event
 # Tag: Feature: agent-core-enhancement, Property 7: Resume returns 409 for non-pending threads
 
-
 @pytest.fixture(autouse=True)
-def reset_hitl_state() -> None:
+def reset_hitl_state():
     """Reset HITL state before each test.
 
     :yield: None
@@ -69,7 +65,7 @@ class TestResumeEndpoint:
         thread_id=st.uuids().map(str),
         decision=st.sampled_from(["approve", "reject"]),
     )
-    @settings(max_examples=100)
+    @settings(max_examples=100, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
     def test_resume_approve_reject_works(
         self,
         client: TestClient,
@@ -114,7 +110,7 @@ class TestResumeEndpoint:
         thread_id=st.uuids().map(str),
         decision=st.sampled_from(["approve", "reject"]),
     )
-    @settings(max_examples=100)
+    @settings(max_examples=100, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
     def test_resume_409_for_non_pending_thread(
         self,
         client: TestClient,

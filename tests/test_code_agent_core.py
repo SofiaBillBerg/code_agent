@@ -1,17 +1,8 @@
 """Unit tests for the public helpers in `code_agent.file_generator`."""
 
-import textwrap
-
 from pathlib import Path
+import textwrap
 from typing import Any
-
-import pytest
-
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
-from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.docs_generator import generate_quarto_docs
@@ -21,7 +12,12 @@ from code_agent.file_generator import (
     py_to_ipynb,
     write_file,
 )
-
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.runnables import Runnable
+from langchain_core.tools import BaseTool
+import pytest
 
 @pytest.fixture
 def dummy_llm() -> BaseChatModel:

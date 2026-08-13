@@ -7,12 +7,10 @@ function raises a clear error when the ``root`` argument is not a directory.
 
 from pathlib import Path
 
-import pytest
-
 # Import the public API that the tests exercise
 from code_agent.exceptions import CodeAgentError
 from code_agent.scaffold import create_project_scaffold
-
+import pytest
 
 # ---------------------------------------------------------------------------
 # Fixtures

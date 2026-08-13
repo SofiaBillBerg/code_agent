@@ -3,16 +3,12 @@
 from __future__ import annotations
 
 import json
-
 from typing import Any
-
-import pytest
-
-from deepagents import HarnessProfile
 
 from code_agent.profiles import register_profiles_from_settings
 from code_agent.settings import Settings
-
+from deepagents import HarnessProfile
+import pytest
 
 def test_register_profiles_from_settings_noop_when_missing(
     monkeypatch: Any,
