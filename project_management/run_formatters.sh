@@ -66,7 +66,6 @@ run_step "flake8" uv run flake8 code_agent --show-source --verbose --extend-excl
 # --- 6. Documentation Generation ---
 run_step "pydoctor" uv run pydoctor -c pydoctor.ini
 
-
 # --- 7. Dependency Management ---
 echo ""
 #echo "▶ Locking and exporting dependencies..."

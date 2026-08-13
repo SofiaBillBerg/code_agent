@@ -8,6 +8,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +47,7 @@ def make_natural_language_tool(
             return json.dumps({"error": "Language model not initialized"})
 
         # Create a detailed tool manifest for the prompt
-        tool_manifest = []
+        tool_manifest: list[str] = []
         for t in available_tools:
             args_schema = getattr(t, "args_schema", None)
             if (
@@ -60,7 +61,7 @@ def make_natural_language_tool(
             properties = schema.get("properties", {})
             required_args = schema.get("required", [])
 
-            arg_details = []
+            arg_details: list[str] = []
             for arg_name, arg_info in properties.items():
                 is_required = (
                     "required" if arg_name in required_args else "optional"

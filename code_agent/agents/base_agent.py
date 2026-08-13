@@ -6,10 +6,12 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from code_agent.graph import Harness, build_graph
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
+
+from code_agent.graph import Harness, build_graph
+
 
 __all__ = ["build_agent", "create_default_tools"]
 
@@ -51,6 +53,8 @@ def create_default_tools(
     """
     from functools import wraps
 
+    from langchain_core.tools import StructuredTool
+
     from code_agent.tools import (
         edit_file,
         generate_test,
@@ -63,7 +67,6 @@ def create_default_tools(
         make_search_explain_tool,
         read_file,
     )
-    from langchain_core.tools import StructuredTool
 
     root_path = Path(root_dir) if root_dir else Path.cwd()
 

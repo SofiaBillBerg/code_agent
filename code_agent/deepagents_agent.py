@@ -33,8 +33,9 @@ backend/permissions, so they win), avoiding duplicate-tool errors.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 import logging
+
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -53,6 +54,7 @@ from langchain_core.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
+
 
 log = logging.getLogger(__name__)
 
@@ -255,9 +257,11 @@ def build_deep_agent(
         tools=tool_list or None,
         system_prompt=system_prompt,
         backend=backend,
-        permissions=list(permissions)
-        if permissions is not None
-        else make_default_permissions(workspace_prefix=workspace_prefix),
+        permissions=(
+            list(permissions)
+            if permissions is not None
+            else make_default_permissions(workspace_prefix=workspace_prefix)
+        ),
         interrupt_on=merged_interrupt_on,
         checkpointer=checkpointer,
         store=store,

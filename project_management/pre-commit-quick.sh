@@ -28,33 +28,33 @@ TOTAL_FAILURES=0
 
 # Check formatters result
 if [ $FORMATTERS_EXIT -ne 0 ]; then
-    echo "  ✗ run_autofix.sh exited with code $FORMATTERS_EXIT"
-    TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
+	echo "  ✗ run_autofix.sh exited with code $FORMATTERS_EXIT"
+	TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
 else
-    echo "  ✓ run_autofix.sh completed (see above for details)"
+	echo "  ✓ run_autofix.sh completed (see above for details)"
 fi
 
 # Check visualization result
 if [ $TESTS_EXIT -ne 0 ]; then
-    echo "  ✗ run_tests.sh exited with code $TESTS_EXIT"
-    TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
+	echo "  ✗ run_tests.sh exited with code $TESTS_EXIT"
+	TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
 else
-    echo "  ✓ run_tests.sh completed (see above for details)"
+	echo "  ✓ run_tests.sh completed (see above for details)"
 fi
 
 echo ""
 echo "========================================================"
 
 if [ $TOTAL_FAILURES -eq 0 ]; then
-    echo "  All checks passed! Proceeding with git push..."
-    echo "========================================================"
-    exit 0
+	echo "  All checks passed! Proceeding with git push..."
+	echo "========================================================"
+	exit 0
 else
-    echo "  ⚠  $TOTAL_FAILURES script(s) reported issues."
-    echo "  Review the output above for details."
-    echo ""
-    echo "  You can fix the issues and try again, or push anyway."
-    echo "========================================================"
-    # Exit 0 - let the user decide
-    exit 0
+	echo "  ⚠  $TOTAL_FAILURES script(s) reported issues."
+	echo "  Review the output above for details."
+	echo ""
+	echo "  You can fix the issues and try again, or push anyway."
+	echo "========================================================"
+	# Exit 0 - let the user decide
+	exit 0
 fi

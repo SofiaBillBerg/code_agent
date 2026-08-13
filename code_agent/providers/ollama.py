@@ -9,12 +9,15 @@ temperature) are read from config, never hardcoded.
 from __future__ import annotations
 
 import json
+
 from pathlib import Path
 from typing import Any
 
+from langchain_ollama import ChatOllama
+
 from code_agent.providers.base import ProviderBase
 from code_agent.settings import as_config_dict
-from langchain_ollama import ChatOllama
+
 
 #: Shared helper so the provider layer and ``main.create_llm`` build
 #: ``ChatOllama`` from the same config keys.  Keeping this in one place

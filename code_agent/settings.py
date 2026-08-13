@@ -23,8 +23,9 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 
 from __future__ import annotations
 
-from functools import lru_cache
 import logging
+
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -73,7 +74,24 @@ class Settings(BaseSettings):
 
     See the ``DEFAULT_SYSTEM_PROMPT`` docstring for details on the prompt.
 
-    :param model_config: Passed to ``pydantic.BaseSettings``.
+    :param auth_token: Bearer token for authentication. Maps to ``CODE_AGENT_AUTH_TOKEN``.
+    :param checkpoint_dir: Directory to store checkpoints. Maps to ``CODE_AGENT_CHECKPOINT_DIR``.
+    :param log_level: Logging level. Maps to ``CODE_AGENT_LOG_LEVEL``.
+    :param max_execution_time: Maximum execution time in seconds. Maps to ``CODE_AGENT_MAX_EXECUTION_TIME``.
+    :param max_iterations: Maximum number of iterations. Maps to ``CODE_AGENT_MAX_ITERATIONS``.
+    :param max_tokens: Maximum number of tokens to generate. Maps to ``CODE_AGENT_MAX_TOKENS``.
+    :param mcp_servers: MCP server configurations. Maps to ``CODE_AGENT_MCP_SERVERS``.
+    :param ollama_*: Ollama connection parameters. Maps to ``CODE_AGENT_OLLAMA_*``.
+    :param openai_*: OpenAI connection parameters. Maps to ``CODE_AGENT_OPENAI_*``.
+    :param profiles: Harness profiles to register. Maps to ``CODE_AGENT_PROFILES``.
+    :param provider: Provider to use. Maps to ``CODE_AGENT_PROVIDER``.
+    :param provider_list: List of available providers. Maps to ``CODE_AGENT_PROVIDER_LIST``.
+    :param root_dir: Root directory for the agent. Maps to ``CODE_AGENT_ROOT_DIR``.
+    :param stream_enabled: Whether to enable streaming. Maps to ``CODE_AGENT_STREAM_ENABLED``.
+    :param stream: Whether to stream responses. Maps to ``CODE_AGENT_STREAM``.
+    :param system_prompt: System prompt to use. Maps to ``CODE_AGENT_SYSTEM_PROMPT``.
+    :param temperature: Generation temperature. Maps to ``CODE_AGENT_TEMPERATURE``.
+    :param verbose: Whether to log verbosely. Maps to ``CODE_AGENT_VERBOSE``.
 
     .. note::
         Provider credentials are **not** hardcoded - they are read from the
@@ -93,29 +111,29 @@ class Settings(BaseSettings):
     provider: str = "ollama"
 
     #: --- Ollama connection --------------------------------------------------
-    ollama_scheme: str = "http"
     ollama_host: str = "localhost"
-    ollama_port: int = 11434
     ollama_model: str = "gpt-oss:20b"
+    ollama_port: int = 11434
+    ollama_scheme: str = "http"
 
     #: --- OpenAI (optional; falls back to the OPENAI_API_KEY env var) --------
     openai_api_key: str | None = None
-    openai_model: str = "gpt-4o"
     openai_base_url: str | None = None
+    openai_model: str = "gpt-4o"
 
     #: --- Sampling / generation ---------------------------------------------
-    temperature: float = 0.7
     max_tokens: int = 6000
     stream: bool = True
+    temperature: float = 0.7
 
     #: --- Application behavior ---------------------------------------------
     auth_token: str | None = None
+    log_level: str = "INFO"
+    max_execution_time: int = 5000
+    max_iterations: int = 50
     root_dir: str = "."
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
     verbose: bool = True
-    log_level: str = "INFO"
-    max_iterations: int = 50
-    max_execution_time: int = 5000
 
     #: --- Checkpointer storage path ----------------------------------------
     #: Absolute or ``~``-relative path where the SqliteSaver writes

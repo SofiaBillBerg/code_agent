@@ -8,33 +8,33 @@ set -o pipefail
 echo "Activating virtual environment..."
 
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
-    if [ -f ".venv/Scripts/activate" ]; then
-        source .venv/Scripts/activate
-    else
-        echo "✗ Could not find .venv/Scripts/activate"
-    fi
+	if [ -f ".venv/Scripts/activate" ]; then
+		source .venv/Scripts/activate
+	else
+		echo "✗ Could not find .venv/Scripts/activate"
+	fi
 else
-    if [ -f ".venv/bin/activate" ]; then
-        source .venv/bin/activate
-    else
-        echo "✗ Could not find .venv/bin/activate"
-    fi
+	if [ -f ".venv/bin/activate" ]; then
+		source .venv/bin/activate
+	else
+		echo "✗ Could not find .venv/bin/activate"
+	fi
 fi
 
 FAILURES=()
 
 run_step() {
-    local label="$1"
-    shift
-    echo ""
-    echo "▶ $label"
-    if "$@"; then
-        echo "  ✓ $label passed"
-    else
-        local code=$?
-        echo "  ✗ $label failed (exit $code) - continuing..."
-        FAILURES+=("$label (exit $code)")
-    fi
+	local label="$1"
+	shift
+	echo ""
+	echo "▶ $label"
+	if "$@"; then
+		echo "  ✓ $label passed"
+	else
+		local code=$?
+		echo "  ✗ $label failed (exit $code) - continuing..."
+		FAILURES+=("$label (exit $code)")
+	fi
 }
 
 echo "Starting code quality and visualization script..."
@@ -81,16 +81,16 @@ run_step "pip install -e ." uv pip install -e .
 echo ""
 echo "============================================"
 if [ ${#FAILURES[@]} -eq 0 ]; then
-    echo "All tasks completed successfully!"
-    exit 0
+	echo "All tasks completed successfully!"
+	exit 0
 else
-    echo "⚠  Completed with ${#FAILURES[@]} failure(s):"
-    for f in "${FAILURES[@]}"; do
-        echo "   ✗ $f"
-    done
-    echo ""
-    echo "You can review errors above and decide which to fix."
-    echo "============================================"
-    # Exit 0 so the caller can proceed if they choose
-    exit 0
+	echo "⚠  Completed with ${#FAILURES[@]} failure(s):"
+	for f in "${FAILURES[@]}"; do
+		echo "   ✗ $f"
+	done
+	echo ""
+	echo "You can review errors above and decide which to fix."
+	echo "============================================"
+	# Exit 0 so the caller can proceed if they choose
+	exit 0
 fi

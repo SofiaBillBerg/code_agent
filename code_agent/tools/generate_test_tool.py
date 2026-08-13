@@ -7,6 +7,7 @@ from pathlib import Path
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
+
 class GenerateTestArgs(BaseModel):
     """Arguments for the generate-test tool.
 

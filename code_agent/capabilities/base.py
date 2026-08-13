@@ -61,6 +61,16 @@ class CapabilityBase(ABC):
     Subclasses must set the ``id``, ``intent``, ``input_model`` and
     ``output_model`` class attributes. ``invoke`` validates that ``params``
     is an instance of ``input_model`` before delegating to ``_execute``.
+
+    See :class:`Capability` for the structural contract.
+    Note that this is an ABC, so subclasses must implement ``_execute``.
+
+    Attributes:
+        id: Stable identifier, e.g. ``"read-file"``.
+        intent: Human description of what the capability does.
+        input_model: Pydantic model validating the invocation params.
+        output_model: Pydantic model describing the invocation result.
+        risk_class: One of :data:`RiskClass` values.
     """
 
     id: ClassVar[str]

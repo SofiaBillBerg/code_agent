@@ -20,11 +20,15 @@ from typing import Any, Literal
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import HumanInTheLoopMiddleware
-from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
+from langchain.agents.middleware.human_in_the_loop import (
+    HumanInTheLoopMiddleware,
+    InterruptOnConfig,
+)
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
+
 
 Harness = Literal["create_agent", "deepagents"]
 
@@ -88,7 +92,7 @@ def build_graph(
     if "r-script" in tool_names:
         interrupt_on["r-script"] = True
 
-    middleware = []
+    middleware: list[HumanInTheLoopMiddleware] = []
     if interrupt_on:
         middleware.append(
             HumanInTheLoopMiddleware(

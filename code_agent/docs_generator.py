@@ -11,9 +11,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from langchain_core.language_models.chat_models import BaseChatModel
+
 from .file_generator import write_file
 
-from langchain_core.language_models.chat_models import BaseChatModel
 
 def _gather_repo_info(root: Path) -> dict[str, list[str]]:
     """Gather information about files in the repository.
@@ -22,10 +23,10 @@ def _gather_repo_info(root: Path) -> dict[str, list[str]]:
 
     :return: Dictionary with lists of file paths by type
     """
-    py_files = []
-    data_files = []
-    notebooks = []
-    tests = []
+    py_files: list[str] = []
+    data_files: list[str] = []
+    notebooks: list[str] = []
+    tests: list[str] = []
 
     for p in root.rglob("*"):
         if p.is_file():
@@ -186,7 +187,7 @@ def generate_quarto_docs(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     info = _gather_repo_info(root)
-    written = []
+    written: list[str] = []
 
     # Generate README.qmd
     readme_q = out / "README.qmd"

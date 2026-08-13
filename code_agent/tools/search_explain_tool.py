@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import re
 
-from .edit_file_tool import FileObject
+from pathlib import Path
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
+
+from .edit_file_tool import FileObject
+
 
 _MAX_FILE_SIZE: int = 2 * 1024 * 1024  # 2MB
 
@@ -97,7 +99,7 @@ def _read_ipynb_preview(path: Path) -> str:
     try:
         nb = json.loads(path.read_text(encoding="utf-8"))
         cells = nb.get("cells", [])
-        texts = []
+        texts: list[str] = []
         for c in cells:
             if c.get("cell_type") == "markdown" or c.get("cell_type") == "code":
                 texts.append("".join(c.get("source", [])))
@@ -120,7 +122,7 @@ def _gather_hits(
     :param max_results: The maximum number of hits to return.
     :return: A list of dictionaries, each containing the file path and snippet.
     """
-    hits = []
+    hits: list[dict[str, str]] = []
     for path in root.rglob("*"):
         if not _is_candidate_path(path):
             continue

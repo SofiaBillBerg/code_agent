@@ -15,8 +15,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from code_agent.settings import get_settings
 from deepagents import HarnessProfile, register_harness_profile
+
+from code_agent.settings import get_settings
+
 
 def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
     """Convert a raw settings entry into a :class:`HarnessProfile`.
@@ -52,7 +54,9 @@ def register_profiles_from_settings() -> None:
 
     Example ``.env`` entry::
 
-        CODE_AGENT_PROFILES='{"ollama:gpt-oss:20b": {"system_prompt_suffix": "Be concise."}}'
+        CODE_AGENT_PROFILES = (
+            '{"ollama:gpt-oss:20b": {"system_prompt_suffix": "Be concise."}}'
+        )
 
     :return: None
     """

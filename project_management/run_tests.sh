@@ -49,7 +49,6 @@ echo "Output directories created: $CODE_QUALITY_DIR, stubs"
 # --- 3. Run tests
 run_step "pytest" uv run pytest --color=yes --tb=short --junitxml="$CODE_QUALITY_DIR/pytest_report.xml"
 
-
 # ---  Summary ---
 echo ""
 echo "============================================"

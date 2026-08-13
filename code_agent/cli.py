@@ -40,14 +40,22 @@ from __future__ import annotations
 import asyncio
 import itertools
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import threading
 import time
-from typing import Any, cast
 import uuid
+
+from pathlib import Path
+from typing import Any, cast
+
+import typer
+
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.tools import BaseTool
+from langchain_mcp_adapters.sessions import Connection
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
@@ -63,11 +71,7 @@ from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
 from code_agent.scaffold import create_project_scaffold
 from code_agent.settings import PROJECT_ROOT
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.tools import BaseTool
-from langchain_mcp_adapters.sessions import Connection
-import typer
+
 
 # Module-level Typer argument/option definitions to avoid
 # "function-call-in-default-argument" lint warnings.
@@ -102,7 +106,7 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
 ) -> str:
     """Run the agent and stream visible progress to the terminal.
 
-    Uses :meth:`Runnable.astream_events` when available so the user sees:
+    It uses :meth:`Runnable.astream_events` when available so the user sees:
     - a spinner while the run is in flight
     - tool start/end events
     - streamed assistant tokens
@@ -485,7 +489,7 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
     if not raw:
         return []
 
-    servers = _normalize_mcp_servers(str(raw))  # type: ignore
+    servers = _normalize_mcp_servers(raw)
     if not servers:
         return []
 

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
 
+from pathlib import Path
+
+from langchain_core.messages import AIMessage, HumanMessage
+
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.main import create_llm, load_config
-from langchain_core.messages import AIMessage, HumanMessage
+
 
 THREAD_ID = "ci-run"
 
@@ -77,9 +80,7 @@ Provide a comprehensive review."""
         for msg in response.get("messages", [])
         if isinstance(msg, AIMessage)
     ]
-    output = (
-        str(ai_messages[-1].content) if ai_messages else str(response)
-    )
+    output = str(ai_messages[-1].content) if ai_messages else str(response)
     review_path.write_text(output, encoding="utf-8")
 
     print(f"Review saved to {review_path}")

@@ -1,11 +1,11 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
-from pathlib import Path
-from typing import Any, Self
 import uuid
 
-from code_agent.agents.base_agent import build_agent
+from pathlib import Path
+from typing import Any, Self
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
@@ -15,6 +15,9 @@ from langchain_core.messages import (
 )
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
+
+from code_agent.agents.base_agent import build_agent
+
 
 class PersistentAgent:
     """A persistent agent that maintains state between sessions."""
@@ -135,7 +138,9 @@ class PersistentAgent:
             {"messages": self._history_to_messages()},
             config={"configurable": {"thread_id": self.thread_id}},
         )
-        messages: list[BaseMessage] = response.get("messages", []) if isinstance(response, dict) else []
+        messages: list[BaseMessage] = (
+            response.get("messages", []) if isinstance(response, dict) else []
+        )
         for msg in reversed(messages):
             if hasattr(msg, "content") and getattr(msg, "content", None):
                 return str(msg.content)
