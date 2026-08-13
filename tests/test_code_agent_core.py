@@ -25,15 +25,32 @@ from code_agent.file_generator import (
 
 @pytest.fixture
 def dummy_llm() -> BaseChatModel:
-    """A dummy LLM for testing agent creation."""
+    """A dummy LLM for testing agent creation.
+
+    :return: A dummy LLM instance of BaseChatModel
+    :rtype: BaseChatModel
+    :raises AssertionError: If the dummy LLM setup fails
+    :raises ValueError: If the dummy LLM setup fails
+    :raises TypeError: If the dummy LLM setup fails
+    :raises Exception: If the dummy LLM setup fails for any other reason
+    """
 
     class DummyLLM(BaseChatModel):
+        """A dummy LLM implementation for testing."""
+
         def _generate(
             self,
             messages: list[BaseMessage],
             stop: list[str] | None = None,
             **kwargs: Any,
         ) -> ChatResult:
+            """Generate a dummy response.
+
+            :param messages: A list of messages
+            :param stop: Stop sequences
+            :param kwargs: Additional keyword arguments
+            :return: A dummy chat result
+            """
             return ChatResult(
                 generations=[
                     ChatGeneration(
@@ -45,16 +62,33 @@ def dummy_llm() -> BaseChatModel:
         def bind_tools(
             self, tools: list[BaseTool], **kwargs: Any
         ) -> Runnable[Any, BaseMessage]:
+            """Bind tools to the LLM.
+
+            :param tools: A list of tools
+            :param kwargs: Additional keyword arguments
+            :return: A runnable
+            """
             return self
 
         @property
         def _llm_type(self) -> str:
+            """Accessor for the type of chat model this is.
+
+            :return: The type of chat model
+            """
             return "dummy-chat-model"
 
     return DummyLLM()
 
 
 def test_create_and_append(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
+    """Test that files can be created and appended to.
+
+    :param  tmp_path: A temporary directory for testing
+    :param dummy_llm: A dummy LLM instance
+    :return: None
+    :raises AssertionError: If the file creation or append fails
+    """
     # We need to create an agent to get the root_dir for tools
     tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
     build_agent(
@@ -76,6 +110,13 @@ def test_create_and_append(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
 
 
 def test_templates_and_nb(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
+    """Test template creation and Python to notebook conversion.
+
+    :param tmp_path: A temporary directory for testing
+    :param dummy_llm: A dummy LLM instance
+    :return: None
+    :raises AssertionError: If template creation or conversion fails
+    """
     # Agent creation to ensure context is set up
     tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
     build_agent(llm=dummy_llm, tools=tools)
@@ -101,10 +142,21 @@ def test_templates_and_nb(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
 
 @pytest.fixture
 def tmp_file(tmp_path: Path) -> Path:
+    """A temporary file for testing.
+
+    :param tmp_path: A temporary directory for testing
+    :return: A temporary file path
+    """
     return tmp_path / "file.txt"
 
 
 def test_write_and_append(tmp_file: Path) -> None:
+    """Test that files are written and appended correctly.
+
+    :param tmp_file: A temporary file path
+    :return: None
+    :raises AssertionError: If the file writing or appending fails
+    """
     write_file(tmp_file, "line1\n")
     assert tmp_file.read_text(encoding="utf-8") == "line1\n"
 
@@ -113,10 +165,16 @@ def test_write_and_append(tmp_file: Path) -> None:
 
 
 def test_convert_py_to_nb(tmp_path: Path) -> None:
-    """The notebook should contain the original code as a code cell."""
+    """The notebook should contain the original code as a code cell.
+
+    :param tmp_path: A temporary directory for testing
+    :return: None
+    :raises AssertionError: If the notebook does not contain the expected content
+    """
     script_path = tmp_path / "script.py"
     script = textwrap.dedent("""
                     def greet():
+                        '''Test docstring'''
                         return "hello"
                     """)
     script_path.write_text(script)
@@ -129,7 +187,12 @@ def test_convert_py_to_nb(tmp_path: Path) -> None:
 
 
 def test_generate_docs_no_llm(tmp_path: Path) -> None:
-    """The docs generator should create a minimal output folder."""
+    """The docs generator should create a minimal output folder.
+
+    :param tmp_path: A temporary directory for testing
+    :return: None
+    :raises AssertionError: If the docs are not generated correctly
+    """
     output_dir = tmp_path / "docs"
     docs = generate_quarto_docs(output_dir=output_dir, use_llm=False)
     assert output_dir.exists(), "Docs output directory should exist"

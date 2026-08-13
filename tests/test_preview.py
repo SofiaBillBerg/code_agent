@@ -14,7 +14,7 @@ from typing import Any
 import pytest
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
@@ -30,15 +30,45 @@ from code_agent.main import create_llm
 # --------------------------------------------------------------------------- #
 @pytest.fixture
 def dummy_llm() -> BaseChatModel:
-    """A dummy LLM for testing agent creation."""
+    """A dummy LLM for testing agent creation.
+
+    This is a minimal implementation of a BaseChatModel for testing purposes.
+    It implements only the required methods to satisfy the ``BaseChatModel``
+    interface for testing purposes.
+    It always returns a fixed message, making it safe for testing agent
+    construction without making actual LLM calls.
+    It is used to test agent construction without making real LLM calls.
+    See Also:
+        ``test_file_generator.py`` for a more complete implementation
+        of a dummy LLM for testing file operations.
+
+    :return:
+        A dummy LLM instance that returns a fixed message.
+    """
 
     class DummyLLM(BaseChatModel):
+        """A  dummy LLM implementation for testing.
+
+        This implementation is minimal and only provides the necessary methods
+        to satisfy the ``BaseChatModel`` interface for testing purposes.
+        It always returns a fixed message, making it safe for testing agent
+        construction without making actual LLM calls.
+        It is used to test agent construction without making actual LLM calls.
+        """
+
         def _generate(
             self,
             messages: list[BaseMessage],
             stop: list[str] | None = None,
             **kwargs: Any,
         ) -> ChatResult:
+            """Generate a fixed message - required by BaseChatModel.
+
+            :param messages: List of messages to generate from.
+            :param stop: Stop sequences (not used here).
+            :param kwargs: Additional keyword arguments (not used here).
+            :return: A fixed ChatResult.
+            """
             return ChatResult(
                 generations=[
                     ChatGeneration(
@@ -50,10 +80,20 @@ def dummy_llm() -> BaseChatModel:
         def bind_tools(
             self, tools: list[BaseTool], **kwargs: Any
         ) -> Runnable[Any, BaseMessage]:
+            """Bind tools to the LLM - required by BaseChatModel.
+
+            :param tools: List of tools to bind.
+            :param kwargs: Additional keyword arguments.
+            :return: Self, as no binding occurs in this dummy implementation.
+            """
             return self
 
         @property
         def _llm_type(self) -> str:
+            """Return the type of the LLM - required by BaseChatModel.
+
+            :return:  The type of the LLM.
+            """
             return "dummy-chat-model"
 
     return DummyLLM()
@@ -62,7 +102,14 @@ def dummy_llm() -> BaseChatModel:
 def test_build_agent_returns_runnable(
     tmp_path: Path, dummy_llm: BaseChatModel
 ) -> None:
-    """Creating an agent with a valid path should return a LangChain Runnable."""
+    """Creating an agent with a valid path should return a LangChain Runnable.
+
+
+    :param tmp_path: Temporary directory path from pytest.
+    :param dummy_llm: A dummy LLM instance for testing.
+    :raises AssertionError: If the agent is not a Runnable or is None.
+    :raises Exception: If the agent creation fails for other reasons.
+    """
     # We need to load config and create tools to pass to build_agent
     tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
 
@@ -79,6 +126,11 @@ def test_build_agent_with_invalid_config(tmp_path: Path) -> None:
     With the current implementation, ``create_llm`` returns a ``ChatOllama``
     instance even for invalid configs (construction is lazy). The agent can
     still be built and invoked; any backend errors surface at invocation time.
+
+
+    :param tmp_path: Temporary directory path from pytest.
+    :raises AssertionError: If the agent is not a Runnable.
+    :raises Exception: If the agent creation fails unexpectedly.
     """
     # Use a config with an invalid port - ChatOllama construction is lazy
     # so this succeeds, but invocation will fail.
@@ -106,6 +158,12 @@ def test_write_file_and_agent_integration(
     """A quick integration test: write a file, then create an agent that uses it.
 
     Ensures that the agent can be instantiated after a file operation succeeds.
+
+
+    :param tmp_path: Temporary directory path from pytest.
+    :param dummy_llm: A dummy LLM instance for testing.
+    :raises AssertionError: If the agent is not a Runnable or is None.
+    :raises Exception: If the agent creation fails for other reasons.
     """
     file_path = tmp_path / "data.txt"
     write_file(file_path, "agent data")

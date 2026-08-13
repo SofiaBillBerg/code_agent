@@ -17,10 +17,10 @@ from unittest import mock
 import pytest
 
 from fastapi.testclient import TestClient
+from langchain_core.messages import AIMessage, HumanMessage
 
 from code_agent import cli
 from code_agent.ui.web import _DIST_DIR, app
-from langchain_core.messages import AIMessage, HumanMessage
 
 
 # Path to the React SPA build dir, derived from the CLI module so it stays in
@@ -31,12 +31,19 @@ _CLI_DIST_DIR = _WEBAPP_DIR / "dist"
 
 @pytest.fixture(scope="module")
 def client() -> TestClient:
-    """Return a TestClient bound to the web app."""
+    """Return a TestClient bound to the web app.
+
+    :return: A TestClient instance.
+    """
     return TestClient(app)
 
 
 def test_list_capabilities_returns_nonempty_catalog(client: TestClient) -> None:
-    """GET /capabilities returns 200 with a non-empty capability list."""
+    """GET /capabilities returns 200 with a non-empty capability list.
+
+    :param client: A TestClient instance.
+    :return: None
+    """
     response = client.get("/capabilities")
     assert response.status_code == 200
     catalog = response.json()
@@ -49,7 +56,11 @@ def test_list_capabilities_returns_nonempty_catalog(client: TestClient) -> None:
 def test_invoke_valid_capability_returns_response_and_receipt(
     client: TestClient,
 ) -> None:
-    """POST /invoke with a valid capability returns response plus receipt."""
+    """POST /invoke with a valid capability returns response plus receipt.
+
+    :param client: A TestClient instance.
+    :return: None
+    """
     response = client.post(
         "/invoke",
         json={
@@ -68,7 +79,11 @@ def test_invoke_valid_capability_returns_response_and_receipt(
 
 
 def test_invoke_unknown_capability_returns_error(client: TestClient) -> None:
-    """POST /invoke with an unknown capability id returns 400."""
+    """POST /invoke with an unknown capability id returns 400.
+
+    :param client: A TestClient instance.
+    :return: None
+    """
     response = client.post(
         "/invoke",
         json={"capability_id": "does-not-exist", "params": {}},
@@ -77,7 +92,11 @@ def test_invoke_unknown_capability_returns_error(client: TestClient) -> None:
 
 
 def test_static_spa_served_when_dist_present(client: TestClient) -> None:
-    """GET / serves the built React app when webapp/dist exists."""
+    """GET / serves the built React app when webapp/dist exists.
+
+    :param client: A TestClient instance.
+    :return: None
+    """
     if not _DIST_DIR.is_dir():
         pytest.skip("webapp/dist not built; run `npm run build` in webapp/")
     response = client.get("/")
@@ -93,7 +112,10 @@ def test_static_spa_served_when_dist_present(client: TestClient) -> None:
 
 @pytest.fixture
 def _dist_absent() -> Iterator[None]:
-    """Temporarily move webapp/dist aside so the build-on-demand path runs."""
+    """Temporarily move webapp/dist aside so the build-on-demand path runs.
+
+    :return: A Iterator that yields None.
+    """
     backup = None
     if _CLI_DIST_DIR.is_dir():
         backup = _WEBAPP_DIR / ".dist_test_bak"
@@ -111,7 +133,10 @@ def _dist_absent() -> Iterator[None]:
 
 
 def test_ensure_webapp_built_skips_when_dist_present() -> None:
-    """If dist/ already exists, no npm install/build is attempted."""
+    """If dist/ already exists, no npm install/build is attempted.
+
+    :return: None
+    """
     if not _CLI_DIST_DIR.is_dir():
         pytest.skip("dist/ not built; run `npm run build` in webapp/")
     with (
@@ -122,8 +147,14 @@ def test_ensure_webapp_built_skips_when_dist_present() -> None:
     run.assert_not_called()
 
 
-def test_ensure_webapp_built_graceful_when_npm_missing(_dist_absent) -> None:
-    """dist/ missing + npm absent -> returns without error, no build attempted."""
+def test_ensure_webapp_built_graceful_when_npm_missing(
+    _dist_absent: Iterator[None],
+) -> None:
+    """dist/ missing + npm absent -> returns without error, no build attempted.
+
+    :param _dist_absent: fixture that moves webapp/dist aside temporarily.
+    :return: None
+    """
     with (
         mock.patch("code_agent.cli.subprocess.run") as run,
         mock.patch("shutil.which", return_value=None),
@@ -133,8 +164,14 @@ def test_ensure_webapp_built_graceful_when_npm_missing(_dist_absent) -> None:
     assert not _CLI_DIST_DIR.is_dir()
 
 
-def test_ensure_webapp_built_runs_npm_when_dist_missing(_dist_absent) -> None:
-    """dist/ missing + npm present -> runs `npm install` then `npm run build`."""
+def test_ensure_webapp_built_runs_npm_when_dist_missing(
+    _dist_absent: Iterator[None],
+) -> None:
+    """dist/ missing + npm present -> runs `npm install` then `npm run build`.
+
+    :param _dist_absent: fixture that moves webapp/dist aside temporarily.
+    :type _dist_absent: Iterator[None]
+    """
     with (
         mock.patch("code_agent.cli.subprocess.run") as run,
         mock.patch("shutil.which", return_value="/usr/bin/npm"),
@@ -146,12 +183,16 @@ def test_ensure_webapp_built_runs_npm_when_dist_missing(_dist_absent) -> None:
 
 
 def test_chat_returns_assistant_reply(client: TestClient) -> None:
-    """POST /chat returns a non-empty assistant response and a thread id."""
+    """POST /chat returns a non-empty assistant response and a thread id.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
     fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {
-        "messages": [AIMessage(content="hi")]
-    }
-    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+    fake_agent.invoke.return_value = {"messages": [AIMessage(content="hi")]}
+    with mock.patch(
+        "code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")
+    ):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
     payload = response.json()
@@ -160,13 +201,19 @@ def test_chat_returns_assistant_reply(client: TestClient) -> None:
 
 
 def test_chat_uses_provided_thread_id(client: TestClient) -> None:
-    """POST /chat passes through an explicit thread_id when provided."""
+    """POST /chat passes through an explicit thread_id when provided.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
     fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {
-        "messages": [AIMessage(content="ok")]
-    }
-    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
-        response = client.post("/chat", json={"message": "hello", "thread_id": "custom-thread"})
+    fake_agent.invoke.return_value = {"messages": [AIMessage(content="ok")]}
+    with mock.patch(
+        "code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")
+    ):
+        response = client.post(
+            "/chat", json={"message": "hello", "thread_id": "custom-thread"}
+        )
     assert response.status_code == 200
     assert response.json()["thread_id"] == "custom-thread"
     fake_agent.invoke.assert_called_once()
@@ -175,22 +222,34 @@ def test_chat_uses_provided_thread_id(client: TestClient) -> None:
 
 
 def test_chat_falls_back_to_last_non_ai_message(client: TestClient) -> None:
-    """POST /chat returns the last message content when no AIMessage is present."""
+    """POST /chat returns the last message content when no AIMessage is present.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {
         "messages": [HumanMessage(content="ignored"), AIMessage(content="")]
     }
-    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+    with mock.patch(
+        "code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")
+    ):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
     assert response.json()["response"] == "(no text response)"
 
 
 def test_chat_returns_no_text_response_when_empty(client: TestClient) -> None:
-    """POST /chat returns a fallback string when the agent returns no messages."""
+    """POST /chat returns a fallback string when the agent returns no messages.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {}
-    with mock.patch("code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")):
+    with mock.patch(
+        "code_agent.ui.web.get_agent", return_value=(fake_agent, "thread-1")
+    ):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
     assert response.json()["response"] == "(no text response)"

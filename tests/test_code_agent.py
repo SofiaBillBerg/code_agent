@@ -42,6 +42,14 @@ from code_agent.scaffold import create_project_scaffold
 
 @pytest.fixture
 def runner() -> CliRunner:
+    """
+    Runner.
+    :return: Description of return value.
+
+    Example::
+
+        >>> result = runner()
+    """
     return CliRunner()
 
 
@@ -51,9 +59,14 @@ def runner() -> CliRunner:
 
 
 def test_create_file_overwrite(tmp_path: Path) -> None:
+    """Test if overwrite works.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     p = tmp_path / "foo.py"
     create_file(p, "a = 1")
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # ruff: ignore[assert-raises-exception]
         create_file(p, "b = 2")
     # overwrite=True should succeed
     create_file(p, "b = 2", overwrite=True)
@@ -61,6 +74,11 @@ def test_create_file_overwrite(tmp_path: Path) -> None:
 
 
 def test_append_file(tmp_path: Path) -> None:
+    """Test if append_file works.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     p = tmp_path / "log.txt"
     write_file(p, "first line\n")
     append_file(p, "second line\n")
@@ -68,6 +86,11 @@ def test_append_file(tmp_path: Path) -> None:
 
 
 def test_create_from_template(tmp_path: Path) -> None:
+    """Test if create_from_template works.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     template = tmp_path / "template.txt"
     template.write_text("Hello, {name}!")
     dest = tmp_path / "dest.txt"
@@ -76,6 +99,11 @@ def test_create_from_template(tmp_path: Path) -> None:
 
 
 def test_create_project_scaffold(tmp_path: Path) -> None:
+    """Test if create_project_scaffold works.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     root = tmp_path / "myproj"
     scaffold_path = create_project_scaffold(str(root), "myproj")
     scaffold = Path(scaffold_path)
@@ -90,6 +118,12 @@ def test_create_project_scaffold(tmp_path: Path) -> None:
 
 
 def test_cli_create(runner: CliRunner, tmp_path: Path) -> None:
+    """Test the `create` subcommand.
+
+    :param runner: CliRunner instance from pytest.
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     file_path = tmp_path / "new.txt"
     result = runner.invoke(
         cli_app, ["create", str(file_path), "--content", "Hello"]
@@ -99,6 +133,12 @@ def test_cli_create(runner: CliRunner, tmp_path: Path) -> None:
 
 
 def test_cli_append(runner: CliRunner, tmp_path: Path) -> None:
+    """Test the `append` subcommand.
+
+    :param runner: CliRunner instance from pytest.
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     file_path = tmp_path / "out.txt"
     write_file(file_path, "first\n")
     result = runner.invoke(
@@ -109,6 +149,12 @@ def test_cli_append(runner: CliRunner, tmp_path: Path) -> None:
 
 
 def test_cli_scaffold(runner: CliRunner, tmp_path: Path) -> None:
+    """Test the `scaffold` subcommand.
+
+    :param runner: CliRunner instance from pytest.
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     result = runner.invoke(
         cli_app, ["scaffold", str(tmp_path), "--name", "demo"]
     )
@@ -120,6 +166,12 @@ def test_cli_scaffold(runner: CliRunner, tmp_path: Path) -> None:
 
 
 def test_cli_py2ipynb(runner: CliRunner, tmp_path: Path) -> None:
+    """Test the `py2ipynb` subcommand.
+
+    :param runner: CliRunner instance from pytest.
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     py_file = tmp_path / "app.py"
     py_file.write_text("# %%\nprint('hi')")
     nb_file = tmp_path / "app.ipynb"
@@ -129,6 +181,12 @@ def test_cli_py2ipynb(runner: CliRunner, tmp_path: Path) -> None:
 
 
 def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
+    """Test the `docs` subcommand.
+
+    :param runner: CliRunner instance from pytest.
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     # Create output directory
     output_dir = tmp_path / "docs"
     output_dir.mkdir()
@@ -152,12 +210,36 @@ def test_cli_docs(runner: CliRunner, tmp_path: Path) -> None:
 
 
 class DummyLLM(BaseChatModel):
+    """A dummy LLM for testing purposes.
+
+    It always returns the same message, regardless of input.
+
+    Attributes:
+        _identifying_params: A dictionary of identifying parameters.
+        :meta private:
+    """
+
+    @property
+    def _identifying_params(self) -> dict[str, Any]:
+        """Access a dictionary of identifying parameters.
+
+        :return: An empty dictionary.
+        """
+        return {}
+
     def _generate(
         self,
         messages: list[BaseMessage],
         stop: list[str] | None = None,
         **kwargs: Any,
-    ) -> ChatResult:
+    ) -> ChatResult:  # ty: ignore[invalid-method-override]
+        """Generate a dummy chat response.
+
+        :param messages: List of messages (ignored).
+        :param stop: Stop sequences (ignored).
+        :param kwargs: Additional keyword arguments (ignored).
+        :return: A dummy ChatResult.
+        """
         return ChatResult(
             generations=[
                 ChatGeneration(message=AIMessage(content="Hello from DummyLLM"))
@@ -166,16 +248,30 @@ class DummyLLM(BaseChatModel):
 
     def bind_tools(
         self, tools: list[BaseTool], **kwargs: Any
-    ) -> Runnable[Any, BaseMessage]:
+    ) -> Runnable[Any, BaseMessage]:  # ty: ignore[invalid-method-override]
+        """Bind tools to the LLM (dummy implementation).
+
+        :param tools: List of tools to bind.
+        :param kwargs: Additional keyword arguments.
+        :return: The LLM instance itself.
+        """
         return self
 
     @property
     def _llm_type(self) -> str:
+        """Access the type of llm.
+
+        :return: The type of the language model.
+        """
         return "dummy-chat-model"
 
 
 def test_build_agent_returns_runnable(tmp_path: Path) -> None:
-    """Verify that build_agent returns a LangChain Runnable."""
+    """Verify that build_agent returns a LangChain Runnable.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     dummy_llm_instance = DummyLLM()
     # No tools needed for this basic test
     agent_runnable = build_agent(dummy_llm_instance, [])
@@ -188,7 +284,7 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
     config = {"configurable": {"thread_id": str(uuid7())}}
     result = agent_runnable.invoke(
         {"messages": [HumanMessage(content="test")]},
-        config=config,
+        config=config,  # ty: ignore[invalid-argument-type]
     )
     final_message = result["messages"][-1]
     assert isinstance(final_message, AIMessage)
@@ -196,6 +292,11 @@ def test_build_agent_returns_runnable(tmp_path: Path) -> None:
 
 
 def test_load_config(tmp_path: Path) -> None:
+    """Test the ``load_config`` function.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: None
+    """
     cfg_file = tmp_path / "llm_config.json"
     cfg_file.write_text(json.dumps({"model": "gpt-oss:20b"}))
     # Convert Path to string before passing to load_config
@@ -208,8 +309,15 @@ def test_load_config(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_persistent_agent_chat_streams_when_supported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """When the runnable supports ``astream_events``, ``PersistentAgent.chat`` should stream content."""
+def test_persistent_agent_chat_streams_when_supported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """When the runnable supports ``astream_events``, ``PersistentAgent.chat`` should stream content.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :param monkeypatch: Monkeypatch fixture from pytest.
+    :return: None
+    """
     from code_agent.agents.persistent_agent import PersistentAgent
 
     state_file = tmp_path / "state.json"
@@ -235,8 +343,15 @@ def test_persistent_agent_chat_streams_when_supported(tmp_path: Path, monkeypatc
     assert state_file.exists()
 
 
-def test_persistent_agent_chat_falls_back_to_invoke(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """When streaming is unavailable, ``PersistentAgent.chat`` should fall back to ``invoke``."""
+def test_persistent_agent_chat_falls_back_to_invoke(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """When streaming is unavailable, ``PersistentAgent.chat`` should fall back to ``invoke``.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :param monkeypatch: Monkeypatch fixture from pytest.
+    :return: None
+    """
     from code_agent.agents.persistent_agent import PersistentAgent
 
     state_file = tmp_path / "state.json"

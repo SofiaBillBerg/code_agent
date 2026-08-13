@@ -13,7 +13,11 @@ from code_agent.tools.generate_test_tool import generate_test
 
 @pytest.fixture
 def sample_py(tmp_path: Path) -> Path:
-    """Create a tiny Python module that can be used as input."""
+    """Create a tiny Python module that can be used as input.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :return: Path to the created Python file.
+    """
     file = tmp_path / "sample.py"
     file.write_text(
         textwrap.dedent("""
@@ -32,7 +36,12 @@ def sample_py(tmp_path: Path) -> Path:
 
 
 def test_generate_test_tool_executes(sample_py: Path) -> None:
-    """Running the tool should create a tests/ directory with a test module."""
+    """Running the tool should create a tests/ directory with a test module.
+
+    :param sample_py: Sample python file created by the fixture.
+    :raises FileNotFoundError: If the test file was not created.
+    :raises AssertionError: If the expected files or content are not found.
+    """
     result = generate_test.invoke({
         "file_path": str(sample_py),
         "root_dir": str(sample_py.parent),
@@ -51,7 +60,11 @@ def test_generate_test_tool_executes(sample_py: Path) -> None:
 
 
 def test_generate_test_tool_invalid_file(tmp_path: Path) -> None:
-    """Providing a non-Python file should raise an error."""
+    """Providing a non-Python file should raise an error.
+
+    :param tmp_path: Temporary directory path from pytest.
+    :raises ValueError: If the file is not a Python file.
+    """
     non_py = tmp_path / "not_py.txt"
     non_py.write_text("just text")
     with pytest.raises(ValueError, match="is not a Python file"):

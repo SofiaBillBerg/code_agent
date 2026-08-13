@@ -16,22 +16,26 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import BaseTool, tool
+from langchain_core.utils.uuid import uuid7
+from typing_extensions import override
+
 from code_agent.deepagents_agent import (
     build_deep_agent,
     make_backend,
     make_default_permissions,
 )
 from code_agent.graph import build_graph
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import BaseTool, tool
-from langchain_core.utils.uuid import uuid7
-import pytest
-from typing_extensions import override
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def mock_llm() -> MagicMock:
@@ -68,7 +72,10 @@ def mock_llm() -> MagicMock:
 
 @pytest.fixture
 def dummy_tool() -> BaseTool:
-    """A simple dummy tool."""
+    """A simple dummy tool.
+
+    :return: The tool.
+    """
 
     @tool
     def dummy() -> str:
@@ -120,7 +127,11 @@ def test_agent_invokes_tool(agent_graph: Any) -> None:
 
 
 def test_agent_returns_normal_ai_message(agent_graph: Any) -> None:
-    """If the LLM does not request a tool, the agent should return a normal AIMessage."""
+    """If the LLM does not request a tool, the agent should return a normal AIMessage.
+
+    :param agent_graph: The agent graph to test.
+    :return: None
+    """
     config: RunnableConfig = {"configurable": {"thread_id": str(uuid7())}}
     state = {"messages": [HumanMessage(content="Say hello")]}
 
@@ -133,8 +144,15 @@ def test_agent_returns_normal_ai_message(agent_graph: Any) -> None:
     assert ai_msgs[-1].content == "Hello, world!"
 
 
-def test_graph_handles_llm_error(mock_llm: MagicMock, dummy_tool: BaseTool) -> None:
-    """If the LLM raises an exception, the graph should propagate it."""
+def test_graph_handles_llm_error(
+    mock_llm: MagicMock, dummy_tool: BaseTool
+) -> None:
+    """If the LLM raises an exception, the graph should propagate it.
+
+    :param mock_llm: The mock LLM that will raise an exception.
+    :param dummy_tool: A dummy tool.
+    :return: None
+    """
     mock_llm.invoke.side_effect = RuntimeError("LLM failure")
     graph = build_graph(llm=mock_llm, tools=[dummy_tool])
     config: RunnableConfig = {"configurable": {"thread_id": str(uuid7())}}
@@ -150,7 +168,11 @@ def test_graph_handles_llm_error(mock_llm: MagicMock, dummy_tool: BaseTool) -> N
 
 
 def test_build_deep_agent_returns_compiled_graph(mock_llm: MagicMock) -> None:
-    """``build_deep_agent`` should return a compiled LangGraph state graph."""
+    """``build_deep_agent`` should return a compiled LangGraph state graph.
+
+    :param mock_llm: The mock LLM.
+    :return: None
+    """
     fake_graph = MagicMock()
     with patch(
         "code_agent.deepagents_agent.create_deep_agent",
@@ -161,14 +183,32 @@ def test_build_deep_agent_returns_compiled_graph(mock_llm: MagicMock) -> None:
 
 
 def test_build_deep_agent_drops_builtin_collisions(mock_llm: MagicMock) -> None:
-    """Custom tools that shadow DeepAgents built-ins should be dropped."""
+    """Custom tools that shadow DeepAgents built-ins should be dropped.
+
+    :param mock_llm: The mock LLM.
+    :return: None
+    """
 
     class CollisionTool(BaseTool):
+        """A tool that collides with a DeepAgents built-in.
+
+        Attributes:
+            name (str): The name of the tool.
+            description (str): A description of the tool.
+            args_schema (BaseModel): The schema for the tool's arguments.
+            kwargs: Additional keyword arguments.
+        """
+
         name: str = "write_file"
         description: str = "collision"
 
         @override
         def _run(self, **kwargs: Any) -> str:
+            """Run the tool.
+
+            :param kwargs: The tool's arguments.
+            :return: The tool's output.
+            """
             return "collision"
 
     fake_graph = MagicMock()
@@ -183,7 +223,11 @@ def test_build_deep_agent_drops_builtin_collisions(mock_llm: MagicMock) -> None:
 def test_build_deep_agent_requires_profile_key_for_profile(
     mock_llm: MagicMock,
 ) -> None:
-    """Providing a profile without a profile key should raise ``ValueError``."""
+    """Providing a profile without a profile key should raise ``ValueError``.
+
+    :param mock_llm: The mock llm
+    :return: None
+    """
     from deepagents import HarnessProfile
 
     with pytest.raises(ValueError, match="profile_key"):
@@ -196,7 +240,15 @@ def test_build_deep_agent_requires_profile_key_for_profile(
 
 
 def test_make_default_permissions_denies_sensitive_paths() -> None:
-    """Default permissions should deny ``.env`` and ``secrets`` access."""
+    """Default permissions should deny ``.env`` and ``secrets`` access.
+
+    :return: None
+    :raises AssertionError: If the default permissions do not deny ``.env`` or ``secrets``.
+    :raises ValueError: If the default permissions are not a list of ``PathPermission``.
+    :example:
+
+    >>> test_make_default_permissions_denies_sensitive_paths()
+    """
     permissions = make_default_permissions()
     paths = [rule.paths for rule in permissions]
     flattened = [path for sublist in paths for path in sublist]
@@ -205,7 +257,15 @@ def test_make_default_permissions_denies_sensitive_paths() -> None:
 
 
 def test_make_backend_uses_workspace_prefix() -> None:
-    """``make_backend`` should route the workspace prefix to a filesystem backend."""
+    """``make_backend`` should route the workspace prefix to a filesystem backend.
+
+
+    :return: None
+    :raises AssertionError: If the backend is not created properly.
+    :example:
+
+    >>> test_make_backend_uses_workspace_prefix()
+    """
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:

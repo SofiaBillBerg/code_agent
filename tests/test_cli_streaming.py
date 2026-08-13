@@ -11,18 +11,25 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from code_agent.cli import _stream_agent_response
 
 
 def _make_stream_agent(events: list[dict[str, object]]) -> MagicMock:
+    """Make an agent that returns the given events when astream_events is called.
+
+    :param events: The events to return.
+    :return: The mock agent.
+    """
     agent = MagicMock()
     agent.astream_events.return_value = iter(events)
     return agent
 
 
 def test_stream_agent_response_collects_model_chunks() -> None:
+    """Test that _stream_agent_response collects model chunks and returns them as a string.
+
+    :return: None
+    """
     chunk = MagicMock()
     chunk.content = "hello"
     events = [
@@ -37,8 +44,15 @@ def test_stream_agent_response_collects_model_chunks() -> None:
 
 
 def test_stream_agent_response_logs_tool_events() -> None:
+    """Test that _stream_agent_response logs tool start and end events.
+
+    :return: None
+    """
     events = [
-        {"event": "on_tool_start", "data": {"name": "read-file", "input": {"path": "/tmp/x"}}},
+        {
+            "event": "on_tool_start",
+            "data": {"name": "read-file", "input": {"path": "/tmp/x"}},
+        },
         {"event": "on_tool_end", "data": {}},
         {"event": "on_chain_end", "data": {"output": {"messages": []}}},
     ]
@@ -50,6 +64,10 @@ def test_stream_agent_response_logs_tool_events() -> None:
 
 
 def test_stream_agent_response_falls_back_to_invoke() -> None:
+    """Test that _stream_agent_response falls back to invoke when astream_events is not available.
+
+    :return: None
+    """
     message = MagicMock()
     message.content = "fallback"
     agent = MagicMock()
@@ -63,6 +81,10 @@ def test_stream_agent_response_falls_back_to_invoke() -> None:
 
 
 def test_stream_agent_response_handles_empty_message_content() -> None:
+    """Test that _stream_agent_response handles empty message content.
+
+    :return: None
+    """
     message = MagicMock()
     message.content = None
     events = [

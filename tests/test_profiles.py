@@ -3,15 +3,29 @@
 from __future__ import annotations
 
 import json
+
 from typing import Any
+
+import pytest
+
+from deepagents import HarnessProfile
 
 from code_agent.profiles import register_profiles_from_settings
 from code_agent.settings import Settings
-from deepagents import HarnessProfile
-import pytest
 
-def test_register_profiles_from_settings_noop_when_missing(monkeypatch: Any) -> None:
-    """No profiles should be registered when settings.profiles is missing."""
+
+def test_register_profiles_from_settings_noop_when_missing(
+    monkeypatch: Any,
+) -> None:
+    """No profiles should be registered when settings.profiles is missing.
+
+
+    This should not raise an exception.
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+
+    :raises AssertionError: If any profiles were registered.
+    """
     settings = Settings(profiles=None)
     monkeypatch.setattr(
         "code_agent.profiles.router.get_settings",
@@ -21,10 +35,23 @@ def test_register_profiles_from_settings_noop_when_missing(monkeypatch: Any) -> 
 
 
 def test_register_profiles_from_settings_json(monkeypatch: Any) -> None:
-    """Profiles declared as JSON should be registered."""
+    """Profiles declared as JSON should be registered.
+
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+
+    :raises AssertionError: If the expected profile was not registered.
+
+    """
     captured: dict[str, HarnessProfile] = {}
 
     def fake_register(key: str, profile: HarnessProfile) -> None:
+        """Capture the profile.
+
+        :param key: The profile key.
+        :param profile: The profile.
+
+        """
         captured[key] = profile
 
     monkeypatch.setattr(
@@ -52,10 +79,23 @@ def test_register_profiles_from_settings_json(monkeypatch: Any) -> None:
 
 
 def test_register_profiles_from_settings_dict(monkeypatch: Any) -> None:
-    """Profiles declared as a dict should be registered."""
+    """Profiles declared as a dict should be registered.
+
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+
+    :raises AssertionError: If the expected profile was not registered.
+
+    """
     captured: dict[str, HarnessProfile] = {}
 
     def fake_register(key: str, profile: HarnessProfile) -> None:
+        """Capture the profile.
+
+        :param key: The profile key.
+        :param profile: The profile.
+
+        """
         captured[key] = profile
 
     monkeypatch.setattr(
@@ -80,7 +120,15 @@ def test_register_profiles_from_settings_dict(monkeypatch: Any) -> None:
 
 
 def test_register_profiles_from_settings_invalid_json(monkeypatch: Any) -> None:
-    """Invalid JSON should raise ``ValueError``."""
+    """Invalid JSON should raise ``ValueError``.
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+
+    :raises AssertionError: If the expected profile was not registered.
+
+    :raises ValueError: If the JSON is invalid.
+
+    """
     monkeypatch.setattr(
         "code_agent.profiles.router.get_settings",
         lambda: Settings(profiles="not-json"),
@@ -91,7 +139,15 @@ def test_register_profiles_from_settings_invalid_json(monkeypatch: Any) -> None:
 
 
 def test_register_profiles_from_settings_invalid_type(monkeypatch: Any) -> None:
-    """Non-dict profile values should raise ``TypeError`` during coercion."""
+    """Non-dict profile values should raise ``TypeError`` during coercion.
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+
+    :raises AssertionError: If the expected profile was not registered.
+
+    :raises TypeError: If the profile value is not a dict or HarnessProfile.
+
+    """
     from code_agent.profiles.router import _coerce_profile_entry
 
     with pytest.raises(TypeError, match="must be a dict or HarnessProfile"):
@@ -99,10 +155,22 @@ def test_register_profiles_from_settings_invalid_type(monkeypatch: Any) -> None:
 
 
 def test_register_profiles_from_settings_none_entry(monkeypatch: Any) -> None:
-    """None entries in the profiles mapping should be skipped."""
+    """None entries in the profiles mapping should be skipped.
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+
+    :raises AssertionError: If the expected profile was not registered.
+
+    """
     captured: dict[str, HarnessProfile] = {}
 
     def fake_register(key: str, profile: HarnessProfile) -> None:
+        """Capture the profile.
+
+        :param key: The profile key.
+        :param profile: The profile.
+
+        """
         captured[key] = profile
 
     monkeypatch.setattr(

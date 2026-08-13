@@ -20,6 +20,7 @@ import pytest
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.tools import tool
+from langchain_core.tools.base import BaseTool
 from langchain_core.utils.uuid import uuid7
 
 from code_agent.graph import build_graph
@@ -27,10 +28,14 @@ from code_agent.graph import build_graph
 
 @pytest.fixture
 def mock_llm() -> MagicMock:
-    """Return a MagicMock that replies with a plain ``AIMessage``."""
+    """Return a MagicMock that replies with a plain ``AIMessage``.
+
+
+    :return: The mock LLM.
+    """
     mock = MagicMock()
 
-    def _invoke(messages: list) -> AIMessage:
+    def _invoke(messages: list[Any]) -> AIMessage:
         """Return a plain reply.
 
         :param messages: The messages to process.
@@ -44,8 +49,12 @@ def mock_llm() -> MagicMock:
 
 
 @pytest.fixture
-def dummy_tool():
-    """A simple dummy tool."""
+def dummy_tool() -> BaseTool:
+    """A simple dummy tool.
+
+    :return: The dummy tool.
+    """
+
     @tool
     def dummy() -> str:
         """A dummy tool that returns a string.
@@ -58,7 +67,7 @@ def dummy_tool():
 
 
 @pytest.fixture
-def agent_graph(mock_llm: MagicMock, dummy_tool) -> Any:
+def agent_graph(mock_llm: MagicMock, dummy_tool: BaseTool) -> Any:
     """Build the agent graph wired with the mock LLM and a checkpointer.
 
     :param mock_llm: The mock LLM.
@@ -138,7 +147,7 @@ def test_full_history_repass_duplicates(agent_graph: Any) -> None:
 
     # Reproduce the naive caller pattern: replay everything seen so far
     # using FRESH message objects (new IDs), like a real caller would.
-    replay_msgs = _replay_from(turn1) + [HumanMessage(content="second")]
+    replay_msgs = [*_replay_from(turn1), HumanMessage(content="second")]
     turn2 = agent_graph.invoke({"messages": replay_msgs}, config=config)
 
     turn2_msgs = _messages_of(turn2)

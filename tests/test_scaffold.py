@@ -23,6 +23,11 @@ def scaffold_root(tmp_path: Path) -> Path:
 
     The fixture returns a :class:`pathlib.Path` instance so the tests can
     freely manipulate the filesystem without leaking temporary files.
+
+    :param tmp_path:
+        A temporary directory provided by pytest.
+    :returns:
+        A temporary directory path.
     """
     return tmp_path
 
@@ -33,7 +38,16 @@ def scaffold_root(tmp_path: Path) -> Path:
 
 
 def _assert_expected_files(root: Path, project_name: str) -> None:
-    """Assert that *root* contains the expected scaffold files and directories."""
+    """Assert that *root* contains the expected scaffold files and directories.
+
+
+    :param root:
+        The root directory of the scaffold.
+    :param project_name:
+        The name of the project, used to construct paths.
+    :raises AssertionError:
+        If any expected file or directory is missing.
+    """
     expected_dirs = [
         "docs",
         "docs/styles",
@@ -66,7 +80,21 @@ def _assert_expected_files(root: Path, project_name: str) -> None:
 # Tests
 # ---------------------------------------------------------------------------
 def test_create_project_scaffold_overwrite(scaffold_root: Path) -> None:
-    """Verify that the ``overwrite`` flag controls whether existing files are replaced."""
+    """Verify that the ``overwrite`` flag controls whether existing files are replaced.
+
+
+    The test creates a scaffold with an existing ``README.qmd`` file and
+    verifies that the file is overwritten.
+
+    :param scaffold_root:
+        A temporary directory provided by the ``scaffold_root`` fixture.
+    :raises AssertionError:
+        If the scaffold is not created correctly.
+    :raises pytest.fail.Exception:
+        If the scaffold files are not created correctly.
+    :returns:
+        None
+    """
     # Arrange: write a custom README that should be overwritten.
     readme_path = scaffold_root / "README.qmd"
     readme_path.write_text("original")
@@ -92,7 +120,18 @@ def test_create_project_scaffold_overwrite(scaffold_root: Path) -> None:
 
 
 def test_create_project_scaffold_no_overwrite(scaffold_root: Path) -> None:
-    """Verify that with overwrite=False, an error is raised if files exist."""
+    """Verify that with overwrite=False, an error is raised if files exist.
+
+
+    :param scaffold_root:
+        A temporary directory provided by the ``scaffold_root`` fixture.
+    :raises AssertionError:
+        If the scaffold is not created correctly.
+    :raises pytest.fail.Exception:
+        If the scaffold files are not created correctly.
+    :raises FileExistsError:
+        If the scaffold is created without overwriting existing files.
+    """
     # Arrange: write a custom README that should cause an error.
     readme_path = scaffold_root / "README.qmd"
     readme_path.write_text("original")
@@ -110,6 +149,16 @@ def test_create_project_scaffold_success(scaffold_root: Path) -> None:
 
     The test simply calls :func:`create_project_scaffold` and verifies that
     the root directory and the default files are present.
+
+
+    :param scaffold_root:
+        A temporary directory provided by the ``scaffold_root`` fixture.
+    :raises AssertionError:
+        If the scaffold is not created correctly.
+    :raises pytest.fail.Exception:
+        If the scaffold files are not created correctly.
+    :returns:
+        None
     """
     project_name = "my_project"
     root_str = create_project_scaffold(
@@ -128,6 +177,17 @@ def test_create_project_scaffold_invalid_root(scaffold_root: Path) -> None:
     that file's path to :func:`create_project_scaffold`.  The function is
     expected to detect that the supplied path is not a directory and raise
     a clear ``CodeAgentError``.
+
+    :param scaffold_root:
+        A temporary directory provided by the ``scaffold_root`` fixture.
+    :raises AssertionError:
+        If the scaffold is not created correctly.
+    :raises pytest.fail.Exception:
+        If the scaffold files are not created correctly.
+    :raises CodeAgentError:
+        If the root argument is not a directory.
+    :returns:
+        None
     """
     file_as_root = scaffold_root / "not_a_dir.txt"
     file_as_root.write_text("oops")
