@@ -40,22 +40,14 @@ from __future__ import annotations
 import asyncio
 import itertools
 import json
+from pathlib import Path
 import shutil
 import subprocess
 import sys
 import threading
 import time
-import uuid
-
-from pathlib import Path
 from typing import Any, cast
-
-import typer
-
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.tools import BaseTool
-from langchain_mcp_adapters.sessions import Connection
+import uuid
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
@@ -70,8 +62,16 @@ from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
 from code_agent.scaffold import create_project_scaffold
+from code_agent.mcp import apply_mcp_tool_prefixes, expand_env_vars
 from code_agent.settings import PROJECT_ROOT
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.tools import BaseTool
+from langchain_mcp_adapters.sessions import Connection
+from langgraph.types import Command
+import os
 
+import typer
 
 # Module-level Typer argument/option definitions to avoid
 # "function-call-in-default-argument" lint warnings.
@@ -104,21 +104,76 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
     messages: list[Any],
     thread_id: str,
 ) -> str:
-    """Run the agent and stream visible progress to the terminal.
+    """Run one agent turn, surfacing Human-in-the-Loop approval prompts.
 
-    It uses :meth:`Runnable.astream_events` when available so the user sees:
-    - a spinner while the run is in flight
-    - tool start/end events
-    - streamed assistant tokens
+    Streams visible progress to the terminal.  If the
+    :class:`HumanInTheLoopMiddleware` interrupts the run (for example before
+    writing or editing a file), the pending decisions are presented to the
+    terminal user, who may approve, reject or respond.  The graph is then
+    resumed with the collected decisions and the loop repeats until the run
+    completes without an interrupt.
 
-    Falls back to blocking :meth:`Runnable.invoke` when the runnable does
-    not support event streaming.
-
-    :param agent: Compiled LangChain/LangGraph runnable.
-    :param messages: Conversation messages to send.
+    :param agent: Compiled LangChain/LangGraph runnable (``create_agent``
+        harness with an ``InMemorySaver`` checkpointer).
+    :param messages: Messages for the first run of the turn (ignored on
+        interrupt resumes, which use :class:`~langgraph.types.Command`).
     :param thread_id: Thread id for the checkpointer/config.
     :return: The final assistant text, or ``"(no text response)"`` when no
         assistant message is produced.
+    """
+    config = {"configurable": {"thread_id": thread_id}}
+    run_input: Any = {"messages": messages}
+    final_text_parts: list[str] = []
+    final_messages: list[Any] = []
+
+    # Bounded loop: stream a run, surface any HITL interrupts, resume, repeat.
+    for _ in range(32):
+        final_text_parts, final_messages = _run_agent_stream(
+            agent, run_input, config
+        )
+
+        interrupts = _collect_hitl_requests(agent, config)
+        if not interrupts:
+            break
+
+        decisions: list[dict[str, Any]] = []
+        for hitl_request in interrupts:
+            for action_request in getattr(hitl_request, "action_requests", []):
+                decisions.append(_prompt_hitl_decision(action_request))
+        run_input = Command(resume={"decisions": decisions})
+
+    if final_text_parts:
+        return "".join(final_text_parts)
+
+    # Fallback: pull the final assistant message from the persisted state.
+    try:
+        state = agent.get_state(config)
+        values = getattr(state, "values", {}) or {}
+        for msg in reversed(values.get("messages", []) or []):
+            if hasattr(msg, "content") and getattr(msg, "content", None):
+                return str(msg.content)
+    except Exception:  # ruff: ignore[try-except-pass]
+        # Best-effort: a failed checkpointer read is non-fatal; we fall
+        # through to the final_messages fallback below.
+        pass  # ruff: ignore[try-except-continue]
+
+    if final_messages:
+        for msg in reversed(final_messages):
+            if hasattr(msg, "content") and getattr(msg, "content", None):
+                return str(msg.content)
+    return "(no text response)"
+
+
+def _run_agent_stream(
+    agent: Any, run_input: Any, config: dict[str, Any]
+) -> tuple[list[str], list[Any]]:
+    """Stream one agent invocation and return ``(text_parts, messages)``.
+
+    :param agent: Compiled runnable.
+    :param run_input: Either ``{"messages": [...]}`` or a
+        :class:`~langgraph.types.Command` used to resume an interrupt.
+    :param config: LangGraph runnable config (thread id).
+    :return: Tuple of streamed text chunks and the final message list.
     """
     final_text_parts: list[str] = []
     final_messages: list[Any] = []
@@ -141,11 +196,7 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
         if stream_fn is None:
             raise AttributeError("astream_events")
 
-        for event in stream_fn(
-            {"messages": messages},
-            config={"configurable": {"thread_id": thread_id}},
-            version="v2",
-        ):
+        for event in stream_fn(run_input, config=config, version="v2"):
             kind = event.get("event")
             data = event.get("data", {})
             if kind == "on_tool_start":
@@ -169,10 +220,7 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
                 if isinstance(output, dict):
                     final_messages = output.get("messages", [])
     except Exception:
-        response = agent.invoke(
-            {"messages": messages},
-            config={"configurable": {"thread_id": thread_id}},
-        )
+        response = asyncio.run(agent.ainvoke(run_input, config=config))
         if isinstance(response, dict):
             final_messages = response.get("messages", [])
     finally:
@@ -180,14 +228,81 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
         thread.join(timeout=1)
         print("\r\033[K", end="", flush=True)
 
-    if final_text_parts:
-        return "".join(final_text_parts)
+    return final_text_parts, final_messages
 
-    if final_messages:
-        for msg in reversed(final_messages):
-            if hasattr(msg, "content") and getattr(msg, "content", None):
-                return str(msg.content)
-    return "(no text response)"
+
+def _collect_hitl_requests(agent: Any, config: dict[str, Any]) -> list[Any]:
+    """Return the list of HITL request payloads currently interrupting *agent*.
+
+    Reads the persisted graph state for *config* and collects the
+    ``interrupt()`` payloads (the ``HITLRequest`` objects emitted by
+    :class:`HumanInTheLoopMiddleware`) from any pending tasks.
+
+    :param agent: Compiled runnable.
+    :param config: LangGraph runnable config (thread id).
+    :return: List of interrupt payloads (empty when not interrupted).
+    """
+    try:
+        state = agent.get_state(config)
+    except Exception:
+        return []
+    interrupts: list[Any] = []
+    for task in getattr(state, "tasks", []) or []:
+        interrupts.extend(getattr(task, "interrupts", []) or [])
+    return [interrupt.value for interrupt in interrupts]
+
+
+def _prompt_hitl_decision(action_request: Any) -> dict[str, Any]:
+    """Present one pending tool action to the user and collect a decision.
+
+    The returned dict matches the contract consumed by
+    :class:`HumanInTheLoopMiddleware`: exactly one decision per interrupted
+    tool call with a ``type`` of ``"approve"``, ``"reject"``, ``"respond"``
+    or ``"edit"``.
+
+    :param action_request: The ``ActionRequest`` describing the tool call the
+        agent wants to execute.
+    :return: A decision dict for the ``Command(resume=...)`` payload.
+    """
+    name = getattr(action_request, "name", "unknown-tool")
+    args = getattr(action_request, "args", {}) or {}
+
+    print("\n" + "=" * 50)
+    print("⚠️  Human approval required before tool execution")
+    print(f"Tool: {name}")
+    try:
+        print(f"Args:\n{json.dumps(args, indent=2, default=str)}")
+    except (TypeError, ValueError):
+        print(f"Args: {args!r}")
+    description = getattr(action_request, "description", None)
+    if description:
+        print(f"\n{description}")
+    print("=" * 50)
+    print("Decide: [a]pprove  [r]eject  [e]dit  [m]essage")
+
+    choice = input("Your decision: ").strip().lower()
+    if choice in {"r", "reject"}:
+        reason = input("Reason (optional): ").strip()
+        return {"type": "reject", "message": reason or None}
+    if choice in {"m", "message", "respond"}:
+        message = input("Message to send back to the agent: ").strip()
+        return {"type": "respond", "message": message}
+    if choice in {"e", "edit"}:
+        print("Provide the edited tool arguments as JSON (Enter keeps original):")
+        raw = input("Edited args: ").strip()
+        if raw:
+            try:
+                edited_args = json.loads(raw)
+            except json.JSONDecodeError:
+                print("Invalid JSON - falling back to approve.")
+                return {"type": "approve"}
+            return {
+                "type": "edit",
+                "edited_action": {"name": name, "args": edited_args},
+            }
+        return {"type": "approve"}
+    # Default to approve for any unrecognised input.
+    return {"type": "approve"}
 
 
 def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
@@ -452,7 +567,10 @@ def _to_langchain_connection(cfg: dict[str, Any]) -> dict[str, Any]:
         cfg["transport"] = transport
 
     if "environment" in cfg:
-        cfg["env"] = cfg.pop("environment")
+        cfg["env"] = expand_env_vars(cfg.pop("environment"))
+
+    if "headers" in cfg:
+        cfg["headers"] = expand_env_vars(cfg["headers"])
 
     command = cfg.get("command")
     if isinstance(command, list):
@@ -467,7 +585,26 @@ def _to_langchain_connection(cfg: dict[str, Any]) -> dict[str, Any]:
     if transport == "http":
         cfg.pop("oauth", None)
 
-    return cfg
+    return expand_env_vars(cfg)
+
+
+def _ensure_dotenv() -> None:
+    """Load secrets from a local, git-ignored ``.env`` into the environment.
+
+    MCP server configs reference secrets as ``${VAR}`` placeholders. Those are
+    resolved against ``os.environ`` at load time, so we populate the environment
+    from ``.env`` if it exists. Existing variables are never overwritten.
+    """
+    dotenv_path = PROJECT_ROOT / ".env"
+    if not dotenv_path.exists():
+        return
+    for raw_line in dotenv_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
 
 
 def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
@@ -485,6 +622,7 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
     :param cfg: Configuration mapping, typically from :func:`load_config`.
     :return: A list of :class:`BaseTool` instances from MCP servers.
     """
+    _ensure_dotenv()
     raw: str | None = cfg.get("mcp_servers")
     if not raw:
         return []
@@ -535,7 +673,7 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
                     err=True,
                 )
                 continue
-            tools.extend(server_tools)
+            tools.extend(apply_mcp_tool_prefixes(server_tools, server_name))
             typer.echo(
                 f"Loaded {len(server_tools)} tool(s) from MCP server ({server_name})."
             )
@@ -546,6 +684,77 @@ def _load_mcp_tools(cfg: dict[str, Any]) -> list[BaseTool]:
     except Exception as exc:  # pragma: no cover - defensive guard
         typer.echo(f"Warning: failed to load MCP tools: {exc}", err=True)
         return []
+
+
+async def _load_mcp_tools_async(cfg: dict[str, Any]) -> list[BaseTool]:
+    """Async version of _load_mcp_tools for use in async contexts.
+
+    Reads ``mcp_servers`` from *cfg*. The value may be either:
+
+    * a JSON-encoded MCP server config object, or
+    * a path to a JSON file containing a server config object.
+
+    Tools are imported via ``langchain_mcp_adapters`` when available.
+    Missing dependencies or malformed configs are logged and skipped
+    so the rest of the agent still works.
+
+    This async version can be awaited in FastAPI endpoints and other
+    async contexts where asyncio.run() cannot be used.
+
+    :param cfg: Configuration mapping, typically from :func:`load_config`.
+    :return: A list of :class:`BaseTool` instances from MCP servers.
+    """
+    _ensure_dotenv()
+    raw: str | None = cfg.get("mcp_servers")
+    if not raw:
+        return []
+
+    servers = _normalize_mcp_servers(raw)
+    if not servers:
+        return []
+
+    try:
+        from langchain_mcp_adapters.tools import load_mcp_tools
+    except ImportError:
+        typer.echo(
+            "Warning: langchain-mcp-adapters not installed; skipping MCP tools. "
+            "Install it with: pip install langchain-mcp-adapters",
+            err=True,
+        )
+        return []
+
+    tools: list[BaseTool] = []
+    for server_cfg in servers:
+        connection = _to_langchain_connection(server_cfg)
+        transport = connection.get("transport")
+        if transport not in {
+            "stdio",
+            "sse",
+            "http",
+            "streamable_http",
+            "websocket",
+        }:
+            typer.echo(
+                f"Warning: unsupported MCP server transport {transport!r}; skipping.",
+                err=True,
+            )
+            continue
+        server_name = server_cfg.get("name", transport)
+        try:
+            server_tools = await load_mcp_tools(
+                None, connection=cast(Connection, connection)
+            )
+        except Exception as exc:  # pragma: no cover - external dependency
+            typer.echo(
+                f"Warning: failed to load MCP tools from {server_name}: {exc}",
+                err=True,
+            )
+            continue
+        tools.extend(apply_mcp_tool_prefixes(server_tools, server_name))
+        typer.echo(
+            f"Loaded {len(server_tools)} tool(s) from MCP server ({server_name})."
+        )
+    return tools
 
 
 @app.command(help="Start the LLM provider selected by the config.")
@@ -665,10 +874,10 @@ def serve(  # ruff: ignore [complex-structure]
                     messages.append(HumanMessage(content=entry["content"]))
             messages.append(HumanMessage(content=prompt))
 
-            response = agent.invoke(
+            response = asyncio.run(agent.ainvoke(
                 {"messages": messages},
                 config={"configurable": {"thread_id": thread_id}},
-            )
+            ))
 
             # Find the last AIMessage (skip ToolMessages from intermediate steps)
             ai_messages = [
@@ -880,6 +1089,10 @@ def chat(  # ruff: ignore [complex-structure]
             [SystemMessage(content=system_prompt)] if system_prompt else []
         )
         thread_id = str(uuid.uuid4())
+        # ``False`` until the first user message is sent; after that the graph's
+        # checkpointer owns the conversation history, so we only ever send the
+        # newest message (sending the full list would duplicate history).
+        history_initialized = False
 
         # Main chat loop
         while True:
@@ -902,15 +1115,30 @@ def chat(  # ruff: ignore [complex-structure]
                 if cmd_result is not None:
                     # command handled (like 'help' or 'tools')
                     conversation_messages = cmd_result
+                    if cmd_result == []:
+                        # 'clear' was issued: drop the persisted graph
+                        # history as well by starting a fresh thread.
+                        thread_id = str(uuid.uuid4())
+                        history_initialized = False
                     continue
 
                 # Add user message and query the agent
-                conversation_messages.append(HumanMessage(content=user_input))
+                human_msg = HumanMessage(content=user_input)
+                conversation_messages.append(human_msg)
+                # Only the newest message is sent; the rest lives in the
+                # graph's checkpointer under this thread_id.
+                turn_messages = [human_msg]
+                if not history_initialized and system_prompt:
+                    turn_messages = [
+                        SystemMessage(content=system_prompt),
+                        human_msg,
+                    ]
+                history_initialized = True
                 print("\n🤖 Thinking...")
                 try:  # ruff: ignore [too-many-statements-in-try-clause]
                     response_text = _stream_agent_response(
                         agent=agent,
-                        messages=conversation_messages,
+                        messages=turn_messages,
                         thread_id=thread_id,
                     )
                     print(f"\n🛠️  Agent response:\n{response_text}")

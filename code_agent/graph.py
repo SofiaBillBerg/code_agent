@@ -27,8 +27,9 @@ from langchain.agents.middleware.human_in_the_loop import (
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
+from code_agent.mcp import sensitive_mcp_tool_names
+from code_agent.settings import DEFAULT_SYSTEM_PROMPT
 from langgraph.checkpoint.memory import InMemorySaver
-
 
 Harness = Literal["create_agent", "deepagents"]
 
@@ -92,6 +93,13 @@ def build_graph(
     if "r-script" in tool_names:
         interrupt_on["r-script"] = True
 
+    # External MCP servers that can mutate upstream state (github, memory, ...)
+    # are gated server-wide so a prompt-injected instruction surfacing through a
+    # tool result cannot silently drive a write. Human-in-the-loop approval is
+    # required for every tool those servers expose.
+    for mcp_name in sensitive_mcp_tool_names(list(tools)):
+        interrupt_on[mcp_name] = True
+
     middleware: list[HumanInTheLoopMiddleware] = []
     if interrupt_on:
         middleware.append(
@@ -106,12 +114,5 @@ def build_graph(
         tools=list(tools),
         checkpointer=InMemorySaver(),
         middleware=middleware,
-        system_prompt=(
-            "You are a coding agent. Use tools for every filesystem action.\n"
-            "All file operations are relative to the project root unless the user provides an absolute path.\n"
-            "ALWAYS use tools for filesystem operations. Never describe hypothetical files or directories.\n"
-            "When asked to read, create, edit, or search files, call the appropriate tool immediately.\n"
-            "Do not summarize or fabricate file contents you have not read.\n"
-            "Keep responses concise and actionable."
-        ),
+        system_prompt=system_prompt or DEFAULT_SYSTEM_PROMPT,
     )

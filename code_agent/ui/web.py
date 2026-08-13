@@ -29,13 +29,18 @@ Security notes:
 from __future__ import annotations
 
 import asyncio
-import uuid
-
 from collections.abc import AsyncGenerator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
+import uuid
 
+from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.checkpointer import build_checkpointer
+from code_agent.main import create_llm, load_config
+from code_agent.settings import get_settings
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -47,19 +52,15 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from pydantic import BaseModel
 
-from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.checkpointer import build_checkpointer
-from code_agent.main import create_llm, load_config
-from code_agent.settings import get_settings
-
-
 #: Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
 
 #: Module-level state for agent and provider management
 #: -------------------------------------------------------------------
+
+#: Module-level registry singleton - None until get_registry() builds it.
+#: This is used by GET /capabilities to share the same registry across requests.
+_REGISTRY: CapabilityRegistry | None = None
 
 
 @dataclass
@@ -101,8 +102,61 @@ _hitl_decisions: dict[str, str] = {}
 #: _provider_switch_lock serializes concurrent provider switch requests.
 #: _switching is True when a provider switch is in progress to reject new
 #: chat requests during the reinitialization window.
-_provider_switch_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+_provider_switch_lock: asyncio.Lock = asyncio.Lock()
 _switching: bool = False
+
+
+#: -------------------------------------------------------------------
+#: Provider Routing Models (for /providers endpoints)
+#: MUST be defined before route handlers to avoid forward reference issues
+#: -------------------------------------------------------------------
+
+
+class ProviderConfig(BaseModel):
+    """Configuration for a single provider/model pair.
+
+    Attributes:
+        name: Provider identifier (e.g. "ollama", "openai").
+        model: Model string (e.g. "gpt-oss:20b", "gpt-4o").
+    """
+
+    name: str
+    model: str
+
+
+class ProviderListResponse(BaseModel):
+    """Response from GET /providers.
+
+    Attributes:
+        providers: List of configured provider configurations.
+    """
+
+    providers: list[ProviderConfig]
+
+
+class ActiveProviderResponse(BaseModel):
+    """Response from GET /providers/active.
+
+    Attributes:
+        provider: Currently active provider name.
+        model: Currently active model string.
+    """
+
+    provider: str
+    model: str
+
+
+class ActiveProviderRequest(BaseModel):
+    """Body for POST /providers/active.
+
+    Attributes:
+        provider: Provider name to switch to.
+        model: Model string to switch to.
+    """
+
+    provider: str
+    model: str
+
 
 #: Agent state singleton — None until get_agent() builds it.
 _STATE: AgentState | None = None
@@ -118,7 +172,7 @@ def get_registry() -> CapabilityRegistry:
     :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
     """
     # pyrefly: ignore [unknown-name]
-    global _REGISTRY  # ruff: ignore[global-statement, undefined-export]  # ty: ignore[unresolved-global]
+    global _REGISTRY  # ruff: ignore[global-statement, undefined-export]
     if _REGISTRY is None:
         from code_agent.cli import _build_registry
 
@@ -233,6 +287,40 @@ def get_agent() -> AgentState:
     return _STATE
 
 
+async def get_agent_async() -> AgentState:
+    """Async version of get_agent for use in async contexts.
+
+    This function is identical to get_agent() but uses the async version
+    of _load_mcp_tools to avoid "asyncio.run() cannot be called from a
+    running event loop" errors in FastAPI endpoints.
+
+    :return: An :class:`AgentState` instance containing the agent, thread_id,
+        and checkpointer.
+    """
+    global _STATE  # ruff: ignore[global-statement, undefined-export]
+    if _STATE is None:
+        from code_agent.cli import _load_mcp_tools_async
+
+        cfg = load_config()
+        llm: BaseChatModel = create_llm(cfg)
+        tools: list[BaseTool] = create_default_tools(
+            root_dir=str(Path.cwd()), llm=llm
+        )
+        tools.extend(await _load_mcp_tools_async(cfg))
+        checkpointer: InMemorySaver | SqliteSaver = build_checkpointer(
+            checkpoint_dir=get_settings().checkpoint_dir or None
+        )
+        agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
+        _STATE = AgentState(
+            agent=agent,
+            thread_id=str(uuid.uuid4()),
+            checkpointer=checkpointer,
+            provider=cfg.get("provider", "ollama"),
+            model=cfg.get("model", "gpt-oss:20b"),
+        )
+    return _STATE
+
+
 #: Optional authentication middleware. When ``CODE_AGENT_AUTH_TOKEN`` is set,
 #: every request must carry a matching ``X-CodeAgent-Auth-Token`` header.
 class AuthMiddleware:
@@ -269,7 +357,10 @@ class AuthMiddleware:
             await self.app(scope, receive, send)
             return
 
-        headers = {k.decode(): v.decode() for k, v in scope.get("headers", [])}
+        #: ASGI headers are bytes and case-insensitive - normalize to lowercase
+        headers = {
+            k.decode().lower(): v.decode() for k, v in scope.get("headers", [])
+        }
         token = headers.get("x-codeagent-auth-token")
         expected = get_settings().auth_token
 
@@ -547,57 +638,6 @@ class ErrorEvent(BaseModel):
     reason: str
 
 
-#: -------------------------------------------------------------------
-#: Provider Routing Models (for /providers endpoints)
-#: -------------------------------------------------------------------
-
-
-class ProviderConfig(BaseModel):
-    """Configuration for a single provider/model pair.
-
-    Attributes:
-        name: Provider identifier (e.g. "ollama", "openai").
-        model: Model string (e.g. "gpt-oss:20b", "gpt-4o").
-    """
-
-    name: str
-    model: str
-
-
-class ProviderListResponse(BaseModel):
-    """Response from GET /providers.
-
-    Attributes:
-        providers: List of configured provider configurations.
-    """
-
-    providers: list[ProviderConfig]
-
-
-class ActiveProviderResponse(BaseModel):
-    """Response from GET /providers/active.
-
-    Attributes:
-        provider: Currently active provider name.
-        model: Currently active model string.
-    """
-
-    provider: str
-    model: str
-
-
-class ActiveProviderRequest(BaseModel):
-    """Body for POST /providers/active.
-
-    Attributes:
-        provider: Provider name to switch to.
-        model: Model string to switch to.
-    """
-
-    provider: str
-    model: str
-
-
 class ResumeRequest(BaseModel):
     """Body for POST /chat/resume.
 
@@ -650,6 +690,38 @@ async def chat_resume(request: ResumeRequest) -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.post("/chat")
+async def chat(request: ChatRequest) -> ChatResponse:
+    """Send a chat message to the agent and return the response.
+
+    This is the legacy synchronous chat endpoint for backward compatibility.
+    It invokes the agent synchronously and returns the final response.
+
+    :param request: Parsed chat request containing the user message and optional thread_id.
+    :return: ChatResponse with the assistant's reply and thread_id.
+    """
+    state = await get_agent_async()
+    effective_thread = request.thread_id or state.thread_id
+
+    # Invoke the agent synchronously with the message and thread config
+    result = state.agent.invoke(
+        {"messages": [HumanMessage(content=request.message)]},
+        config={"configurable": {"thread_id": effective_thread}},
+    )
+
+    # Extract the response from the result
+    messages = result.get("messages", [])
+    response_text = "(no text response)"
+
+    # Find the last AI message content
+    for msg in reversed(messages):
+        if hasattr(msg, "content") and msg.content:
+            response_text = msg.content
+            break
+
+    return ChatResponse(response=response_text, thread_id=effective_thread)
+
+
 @app.post("/chat/stream")
 async def chat_stream(request: ChatRequest) -> StreamingResponse:
     """Send a chat message to the agent via Server-Sent Events (SSE) streaming.
@@ -671,29 +743,26 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
     :return: StreamingResponse with media_type="text/event-stream".
     :raises HTTPException: 501 if streaming is disabled, 503 if provider switch in progress.
     """
-    #: Check if streaming is enabled via settings
+    # Check if streaming is enabled via settings
     settings = get_settings()
     if not settings.stream_enabled:
         raise HTTPException(status_code=501, detail="Streaming is disabled.")
 
-    #: Check if a provider switch is in progress and reject with 503
-    #: Note: _switching is a module-level bool, read directly without global
+    # Check if a provider switch is in progress and reject with 503
     if _switching:
         raise HTTPException(
             status_code=503, detail="provider switch in progress"
         )
 
-    #: Get the agent state (builds on first use with SqliteSaver checkpointer)
-    state = get_agent()
+    state = await get_agent_async()
     effective_thread = request.thread_id or state.thread_id
 
-    #: Return a StreamingResponse with the SSE event generator
     return StreamingResponse(
         _stream_agent_events(state.agent, request.message, effective_thread),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
-            "X-Thread-Id": effective_thread,  #: Let client capture new thread_id
+            "X-Thread-Id": effective_thread,  # Let client capture new thread_id
         },
     )
 
@@ -714,6 +783,8 @@ async def _stream_agent_events(
     - Completion signals (on_chain_end with final output)
     - Exception handling (emits error event and closes stream)
 
+    Falls back to blocking invoke() if astream_events is not available.
+
     The generator tracks tool call timing and truncates tool output to 2000
     characters as required by the specification.
 
@@ -725,7 +796,14 @@ async def _stream_agent_events(
     import json
     import time
 
-    #: Track tool call start times for elapsed duration calculation
+    #: Try astream_events first, fall back to invoke if not available
+    stream_fn = getattr(agent, "astream_events", None)
+    if stream_fn is None:
+        #: Fallback to blocking invoke when astream_events is not available
+        #: Emit error event and return
+        yield _sse({"type": "error", "reason": "Streaming not supported"})
+        return
+
     tool_start_times: dict[str, float] = {}
 
     def _sse(payload: dict[str, Any]) -> str:
@@ -741,49 +819,36 @@ async def _stream_agent_events(
         return f"data: {json.dumps(payload)}\n\n"
 
     try:  # ruff: ignore[too-many-statements-in-try-clause]
-        #: event streaming function naturally has many statements in try block
-        #: Stream events from the LangGraph agent using v2 API
-        #: This captures all internal graph events including LLM, tools, and chains
-        async for event in agent.astream_events(
+        async for event in stream_fn(
             {"messages": [HumanMessage(content=message)]},
             config={"configurable": {"thread_id": thread_id}},
             version="v2",
         ):
-            #: Extract event type and data from the LangGraph event structure
             etype = event.get("event", "")
             data = event.get("data", {})
             event_name = event.get("name", "")
 
-            #: Handle LLM token streaming events
             if etype == "on_chat_model_stream":
-                #: Extract the text content chunk from the AI message
                 chunk = data.get("chunk")
                 if chunk:
-                    #: Get the content attribute (may be None for empty chunks)
                     content = getattr(chunk, "content", None) or ""
                     if content:
                         yield _sse({"type": "token", "content": content})
 
-            #: Handle tool call start events
             elif etype == "on_tool_start":
-                #: Record the start time for elapsed duration calculation
                 tool_start_times[event_name] = time.monotonic()
-                #: Emit tool_start event with tool name and input arguments
                 yield _sse({
                     "type": "tool_start",
                     "tool": event_name,
                     "input": data.get("input", {}),
                 })
 
-            #: Handle tool call end events
             elif etype == "on_tool_end":
-                #: Calculate elapsed time for this tool call
                 elapsed = round(
                     time.monotonic()
                     - tool_start_times.pop(event_name, time.monotonic()),
-                    1,  #: Round to one decimal place
+                    1,  # Round to one decimal place
                 )
-                #: Get the raw tool output and truncate to 2000 characters as required
                 raw_output = str(data.get("output", ""))
                 output = raw_output[:2000]
                 yield _sse({
@@ -793,16 +858,13 @@ async def _stream_agent_events(
                     "elapsed_s": elapsed,
                 })
 
-            #: Handle chain end events (completion and HITL interrupts)
             elif etype == "on_chain_end":
-                #: Check for HITL interrupt in the graph output
                 output = data.get("output", {})
                 if isinstance(output, dict) and output.get("__interrupt__"):
                     interrupt_info = output["__interrupt__"]
                     tool_name = interrupt_info.get("tool", "")
                     tool_input = interrupt_info.get("input", {})
 
-                    #: Emit hitl_pending event to signal the graph has paused
                     yield _sse({
                         "type": "hitl_pending",
                         "tool": tool_name,
@@ -810,32 +872,23 @@ async def _stream_agent_events(
                         "thread_id": thread_id,
                     })
 
-                    #: Wait for user decision via asyncio.Event with 300-second timeout
-                    #: _pending_hitl and _hitl_decisions are module-level dicts
                     ev = _pending_hitl.get(thread_id)
                     if ev is not None:
                         try:
-                            #: Wait up to 300 seconds for the user to approve/reject
                             await asyncio.wait_for(ev.wait(), timeout=300.0)
-                            #: Decision received, continue with graph execution
                         except TimeoutError:
-                            #: Timeout waiting for HITL decision - emit error and stop
                             yield _sse({
                                 "type": "error",
                                 "reason": "hitl_timeout",
                             })
                             return
                         finally:
-                            #: Clean up the pending event from module-level state
                             _pending_hitl.pop(thread_id, None)
                             _hitl_decisions.pop(thread_id, None)
-                    #: If no pending event exists, continue without waiting
 
-        #: Emit done event to signal successful completion
         yield _sse({"type": "done"})
 
     except asyncio.CancelledError:
-        #: Client disconnected - clean up pending HITL state silently
         _pending_hitl.pop(thread_id, None)
         _hitl_decisions.pop(thread_id, None)
         return

@@ -14,15 +14,13 @@ available.
 
 from __future__ import annotations
 
-import json
-
 from collections.abc import Iterable
+import json
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
 from .exceptions import CodeAgentError
-
 
 #: Optional Jupyter notebook dependency; ``None`` when unavailable.
 nbformat: ModuleType | None
