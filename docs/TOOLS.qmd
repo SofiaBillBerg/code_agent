@@ -1,18 +1,19 @@
 ---
-title: "A Guide to Agent Tools"
+title: "A Guide to Agent Tools"  
+author: "Sofia Billger Bergström"
 format: html
+output: 
+  html:
+    css: docs/styles/custom.css
 ---
 
 # A Guide to Agent Tools
 
-The power of the `code_agent` lies in its tools. This guide provides a deep dive into each of the built-in tools,
-explaining what they do and how they are used by the agent.
+The power of the `code_agent` lies in its tools. This guide provides a deep dive into each of the built-in tools, explaining what they do and how they are used by the agent.
 
 ## Understanding Tools
 
-A tool is a function that the agent can call to interact with its environment. This can be anything from reading and
-writing files to searching for information or running code. The agent decides which tool to use based on the user's
-prompt and the context of the conversation. All tools are classes that inherit from `langchain_core.tools.BaseTool`.
+A tool is a function that the agent can call to interact with its environment. This can be anything from reading and writing files to searching for information or running code. The agent decides which tool to use based on the user's prompt and the context of the conversation. All tools are classes that inherit from `langchain_core.tools.BaseTool`.
 
 ## Built-in Tools
 
@@ -20,8 +21,7 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 
 ### `new-file`
 - **Purpose**: Creates a new file with specified content.
-- **Why it's useful**: This is the primary tool for creating new source files, documentation, or any other text-based
-  file in your project.
+- **Why it's useful**: This is the primary tool for creating new source files, documentation, or any other text-based file in your project.
 - **Agent Usage**:
   > **User**: "Create a new Python file named `utils.py` in the `src` directory with a function that adds two numbers."
 
@@ -42,8 +42,7 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 
 ### `search-explain`
 - **Purpose**: Searches for a specific code snippet or keyword in your project and uses the LLM to explain it.
-- **Why it's useful**: Invaluable for understanding unfamiliar codebases. Instead of manually searching for definitions,
-  you can ask the agent to find and explain a function or class.
+- **Why it's useful**: Invaluable for understanding unfamiliar codebases. Instead of manually searching for definitions, you can ask the agent to find and explain a function or class.
 - **Agent Usage**:
   > **User**: "Find the `build_agent` function and explain what it does."
 
@@ -82,8 +81,7 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 One of the most powerful features of `code_agent` is its extensibility.
 
 ### 1. Create the Tool Class
-Create a new file in the `code_agent/tools/` directory. Your tool should be a class that inherits from `BaseTool` and
-defines its `name`, `description`, and `_run` method.
+Create a new file in the `code_agent/tools/` directory. Your tool should be a class that inherits from `BaseTool` and defines its `name`, `description`, and `_run` method.
 
 ```python
 # In code_agent/tools/my_custom_tool.py

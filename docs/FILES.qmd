@@ -1,9 +1,11 @@
 ---
----
 title: "Files Overview"  
-author: "Sofia Billger Bergström"  
-format: html  
----  
+author: "Sofia Billger Bergström"
+format: html
+output: 
+  html:
+    css: docs/styles/custom.css
+---
 
 # File-level Overview
 

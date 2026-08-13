@@ -32,6 +32,19 @@ You can now type queries, e.g.:
     > Add a new function to utils.py
 ```
 
+## MCP and HITL Configuration
+
+This project implements Model Context Protocol (MCP) server integration with human-in-the-loop (HITL) gating for sensitive operations:
+
+- **MCP tool prefixing**: All 43 tools use `mcp_<server>__<tool>` naming format (e.g., `mcp_github__list_files`, `mcp_memory__search_entities`, `mcp_context7__resolve-library-id`)
+- **Sensitive server gating**: `github` and `memory` servers are intercepted for explicit human approval per security policy. Read-only servers (`context7`, `docs-langchain`, `reference-langchain`) function without interruption
+- **Environment variable expansion**: `${VAR}` placeholders in `.mcp.json` resolved from gitignored `.env` file at startup. Example: `${GITHUB_PERSONAL_ACCESS_TOKEN}` expands to actual token from `.env`
+- **.mcp.json hardening**: Secrets replaced with `${VAR}` placeholders (`${GITHUB_PERSONAL_ACCESS_TOKEN}`, `${CONTEXT7_API_KEY}`); actual values stored in gitignored `.env` file. No hardcoded API keys or secrets
+- **System prompt guardrail**: `DEFAULT_SYSTEM_PROMPT` includes MCP security policy section documenting the interception and approval flow for sensitive tools
+
+## Package structure and class diagram
+```
+
 ## Package structure and class diagram
 
 **Package diagram**: The following diagram illustrates the main packages and their relationships within the Code Agent project.

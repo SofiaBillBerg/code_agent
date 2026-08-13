@@ -1,100 +1,50 @@
 ---
+title: "Code Agent"
+author: "Sofia Billger Bergström"
+format: html
+date: 2025-11-10
+css: docs/styles/custom.css
 ---
-title: "Code Agent - Core Components"  
-author: "Sofia Billger Bergström"  
-format: html  
----  
 
-# Code Agent - Core Architecture
+# Code Agent
 
-This document explains the main building blocks of `code_agent`. The agent architecture follows a **capability-based design** where tools are registered and audited before execution. This ensures every action is logged with cryptographic receipts for security and debugging.
+`code_agent` is a lightweight, LLM-driven assistant that can scaffold projects, edit files, generate documentation, and operate as an interactive chatbot.
 
-## 1. Language Model & Embeddings
+## Quick Start
 
-The agent uses an abstraction layer over LLM providers, allowing you to swap models (Ollama vs OpenAI) without changing core logic. Default configuration loads from `.env`.
+```bash
+# Install dependencies (uv is recommended)
+uv venv .venv
+source .venv/bin/activate
+uv pip install -e .[dev]
 
-```python
-from code_agent import create_llm, load_config  
-# or manually:  
-from langchain_community.chat_models import ChatOllama  # example usage  
-
-config = load_config()  
-llm = create_llm(config)  
-embeddings = GPT4AllEmbeddings(client=None)  # Local CPU embeddings
+# Run the interactive agent
+code-agent chat
 ```
 
-**Supported Models:**
-- `ChatOllama` (default): Connects to a local Ollama server at `http://localhost:11434`
-- `GPT4All`: Standalone model without external API requirements  
-- Any LangChain-compatible chat model via the provider factory  
+## Public API
 
-## 2. Persistent Vector Store
+The package exports these main functions and classes:
 
-Conversational memory is managed by [`Chroma`](https://www.trychroma.com/) for context retrieval:
-
-```python
-from langchain_chroma import Chroma  
-
-memory_dir = ".code_agent_memory"  
-vectorstore = Chroma(  
-    collection_name="code_agent_conversations",  
-    embedding_function=embeddings,  
-    persist_directory=memory_dir,  # Auto-persistence to disk  
-)
-```
-
-The vector store persists conversation history locally for RAG capabilities while maintaining privacy (no cloud uploads).
-
-## 3. Agent Orchestration Flow
-
-### Current Architecture (Migrating Phase)
-
-1. **User Input** → `HumanMessage` added to state dict
-2. **LLM Reasoning**: Model analyzes context and decides if a tool should be used  
-3. **Tool Selection & Execution**: If applicable, the chosen capability runs via the registry
-4. **Response Generation**: Final answer or another iteration request
-
-The graph is compiled into a [`Runnable`](https://python.langchain.com/docs/concepts/#runnable-interface) for easy invocation:
-
-```python
-from code_agent import build_agent  
-agent_runnable = build_agent(llm, tools)  # Returns Runnable object  
-
-response = agent_runnable.invoke({  
-    "messages": [HumanMessage(content="Add a function to utils.py")]  
-})
-```
-
-### Migration Note ⚠️
-
-The current implementation uses LangGraph's `StateGraph` (custom state management), but this is being replaced with LangChain's native agent harness for better reliability and reduced complexity. See `.kilo/plans/agent-rewire-plan.md` for details.
-
-## 4. Toolset & Capabilities
-
-All tools are [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool) subclasses that interact with the filesystem:
-
-| Capability | Description                    | Module                      |  
-|------------|-------------------------------|-----------------------------|
-| `new-file`      | Creates files atomically            | FileGenerator              | 
-| `edit-file`     | Edit existing files (with diff tracking)        | FileEditor                 |  
-| `read-file`     | Read file contents                  | FileReader                 |  
-| `search-explain`| Search codebase & explain patterns  | search_explain_tool()      |  
-| `generate-test` | Create pytest test scaffolds            | generate_test_tool()       |  
-| `format-code`   | Format Python/R using black/styler    | format_code_tool()         |  
-| `notebook`      | Execute code in notebook environment  | execute_notebook_cell()    |  
-
-Tools are registered via [`CapabilityRegistry`](capabilities/registry.py). See [TOOLS.qmd](./TOOLS.qmd) for usage patterns.
-
-## 5. Audit Trail System
-
-Every agent action generates an audited envelope with hash-chained receipts:
-
-```python
-from code_agent.capabilities.audit import Receipt, AuditLog  
-
-# Each invocation creates a receipt that cryptographically links to previous actions  
-receipt = await audit_log.create_receipt(invocation_request)  
-print(receipt.hash_chain())  # Verify integrity of action log  
-```
-
-This prevents tampering with agent decisions and enables rollback if needed.
+- `AuditLog`
+- `Capability`
+- `CapabilityBase`
+- `CapabilityRegistry`
+- `CodeAgentError`
+- `FileCreationError`
+- `InvalidToolError`
+- `InvocationRequest`
+- `InvocationResponse`
+- `LLMProvider`
+- `OllamaProvider`
+- `OpenAIProvider`
+- `ProviderBase`
+- `Receipt`
+- `RiskClass`
+- `append_file`
+- `build_agent`
+- `create_default_tools`
+- `create_file`
+- `create_from_template`
+- `create_llm`
+- `create_project_scaffold`
