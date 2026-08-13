@@ -149,9 +149,9 @@
 
 **Implementation**:
 - Settings loaded from `.env` file at startup
-- `${VAR}` placeholders expanded via `expand_env_vars()`
-- `.mcp.json` contains placeholder secrets (not hardcoded)
-- Actual secrets stored in gitignored `.env` file
+- ${VAR} placeholders expanded via `expand_env_vars()`
+- .mcp.json contains placeholder secrets (not hardcoded)
+- Actual secrets stored in gitignored .env file
 
 ## Decision Process
 
@@ -287,26 +287,6 @@ Document the decision and rationale
 - Business Domain (business-domain.md)
 - Current Goals (notes/current_goals.md)
 
-## Decision Making Resources
-
-### Books
-
-- "Designing Data-Intensive Applications"
-- "Clean Architecture"
-- "The Pragmatic Programmer"
-
-### Articles
-
-- "Architecture Patterns in the Age of AI"
-- "Provider-Agnostic Design for AI Systems"
-- "Human-in-the-Loop: A Survey"
-
-### Tools
-
-- `plantuml`: Architecture diagrams
-- `mermaid`: Documentation diagrams
-- `drawio`: Flowcharts
-
 ## Future Decisions
 
 ### Upcoming Decisions
@@ -328,8 +308,6 @@ Document the decision and rationale
 ## Conclusion
 
 The decisions log serves as a record of architectural and design decisions, providing context for future decisions and ensuring consistency across the project. It helps teams understand why certain choices were made and provides a basis for evaluating future decisions.
-
-The decision-making framework ensures that decisions are made systematically, with clear documentation and rationale. This helps reduce technical debt and ensures that the project remains aligned with its goals and requirements.
 
 By documenting decisions, the project can:
 
