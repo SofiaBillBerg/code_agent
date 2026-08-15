@@ -6,26 +6,19 @@ with Ollama LLM integration for automated code and documentation generation.
 """
 
 import os
-import sys
-
 from pathlib import Path
+import sys
 from typing import Any
 
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
-from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
-
-from code_agent import (
-    build_agent,
-    create_from_template,
-    create_llm,
-    write_file,
-)
+from code_agent import build_agent, create_from_template, create_llm, write_file
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.main import load_config
-
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.runnables import Runnable
 
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -37,11 +30,17 @@ class DummyLLM(BaseChatModel):
 
     def _generate(
         self,
-        messages: list[BaseMessage],
-        stop: list[str] | None = None,
-        **kwargs: Any,
-    ) -> ChatResult:
-        """Dummy LLM that always returns the same message."""
+            messages: list[BaseMessage],
+            stop: list[str] | None = None,
+            **kwargs: Any,
+    ) -> ChatResult:  # ty: ignore[invalid-method-override]
+        """Dummy LLM that always returns the same message.
+
+        :param messages: List of messages to process.
+        :param stop: List of strings to stop generation.
+        :param kwargs: Additional keyword arguments.
+        :return:  A ChatResult with a fixed AIMessage.
+        """
         return ChatResult(
             generations=[
                 ChatGeneration(message=AIMessage(content="Hello from DummyLLM"))
@@ -49,14 +48,24 @@ class DummyLLM(BaseChatModel):
         )
 
     def bind_tools(
-        self, tools: list[BaseTool], **kwargs: Any
+        self,
+            tools: list[BaseTool],
+            **kwargs: Any
     ) -> Runnable[Any, BaseMessage]:
-        """Mock implementation of bind_tools."""
+        """Mock implementation of bind_tools.
+
+        :param tools:  List of tools to bind.
+        :param kwargs:  Additional keyword arguments.
+        :return:  A Runnable that represents the bound tools (self in this case).
+        """
         return self
 
     @property
     def _llm_type(self) -> str:
-        """Return type of llm."""
+        """Access the type of llm.
+
+        :return: Returns "dummy-chat-model"
+        """
         return "dummy-chat-model"
 
 
@@ -91,7 +100,7 @@ def example_basic_file_operations() -> None:
 
         # Create a template
         template_path = Path("doc.qmd")
-        create_from_template(template_path, "Example Document")
+        create_from_template(template_root_dir=template_path, dest_root_dir="Example Document")
         print(f"✓ Created template: {template_path}")
 
         # Show preview of an edit (if agent_runnable had a preview_edit method, which it doesn't directly)

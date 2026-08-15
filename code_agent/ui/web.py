@@ -233,7 +233,13 @@ async def _reinit_agent(provider: str, model: str) -> None:
             if isinstance(checkpointer, InMemorySaver) and cfg.get(
                 "checkpoint_dir"
             ):
-                checkpointer = SqliteSaver(cfg["checkpoint_dir"])
+                #: Rebuild a persistent (sqlite) checkpointer from the config
+                #: path via ``build_checkpointer`` so the connection is opened
+                #: correctly (``SqliteSaver`` expects a ``sqlite3.Connection``,
+                #: not a path string).
+                checkpointer = build_checkpointer(
+                    checkpoint_dir=cfg["checkpoint_dir"]
+                )
 
             #: Build new agent with the new LLM and existing checkpointer
             agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
