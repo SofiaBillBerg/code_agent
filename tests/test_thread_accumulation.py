@@ -17,9 +17,8 @@ from typing import Any
 from unittest.mock import MagicMock
 
 from code_agent.graph import build_graph
-from langchain_core.messages import AIMessage, HumanMessage
-from langchain_core.tools import tool
-from langchain_core.tools.base import BaseTool
+from langchain.messages import AIMessage, HumanMessage
+from langchain.tools import BaseTool, tool
 from langchain_core.utils.uuid import uuid7
 import pytest
 
@@ -84,7 +83,7 @@ def _messages_of(state: dict[str, Any]) -> list:
 
 
 def test_checkpointer_accumulates_with_stable_thread_id(
-    agent_graph: Any,
+        agent_graph: Any,
 ) -> None:
     """State should grow across turns when reusing the same ``thread_id``.
 

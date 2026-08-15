@@ -35,7 +35,7 @@ def test_stream_agent_response_collects_model_chunks() -> None:
         {"event": "on_chat_model_stream", "data": {"chunk": chunk}},
         {"event": "on_chain_end", "data": {"output": {"messages": []}}},
     ]
-    agent = _make_stream_agent(events)
+    agent = _make_stream_agent(events=events)
 
     response = _stream_agent_response(agent, [], "thread-1")
 
@@ -55,7 +55,7 @@ def test_stream_agent_response_logs_tool_events() -> None:
         {"event": "on_tool_end", "data": {}},
         {"event": "on_chain_end", "data": {"output": {"messages": []}}},
     ]
-    agent = _make_stream_agent(events)
+    agent = _make_stream_agent(events=events)
 
     response = _stream_agent_response(agent, [], "thread-1")
 

@@ -25,7 +25,8 @@ def _chat_ollama_from_config(config: dict[str, Any]) -> ChatOllama:
 
     Reads ``ollama_model`` / ``model``, ``ollama_scheme``, ``ollama_host``,
     ``ollama_port`` and the generation keys ``temperature``, ``max_tokens``,
-    ``stream``.  The legacy ``llm_config.json`` keys (``ollama_*``) take
+    ``stream``.  The canonical ``codeagent.jsonc``,
+        ``codeagent.json``, ``codeagent.yml`` or ``codeagent.yaml`` keys (``ollama_*``) take
     precedence over the bare ``model`` / ``temperature`` etc. keys.
 
     :param config: Configuration mapping, typically from :func:`code_agent.settings.as_config_dict`.
@@ -57,10 +58,10 @@ class OllamaProvider(ProviderBase):
     name: str = "ollama"
 
     def __init__(
-        self,
-        model: str,
-        base_url: str | None = None,
-        **kwargs: Any,
+            self,
+            model: str,
+            base_url: str | None = None,
+            **kwargs: Any,
     ) -> None:
         """Initialize the Ollama provider.
 
@@ -104,6 +105,46 @@ class OllamaProvider(ProviderBase):
         # Ollama tool-binding is handled by the LangGraph layer; no-op here.
         return self
 
+    @staticmethod
+    def _load_default_config() -> dict[str, Any] | None:
+        """Load the default configuration.
+
+        The typed application settings (sourced from ``.env`` / the environment)
+        are the canonical default.  Also support ``codeagent.jsonc``,
+        ``codeagent.json``, ``codeagent.yml`` and``codeagent.yaml`` is used only as
+        a fallback when the settings module is unavailable.
+
+        :return: The default configuration mapping.
+        """
+        try:
+            return as_config_dict()
+        except Exception:
+            config_file_candidates = [
+                "codeagent.jsonc",
+                "codeagent.json",
+                "codeagent.yml",
+                "codeagent.yaml",
+            ]
+            for filename in config_file_candidates:
+                path = Path(__file__).resolve().parent.parent / "config" / filename
+                if path.exists():
+                    with path.open("r", encoding="utf-8") as f:
+                        suffix = path.suffix.lower()
+                        if suffix == ".jsonc":
+                            import json5
+
+                            return json5.load(f)
+                        if suffix == ".json":
+                            return json.load(f)
+                        if suffix in {".yaml", ".yml"}:
+                            import yaml
+
+                            return yaml.safe_load(f)
+                        raise ValueError(
+                            f"Unsupported config file extension: {suffix!r} "
+                            f"(expected .jsonc, .json, .yaml or .yml)"
+                        )
+
     @classmethod
     def from_config(
         cls, config: dict[str, Any] | None = None
@@ -114,11 +155,12 @@ class OllamaProvider(ProviderBase):
         ``ollama_*`` connection keys from ``config`` (or the default config
         file when ``config`` is ``None``).
 
-        :param config: Configuration mapping. When ``None`` the typed application settings are used, falling back to ``llm_config.json`` if settings are unavailable.
+        :param config: Configuration mapping. When ``None`` the typed application settings are used, falling back to ``codeagent.jsonc``,
+        ``codeagent.json``, ``codeagent.yml``, ``codeagent.yaml`` if settings are unavailable.
         :return: A configured ``OllamaProvider`` instance.
         """
         if config is None:
-            config = cls._load_default_config()
+            config = cls._load_default_config() or {}
 
         client = _chat_ollama_from_config(config)
         return cls(
@@ -128,24 +170,3 @@ class OllamaProvider(ProviderBase):
             max_tokens=config.get("max_tokens", 6000),
             stream=config.get("stream", True),
         )
-
-    @staticmethod
-    def _load_default_config() -> dict[str, Any]:
-        """Load the default configuration.
-
-        The typed application settings (sourced from ``.env`` / the environment)
-        are the canonical default.  A legacy ``llm_config.json`` is used only as
-        a fallback when the settings module is unavailable.
-
-        :return: The default configuration mapping.
-        """
-        try:
-            return as_config_dict()
-        except Exception:
-            path = (
-                Path(__file__).resolve().parent.parent
-                / "config"
-                / "llm_config.json"
-            )
-            with path.open("r", encoding="utf-8") as f:
-                return json.load(f)

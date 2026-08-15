@@ -195,7 +195,6 @@ def test_create_project_scaffold_invalid_root(scaffold_root: Path) -> None:
             str(file_as_root), project_name="my_project", overwrite=True
         )
 
-
 # ---------------------------------------------------------------------------
 # End of file
 # ---------------------------------------------------------------------------

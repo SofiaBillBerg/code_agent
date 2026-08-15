@@ -67,10 +67,10 @@ class TestResumeEndpoint:
     )
     @settings(max_examples=100, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
     def test_resume_approve_reject_works(
-        self,
-        client: TestClient,
-        thread_id: str,
-        decision: Literal["approve", "reject"],
+            self,
+            client: TestClient,
+            thread_id: str,
+            decision: Literal["approve", "reject"],
     ) -> None:
         """Property 6: HITL resume signals the pending event.
 
@@ -112,10 +112,10 @@ class TestResumeEndpoint:
     )
     @settings(max_examples=100, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
     def test_resume_409_for_non_pending_thread(
-        self,
-        client: TestClient,
-        thread_id: str,
-        decision: Literal["approve", "reject"],
+            self,
+            client: TestClient,
+            thread_id: str,
+            decision: Literal["approve", "reject"],
     ) -> None:
         """Property 7: Resume returns 409 for non-pending threads.
 
@@ -138,7 +138,7 @@ class TestResumeEndpoint:
         assert f"thread_id={thread_id!r}" in response.json()["detail"]
 
     def test_resume_409_when_event_already_resolved(
-        self, client: TestClient
+            self, client: TestClient
     ) -> None:
         """Resume returns 409 when SSE stream already closed.
 

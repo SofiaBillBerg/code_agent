@@ -25,19 +25,20 @@ from .exceptions import CodeAgentError
 #: Optional Jupyter notebook dependency; ``None`` when unavailable.
 nbformat: ModuleType | None
 try:  # Optional dependency - used only for the notebook path.
-    import nbformat  # type: ignore
+    import nbformat
 except Exception:  # pragma: no cover - handled at runtime
+    # noinspection PyGlobalVariableRedeclarationInNotebook
     nbformat = None
 
 __all__ = ["create_from_template", "py_to_ipynb", "write_file"]
 
 
 def write_file(
-    target: Path | str,
-    content: str,
-    *,
-    mode: str = "w",
-    encoding: str = "utf-8",
+        target: Path | str,
+        content: str,
+        *,
+        mode: str = "w",
+        encoding: str = "utf-8",
 ) -> Path:
     """Write *content* to *target* atomically.
 
@@ -67,10 +68,10 @@ def write_file(
 
 
 def create_from_template(
-    template_root_dir: Path,
-    dest_root_dir: Path,
-    *,
-    replace_vars: dict | None = None,
+        template_root_dir: Path,
+        dest_root_dir: Path,
+        *,
+        replace_vars: dict | None = None,
 ) -> Path:
     """Create *dest_path* by copying *template_path*.
 
@@ -78,8 +79,10 @@ def create_from_template(
     in the template text using :meth:`str.format`.  The function
     returns the absolute :class:`Path` to the created file.
 
-    :param template_path: Path to the template file.
-    :param dest_path: Destination file path.
+    :param template_root_dir:
+    :type template_root_dir:
+    :param dest_root_dir:
+    :type dest_root_dir:
     :param replace_vars: Optional dict of placeholders to replace.
     :return: The absolute path of the created file.
     """
@@ -99,15 +102,15 @@ def create_from_template(
 
 
 def _generate_ipynb_from_cells(
-    cells: Iterable[str],
+        cells: Iterable[str],
 ) -> (
-    dict[
-        str,
-        list[dict[str, str | dict[Any, Any] | list[Any] | None]]
-        | dict[str, dict[str, str]]
-        | int,
-    ]
-    | str
+        dict[
+            str,
+            list[dict[str, str | dict[Any, Any] | list[Any] | None]]
+            | dict[str, dict[str, str]]
+            | int,
+        ]
+        | str
 ):
     """Return a minimal Jupyter notebook dict for the given *cells*.
 
@@ -200,10 +203,10 @@ def py_to_ipynb(py_file: Path, output: Path | None = None) -> Path:
 
 
 def create_file(
-    path: Path | str,
-    content: str,
-    *,
-    overwrite: bool = False,
+        path: Path | str,
+        content: str,
+        *,
+        overwrite: bool = False,
 ) -> Path:
     """Create *path* and write *content*.
 

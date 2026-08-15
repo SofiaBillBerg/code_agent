@@ -425,7 +425,7 @@ def test_web_capabilities_listed(web_client: TestClient) -> None:
 
 
 def test_web_capabilities_proxied_through_vite_target(
-    monkeypatch: pytest.MonkeyPatch,
+        monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """GET /capabilities returns JSON when called through the Vite proxy target.
 
@@ -455,7 +455,7 @@ def test_web_capabilities_proxied_through_vite_target(
 
 
 def test_web_invoke_returns_response_and_receipt(
-    web_client: TestClient,
+        web_client: TestClient,
 ) -> None:
     """POST /invoke dispatches a valid capability and returns receipt.
 
@@ -479,7 +479,7 @@ def test_web_invoke_returns_response_and_receipt(
 
 
 def test_web_invoke_unknown_capability_returns_400(
-    web_client: TestClient,
+        web_client: TestClient,
 ) -> None:
     """POST /invoke with an unknown id returns HTTP 400.
 

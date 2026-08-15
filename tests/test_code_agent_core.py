@@ -12,11 +12,12 @@ from code_agent.file_generator import (
     py_to_ipynb,
     write_file,
 )
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool
+from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
 import pytest
 
 @pytest.fixture
@@ -35,10 +36,10 @@ def dummy_llm() -> BaseChatModel:
         """A dummy LLM implementation for testing."""
 
         def _generate(
-            self,
-            messages: list[BaseMessage],
-            stop: list[str] | None = None,
-            **kwargs: Any,
+                self,
+                messages: list[BaseMessage],
+                stop: list[str] | None = None,
+                **kwargs: Any,
         ) -> ChatResult:
             """Generate a dummy response.
 
@@ -56,7 +57,7 @@ def dummy_llm() -> BaseChatModel:
             )
 
         def bind_tools(
-            self, tools: list[BaseTool], **kwargs: Any
+                self, tools: list[BaseTool], **kwargs: Any
         ) -> Runnable[Any, BaseMessage]:
             """Bind tools to the LLM.
 

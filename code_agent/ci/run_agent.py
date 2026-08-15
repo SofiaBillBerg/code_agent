@@ -8,7 +8,7 @@ import sys
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.main import create_llm, load_config
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain.messages import AIMessage, HumanMessage
 
 THREAD_ID = "ci-run"
 

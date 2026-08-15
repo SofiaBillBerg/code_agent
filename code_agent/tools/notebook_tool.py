@@ -7,7 +7,7 @@ from typing import cast
 
 from .edit_file_tool import FileObject
 
-from langchain_core.tools import BaseTool, tool
+from langchain.tools import BaseTool, tool
 import nbformat
 from nbformat import NotebookNode
 from pydantic import BaseModel, Field
@@ -46,13 +46,13 @@ def make_notebook_tool(root_dir: Path) -> BaseTool:
         args_schema=NotebookArgs,
         response_format="content_and_artifact",
         description=(
-            "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
-            "append: add a markdown cell with content; replace: replace entire notebook with given "
-            "content."
+                "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
+                "append: add a markdown cell with content; replace: replace entire notebook with given "
+                "content."
         ),
     )
     def notebook(
-        file_path: str, content: str = "", mode: str = "create"
+            file_path: str, content: str = "", mode: str = "create"
     ) -> tuple[str, FileObject]:
         """Create or edit a Jupyter notebook.
 

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from .file_generator import write_file
 
-from langchain_core.language_models.chat_models import BaseChatModel
+from langchain.chat_models import BaseChatModel
 
 def _gather_repo_info(root: Path) -> dict[str, list[str]]:
     """Gather information about files in the repository.
@@ -120,9 +120,13 @@ def _render_code_agent_qmd() -> str:
     """
     try:
         from code_agent import __all__ as exports
-        from code_agent import load_config, create_llm
-        from code_agent import build_agent, create_default_tools
-        from code_agent import create_project_scaffold
+        from code_agent import (
+            build_agent,
+            create_default_tools,
+            create_llm,
+            create_project_scaffold,
+            load_config,
+        )
     except ImportError:
         exports = []
 
@@ -325,10 +329,10 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
 
 
 def generate_quarto_docs(
-    output_dir: Path = Path("docs"),
-    overwrite: bool = False,
-    use_llm: bool = False,
-    llm: BaseChatModel | None = None,
+        output_dir: Path = Path("docs"),
+        overwrite: bool = False,
+        use_llm: bool = False,
+        llm: BaseChatModel | None = None,
 ) -> list[str]:
     """Generate a small set of .qmd files in `output_dir`.
 
@@ -373,12 +377,12 @@ def generate_quarto_docs(
             # Ensure it starts with --- for YAML front matter
             if not content.startswith("---"):
                 content = (
-                    "---\n"
-                    'title: "Project Overview"\n'
-                    "format:\n"
-                    "  markdown_docs:\n"
-                    "    css: docs/styles/custom.css\n"
-                    "---\n\n" + content
+                        "---\n"
+                        'title: "Project Overview"\n'
+                        "format:\n"
+                        "  markdown_docs:\n"
+                        "    css: docs/styles/custom.css\n"
+                        "---\n\n" + content
                 )
 
             write_file(readme_q, content)

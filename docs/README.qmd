@@ -1,7 +1,7 @@
 ---
-title: "Code Agent"  
-author: "Sofia Billger Bergström"  
----  
+title: "Code Agent"
+author: "Sofia Billger Bergström"
+---
 
 <!-- README.md is generated from this source. Edit the .qmd file directly -->
 
@@ -12,111 +12,107 @@ knitr::opts_chunk$set(
 )
 ```
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent.git/HEAD)  
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent.git/HEAD)
 
-> A lightweight, LLM-driven assistant that can scaffold projects, edit files, generate documentation, and operate as an interactive chatbot.
+> A lightweight, LLM-driven assistant that can scaffold projects, edit files, generate documentation, and operate as an
+interactive chatbot.
 
 ## Quick Start
 
 ```bash
 # Install dependencies (uv is recommended)
-uv venv .venv  
+uv venv .venv
 source .venv/bin/activate
-uv pip install -e .[dev]  # Include dev extras for development tools  
+uv pip install -e .[dev]  # Include dev extras for development tools
 
 # Run the CLI agent directly
 code-agent help
 ```
 
 You can now type queries, e.g.:
-> Show me a simple project scaffold  
-> Add a new function to utils.py  
+> Show me a simple project scaffold
+> Add a new function to utils.py
 
 ## Architecture Overview
 
-The `code_agent` package uses an OAP-inspired capability layer with hash-chained audit logs for security. All tools inherit from LangChain's [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool).
+The `code_agent` package uses an OAP-inspired capability layer with hash-chained audit logs for security. All tools
+inherit from LangChain's [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool).
 
 ```{mermaid}
 flowchart LR
-  CLI[Typer CLI] --> Main[Main Driver/LLM Wrapper]  
-  Main --\u003e Graph[LangGraph StateGraph (deprecated)] 
+  CLI[Typer CLI] --> Main[Main Driver/LLM Wrapper]
+  Main --\u003e Graph[LangGraph StateGraph (deprecated)]
     subgraph "Agent Core"
       Graph[LGraph Orchestrator]
       Tools[[BaseTool Registry]]
       Memory[(ChromaDB Vector Store)]
     end
-  
-  CLI --> Chat[Interactive Loop/CLI Commands]  
-  Main --\u003e Providers[LLM Provider Layer (Ollama/OpenAI)] 
+
+  CLI --> Chat[Interactive Loop/CLI Commands]
+  Main --\u003e Providers[LLM Provider Layer (Ollama/OpenAI)]
 ```
 
 **Key Design Patterns:**
 - **Capability-Based Security**: All tool invocations are audited with cryptographic receipts before execution.
-- **Backend-Agnostic LLM Abstraction**: Swap between Ollama, OpenAI, or any LangChain-compatible model without changing agent logic.  
+- **Backend-Agnostic LLM Abstraction**: Swap between Ollama, OpenAI, or any LangChain-compatible model without changing
+  agent logic.
 - **Atomic File Operations**: Write/read/edit operations support rollback via diff tracking and audit logging.
 
 ## Features at a Glance
 
 See [FEATURES](./FEATURES.qmd) for detailed capability lists:
-- 🏗️ Project scaffolding with `scaffold` command (generates src/, tests/, docs/)  
-- ✍️ File manipulation tools (create, read, edit, delete via agent or Python API)  
-- 🔧 Extensible toolset (search-explain, generate-test, format-code, etc.)  
-- 🤖 Interactive chatbot with context-aware responses  
+- 🏗️ Project scaffolding with `scaffold` command (generates src/, tests/, docs/)
+- ✍️ File manipulation tools (create, read, edit, delete via agent or Python API)
+- 🔧 Extensible toolset (search-explain, generate-test, format-code, etc.)
+- 🤖 Interactive chatbot with context-aware responses
 
 ## Public API
 
 The package exports these main functions from [`code_agent/__init__.py`](../code_agent):
 
 ```python
-from code_agent import (  # Core agent building & orchestration
-    build_agent, create_default_tools, 
-    write_file, read_file, edit_file, append_file,  # File operations  
-    py_to_ipynb, create_from_template,               # Template utilities
-    
-    load_config, create_llm,                        # LLM management
-    
-    CapabilityRegistry, tool_to_capability,         # OAP capability layer
-)
+from code_agent import (build_agent, create_default_tools, create_llm, edit_file, load_config,
+    read_file)  # Core agent building & orchestration; File operations; Template utilities; LLM management; OAP capability layer
 
-config = load_config()  
+config = load_config()
 llm = create_llm(config)  # Default: ChatOllama + GPT4AllEmbeddings
 agent_runnable = build_agent(llm=llm, tools=create_default_tools())
 ```
 
-See [API Reference](./API.qmd) for complete documentation.  
+See [API Reference](./API.qmd) for complete documentation.
 
 ## Installation & Setup
 
 For a full guide with configuration options, see [QUICKSTART](./QUICKSTART.qmd). Briefly:
 
 1. **Prerequisites**: Python 3.10+, Ollama running locally (or OpenAI API key), `uv` package manager
-2. Pull model: `ollama pull qwen3.5`  
-3. Configure `.env`: Set `OLLAMA_MODEL=qwen3.5`, etc.  
-4. Run agent: `code-agent chat` or use Python API  
+2. Pull model: `ollama pull qwen3.5`
+3. Configure `.env`: Set `OLLAMA_MODEL=qwen3.5`, etc.
+4. Run agent: `code-agent chat` or use Python API
 
 ## Documentation Structure
 
-| Page | Description                              | 
-|------|------------------------------------------|
-|[CODE_AGENT](./CODE_AGENT.qmd)| Core components, LLM integration, vector memory, orchestration flow  |
-|[API Reference](./API.qmd)     | Complete public API reference with examples                             |
-|[FILES](./FILES.qmd)           | File-level overview of all modules                                     |  
-|[FEATURES](./FEATURES.qmd)     | Detailed feature descriptions and use cases                            |
-|[TOOLS](./TOOLS.qmd)            | Deep dive into each built-in tool                                      |
-|[USAGE](./USAGE.qmd)            | Example workflows for CLI and Python API usage                         |
-|[QUICKSTART](./QUICKSTART.qmd)  | Step-by-step installation guide                                         |  
-|CONFIGURATION                   | Environment variables, settings model details                           |
-|[ROADMAP](./ROADMAP.qmd)        | Development plans and upcoming features                                 | 
-|CHANGELOG                       | Version history                                                          |   
-[FAQ]((./FAQ.qmd))            | Common questions and troubleshooting                                     |
+| Page                           | Description                                                         |
+|--------------------------------|---------------------------------------------------------------------|
+| [CODE_AGENT](./CODE_AGENT.qmd) | Core components, LLM integration, vector memory, orchestration flow |
+| [API Reference](./API.qmd)     | Complete public API reference with examples                         |
+| [FILES](./FILES.qmd)           | File-level overview of all modules                                  |
+| [FEATURES](./FEATURES.qmd)     | Detailed feature descriptions and use cases                         |
+| [TOOLS](./TOOLS.qmd)           | Deep dive into each built-in tool                                   |
+| [USAGE](./USAGE.qmd)           | Example workflows for CLI and Python API usage                      |
+| [QUICKSTART](./QUICKSTART.qmd) | Step-by-step installation guide                                     |
+| CONFIGURATION                  | Environment variables, settings model details                       |
+| [ROADMAP](./ROADMAP.qmd)       | Development plans and upcoming features                             |
+| CHANGELOG                      | Version history                                                     |
+ [FAQ]((./FAQ.qmd))             | Common questions and troubleshooting                                |
 
 ## Getting Help
 
 - Read the [QUICKSTART guide](./QUICKSTART.qmd) for installation
-- Check [USAGE examples](./USAGE.qmd) for common workflows  
-- See [TOOLS documentation](./TOOLS.qmd) to understand agent capabilities  
-- Review [FAQ](./FAQ.qmd) for troubleshooting tips  
+- Check [USAGE examples](./USAGE.qmd) for common workflows
+- See [TOOLS documentation](./TOOLS.qmd) to understand agent capabilities
+- Review [FAQ](./FAQ.qmd) for troubleshooting tips
 
---- 
+---
 
 **Version**: 0.1.0 (Alpha) | **License**: MIT

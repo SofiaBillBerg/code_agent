@@ -16,7 +16,7 @@ from unittest import mock
 from code_agent import cli
 from code_agent.ui.web import _DIST_DIR, app
 from fastapi.testclient import TestClient
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain.messages import AIMessage, HumanMessage
 import pytest
 
 # Path to the React SPA build dir, derived from the CLI module so it stays in

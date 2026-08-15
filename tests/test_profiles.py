@@ -11,7 +11,7 @@ from deepagents import HarnessProfile
 import pytest
 
 def test_register_profiles_from_settings_noop_when_missing(
-    monkeypatch: Any,
+        monkeypatch: Any,
 ) -> None:
     """No profiles should be registered when settings.profiles is missing.
 

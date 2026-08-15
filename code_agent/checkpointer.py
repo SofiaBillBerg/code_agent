@@ -26,6 +26,7 @@ from __future__ import (
 )
 
 import logging  # : Standard logging module for WARNING-level entries.
+import sqlite3  # : Standard sqlite3 for opening the checkpoint connection.
 from pathlib import Path  # : Pathlib for filesystem path handling.
 
 #: Import the LangGraph checkpointer classes needed for persistence.
@@ -48,7 +49,7 @@ CHECKPOINT_FILENAME = "agent.db"
 
 def build_checkpointer(
     checkpoint_dir: str | None = None,
-) -> SqliteSaver | InMemorySaver:
+) -> InMemorySaver | SqliteSaver:
     """Return a persistent checkpointer for LangGraph state.
 
     The checkpointer resolves the storage path from the *checkpoint_dir*
@@ -83,10 +84,12 @@ def build_checkpointer(
         #: Construct the full SQLite database path by appending the filename.
         db_path = resolved_dir / CHECKPOINT_FILENAME
 
-        #: Create and return the SqliteSaver using the resolved database path.
-        #: SqliteSaver.from_conn_string accepts a connection string and manages
-        #: the SQLite database lifecycle internally.
-        return SqliteSaver.from_conn_string(str(db_path))
+        #: Open a dedicated SQLite connection for the checkpoint database.
+        #: check_same_thread=False is safe: the saver uses an internal lock.
+        conn = sqlite3.connect(str(db_path), check_same_thread=False)
+
+        #: Create and return the SqliteSaver bound to the open connection.
+        return SqliteSaver(conn)
 
     except OSError as exc:
         #: Log the error and fall back to InMemorySaver for graceful degradation.

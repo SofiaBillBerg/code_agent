@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .edit_file_tool import FileObject
 
-from langchain_core.tools import BaseTool, tool
+from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 class LinkerArgs(BaseModel):
@@ -37,8 +37,8 @@ def make_linker_tool(root_dir: Path) -> BaseTool:
         args_schema=LinkerArgs,
         response_format="content_and_artifact",
         description=(
-            "Read and return the full contents of a file. "
-            "Returns file contents as string and FileObject artifact."
+                "Read and return the full contents of a file. "
+                "Returns file contents as string and FileObject artifact."
         ),
     )
     def linker(file_path: str) -> tuple[str, FileObject]:

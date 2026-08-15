@@ -1,8 +1,8 @@
 ---
-title: "A Guide to Agent Tools"  
+title: "A Guide to Agent Tools"
 author: "Sofia Billger Bergström"
 format: html
-output: 
+output:
   html:
     css: styles/custom.css
 ---
@@ -107,6 +107,9 @@ Add your new tool to the `create_default_tools` function in [`code_agent/agents/
 from code_agent.tools.my_custom_tool import MyCustomTool
 
 def create_default_tools(...) -> list[BaseTool]:
+    """
+
+    """
     ...
     standard_tools: list[BaseTool | None] = [
         ...,

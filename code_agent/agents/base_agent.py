@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from code_agent.graph import Harness, build_graph
-from langchain_core.language_models.chat_models import BaseChatModel
+from langchain.chat_models import BaseChatModel
+from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
 
 __all__ = ["build_agent", "create_default_tools"]
 

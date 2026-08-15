@@ -14,7 +14,8 @@ from typing import Any
 
 from .base import CapabilityBase, RiskClass
 
-from langchain_core.tools import BaseTool
+from code_agent.mcp import is_readonly_server, server_from_prefixed
+from langchain.tools import BaseTool
 from pydantic import BaseModel
 
 # Name fragments that suggest a tool only reads, never mutates state.
@@ -51,14 +52,19 @@ def _kebab_case(name: str) -> str:
 def _infer_risk_class(tool: BaseTool) -> str:
     """Heuristically assign a risk class to a tool.
 
-    Tools whose names contain read-only hints are treated as low risk;
-    everything else is medium risk. This is a simple heuristic - callers
-    may override it with an explicit ``risk_class``.
+    Tools originating from a read-only MCP server (see
+    :func:`code_agent.mcp.is_readonly_server`) and tools whose names contain
+    read-only hints are treated as low risk; everything else is medium risk.
+    This is a simple heuristic - callers may override it with an explicit
+    ``risk_class``.
 
     :param tool: The tool to classify.
 
     :return: One of the :data:`RiskClass` values.
     """
+    server = server_from_prefixed(tool.name)
+    if server is not None and is_readonly_server(server):
+        return RiskClass.LOW
     lowered = tool.name.lower()
     if any(hint in lowered for hint in _READ_ONLY_HINTS):
         return RiskClass.LOW

@@ -8,9 +8,9 @@ import re
 
 from .edit_file_tool import FileObject
 
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import HumanMessage
-from langchain_core.tools import BaseTool, tool
+from langchain.chat_models import BaseChatModel
+from langchain.messages import HumanMessage
+from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 _MAX_FILE_SIZE: int = 2 * 1024 * 1024  # 2MB

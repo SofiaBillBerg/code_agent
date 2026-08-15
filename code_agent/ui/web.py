@@ -46,8 +46,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from langchain.chat_models import BaseChatModel
+from langchain.messages import HumanMessage
 from langchain.tools import BaseTool
-from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from pydantic import BaseModel
@@ -796,16 +796,6 @@ async def _stream_agent_events(
     import json
     import time
 
-    #: Try astream_events first, fall back to invoke if not available
-    stream_fn = getattr(agent, "astream_events", None)
-    if stream_fn is None:
-        #: Fallback to blocking invoke when astream_events is not available
-        #: Emit error event and return
-        yield _sse({"type": "error", "reason": "Streaming not supported"})
-        return
-
-    tool_start_times: dict[str, float] = {}
-
     def _sse(payload: dict[str, Any]) -> str:
         r"""Format a single SSE frame with the given payload.
 
@@ -817,6 +807,16 @@ async def _stream_agent_events(
         :return: SSE-formatted string ready to send to the client.
         """
         return f"data: {json.dumps(payload)}\n\n"
+
+    #: Try astream_events first, fall back to invoke if not available
+    stream_fn = getattr(agent, "astream_events", None)
+    if stream_fn is None:
+        #: Fallback to blocking invoke when astream_events is not available
+        #: Emit error event and return
+        yield _sse({"type": "error", "reason": "Streaming not supported"})
+        return
+
+    tool_start_times: dict[str, float] = {}
 
     try:  # ruff: ignore[too-many-statements-in-try-clause]
         async for event in stream_fn(

@@ -7,7 +7,8 @@ format: html
 
 A local, LLM-driven code assistant for scaffolding projects, editing files, and generating documentation.
 
-Built on **LangChain** + **LangGraph** with a **local Ollama** backend. The agent has full filesystem access through its tools and can read, create, edit, and append files directly.
+Built on **LangChain** + **LangGraph** with a **local Ollama** backend. The agent has full filesystem access through its
+tools and can read, create, edit, and append files directly.
 
 ## Features
 

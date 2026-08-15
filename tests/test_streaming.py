@@ -5,19 +5,14 @@ Tests for Server-Sent Events streaming responses from the chat endpoint.
 
 from __future__ import annotations
 
-import json
 from collections.abc import AsyncGenerator
-from unittest.mock import AsyncMock, MagicMock, patch
+import json
 
-import pytest
-from fastapi import Request
+from code_agent.ui.web import app
 from fastapi.testclient import TestClient
-from starlette.responses import StreamingResponse
-
-from code_agent.ui.web import app, ChatRequest
+import pytest
 
 # Tag: Feature: agent-core-enhancement, Property 14: SSE stream properly formatted event
-
 
 class TestStreamingEndpoint:
     """Tests for /chat/stream SSE endpoint."""
@@ -34,6 +29,7 @@ class TestStreamingEndpoint:
         :raises AssertionError if any event lacks 'data: ' prefix
         :return: None
         """
+
         # Arrange: Create mock streaming generator
         async def mock_generator() -> AsyncGenerator[str]:
             """Mock generator yielding properly formatted SSE events.
@@ -59,7 +55,7 @@ class TestStreamingEndpoint:
         for event in events:
             assert event.startswith("data: ")
 
-    @pytest.mark.asyncio 
+    @pytest.mark.asyncio
     async def test_sse_event_structure_valid_json(self) -> None:
         """Property 14 variant: SSE event data contains valid JSON.
 

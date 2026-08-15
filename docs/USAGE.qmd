@@ -1,42 +1,43 @@
 ---
 ---
-title: "Usage Examples"  
-author: "Sofia Billger Bergström"  
-format: html  
----  
+title: "Usage Examples"
+author: "Sofia Billger Bergström"
+format: html
+---
 
 # Usage Examples
 
-This page provides a variety of examples to demonstrate how to use `code_agent` for common development tasks via CLI, Python API, and interactive sessions.
+This page provides a variety of examples to demonstrate how to use `code_agent` for common development tasks via CLI,
+Python API, and interactive sessions.
 
 ## 🏗️ Project Scaffolding
 
 ### Create a New Web Application
 
 ```bash
-# Scaffold a new Flask project with standard structure  
+# Scaffold a new Flask project with standard structure
 mkdir my_web_app && cd my_web_app
-code-agent scaffold ./my_web_app --name MyWebApp  
+code-agent scaffold ./my_web_app --name MyWebApp
 
 tree  # Shows: src/, tests/, docs/ directories created automatically
 ```
 
 The generated scaffold includes:
 - `src/my_web_app/app.py` - Application entry point
-- `tests/test_app.py` - Sample smoke test  
+- `tests/test_app.py` - Sample smoke test
 - `docs/docs_web/index.qmd` - Quarto documentation source
-- `.github/workflows/ci.yml` - CI configuration for GitHub Actions  
+- `.github/workflows/ci.yml` - CI configuration for GitHub Actions
 
 ## 📝 File Creation & Editing
 
 ### Create Files via CLI
 
 ```bash
-# Method 1: Create empty file, then edit interactively or with agent  
-code-agent create ./my_web_app/src/my_web_app/app.py --content ""  
+# Method 1: Create empty file, then edit interactively or with agent
+code-agent create ./my_web_app/src/my_web_app/app.py --content ""
 
-# Method 2: Use the agent to populate content directly  
-echo "Add this Flask app:" > temp.txt  
+# Method 2: Use the agent to populate content directly
+echo "Add this Flask app:" > temp.txt
 cat << 'EOF' >> temp.txt
 from flask import Flask
 
@@ -48,9 +49,9 @@ def hello_world():
 
 if __name__ == '__main__':
     app.run(debug=True)
-EOF  
+EOF
 
-code-agent create ./my_web_app/src/my_web_app/app.py --content "$(cat temp.txt)"  
+code-agent create ./my_web_app/src/my_web_app/app.py --content "$(cat temp.txt)"
 rm temp.txt  # Clean up temporary file
 ```
 
@@ -60,9 +61,9 @@ Start the agent and give it natural language instructions:
 
 ```bash
 code-agent chat << 'MSG'
-You need to add a utility function that calculates factorial. 
-Add this to my_web_app/utils.py with signature `def factorial(n):`. 
-Make sure to handle edge cases (n < 0, n = 0).  
+You need to add a utility function that calculates factorial.
+Add this to my_web_app/utils.py with signature `def factorial(n):`.
+Make sure to handle edge cases (n < 0, n = 0).
 Then create docstring explaining the algorithm and complexity analysis.
 
 # Agent will:
@@ -79,8 +80,8 @@ MSG
 If you have a script with `#%%` cell markers, convert it interactively:
 
 ```bash
-# Your analysis.py contains multiple cells marked with #%%  
-code-agent py2ipynb analysis.py analysis.ipynb  
+# Your analysis.py contains multiple cells marked with #%%
+code-agent py2ipynb analysis.py analysis.ipynb
 
 ls -lh  # Shows notebook created (typically ~50-100KB)
 jupyter nbconvert --to html analysis.ipynb    # Optional: preview HTML output
@@ -88,30 +89,30 @@ jupyter nbconvert --to html analysis.ipynb    # Optional: preview HTML output
 
 The agent will detect `#%%` markers and create a proper `.ipynb` with distinct cells.
 
-## 🧪 Generate Tests Automatically  
+## 🧪 Generate Tests Automatically
 
-```bash  
-# For src/my_web_app/app.py, ask the agent to generate tests:  
-code-agent chat << 'MSG'  
+```bash
+# For src/my_web_app/app.py, ask the agent to generate tests:
+code-agent chat << 'MSG'
 Generate pytest tests for my_module.py that test:
 1. factorial(0) = 1 (base case)
-2. factorial(5) = 120 
-3. Handle negative input gracefully  
-4. Test edge cases and error handling  
+2. factorial(5) = 120
+3. Handle negative input gracefully
+4. Test edge cases and error handling
 
-Create the file at tests/test_my_module.py with proper fixture setup.  
+Create the file at tests/test_my_module.py with proper fixture setup.
 MSG
 ```
 
-## 🎨 Format Code Automatically  
+## 🎨 Format Code Automatically
 
 Run formatters via CLI or agent:
 
 ```bash
-# Using Black for Python files (default)  
-code-agent format-code ./my_web_app/src/my_web_app/app.py  # Reformats to PEP8 style  
+# Using Black for Python files (default)
+code-agent format-code ./my_web_app/src/my_web_app/app.py  # Reformats to PEP8 style
 
-# For R code, use styler if available  
+# For R code, use styler if available
 code-agent r-script << 'RSCRIPT'
 library(styler)
 styler::style_file("utils.R")  # Format R source file
@@ -142,16 +143,16 @@ For more internal output, use verbose mode:
 code-agent chat --verbose
 ```
 
-### Example Session Flow  
+### Example Session Flow
 
-```bash  
+```bash
 code-agent chat << 'MSG'
 I'm building a Flask app. Help me add features step-by-step:
 
 1. First, create utils.py with helper functions (factorial, fibonacci)
-2. Add type hints and docstrings to each function 
-3. Write unit tests for factorial() covering edge cases  
-4. Format all Python files using Black  
+2. Add type hints and docstrings to each function
+3. Write unit tests for factorial() covering edge cases
+4. Format all Python files using Black
 
 After each change, summarize what you did so I can review before continuing.
 
@@ -159,118 +160,118 @@ After each change, summarize what you did so I can review before continuing.
 - Create new file if missing (new-file tool)
 - Edit existing files with proper diff tracking
 - Generate test scaffolds automatically
-- Invoke formatters on changed modules  
+- Invoke formatters on changed modules
 MSG
 ```
 
-## 🐍 Python API Integration  
+## 🐍 Python API Integration
 
 The full power of `code_agent` is available through its Python API. This example shows integration into custom scripts:
 
-### Complete Workflow Example  
+### Complete Workflow Example
 
 ```python
-"""Example: Use the agent to add a function via natural language."""  
+"""Example: Use the agent to add a function via natural language."""
 
-from code_agent.agents.base_agent import build_agent, create_default_tools  
-from code_agent.main import load_config, create_llm  
-from code_agent.file_generator import write_file  
-from langchain_core.messages import HumanMessage  
+from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.main import load_config, create_llm
+from code_agent.file_generator import write_file
+from langchain_core.messages import HumanMessage
 from pathlib import Path
 import os
 
 # --- 1. Setup: Load config and initialize LLM ---
-project_dir = Path("./api_project_example")  
+project_dir = Path("./api_project_example")
 if not project_dir.exists():
-    project_dir.mkdir(parents=True)  
+    project_dir.mkdir(parents=True)
 
-os.chdir(project_dir)  
+os.chdir(project_dir)
 
-config = load_config()           # Loads from .env or defaults    
+config = load_config()           # Loads from .env or defaults
 llm = create_llm(config)         # Default: ChatOllama + GPT4AllEmbeddings
 
-# Create initial file  
-initial_file = Path("my_module.py")  
-write_file(initial_file, "# Utility functions module\n\n")  
+# Create initial file
+initial_file = Path("my_module.py")
+write_file(initial_file, "# Utility functions module\n\n")
 
 # --- 2. Prepare Agent with Tools ---
-tools = create_default_tools(root_dir=".", llm=lll)  
+tools = create_default_tools(root_dir=".", llm=lll)
 agent_app = build_agent(llm=llm, tools=tools)
 
 # --- 3. Define Task via Natural Language Prompt ---
 prompt = (
     "Add a Python function to 'my_module.py' that takes two numbers and returns their sum.\n"
-    "- Function name: add_numbers\n"  
-    "- Include type hints\n" 
+    "- Function name: add_numbers\n"
+    "- Include type hints\n"
     "- Add comprehensive docstring with examples\n"
     "- Handle edge cases gracefully
 ")
 
-print("--- Prompting Agent ---\n", prompt)  
+print("--- Prompting Agent ---\n", prompt)
 
 # --- 4. Invoke the Agent ---
-response = agent_app.invoke({  
-    "messages": [HumanMessage(content=prompt)]  
+response = agent_app.invoke({
+    "messages": [HumanMessage(content=prompt)]
 })
 
-# Print any thoughts/reasoning if available (optional logging for debugging):  
-if hasattr(response, 'intermediate_steps'):  
-    print("\n--- Agent Reasoning Steps ---")    
+# Print any thoughts/reasoning if available (optional logging for debugging):
+if hasattr(response, 'intermediate_steps'):
+    print("\n--- Agent Reasoning Steps ---")
     for step in response.intermediate_steps:
-        # Log each tool invocation and its result...  
+        # Log each tool invocation and its result...
 
 # --- 5. Verify Result ---
-final_content = initial_file.read_text()  
-print(f"\nFinal content of {initial_file}:") 
-print("=" * 60)  
-print(final_content)  
+final_content = initial_file.read_text()
+print(f"\nFinal content of {initial_file}:")
+print("=" * 60)
+print(final_content)
 print("=" * 60)
 
 ```
 
-### Advanced: Stream Responses for Real-Time Feedback  
+### Advanced: Stream Responses for Real-Time Feedback
 
 ```python
-# For CLI streaming (similar to what `code-agent chat` uses):  
-for event in agent_app.stream({"messages": [HumanMessage(content=prompt)]}):    
+# For CLI streaming (similar to what `code-agent chat` uses):
+for event in agent_app.stream({"messages": [HumanMessage(content=prompt)]}):
     print(event, end="")  # Process events as they arrive
-    
-# You can also handle specific message types:  
+
+# You can also handle specific message types:
 if isinstance(event, AIMessage):
     if hasattr(event, 'tool_calls'):   # Agent is selecting a tool to use...
-        pass  
-elif isinstance(event, HumanMessage): 
-    # User response or final answer received  
+        pass
+elif isinstance(event, HumanMessage):
+    # User response or final answer received
 ```
 
-## 💡 Tips for Best Results  
+## 💡 Tips for Best Results
 
-### Prompt Engineering Examples  
+### Prompt Engineering Examples
 
 Good prompts help the agent understand your intent:
 
-| ❌ Vague | ✅ Specific & Actionable         |  
-|---------|----------------------------------|
-|"Add a function" | "Create `calculate_average(data)` that computes mean of list, returns None if empty"  |  
-|"Fix this bug"   | "The factorial(0) should return 1. Add base case and test it at tests/test_utils.py line 25" |  
+| ❌ Vague         | ✅ Specific & Actionable                                                                     |
+|------------------|----------------------------------------------------------------------------------------------|
+| "Add a function" | "Create `calculate_average(data)` that computes mean of list, returns None if empty"         |
+| "Fix this bug"   | "The factorial(0) should return 1. Add base case and test it at tests/test_utils.py line 25" |
 
 ### Using Tool Names Directly (Advanced)
 
 If you know the exact tool name:
 
 ```python
-from langchain_core.tools import BaseTool  
+
 # Or use agent's internal mapping if exposed...
-tool_response = tools["edit-file"].invoke({  
-    "path": "./my_module.py", 
-    "content": "# Updated content with new function\n",  # Your edit logic here    
+tool_response = tools["edit-file"].invoke({
+    "path": "./my_module.py",
+    "content": "# Updated content with new function\n",  # Your edit logic here
 })
 ```
 
---- 
+---
 
-## See Also  
+## See Also
 
-- [API Reference](./API.qmd) - Complete Python API documentation  
-- [TOOLS](./TOOLS.qmd) - Detailed descriptions of each tool's capabilities  
-- [FEATURES](./FEATURES.qmd) - Overview of all available features and use cases  
+- [API Reference](./API.qmd) - Complete Python API documentation
+- [TOOLS](./TOOLS.qmd) - Detailed descriptions of each tool's capabilities
+- [FEATURES](./FEATURES.qmd) - Overview of all available features and use cases

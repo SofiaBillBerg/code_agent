@@ -3,9 +3,9 @@
 import json
 import logging
 
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage
-from langchain_core.tools import BaseTool, tool
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool, tool
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)

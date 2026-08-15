@@ -18,17 +18,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
+from code_agent.mcp import readonly_mcp_tool_names, sensitive_mcp_tool_names
+from code_agent.settings import DEFAULT_SYSTEM_PROMPT
 from langchain.agents import create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware
 from langchain.agents.middleware.human_in_the_loop import (
     HumanInTheLoopMiddleware,
     InterruptOnConfig,
 )
-from langchain_core.language_models import BaseChatModel
+from langchain.chat_models import BaseChatModel
+from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
-from code_agent.mcp import sensitive_mcp_tool_names
-from code_agent.settings import DEFAULT_SYSTEM_PROMPT
 from langgraph.checkpoint.memory import InMemorySaver
 
 Harness = Literal["create_agent", "deepagents"]
@@ -96,9 +95,12 @@ def build_graph(
     # External MCP servers that can mutate upstream state (github, memory, ...)
     # are gated server-wide so a prompt-injected instruction surfacing through a
     # tool result cannot silently drive a write. Human-in-the-loop approval is
-    # required for every tool those servers expose.
+    # required for every tool those servers expose. A server that is both
+    # sensitive and read-only stays autonomous (read-only wins).
+    readonly_names = set(readonly_mcp_tool_names(list(tools)))
     for mcp_name in sensitive_mcp_tool_names(list(tools)):
-        interrupt_on[mcp_name] = True
+        if mcp_name not in readonly_names:
+            interrupt_on[mcp_name] = True
 
     middleware: list[HumanInTheLoopMiddleware] = []
     if interrupt_on:

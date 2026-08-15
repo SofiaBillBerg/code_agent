@@ -16,8 +16,8 @@ interaction between the user, the Language Model (LLM), and the agent's tools.
 Here's a simplified overview of the workflow for each user query:
 
 1. **User Input**: You provide a natural language query to the agent.
-2. **Context Retrieval**: The agent first performs a similarity search against its persistent conversation history (
-   stored in `ChromaDB`). Relevant past interactions are retrieved and added to the current context.
+2. **Context Retrieval**: The agent first performs a similarity search against its persistent conversation history
+   (stored in `ChromaDB`). Relevant past interactions are retrieved and added to the current context.
 3. **LLM Invocation (Reasoning)**: The LLM receives the user's query along with the retrieved context and a set of tool
    descriptions. Its task is to decide the next best action:
     * **Use a Tool**: If the LLM determines that a tool is needed to fulfill the request (e.g., creating a file, reading

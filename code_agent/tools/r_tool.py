@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from langchain_core.tools import BaseTool, tool
+from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 class RScriptArgs(BaseModel):
@@ -33,8 +33,8 @@ def make_r_script_tool() -> BaseTool:
         "r-script",
         args_schema=RScriptArgs,
         description=(
-            "Use this tool to execute R code. "
-            "Provide the R code as a string. The tool will return the standard output and standard error."
+                "Use this tool to execute R code. "
+                "Provide the R code as a string. The tool will return the standard output and standard error."
         ),
     )
     def r_script(code: str) -> str:
@@ -44,7 +44,7 @@ def make_r_script_tool() -> BaseTool:
         :return: The output of the R script execution.
         """
         with tempfile.NamedTemporaryFile(
-            encoding="utf-8", mode="w", suffix=".R", delete=False
+                encoding="utf-8", mode="w", suffix=".R", delete=False
         ) as temp_file:
             temp_file.write(code)
             temp_file_path = temp_file.name

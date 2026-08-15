@@ -15,11 +15,12 @@ from typing import Any
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.file_generator import write_file
 from code_agent.main import create_llm
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool
+from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
 import pytest
 
 # --------------------------------------------------------------------------- #
@@ -54,10 +55,10 @@ def dummy_llm() -> BaseChatModel:
         """
 
         def _generate(
-            self,
-            messages: list[BaseMessage],
-            stop: list[str] | None = None,
-            **kwargs: Any,
+                self,
+                messages: list[BaseMessage],
+                stop: list[str] | None = None,
+                **kwargs: Any,
         ) -> ChatResult:
             """Generate a fixed message - required by BaseChatModel.
 
@@ -75,7 +76,7 @@ def dummy_llm() -> BaseChatModel:
             )
 
         def bind_tools(
-            self, tools: list[BaseTool], **kwargs: Any
+                self, tools: list[BaseTool], **kwargs: Any
         ) -> Runnable[Any, BaseMessage]:
             """Bind tools to the LLM - required by BaseChatModel.
 
@@ -97,7 +98,7 @@ def dummy_llm() -> BaseChatModel:
 
 
 def test_build_agent_returns_runnable(
-    tmp_path: Path, dummy_llm: BaseChatModel
+        tmp_path: Path, dummy_llm: BaseChatModel
 ) -> None:
     """Creating an agent with a valid path should return a LangChain Runnable.
 
@@ -150,7 +151,7 @@ def test_build_agent_with_invalid_config(tmp_path: Path) -> None:
 # Additional sanity checks
 # --------------------------------------------------------------------------- #
 def test_write_file_and_agent_integration(
-    tmp_path: Path, dummy_llm: BaseChatModel
+        tmp_path: Path, dummy_llm: BaseChatModel
 ) -> None:
     """A quick integration test: write a file, then create an agent that uses it.
 

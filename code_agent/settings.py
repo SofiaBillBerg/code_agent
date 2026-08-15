@@ -1,19 +1,24 @@
-"""Typed application configuration loaded from environment / ``.env``.
+"""Typed application configuration loaded from environment / ``.env`` / config.
 
 All runtime configuration for the agent is centralized in a single
 :class:`Settings` model built on ``pydantic_settings.BaseSettings``. Values are
-sourced, in increasing precedence, from:
+sourced, in decreasing precedence, from:
 
 1. the process environment variables, and
 2. a ``.env`` file at the project root (``CODE_AGENT_OLLAMA_PORT``,
-   ``CODE_AGENT_OPENAI_API_KEY`` ...).
+   ``CODE_AGENT_OPENAI_API_KEY`` ...), and
+3. a ``codeagent.jsonc`` (or ``.json``/``.yml``/``.yaml``) file in ``config/``.
+
+The JSONC file is parsed by :class:`JsoncConfigSettingsSource`, a
+JSONC-aware variant of pydantic-settings' ``JsonConfigSettingsSource`` that
+understands comments and trailing commas via :mod:`code_agent.jsonc`.
 
 Sensible defaults live on the model so the application runs with zero
 configuration, while every value can be overridden per environment without
 touching code. Secrets (e.g. ``CODE_AGENT_OPENAI_API_KEY``) are never
-hardcoded - they are read from the environment / ``.env`` only, satisfying
-the project's security requirement that provider credentials come from
-config, not source.
+hardcoded - they are read from the environment / config / ``.env`` only,
+satisfying the project's security requirement that provider credentials come
+from config, not source.
 
 Field names map to upper-case environment variables with the ``CODE_AGENT_``
 prefix (``ollama_port`` -> ``CODE_AGENT_OLLAMA_PORT``). The provider layer
@@ -26,11 +31,17 @@ from __future__ import annotations
 from functools import lru_cache
 import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+from code_agent.jsonc import loads as jsonc_loads
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings.sources import PydanticBaseSettingsSource
+from pydantic_settings.sources.providers.json import JsonConfigSettingsSource
+from pydantic_settings.sources.providers.yaml import YamlConfigSettingsSource
 
+if TYPE_CHECKING:
+    from importlib.abc import Traversable
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -81,6 +92,19 @@ EXTERNAL MCP TOOLS (security policy):
 """
 
 
+class JsoncConfigSettingsSource(JsonConfigSettingsSource):
+    """JSONC-aware variant of pydantic-settings' ``JsonConfigSettingsSource``.
+
+    Reads the ``json_file`` configured on the settings model (by default
+    ``config/codeagent.jsonc``) and parses it with :func:`code_agent.jsonc.loads`
+    so comments and trailing commas are accepted, unlike strict JSON.
+    """
+
+    def _read_file(self, file_path: Path | Traversable) -> dict[str, Any]:
+        with file_path.open(encoding=self.json_file_encoding) as jsonc_file:
+            return jsonc_loads(jsonc_file.read())
+
+
 class Settings(BaseSettings):
     """Application settings sourced from the environment and ``.env``.
 
@@ -119,9 +143,42 @@ class Settings(BaseSettings):
         env_prefix="CODE_AGENT_",
         env_file=PROJECT_ROOT / ".env",
         env_file_encoding="utf-8",
-        extra="ignore",
+        extra="allow",
+        json_file=PROJECT_ROOT / "config" / "codeagent.jsonc",
+        yaml_file=PROJECT_ROOT / "config" / "codeagent.yaml",
+        json_file_encoding="utf-8",
+        yaml_file_encoding="utf-8",
         case_sensitive=False,
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Customize the settings source priority.
+
+        Sources are consulted in order, first match wins:
+
+        1. ``init_settings`` - values passed to ``Settings(...)`` directly
+        2. ``env_settings`` - ``CODE_AGENT_*`` environment variables
+        3. ``dotenv_settings`` - the ``.env`` file at the project root
+        4. ``JsoncConfigSettingsSource`` - ``config/codeagent.jsonc``
+
+        The default JSON source is replaced with the JSONC-aware variant so the
+        config file may contain comments and trailing commas.
+        """
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            JsoncConfigSettingsSource(settings_cls),
+            YamlConfigSettingsSource(settings_cls),
+        )
 
     #: --- Provider selection -------------------------------------------------
     provider: str = "ollama"
@@ -226,11 +283,25 @@ class Settings(BaseSettings):
         logger and the validator returns ``self`` unchanged.  It **never**
         raises so that the server starts regardless of filesystem issues.
 
+        Relative paths are skipped (with a WARNING) rather than created
+        relative to the current working directory: a bare relative path is
+        ambiguous and must not silently create directories in unexpected
+        locations (e.g. inside a test suite's working directory).
+
         :returns: ``self`` (the validated :class:`Settings` instance).
         """
         # Expand any leading ``~`` to the user's home directory so that
         # Path.mkdir works correctly on the resolved absolute path.
         expanded = Path(self.checkpoint_dir).expanduser()
+        # Only create directories for absolute paths.  Relative paths resolve
+        # against the process CWD, which is ambiguous and can pollute
+        # unrelated directories; skip them instead.
+        if not expanded.is_absolute():
+            logging.getLogger(__name__).warning(
+                "checkpoint_dir %r is relative; skipping directory creation",
+                self.checkpoint_dir,
+            )
+            return self
         try:
             # Create the directory tree if any part of it is missing.
             expanded.mkdir(parents=True, exist_ok=True)
@@ -249,7 +320,7 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return a cached :class:`Settings` instance.
 
-    The result is memoised so the ``.env`` file and environment are read only
+    The result is memoised so the ``codeagent.jsonc`` (or .json, .yml, .yaml), ``.env`` file and environment are read only
     once per process.
 
     :return: The validated settings.

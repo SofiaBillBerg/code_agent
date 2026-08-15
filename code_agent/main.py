@@ -4,7 +4,7 @@ This module exposes the public functions :func:`load_config` and
 :func:`create_llm` that the CLI, the agent runtime and the test-suite all
 share.  The interactive chat loop lives in :mod:`code_agent.cli` instead,
 so ``python -m code_agent`` routes there through :mod:`code_agent.__main__`.
-"""  # ruff: noqa: E501
+"""
 
 from __future__ import annotations
 
@@ -13,12 +13,16 @@ import json
 from pathlib import Path
 from typing import Any
 
+from code_agent.jsonc import loads as jsonc_loads
 from code_agent.settings import Settings, get_settings
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic_settings import BaseSettings
-import yaml
+
+# pyrefly: ignore [missing-import]
+import yaml  # ty: ignore[unresolved-import]  (pyyaml distribution)
 
 __all__ = ["create_llm", "load_config"]
 
@@ -32,7 +36,7 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
     """Load configuration as a dictionary.
 
     When *config_path* is provided the JSON or YAML file at that location is
-    loaded (legacy override).  When it is ``None`` the typed application
+    loaded (override).  When it is ``None`` the typed application
     settings are returned instead, so the ``.env`` file / environment remain
     the single source of truth.
 
@@ -42,8 +46,8 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
     extensions.
 
     :param config_path: Optional path to a JSON/YAML configuration file.  If
-        the path points to a directory, the function will look for
-        ``llm_config.json``, ``llm_config.yaml`` or ``llm_config.yml``
+        the path points to a directory, the function will look for ``codeagent.jsonc``,
+        ``codeagent.json``, ``codeagent.yml``, ``codeagent.yaml``.
         inside, in that order.
 
     :returns: Parsed configuration dictionary.
@@ -54,9 +58,10 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
     cfg_file = Path(config_path)
     if cfg_file.is_dir():
         for candidate in (
-            "llm_config.json",
-            "llm_config.yaml",
-            "llm_config.yml",
+            "codeagent.jsonc",
+            "codeagent.json",
+            "codeagent.yml",
+            "codeagent.yaml",
         ):
             probe = cfg_file / candidate
             if probe.exists():
@@ -64,7 +69,7 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
                 break
         else:
             raise FileNotFoundError(
-                f"No llm_config.json/yaml/yml found in directory: {config_path}"
+                f"No codeagent.jsonc/.json/yaml/yml found in directory: {config_path}"
             )
 
     if not cfg_file.exists():
@@ -72,13 +77,15 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
 
     suffix = cfg_file.suffix.lower()
     with cfg_file.open("r", encoding="utf-8") as f:
+        if suffix == ".jsonc":
+            return jsonc_loads(f.read())
         if suffix == ".json":
             return json.load(f)
         if suffix in {".yaml", ".yml"}:
             return yaml.safe_load(f)
         raise ValueError(
             f"Unsupported config file extension: {suffix!r} "
-            f"(expected .json, .yaml or .yml)"
+            f"(expected .jsonc, .json, .yaml or .yml)"
         )
 
 
@@ -97,7 +104,7 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     :param cfg: Either a :class:`~code_agent.settings.Settings` instance or
         a plain configuration dictionary (e.g. from :func:`load_config`).
 
-    :returns: A :class:`~langchain_core.language_models.BaseChatModel`
+    :returns: A :class:`~langchain.chat_models.BaseChatModel`
         instance.
     """
     if isinstance(cfg, BaseSettings):
@@ -154,7 +161,7 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
                 :param stop: A list of strings to stop generation on.
                 :param run_manager: The run manager.
                 :param kwargs: Additional keyword arguments.
-                :return: A :class:`~langchain_core.messages.ChatResult`
+                :return: A :class:`~langchain_core.outputs.ChatResult`
                     instance.
                 """
                 content = json.dumps({

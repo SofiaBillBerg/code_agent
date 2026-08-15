@@ -14,7 +14,7 @@ import shutil
 from .edit_file_tool import FileObject
 
 from code_agent.file_generator import create_file
-from langchain_core.tools import BaseTool, tool
+from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 log = logging.getLogger(__name__)

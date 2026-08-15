@@ -2,7 +2,7 @@
 .idea/
 *.iml
 *.ipr
-
+docs/docs_web/
 .repowise
 apidocs
 stubs/
@@ -219,7 +219,6 @@ _site/
 /revised_pipeline/archive/output_backup_20251104_1530/
 /_site/
 *.backup
-docs/docs_web/
 /renv/.gitignore
 /renv/activate.R
 

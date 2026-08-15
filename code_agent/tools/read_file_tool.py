@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from langchain_core.tools import tool
+from langchain.tools import tool
 from pydantic import BaseModel, Field
 
 class ReadFileArgs(BaseModel):
@@ -32,10 +32,10 @@ class ReadFileArgs(BaseModel):
 
 @tool(args_schema=ReadFileArgs)
 def read_file(
-    file_path: str,
-    offset: int = 0,
-    limit: int | None = None,
-    root_dir: Path | None = None,
+        file_path: str,
+        offset: int = 0,
+        limit: int | None = None,
+        root_dir: Path | None = None,
 ) -> str:
     """Read a file from the project and return its text content.
 

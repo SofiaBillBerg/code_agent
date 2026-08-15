@@ -40,6 +40,7 @@ from __future__ import annotations
 import asyncio
 import itertools
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -61,16 +62,15 @@ from code_agent.docs_generator import generate_quarto_docs
 from code_agent.exceptions import CodeAgentError
 from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
-from code_agent.scaffold import create_project_scaffold
 from code_agent.mcp import apply_mcp_tool_prefixes, expand_env_vars
+from code_agent.scaffold import create_project_scaffold
 from code_agent.settings import PROJECT_ROOT
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.tools import BaseTool
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool
+from langchain_core.messages import BaseMessage
 from langchain_mcp_adapters.sessions import Connection
 from langgraph.types import Command
-import os
-
 import typer
 
 # Module-level Typer argument/option definitions to avoid
@@ -220,7 +220,7 @@ def _run_agent_stream(
                 if isinstance(output, dict):
                     final_messages = output.get("messages", [])
     except Exception:
-        response = asyncio.run(agent.ainvoke(run_input, config=config))
+        response = agent.invoke(run_input, config=config)
         if isinstance(response, dict):
             final_messages = response.get("messages", [])
     finally:
@@ -321,7 +321,9 @@ def _build_registry(root_dir: str | None = None) -> CapabilityRegistry:
     """
     registry = CapabilityRegistry()
     for tool in create_default_tools(root_dir=root_dir):
-        registry.register(tool_to_capability(tool))  # type: ignore[arg-type]
+        # tool_to_capability returns a compatible runtime object, but static
+        # protocol variance around writable attributes causes a false-positive.
+        registry.register(capability=cast(Any, tool_to_capability(tool)))
     return registry
 
 
@@ -862,7 +864,7 @@ def serve(  # ruff: ignore [complex-structure]
             typer.echo("Conversation history cleared.")
             continue
         try:  # ruff: ignore [too-many-statements-in-try-clause]
-            from langchain_core.messages import HumanMessage, SystemMessage
+            from langchain.messages import HumanMessage, SystemMessage
 
             messages: list[BaseMessage] = [
                 SystemMessage(content=cfg.get("system_prompt", ""))
@@ -1080,7 +1082,7 @@ def chat(  # ruff: ignore [complex-structure]
 
         _show_startup_info(root_dir, tools)
 
-        from langchain_core.messages import HumanMessage, SystemMessage
+        from langchain.messages import HumanMessage, SystemMessage
 
         system_prompt = cfg.get("system_prompt", "")
         if system_prompt:
@@ -1115,7 +1117,7 @@ def chat(  # ruff: ignore [complex-structure]
                 if cmd_result is not None:
                     # command handled (like 'help' or 'tools')
                     conversation_messages = cmd_result
-                    if cmd_result == []:
+                    if not cmd_result:
                         # 'clear' was issued: drop the persisted graph
                         # history as well by starting a fresh thread.
                         thread_id = str(uuid.uuid4())

@@ -7,10 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from code_agent.checkpointer import build_checkpointer
-
 
 class TestBuildCheckpointerProperty:
     """Property tests for build_checkpointer function."""

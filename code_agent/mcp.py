@@ -24,7 +24,12 @@ Servers are split into two classes:
 * *Sensitive* servers (``SENSITIVE_SERVERS``) can change external state or
   local persisted memory -- every tool they expose is paused for explicit
   human approval before execution.
-* *Read-only* servers are safe to call autonomously.
+* *Read-only* servers (``READONLY_SERVERS``) are safe to call autonomously.
+
+Callers use :func:`is_sensitive_server` / :func:`is_readonly_server` to
+classify a server and :func:`sensitive_mcp_tool_names` /
+:func:`readonly_mcp_tool_names` to collect the agent-facing names of the
+tools that must (or must not) be gated.
 """
 
 from __future__ import annotations
@@ -33,7 +38,7 @@ import os
 import re
 from typing import Any
 
-from langchain_core.tools import BaseTool
+from langchain.tools import BaseTool
 
 # ---------------------------------------------------------------------------
 # Naming convention
@@ -97,6 +102,15 @@ def is_sensitive_server(server_name: str) -> bool:
     return server_name in SENSITIVE_SERVERS
 
 
+def is_readonly_server(server_name: str) -> bool:
+    """Return ``True`` if *server_name* is a read-only (autonomous) server.
+
+    :param server_name: MCP server key.
+    :return: Whether every tool from this server is safe to call autonomously.
+    """
+    return server_name in READONLY_SERVERS
+
+
 def apply_mcp_tool_prefixes(
     tools: list[BaseTool], server_name: str
 ) -> list[BaseTool]:
@@ -138,6 +152,20 @@ def sensitive_mcp_tool_names(tools: list[BaseTool]) -> list[str]:
     for tool in tools:
         server = server_from_prefixed(tool.name)
         if server is not None and is_sensitive_server(server):
+            names.append(tool.name)
+    return names
+
+
+def readonly_mcp_tool_names(tools: list[BaseTool]) -> list[str]:
+    """Return the names of MCP tools that are safe to call autonomously.
+
+    :param tools: The full tool list available to the agent.
+    :return: Names of tools whose server is in :data:`READONLY_SERVERS`.
+    """
+    names: list[str] = []
+    for tool in tools:
+        server = server_from_prefixed(tool.name)
+        if server is not None and is_readonly_server(server):
             names.append(tool.name)
     return names
 

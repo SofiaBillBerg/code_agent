@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import HumanMessage
-from langchain_core.tools import BaseTool, tool
+from langchain.chat_models import BaseChatModel
+from langchain.messages import HumanMessage
+from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 class GeneralChatArgs(BaseModel):
@@ -39,8 +39,8 @@ def make_general_chat_tool(llm: BaseChatModel) -> BaseTool:
         "general-chat",
         args_schema=GeneralChatArgs,
         description=(
-            "Use this tool as a last resort if no other tool is appropriate for the user's query. "
-            "It is for general conversation, questions, and answering 'how-to' style inquiries."
+                "Use this tool as a last resort if no other tool is appropriate for the user's query. "
+                "It is for general conversation, questions, and answering 'how-to' style inquiries."
         ),
     )
     def general_chat(query: str) -> str:

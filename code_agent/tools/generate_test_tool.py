@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from langchain_core.tools import tool
+from langchain.tools import tool
 from pydantic import BaseModel, Field
 
 class GenerateTestArgs(BaseModel):
@@ -29,7 +29,7 @@ class GenerateTestArgs(BaseModel):
 
 @tool(args_schema=GenerateTestArgs)
 def generate_test(
-    file_path: str, tests_dir: str = "tests", root_dir: Path | None = None
+        file_path: str, tests_dir: str = "tests", root_dir: Path | None = None
 ) -> str:
     """Generate a basic pytest test file for a given Python module.
 

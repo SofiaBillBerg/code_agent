@@ -47,9 +47,9 @@ from deepagents import (
 from deepagents.backends import CompositeBackend, StateBackend
 from deepagents.backends.filesystem import FilesystemBackend
 from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import SystemMessage
-from langchain_core.tools import BaseTool
+from langchain.chat_models import BaseChatModel
+from langchain.messages import SystemMessage
+from langchain.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
