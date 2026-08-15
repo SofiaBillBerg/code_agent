@@ -1,8 +1,7 @@
 ---
-title: "Files Overview"  
+title: "Files Overview"
 author: "Sofia Billger Bergström"
-format: html
-output: 
+format: html output:
   html:
     css: docs/styles/custom.css
 ---
@@ -13,76 +12,77 @@ This document provides a high-level summary of the key files and directories in 
 
 ## Core Package Structure
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |
-|--------------------------------|------------------------------------------------------|-------------------------------------|
-| `code_agent/__init__.py`       | **Package entry point** - exports public API         | All core functions & classes listed in [`__all__`](../src/code_agent)  |
-| `code_agent/cli.py`            | Typer-based command-line interface.                  | `app`, `serve`, `chat`, `scaffold` commands     |  
-| `code_agent/main.py`           | Library helpers for LLM configuration                | [`load_config()`](main), [`create_llm()`]()  |
-| `code_agent/settings.py`       | Pydantic Settings model with `.env` override support.   | [`Settings`](settings), [`get_settings()`]     |  
-| `code_agent/graph.py`          | LangGraph StateGraph for agent orchestration (deprecated, migrating to LangChain harness)      | Legacy graph builder             |
-| `code_agent/scaffold.py`       | Project skeleton generator with template support.    | [`create_project_scaffold()`]()              | 
-| `code_agent/docs_generator.py` | Quarto documentation generation from repo structure.| [`generate_quarto_docs()`]()            |  
-| `code_agent/file_generator.py` | Atomic file I/O utilities for agent tools.           | [`write_file()``, `read_file()`, `edit_file()`, `append_file()`, `create_from_template()`, `py_to_ipynb()`]  |
-| `code_agent/exceptions.py`     | Custom exception types for error handling            | [`CodeAgentError`](exceptions), [`FileCreationError`](exceptions)   |
+| File / Directory                        | Purpose                                                                                   | Key Functions / Components                                                                                  |
+|-----------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `code_agent/__init__.py`                | **Package entry point** - exports public API                                              | All core functions & classes listed in [`__all__`](../code_agent/__init__.py)                               |
+| `code_agent/cli.py`                     | Typer-based command-line interface.                                                       | `app`, `serve`, `chat`, `scaffold` commands                                                                 |
+| `code_agent/main.py`                    | Library helpers for LLM configuration                                                     | [`load_config()`](../code_agent/main.py), [`create_llm()`]()                                                |
+| `code_agent/settings.py`                | Pydantic Settings model with `.env` override support.                                     | [`Settings`](settings), [`get_settings()`]                                                                  |
+| `../code_agent/utils/graph.py`          | LangGraph StateGraph for agent orchestration (deprecated, migrating to LangChain harness) | Legacy graph builder                                                                                        |
+| `code_agent/scaffold.py`                | Project skeleton generator with template support.                                         | [`create_project_scaffold()`]()                                                                             |
+| `../code_agent/tools/docs_generator.py` | Quarto documentation generation from repo structure.                                      | [`generate_quarto_docs()`]()                                                                                |
+| `code_agent/file_generator.py`          | Atomic file I/O utilities for agent tools.                                                | [`write_file()``, `read_file()`, `edit_file()`, `append_file()`, `create_from_template()`, `py_to_ipynb()`] |
+| `code_agent/exceptions.py`              | Custom exception types for error handling                                                 | [`CodeAgentError`](exceptions), [`FileCreationError`](exceptions)                                           |
 
 ## Agent Layer
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|  
-| `code_agent/agents/base_agent.py`        | Base agent class & tool factory                      | [`build_agent()`](../src/code_agent/agents), create_default_tools(), PersistentAgent   |
-| `code_agent/agents/persistent_agent.py`  | Agent with session persistence                        | Stateful agents, memory management   |
+| File / Directory                        | Purpose                         | Key Functions / Components                                                       |
+|-----------------------------------------|---------------------------------|----------------------------------------------------------------------------------|
+| `code_agent/agents/base_agent.py`       | Base agent class & tool factory | [`build_agent()`](../code_agent/agents), create_default_tools(), PersistentAgent |
+| `code_agent/agents/persistent_agent.py` | Agent with session persistence  | Stateful agents, memory management                                               |
 
 ## Capabilities Layer (OAP-inspired)
 
-The capabilities layer provides an audit trail for all agent actions via hash-chained receipts. Each action is wrapped in a capability envelope (`InvocationRequest`, `InvocationResponse`) before execution.  
+The capabilities layer provides an audit trail for all agent actions via hash-chained receipts. Each action is wrapped
+in a capability envelope (`InvocationRequest`, `InvocationResponse`) before execution.
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|  
-| `code_agent/capabilities/base.py`     | Capability protocol definitions                      | [`Capability`](capabilities), [`CapabilitiesBase`](capabilities)   |
-| `code_agent/capabilities/audit.py`    | Audit logging with hash-chain receipts               | [`AuditLog`](capibilities.audit), [`Receipt`](capabilities.audity)  |  
-| `code_agent/capabilities/envelope.py` | Request/response envelopes for capabilities          | [`InvocationRequest`](envelopes), [`InvocationResponse`](envelopes)   |
-| `code_agent/capabilities/registry.py` | Tool discovery & dispatch registry                  | [`CapabilityRegistry`](capabilities.registry), [tool_to_capability()](regisry)  |  
-| `code_agent/capabilities/tool_adapter.py`    | Adapts LangChain tools to capability protocol        | tool adapter, validation             |  
+| File / Directory                          | Purpose                                       | Key Functions / Components                                                     |
+|-------------------------------------------|-----------------------------------------------|--------------------------------------------------------------------------------|
+| `code_agent/capabilities/base.py`         | Capability protocol definitions               | [`Capability`](capabilities), [`CapabilitiesBase`](capabilities)               |
+| `code_agent/capabilities/audit.py`        | Audit logging with hash-chain receipts        | [`AuditLog`](capibilities.audit), [`Receipt`](capabilities.audity)             |
+| `code_agent/capabilities/envelope.py`     | Request/response envelopes for capabilities   | [`InvocationRequest`](envelopes), [`InvocationResponse`](envelopes)            |
+| `code_agent/capabilities/registry.py`     | Tool discovery & dispatch registry            | [`CapabilityRegistry`](capabilities.registry), [tool_to_capability()](regisry) |
+| `code_agent/capabilities/tool_adapter.py` | Adapts LangChain tools to capability protocol | tool adapter, validation                                                       |
 
 ## Tools Layer
 
 Tools are BaseTool subclasses that interact with the filesystem or environment. See [`TOOLS.qmd`](./TOOLS.qmd) for detailed descriptions of each tool's capabilities and usage patterns.
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|
-| `code_agent/tools/`            | LangChain BaseTool implementations                   | All tools inherit from [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool)   |
+| File / Directory    | Purpose                            | Key Functions / Components                                                                 |
+|---------------------|------------------------------------|--------------------------------------------------------------------------------------------|
+| `code_agent/tools/` | LangChain BaseTool implementations | All tools inherit from [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool) |
 
-## Providers Layer  
+## Providers Layer
 
 The provider layer enables model swapping without changing agent logic. See [API Reference](./API.qmd#provider-layer) for usage details.
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|
-| `code_agent/providers/base.py`     | Provider protocol definitions                        | [`LLMProvider`](providers.base), [ProvidersBase](providers.base)   |
-| `code_agent/providers/factory.py`  | Factory for creating providers based on config       | create_provider()                    |  
-| `code_agent/providers/ollama.py`    | Ollama model provider                                 | OllamaModel, ChatOllama             | 
-| `code_agent/providers/openai.py`   | OpenAI API provider                                   | OpenAIClient, ChatOpenAI            |  
+| File / Directory                  | Purpose                                        | Key Functions / Components                                       |
+|-----------------------------------|------------------------------------------------|------------------------------------------------------------------|
+| `code_agent/providers/base.py`    | Provider protocol definitions                  | [`LLMProvider`](providers.base), [ProvidersBase](providers.base) |
+| `code_agent/providers/factory.py` | Factory for creating providers based on config | create_provider()                                                |
+| `code_agent/providers/ollama.py`  | Ollama model provider                          | OllamaModel, ChatOllama                                          |
+| `code_agent/providers/openai.py`  | OpenAI API provider                            | OpenAIClient, ChatOpenAI                                         |
 
 ## UI Layer
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|
-| `code_agent/ui/web.py`           | FastAPI backend for web interface                    | [`app`](ui.web), `/capabilities`, `/invoke` endpoints   |  
+| File / Directory       | Purpose                           | Key Functions / Components                            |
+|------------------------|-----------------------------------|-------------------------------------------------------|
+| `code_agent/ui/web.py` | FastAPI backend for web interface | [`app`](ui.web), `/capabilities`, `/invoke` endpoints |
 
 ## Documentation & Build
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|
-| `docs/`                        | Quarto documentation source files                     | Source `.qmd/.md` docs              |  
-| `_quarto.yml`                  | Quarto project configuration                         | Website, PDF output settings        |  
-| `CHANGELOG.qmd`, `FAQ.qmd`, etc.   | User-facing guides                                   | -                                  |  
+| File / Directory                 | Purpose                           | Key Functions / Components   |
+|----------------------------------|-----------------------------------|------------------------------|
+| `docs/`                          | Quarto documentation source files | Source `.qmd/.md` docs       |
+| `_quarto.yml`                    | Quarto project configuration      | Website, PDF output settings |
+| `CHANGELOG.qmd`, `FAQ.qmd`, etc. | User-facing guides                | -                            |
 
 ## Testing
 
-| File / Directory               | Purpose                                              | Key Functions / Components          |  
-|--------------------------------|------------------------------------------------------|-------------------------------------|
-| `tests/`                       | Pytest unit and integration tests                    | ~103 test cases covering agents, tools, scaffolding   |  
+| File / Directory | Purpose                           | Key Functions / Components                          |
+|------------------|-----------------------------------|-----------------------------------------------------|
+| `tests/`         | Pytest unit and integration tests | ~103 test cases covering agents, tools, scaffolding |
 
---- 
+---
 
 **Note:** The agent is currently in alpha (v0.1.0) and actively migrating from custom StateGraph to LangChain's built-in harness for better reliability.

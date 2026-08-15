@@ -26,8 +26,8 @@ from __future__ import (
 )
 
 import logging  # : Standard logging module for WARNING-level entries.
-import sqlite3  # : Standard sqlite3 for opening the checkpoint connection.
 from pathlib import Path  # : Pathlib for filesystem path handling.
+import sqlite3  # : Standard sqlite3 for opening the checkpoint connection.
 
 #: Import the LangGraph checkpointer classes needed for persistence.
 #: SqliteSaver provides persistent storage in an SQLite database.
@@ -63,7 +63,7 @@ def build_checkpointer(
 
     1. The *checkpoint_dir* argument (if not ``None``).
     2. The ``CODE_AGENT_CHECKPOINT_DIR`` environment variable via
-       :func:`~code_agent.settings.get_settings`.
+       :func:`~code_agent.config.settings.get_settings`.
     3. The hard-coded default ``~/.code_agent/checkpoints/``.
 
     All three paths are expanded (``~`` → home directory) and resolved
@@ -123,7 +123,7 @@ def _resolve_checkpoint_dir(override: str | None) -> Path:
 
     1. If *override* is not ``None``, use it directly (expand ``~`` and resolve).
     2. If *override* is ``None``, read ``settings.checkpoint_dir`` via
-       :func:`~code_agent.settings.get_settings`.
+       :func:`~code_agent.config.settings.get_settings`.
     3. If both *override* and settings fail, use the hard-coded default.
 
     :param override: Caller-supplied directory path, or ``None`` to use
@@ -136,7 +136,7 @@ def _resolve_checkpoint_dir(override: str | None) -> Path:
 
     #: Attempt to read checkpoint_dir from settings (may raise if settings fail).
     try:
-        from code_agent.settings import get_settings
+        from code_agent.config.settings import get_settings
 
         checkpoint_dir = get_settings().checkpoint_dir
         return Path(checkpoint_dir).expanduser().resolve()

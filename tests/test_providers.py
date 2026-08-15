@@ -81,7 +81,7 @@ def _load_provider_modules() -> tuple[
     the fallback does not leak into other tests.
     """
     providers_dir = (
-            Path(__file__).resolve().parent.parent / "code_agent" / "providers"
+        Path(__file__).resolve().parent.parent / "code_agent" / "providers"
     )
 
     _stub_langchain_module("langchain_ollama", "ChatOllama")
@@ -99,10 +99,10 @@ def _load_provider_modules() -> tuple[
 
         modules: dict[str, types.ModuleType] = {}
         for mod_name, file_name in (
-                ("code_agent.providers.base", "base.py"),
-                ("code_agent.providers.ollama", "ollama.py"),
-                ("code_agent.providers.openai", "openai.py"),
-                ("code_agent.providers.factory", "factory.py"),
+            ("code_agent.providers.base", "base.py"),
+            ("code_agent.providers.ollama", "ollama.py"),
+            ("code_agent.providers.openai", "openai.py"),
+            ("code_agent.providers.factory", "factory.py"),
         ):
             module = _load_source_module(mod_name, providers_dir / file_name)
             installed.append(mod_name)
@@ -143,9 +143,9 @@ except ImportError:
     # Minimal environment: load the real provider source files directly.
     _base_mod, _factory_mod, _ollama_mod, _openai_mod = _load_provider_modules()
     # noinspection PyGlobalVariableRedeclarationInNotebook
-    LLMProvider = _base_mod.LLMProvider
+    LLMProvider = _base_mod.LLMProvider  # ty: ignore[conflicting-declarations]
     # noinspection PyGlobalVariableRedeclarationInNotebook
-    ProviderBase = _base_mod.ProviderBase
+    ProviderBase = _base_mod.ProviderBase  # ty: ignore[conflicting-declarations]
 
 # noinspection PyGlobalVariableRedeclarationInNotebook
 OllamaProvider = _ollama_mod.OllamaProvider
@@ -506,7 +506,7 @@ def test_create_provider_normalizes_provider_name() -> None:
 
 
 def test_create_provider_dispatches_to_registered_factory(
-        monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """create_provider must call the registered factory with the config.
 
@@ -526,7 +526,7 @@ def test_create_provider_dispatches_to_registered_factory(
 
 
 def test_create_provider_unknown_lists_registered_providers(
-        monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The error must list the providers currently registered.
 
@@ -675,7 +675,7 @@ def test_openai_provider_bind_capabilities_returns_self() -> None:
 
 
 def test_openai_provider_explicit_api_key_wins_over_environment(
-        monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """An explicit api_key must take precedence over the environment.
 
@@ -689,7 +689,7 @@ def test_openai_provider_explicit_api_key_wins_over_environment(
 
 
 def test_openai_provider_reads_api_key_from_environment(
-        monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Without an api_key, OPENAI_API_KEY must be read from the environment.
 

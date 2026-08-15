@@ -141,8 +141,8 @@ pytest
 
 ## Documentation
 
-- [Configuration](docs/CONFIGURATION.qmd) - `.env` setup, env vars, programmatic overrides
-- [Usage](docs/USAGE.qmd) - CLI examples and Python API walkthrough
-- [Tools](docs/TOOLS.qmd) - Agent tool reference
-- [API](docs/API.qmd) - Public API reference
-- [Files Overview](docs/FILES.qmd) - Module-level map
+- [Configuration](../docs/CONFIGURATION.qmd) - `.env` setup, env vars, programmatic overrides
+- [Usage](../docs/USAGE.qmd) - CLI examples and Python API walkthrough
+- [Tools](../docs/TOOLS.qmd) - Agent tool reference
+- [API](../docs/API.qmd) - Public API reference
+- [Files Overview](../docs/FILES.qmd) - Module-level map

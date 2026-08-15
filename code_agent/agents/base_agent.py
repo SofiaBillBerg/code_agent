@@ -6,7 +6,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from code_agent.graph import Harness, build_graph
+from code_agent.tools.notebook_tool import py_to_ipynb
+from code_agent.utils.graph import Harness, build_graph
 from langchain.chat_models import BaseChatModel
 from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
@@ -58,7 +59,6 @@ def create_default_tools(
         make_general_chat_tool,
         make_linker_tool,
         make_new_file_tool,
-        make_notebook_tool,
         make_r_script_tool,
         make_search_explain_tool,
         read_file,
@@ -111,7 +111,7 @@ def create_default_tools(
         make_new_file_tool(root_dir=root_path),
         bind_root_dir(generate_test),
         make_format_code_tool(root_dir=root_path),
-        make_notebook_tool(root_dir=root_path),
+        py_to_ipynb,
         (make_general_chat_tool(llm=llm) if llm else None),
         make_r_script_tool(),
     ]

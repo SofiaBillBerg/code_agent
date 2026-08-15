@@ -46,7 +46,7 @@ class EditFileArgs(BaseModel):
     )
 
 
-@tool(args_schema=EditFileArgs)
+@tool(args_schema=EditFileArgs, parse_docstring=True, description="Edit an existing file by replacing, appending, or patching its content.")
 def edit_file(
     file_path: str,
     new_content: str,
@@ -65,14 +65,14 @@ def edit_file(
     :return: Success or error message.
     """
     if root_dir is None:
-        root_dir = Path().resolve()
+        root_dir = Path.cwd()
 
     full_path = (root_dir / file_path).resolve()
 
     if not full_path.exists():
         return f"❌ File not found: {full_path}"
 
-    try:
+    try:  # ruff: ignore[too-many-statements-in-try-clause]
         if mode == "replace":
             full_path.write_text(new_content, encoding="utf-8")
         elif mode == "append":
@@ -102,5 +102,7 @@ def edit_file(
 
         return f"✅ Successfully {mode} {full_path}"
     except Exception as e:
-        log.exception(f"Error editing file {full_path}: {e}")
+        log.exception(
+            f"Error editing file {full_path}: {e}"  # ruff: ignore[verbose-log-message]
+        )  # ruff: ignore[verbose-log-message]
         return f"❌ Error editing file: {e}"

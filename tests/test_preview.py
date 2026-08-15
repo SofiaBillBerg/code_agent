@@ -13,7 +13,6 @@ from typing import Any
 
 # Import the helpers from the public API
 from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.file_generator import write_file
 from code_agent.main import create_llm
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
@@ -55,11 +54,11 @@ def dummy_llm() -> BaseChatModel:
         """
 
         def _generate(
-                self,
-                messages: list[BaseMessage],
-                stop: list[str] | None = None,
-                **kwargs: Any,
-        ) -> ChatResult:
+            self,
+            messages: list[BaseMessage],
+            stop: list[str] | None = None,
+            **kwargs: Any,
+        ) -> ChatResult:  # ty: ignore[invalid-method-override]
             """Generate a fixed message - required by BaseChatModel.
 
             :param messages: List of messages to generate from.
@@ -76,8 +75,8 @@ def dummy_llm() -> BaseChatModel:
             )
 
         def bind_tools(
-                self, tools: list[BaseTool], **kwargs: Any
-        ) -> Runnable[Any, BaseMessage]:
+            self, tools: list[BaseTool], **kwargs: Any
+        ) -> Runnable[Any, BaseMessage]:  # ty: ignore[invalid-method-override]
             """Bind tools to the LLM - required by BaseChatModel.
 
             :param tools: List of tools to bind.
@@ -98,7 +97,7 @@ def dummy_llm() -> BaseChatModel:
 
 
 def test_build_agent_returns_runnable(
-        tmp_path: Path, dummy_llm: BaseChatModel
+    tmp_path: Path, dummy_llm: BaseChatModel
 ) -> None:
     """Creating an agent with a valid path should return a LangChain Runnable.
 
@@ -145,31 +144,3 @@ def test_build_agent_with_invalid_config(tmp_path: Path) -> None:
 
     # The agent runnable is created successfully; errors would surface
     # at invocation time when the backend is actually contacted.
-
-
-# --------------------------------------------------------------------------- #
-# Additional sanity checks
-# --------------------------------------------------------------------------- #
-def test_write_file_and_agent_integration(
-        tmp_path: Path, dummy_llm: BaseChatModel
-) -> None:
-    """A quick integration test: write a file, then create an agent that uses it.
-
-    Ensures that the agent can be instantiated after a file operation succeeds.
-
-
-    :param tmp_path: Temporary directory path from pytest.
-    :param dummy_llm: A dummy LLM instance for testing.
-    :raises AssertionError: If the agent is not a Runnable or is None.
-    :raises Exception: If the agent creation fails for other reasons.
-    """
-    file_path = tmp_path / "data.txt"
-    write_file(file_path, "agent data")
-
-    tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
-    agent_runnable = build_agent(llm=dummy_llm, tools=tools)
-
-    assert isinstance(agent_runnable, Runnable), (
-        "build_agent should return a Runnable"
-    )
-    assert agent_runnable is not None, "Agent Runnable should not be None"

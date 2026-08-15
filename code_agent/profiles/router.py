@@ -1,6 +1,6 @@
 """Profile routing for DeepAgents harness profiles.
 
-This module bridges the project's :class:`~code_agent.settings.Settings`
+This module bridges the project's :class:`~code_agent.config.settings.Settings`
 into DeepAgents' ``register_harness_profile`` mechanism.  Instead of
 requiring callers to manually construct and register ``HarnessProfile``
 objects, :func:`register_profiles_from_settings` reads the active config
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from code_agent.settings import get_settings
+from code_agent.config.settings import get_settings
 from deepagents import HarnessProfile, register_harness_profile
 
 def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:

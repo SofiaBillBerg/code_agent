@@ -6,8 +6,6 @@ repository:
 
 * ``create`` - create a new file with supplied content.
 * ``append`` - append to an existing file.
-* ``scaffold`` - generate a minimal project structure.
-* ``py2ipynb`` - convert a Python script to a Jupyter notebook.
 * ``docs`` - generate Quarto documentation for the current tree.
 * ``chat`` - start an interactive chat session with the agent.
 * ``capabilities list`` - list the registered capabilities.
@@ -19,11 +17,9 @@ Implementation details
 * Uses **Typer** for argument parsing - it provides a pleasant
   developer experience (automatic ``--help`` generation, type checking
   and rich error messages).
-* All file-system interactions are delegated to
-  :func:`code_agent.file_generator.write_file` and
-  :func:`code_agent.file_generator.py_to_ipynb`.
-* ``scaffold`` uses :func:`code_agent.file_generator.create_project_scaffold`.
-* ``docs`` simply calls :func:`code_agent.docs_generator.generate_quarto_docs`.
+* ``create`` writes files atomically via
+  :func:`code_agent.tools._io._atomic_write`.
+* ``docs`` simply calls :func:`code_agent.tools.docs_generator.generate_quarto_docs`. # NOTE: DEPRECATED
 * ``capabilities`` commands build a :class:`CapabilityRegistry` populated
   with the default tools adapted via :func:`tool_to_capability`, then
   discover or dispatch through it.
@@ -58,13 +54,11 @@ from code_agent.capabilities.envelope import (
 )
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.capabilities.tool_adapter import tool_to_capability
-from code_agent.docs_generator import generate_quarto_docs
+from code_agent.config.mcp import apply_mcp_tool_prefixes, expand_env_vars
+from code_agent.config.settings import PROJECT_ROOT
 from code_agent.exceptions import CodeAgentError
-from code_agent.file_generator import py_to_ipynb, write_file
 from code_agent.main import create_llm, load_config
-from code_agent.mcp import apply_mcp_tool_prefixes, expand_env_vars
-from code_agent.scaffold import create_project_scaffold
-from code_agent.settings import PROJECT_ROOT
+from code_agent.tools._io import _atomic_write
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
 from langchain.tools import BaseTool
@@ -75,22 +69,13 @@ import typer
 
 # Module-level Typer argument/option definitions to avoid
 # "function-call-in-default-argument" lint warnings.
+# noinspection argument-equal-default
 FILE_PATH_ARG_CREATE: Path = typer.Argument(
     ..., exists=False, help="Path to the file to create."
 )
 FILE_PATH_ARG_APPEND: Path = typer.Argument(
     ..., exists=True, help="Path to the file to modify."
 )
-PYTHON_SRC_ARG: Path = typer.Argument(
-    ..., exists=True, help="Python script to convert."
-)
-NOTEBOOK_DST_ARG: Path = typer.Argument(
-    ..., exists=False, help="Target notebook path."
-)
-SCAFFOLD_TARGET_ARG: Path = typer.Argument(
-    ..., exists=False, help="Target directory for the scaffold."
-)
-
 app = typer.Typer(name="code_agent", help="Local LLM-driven code assistant")
 
 
@@ -138,7 +123,14 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
 
         decisions: list[dict[str, Any]] = []
         for hitl_request in interrupts:
-            for action_request in getattr(hitl_request, "action_requests", []):
+            # HITLRequest is a TypedDict; after the checkpoint round-trip it
+            # arrives as a plain dict, so access must work for both forms.
+            action_requests = (
+                hitl_request.get("action_requests", [])
+                if isinstance(hitl_request, dict)
+                else getattr(hitl_request, "action_requests", [])
+            )
+            for action_request in action_requests:
                 decisions.append(_prompt_hitl_decision(action_request))
         run_input = Command(resume={"decisions": decisions})
 
@@ -169,6 +161,8 @@ def _run_agent_stream(
 ) -> tuple[list[str], list[Any]]:
     """Stream one agent invocation and return ``(text_parts, messages)``.
 
+    :return:
+    :rtype:
     :param agent: Compiled runnable.
     :param run_input: Either ``{"messages": [...]}`` or a
         :class:`~langgraph.types.Command` used to resume an interrupt.
@@ -191,12 +185,17 @@ def _run_agent_stream(
     thread = threading.Thread(target=_spin, daemon=True)
     thread.start()
 
-    try:  # ruff: ignore[too-many-statements-in-try-clause]
-        stream_fn = getattr(agent, "astream_events", None)
-        if stream_fn is None:
-            raise AttributeError("astream_events")
+    async def _consume(stream_fn: Any) -> tuple[list[str], list[Any]]:
+        """Consume the async ``astream_events`` generator.
 
-        for event in stream_fn(run_input, config=config, version="v2"):
+        LangGraph's ``astream_events`` is an **async** generator, so it must
+        be driven from an event loop.  ``asyncio.run`` below provides one;
+        this inner coroutine keeps the callback-style event processing
+        (``on_tool_start``/``on_chat_model_stream``/...) intact.
+        """
+        text_parts: list[str] = []
+        messages: list[Any] = []
+        async for event in stream_fn(run_input, config=config, version="v2"):
             kind = event.get("event")
             data = event.get("data", {})
             if kind == "on_tool_start":
@@ -214,11 +213,29 @@ def _run_agent_stream(
                     content = getattr(chunk, "content", None)
                     if content:
                         print(content, end="", flush=True)
-                        final_text_parts.append(content)
+                        text_parts.append(content)
             elif kind == "on_chain_end" and data.get("output"):
                 output = data["output"]
                 if isinstance(output, dict):
-                    final_messages = output.get("messages", [])
+                    messages = output.get("messages", [])
+        return text_parts, messages
+
+    try:  # ruff: ignore[too-many-statements-in-try-clause]
+        stream_fn = getattr(agent, "astream_events", None)
+        if stream_fn is None:
+            raise AttributeError("astream_events")
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop in this thread: safe to drive the async
+            # generator with a fresh event loop.
+            final_text_parts, final_messages = asyncio.run(_consume(stream_fn))
+        else:
+            # Already inside an event loop (async embedding): fall back to a
+            # plain sync invoke instead of crashing.
+            response = agent.invoke(run_input, config=config)
+            if isinstance(response, dict):
+                final_messages = response.get("messages", [])
     except Exception:
         response = agent.invoke(run_input, config=config)
         if isinstance(response, dict):
@@ -264,8 +281,12 @@ def _prompt_hitl_decision(action_request: Any) -> dict[str, Any]:
         agent wants to execute.
     :return: A decision dict for the ``Command(resume=...)`` payload.
     """
-    name = getattr(action_request, "name", "unknown-tool")
-    args = getattr(action_request, "args", {}) or {}
+    if isinstance(action_request, dict):
+        name = action_request.get("name", "unknown-tool")
+        args = action_request.get("args", {}) or {}
+    else:
+        name = getattr(action_request, "name", "unknown-tool")
+        args = getattr(action_request, "args", {}) or {}
 
     print("\n" + "=" * 50)
     print("⚠️  Human approval required before tool execution")
@@ -274,7 +295,11 @@ def _prompt_hitl_decision(action_request: Any) -> dict[str, Any]:
         print(f"Args:\n{json.dumps(args, indent=2, default=str)}")
     except (TypeError, ValueError):
         print(f"Args: {args!r}")
-    description = getattr(action_request, "description", None)
+    description = (
+        action_request.get("description")
+        if isinstance(action_request, dict)
+        else getattr(action_request, "description", None)
+    )
     if description:
         print(f"\n{description}")
     print("=" * 50)
@@ -288,7 +313,9 @@ def _prompt_hitl_decision(action_request: Any) -> dict[str, Any]:
         message = input("Message to send back to the agent: ").strip()
         return {"type": "respond", "message": message}
     if choice in {"e", "edit"}:
-        print("Provide the edited tool arguments as JSON (Enter keeps original):")
+        print(
+            "Provide the edited tool arguments as JSON (Enter keeps original):"
+        )
         raw = input("Edited args: ").strip()
         if raw:
             try:
@@ -876,10 +903,12 @@ def serve(  # ruff: ignore [complex-structure]
                     messages.append(HumanMessage(content=entry["content"]))
             messages.append(HumanMessage(content=prompt))
 
-            response = asyncio.run(agent.ainvoke(
-                {"messages": messages},
-                config={"configurable": {"thread_id": thread_id}},
-            ))
+            response = asyncio.run(
+                agent.ainvoke(
+                    {"messages": messages},
+                    config={"configurable": {"thread_id": thread_id}},
+                )
+            )
 
             # Find the last AIMessage (skip ToolMessages from intermediate steps)
             ai_messages = [
@@ -929,7 +958,7 @@ def create(
             raise CodeAgentError(
                 f"File '{file_path}' already exists. Use --overwrite to replace."
             )
-        write_file(file_path, content)
+        _atomic_write(file_path, content)
         typer.echo(f"File written: {file_path}")
     except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
@@ -956,101 +985,6 @@ def append(
             encoding="utf-8",
         )
         typer.echo(f"Appended to: {file_path}")
-    except Exception as exc:  # pragma: no cover - exercised via tests
-        raise CodeAgentError(str(exc)) from exc
-
-
-@app.command(help="Create a minimal project scaffold.")
-def scaffold(
-    target: Path = SCAFFOLD_TARGET_ARG,
-    project_name: str = typer.Option(
-        "sample_project",
-        "--name",
-        "-n",
-        help="Project name used in scaffold files.",
-    ),
-    overwrite: bool = typer.Option(
-        False,  # ruff: ignore [boolean-positional-value-in-call]
-        is_flag=True,
-        help="Overwrite existing files in the target directory.",
-    ),
-) -> None:
-    """Generate a project skeleton.
-
-    Creates a minimal Python project with the following structure:
-    - docs/ - Documentation directory
-    - src/<project_name>/ - Source code directory
-    - tests/ - Test directory
-    - .GitHub/workflows/ - GitHub Actions workflows
-    - requirements.txt - Project dependencies
-    - README.qmd - Project documentation
-
-
-    The function uses :func:`code_agent.file_generator.create_project_scaffold`.
-
-    :param target: Target directory for the scaffold.
-    :param project_name: Project name used in scaffold files.
-    :param overwrite: Allow overwriting existing files.
-    :return: None
-    """
-    try:
-        create_project_scaffold(
-            str(target), project_name=project_name, overwrite=overwrite
-        )
-        typer.echo(f"Scaffold created: {target}")
-    except Exception as exc:  # pragma: no cover - exercised via tests
-        raise CodeAgentError(str(exc)) from exc
-
-
-@app.command(help="Convert a Python script to a Jupyter notebook.")
-def py2ipynb(
-    src: Path = PYTHON_SRC_ARG,
-    dst: Path = NOTEBOOK_DST_ARG,
-) -> None:
-    """Create a minimal Jupyter notebook from a Python file.
-
-    The notebook contains a single code cell with the full source
-    code.  The function uses :func:`code_agent.file_generator.py_to_ipynb`.
-
-    :param src: Python script to convert.
-    :param dst: Target notebook path.
-    :return: None
-    """
-    try:
-        py_to_ipynb(src, dst)
-        typer.echo(f"Notebook written: {dst}")
-    except Exception as exc:  # pragma: no cover - exercised via tests
-        raise CodeAgentError(str(exc)) from exc
-
-
-@app.command(help="Generate and render Quarto documentation.")
-def docs(
-    output_dir: str = typer.Option(
-        "docs", help="Directory to write docs into."
-    ),
-    overwrite: bool = typer.Option(
-        True,  # ruff: ignore [boolean-positional-value-in-call]
-        help="Overwrite existing files in the output directory.",
-    ),
-) -> None:
-    """Generate a minimal set of QMD files and render the Quarto site.
-
-    The function uses :func:`code_agent.file_generator.generate_quarto_docs`.
-
-    :param output_dir: Directory to write docs into.
-    :param overwrite: Overwrite existing files in the output directory.
-    :return: None
-    """
-    try:
-        generate_quarto_docs(output_dir=Path(output_dir), overwrite=overwrite)
-        typer.echo(f"Docs generated in: {output_dir}")
-        typer.echo("Rendering Quarto site...")
-        subprocess.run(["quarto", "render"], check=True)
-        typer.echo("Quarto site rendered successfully.")
-    except FileNotFoundError:
-        typer.echo(
-            "Error: 'quarto' command not found. Please ensure Quarto is installed and in your PATH."
-        )
     except Exception as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(str(exc)) from exc
 

@@ -39,8 +39,8 @@ def make_general_chat_tool(llm: BaseChatModel) -> BaseTool:
         "general-chat",
         args_schema=GeneralChatArgs,
         description=(
-                "Use this tool as a last resort if no other tool is appropriate for the user's query. "
-                "It is for general conversation, questions, and answering 'how-to' style inquiries."
+            "Use this tool as a last resort if no other tool is appropriate for the user's query. "
+            "It is for general conversation, questions, and answering 'how-to' style inquiries."
         ),
     )
     def general_chat(query: str) -> str:

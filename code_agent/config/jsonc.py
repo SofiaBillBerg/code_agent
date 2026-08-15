@@ -2,7 +2,7 @@
 
 The project uses ``codeagent.jsonc`` as its primary configuration file, so
 both :func:`code_agent.main.load_config` and the pydantic-settings source in
-:mod:`code_agent.settings` need a loader that understands JSONC.  The standard
+:mod:`code_agent.config.settings` need a loader that understands JSONC.  The standard
 :mod:`json` module rejects comments and trailing commas, so this module
 provides a small, string-aware pre-processor that strips them before handing
 the text to :func:`json.loads`.
@@ -15,10 +15,8 @@ values are preserved verbatim.
 from __future__ import annotations
 
 import json
-
 from pathlib import Path
 from typing import Any
-
 
 def strip_comments(text: str) -> str:
     """Remove ``//`` line comments and ``/* ... */`` block comments.

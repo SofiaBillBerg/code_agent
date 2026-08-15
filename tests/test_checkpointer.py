@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from code_agent.checkpointer import build_checkpointer
+from code_agent.utils.checkpointer import build_checkpointer
 
 class TestBuildCheckpointerProperty:
     """Property tests for build_checkpointer function."""
@@ -18,13 +18,17 @@ class TestBuildCheckpointerProperty:
         For any valid checkpoint directory path, the function should return
         either SqliteSaver or InMemorySaver (never None).
         """
-        checkpointer = build_checkpointer(checkpoint_dir="/tmp/test_checkpoints")
+        checkpointer = build_checkpointer(
+            checkpoint_dir="/tmp/test_checkpoints"
+        )
 
         assert checkpointer is not None
 
     def test_build_checkpointer_fallback_on_invalid_path(self) -> None:
         """Property 13 variant: Invalid paths return InMemorySaver fallback."""
-        checkpointer = build_checkpointer(checkpoint_dir="/nonexistent/path/that/does/not/exist")
+        checkpointer = build_checkpointer(
+            checkpoint_dir="/nonexistent/path/that/does/not/exist"
+        )
 
         assert checkpointer is not None
         assert checkpointer.__class__.__name__ == "InMemorySaver"
@@ -52,8 +56,14 @@ class TestBuildCheckpointerExample:
         import tempfile
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            checkpointer = build_checkpointer(checkpoint_dir=f"{tmpdir}/checkpoints")
+            checkpointer = build_checkpointer(
+                checkpoint_dir=f"{tmpdir}/checkpoints"
+            )
 
             assert checkpointer is not None
             class_name = checkpointer.__class__.__name__
-            assert class_name in ("SqliteSaver", "InMemorySaver", "_GeneratorContextManager")
+            assert class_name in {
+                "SqliteSaver",
+                "InMemorySaver",
+                "_GeneratorContextManager",
+            }

@@ -5,27 +5,24 @@ This script demonstrates how to use the enhanced CodeAgent
 with Ollama LLM integration for automated code and documentation generation.
 """
 
+from collections.abc import Sequence
 import os
-import sys
-
 from pathlib import Path
+import sys
 from typing import Any
 
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
-from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
-
-from code_agent import (
-    build_agent,
-    create_from_template,
-    create_llm,
-    write_file,
-)
+from code_agent import build_agent, create_llm
+from code_agent.tools._io import _atomic_write, create_from_template
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.main import load_config
-
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool
+from langchain_core.callbacks import CallbackManagerForLLMRun
+from langchain_core.language_models import LanguageModelInput
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
+from langchain_core.runnables import Runnable
 
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -39,9 +36,17 @@ class DummyLLM(BaseChatModel):
         self,
         messages: list[BaseMessage],
         stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> ChatResult:
-        """Dummy LLM that always returns the same message."""
+        """Dummy LLM that always returns the same message.
+
+        :param messages: List of messages to process.
+        :param stop: List of strings to stop generation.
+        :param run_manager: Optional callback manager for this call.
+        :param kwargs: Additional keyword arguments.
+        :return: A ChatResult with a fixed AIMessage.
+        """
         return ChatResult(
             generations=[
                 ChatGeneration(message=AIMessage(content="Hello from DummyLLM"))
@@ -49,14 +54,29 @@ class DummyLLM(BaseChatModel):
         )
 
     def bind_tools(
-        self, tools: list[BaseTool], **kwargs: Any
-    ) -> Runnable[Any, BaseMessage]:
-        """Mock implementation of bind_tools."""
-        return self
+        self,
+        tools: Sequence[
+            dict[str, Any] | type | Any | BaseTool
+        ],
+        *,
+        tool_choice: str | None = None,
+        **kwargs: Any,
+    ) -> Runnable[LanguageModelInput, AIMessage]:
+        """Mock implementation of bind_tools.
+
+        :param tools: Sequence of tools to bind.
+        :param tool_choice: The tool to use.
+        :param kwargs: Additional keyword arguments.
+        :return: A Runnable that represents the bound tools (self in this case).
+        """
+        return self  # type: ignore[return-value]
 
     @property
     def _llm_type(self) -> str:
-        """Return type of llm."""
+        """Access the type of llm.
+
+        :return: Returns "dummy-chat-model"
+        """
         return "dummy-chat-model"
 
 
@@ -80,7 +100,7 @@ def example_basic_file_operations() -> None:
 
         # Create a simple file using the utility function
         file_path = Path("example.txt")
-        write_file(file_path, "Hello from CodeAgent!")
+        _atomic_write(file_path, "Hello from CodeAgent!")
         print(f"✓ Created file: {file_path}")
 
         # Append to it
@@ -89,10 +109,16 @@ def example_basic_file_operations() -> None:
             f.write("\nThis is additional content.")
         print("✓ Appended to file")
 
-        # Create a template
+        # Create a file from a template
         template_path = Path("doc.qmd")
-        create_from_template(template_path, "Example Document")
-        print(f"✓ Created template: {template_path}")
+        _atomic_write(template_path, "# {title}\n\nTemplate body.")
+        dest_path = Path("rendered_doc.qmd")
+        create_from_template(
+            template_root_dir=template_path,
+            dest_root_dir=dest_path,
+            replace_vars={"title": "Example Document"},
+        )
+        print(f"✓ Created file from template: {dest_path}")
 
         # Show preview of an edit (if agent_runnable had a preview_edit method, which it doesn't directly)
         # This part of the example is conceptual for the old agent structure.
@@ -143,7 +169,7 @@ def example_documentation_generation() -> None:
 
     import tempfile
 
-    from code_agent.docs_generator import generate_quarto_docs
+    from code_agent.tools.docs_generator import generate_quarto_docs  # NOTE: DEPRECATED
 
     with tempfile.TemporaryDirectory() as tmpdir:
         print(f"Generating docs in temporary directory: {tmpdir}")

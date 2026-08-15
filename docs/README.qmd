@@ -92,19 +92,19 @@ For a full guide with configuration options, see [QUICKSTART](./QUICKSTART.qmd).
 
 ## Documentation Structure
 
-| Page                           | Description                                                         |
-|--------------------------------|---------------------------------------------------------------------|
-| [CODE_AGENT](./CODE_AGENT.qmd) | Core components, LLM integration, vector memory, orchestration flow |
-| [API Reference](./API.qmd)     | Complete public API reference with examples                         |
-| [FILES](./FILES.qmd)           | File-level overview of all modules                                  |
-| [FEATURES](./FEATURES.qmd)     | Detailed feature descriptions and use cases                         |
-| [TOOLS](./TOOLS.qmd)           | Deep dive into each built-in tool                                   |
-| [USAGE](./USAGE.qmd)           | Example workflows for CLI and Python API usage                      |
-| [QUICKSTART](./QUICKSTART.qmd) | Step-by-step installation guide                                     |
-| CONFIGURATION                  | Environment variables, settings model details                       |
-| [ROADMAP](./ROADMAP.qmd)       | Development plans and upcoming features                             |
-| CHANGELOG                      | Version history                                                     |
- [FAQ]((./FAQ.qmd))             | Common questions and troubleshooting                                |
+| Page                                 | Description                                                         |
+|--------------------------------------|---------------------------------------------------------------------|
+| [CODE_AGENT](../docs/CODE_AGENT.qmd) | Core components, LLM integration, vector memory, orchestration flow |
+| [API Reference](../docs/API.qmd)     | Complete public API reference with examples                         |
+| [FILES](../docs/FILES.qmd)           | File-level overview of all modules                                  |
+| [FEATURES](../docs/FEATURES.qmd)     | Detailed feature descriptions and use cases                         |
+| [TOOLS](../docs/TOOLS.qmd)           | Deep dive into each built-in tool                                   |
+| [USAGE](../docs/USAGE.qmd)           | Example workflows for CLI and Python API usage                      |
+| [QUICKSTART](../docs/QUICKSTART.qmd) | Step-by-step installation guide                                     |
+| CONFIGURATION                        | Environment variables, settings model details                       |
+| [ROADMAP](../docs/ROADMAP.qmd)       | Development plans and upcoming features                             |
+| CHANGELOG                            | Version history                                                     |
+| [FAQ](../docs/FAQ.qmd)               | Common questions and troubleshooting                                |
 
 ## Getting Help
 

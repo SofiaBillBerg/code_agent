@@ -31,11 +31,11 @@ def test_stream_agent_response_collects_model_chunks() -> None:
     """
     chunk = MagicMock()
     chunk.content = "hello"
-    events = [
+
+    agent = _make_stream_agent(events = [
         {"event": "on_chat_model_stream", "data": {"chunk": chunk}},
         {"event": "on_chain_end", "data": {"output": {"messages": []}}},
-    ]
-    agent = _make_stream_agent(events=events)
+    ])
 
     response = _stream_agent_response(agent, [], "thread-1")
 
@@ -47,15 +47,17 @@ def test_stream_agent_response_logs_tool_events() -> None:
 
     :return: None
     """
-    events = [
-        {
-            "event": "on_tool_start",
-            "data": {"name": "read-file", "input": {"path": "/tmp/x"}},
-        },
-        {"event": "on_tool_end", "data": {}},
-        {"event": "on_chain_end", "data": {"output": {"messages": []}}},
-    ]
-    agent = _make_stream_agent(events=events)
+
+    agent = _make_stream_agent(
+        events=[
+            {
+                "event": "on_tool_start",
+                "data": {"name": "read-file", "input": {"path": "/tmp/x"}},
+            },
+            {"event": "on_tool_end", "data": {}},
+            {"event": "on_chain_end", "data": {"output": {"messages": []}}},
+        ]
+    )
 
     response = _stream_agent_response(agent, [], "thread-1")
 
@@ -86,10 +88,10 @@ def test_stream_agent_response_handles_empty_message_content() -> None:
     """
     message = MagicMock()
     message.content = None
-    events = [
+
+    agent = _make_stream_agent(events = [
         {"event": "on_chain_end", "data": {"output": {"messages": [message]}}},
-    ]
-    agent = _make_stream_agent(events)
+    ])
 
     response = _stream_agent_response(agent, [], "thread-1")
 

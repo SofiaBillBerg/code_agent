@@ -1,8 +1,7 @@
 """Tool to create new files.
 
-Delegates actual file creation to :func:`code_agent.core.create_file`
-so that atomic writes, parent-directory creation and overwrite checks
-are centralized in one place.
+File creation is delegated to the shared :func:`code_agent.tools._io._atomic_write`
+helper, which centralizes parent-directory creation and atomic writes.
 """
 
 from __future__ import annotations
@@ -11,9 +10,9 @@ import logging
 from pathlib import Path
 import shutil
 
+from code_agent.tools._io import _atomic_write
 from .edit_file_tool import FileObject
 
-from code_agent.file_generator import create_file
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
@@ -65,8 +64,8 @@ def make_new_file_tool(root_dir: Path) -> BaseTool:
     ) -> tuple[str, FileObject]:
         """Create a new file at the specified path with the given content.
 
-        Actual file creation is delegated to :func:`code_agent.core.create_file`
-        so that atomic writes and parent-directory creation are centralized.
+        File creation is delegated to :func:`code_agent.tools._io._atomic_write`,
+        which centralizes atomic writes and parent-directory creation.
 
         :param file_path: The path where the new file should be created.
         :param content: The content to be written into the new file.
@@ -81,7 +80,7 @@ def make_new_file_tool(root_dir: Path) -> BaseTool:
 
         full_path = root / file_path
 
-        try:
+        try:  # ruff: ignore[too-many-statements-in-try-clause]
             # Create a backup before overwriting if the file already exists.
             backup_status = "no_backup"
             if full_path.exists() and overwrite:
@@ -93,11 +92,12 @@ def make_new_file_tool(root_dir: Path) -> BaseTool:
                 except Exception as e:
                     backup_status = "backup_failed"
                     log.exception(
-                        f"Failed to create backup for {full_path} during overwrite: {e}"
+                        f"Failed to create backup for {full_path} during overwrite: {e}"  # ruff: ignore[verbose-log-message]
                     )
 
-            # Delegate actual file creation to the shared helper.
-            create_file(full_path, content, overwrite=overwrite)
+            # Delegate actual file creation to the shared helper, which
+            # creates missing parent directories and writes atomically.
+            _atomic_write(full_path, content)
 
             message = f"✅ Successfully created {full_path}"
             if backup_status == "backup_failed":

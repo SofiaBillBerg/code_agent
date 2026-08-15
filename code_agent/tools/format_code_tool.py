@@ -41,12 +41,12 @@ def make_format_code_tool(root_dir: Path) -> BaseTool:
         args_schema=FormatCodeArgs,
         response_format="content_and_artifact",
         description=(
-                "Format a source file. For python files, run black and isort if available. "
-                "For R files, optionally run styler if available. Returns a FileObject."
+            "Format a source file. For python files, run black and isort if available. "
+            "For R files, optionally run styler if available. Returns a FileObject."
         ),
     )
     def format_code(
-            file_path: str, mode: str = "auto"
+        file_path: str, mode: str = "auto"
     ) -> tuple[str, FileObject]:
         """Format a source file.
 

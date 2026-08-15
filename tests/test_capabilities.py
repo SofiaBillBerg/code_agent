@@ -696,7 +696,7 @@ def _make_tool(
     tool.description = description
     tool.args_schema = args_schema
     if run is not None:
-        tool._run.side_effect = run
+        tool.notebook_tool.side_effect = run
     return tool
 
 
@@ -810,7 +810,7 @@ def test_tool_to_capability_falls_back_to_invoke() -> None:
     :raises ValueError: If the args are not properly formed.
     """
     tool = _make_tool()
-    tool._run.side_effect = NotImplementedError
+    tool.notebook_tool.side_effect = NotImplementedError
     tool.invoke.return_value = "fallback output"
     capability = tool_to_capability(tool)
     result = capability.invoke(EchoInput(text="hello"))

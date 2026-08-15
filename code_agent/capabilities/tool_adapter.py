@@ -14,7 +14,7 @@ from typing import Any
 
 from .base import CapabilityBase, RiskClass
 
-from code_agent.mcp import is_readonly_server, server_from_prefixed
+from code_agent.config.mcp import is_readonly_server, server_from_prefixed
 from langchain.tools import BaseTool
 from pydantic import BaseModel
 
@@ -53,7 +53,7 @@ def _infer_risk_class(tool: BaseTool) -> str:
     """Heuristically assign a risk class to a tool.
 
     Tools originating from a read-only MCP server (see
-    :func:`code_agent.mcp.is_readonly_server`) and tools whose names contain
+    :func:`code_agent.config.mcp.is_readonly_server`) and tools whose names contain
     read-only hints are treated as low risk; everything else is medium risk.
     This is a simple heuristic - callers may override it with an explicit
     ``risk_class``.
@@ -119,7 +119,7 @@ def _make_execute(tool: BaseTool) -> Callable[[BaseModel], BaseModel]:
             output = tool.invoke(tool_args)
         else:
             try:
-                output = tool._run(**tool_args)
+                output = tool.notebook_tool(**tool_args)
             except NotImplementedError:
                 output = tool.invoke(tool_args)
         return ToolResult(output=output)

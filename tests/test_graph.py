@@ -16,12 +16,12 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from code_agent.deepagents_agent import (
+from code_agent.agents.deepagents_agent import (
     build_deep_agent,
     make_backend,
     make_default_permissions,
 )
-from code_agent.graph import build_graph
+from code_agent.utils.graph import build_graph
 from langchain.messages import AIMessage, HumanMessage, ToolMessage
 from langchain.tools import BaseTool, tool
 from langchain_core.runnables import RunnableConfig
@@ -141,7 +141,7 @@ def test_agent_returns_normal_ai_message(agent_graph: Any) -> None:
 
 
 def test_graph_handles_llm_error(
-        mock_llm: MagicMock, dummy_tool: BaseTool
+    mock_llm: MagicMock, dummy_tool: BaseTool
 ) -> None:
     """If the LLM raises an exception, the graph should propagate it.
 
@@ -171,8 +171,8 @@ def test_build_deep_agent_returns_compiled_graph(mock_llm: MagicMock) -> None:
     """
     fake_graph = MagicMock()
     with patch(
-            "code_agent.deepagents_agent.create_deep_agent",
-            return_value=fake_graph,
+        "code_agent.agents.deepagents_agent.create_deep_agent",
+        return_value=fake_graph,
     ):
         graph = build_deep_agent(llm=mock_llm, tools=[])
     assert graph is fake_graph
@@ -209,15 +209,15 @@ def test_build_deep_agent_drops_builtin_collisions(mock_llm: MagicMock) -> None:
 
     fake_graph = MagicMock()
     with patch(
-            "code_agent.deepagents_agent.create_deep_agent",
-            return_value=fake_graph,
+        "code_agent.agents.deepagents_agent.create_deep_agent",
+        return_value=fake_graph,
     ):
         graph = build_deep_agent(llm=mock_llm, tools=[CollisionTool()])
     assert graph is fake_graph
 
 
 def test_build_deep_agent_requires_profile_key_for_profile(
-        mock_llm: MagicMock,
+    mock_llm: MagicMock,
 ) -> None:
     """Providing a profile without a profile key should raise ``ValueError``.
 

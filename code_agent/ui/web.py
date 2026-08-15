@@ -38,9 +38,9 @@ import uuid
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.checkpointer import build_checkpointer
+from code_agent.utils.checkpointer import build_checkpointer
 from code_agent.main import create_llm, load_config
-from code_agent.settings import get_settings
+from code_agent.config.settings import get_settings
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -171,7 +171,6 @@ def get_registry() -> CapabilityRegistry:
 
     :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
     """
-    # pyrefly: ignore [unknown-name]
     global _REGISTRY  # ruff: ignore[global-statement, undefined-export]
     if _REGISTRY is None:
         from code_agent.cli import _build_registry
@@ -233,7 +232,13 @@ async def _reinit_agent(provider: str, model: str) -> None:
             if isinstance(checkpointer, InMemorySaver) and cfg.get(
                 "checkpoint_dir"
             ):
-                checkpointer = SqliteSaver(cfg["checkpoint_dir"])
+                #: Rebuild a persistent (sqlite) checkpointer from the config
+                #: path via ``build_checkpointer`` so the connection is opened
+                #: correctly (``SqliteSaver`` expects a ``sqlite3.Connection``,
+                #: not a path string).
+                checkpointer = build_checkpointer(
+                    checkpoint_dir=cfg["checkpoint_dir"]
+                )
 
             #: Build new agent with the new LLM and existing checkpointer
             agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
@@ -376,6 +381,7 @@ class AuthMiddleware:
         await self.app(scope, receive, send)
 
 
+# noinspection argument-equal-default
 app = FastAPI(
     title="Code Agent Web UI",
     description=(
@@ -767,7 +773,7 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
     )
 
 
-async def _stream_agent_events(
+async def _stream_agent_events(  # ruff: ignore[complex-structure]
     agent: Any,
     message: str,
     thread_id: str,

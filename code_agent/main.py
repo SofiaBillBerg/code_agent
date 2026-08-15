@@ -13,16 +13,14 @@ import json
 from pathlib import Path
 from typing import Any
 
-from code_agent.jsonc import loads as jsonc_loads
-from code_agent.settings import Settings, get_settings
+from code_agent.config.jsonc import loads as jsonc_loads
+from code_agent.config.settings import Settings, get_settings
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic_settings import BaseSettings
-
-# pyrefly: ignore [missing-import]
-import yaml  # ty: ignore[unresolved-import]  (pyyaml distribution)
+import yaml
 
 __all__ = ["create_llm", "load_config"]
 
@@ -101,7 +99,7 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     lightweight dummy model that returns an error message when the real
     LLM cannot be initialized.
 
-    :param cfg: Either a :class:`~code_agent.settings.Settings` instance or
+    :param cfg: Either a :class:`~code_agent.config.settings.Settings` instance or
         a plain configuration dictionary (e.g. from :func:`load_config`).
 
     :returns: A :class:`~langchain.chat_models.BaseChatModel`

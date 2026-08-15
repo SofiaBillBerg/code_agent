@@ -12,8 +12,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from code_agent.config.settings import as_config_dict
 from code_agent.providers.base import ProviderBase
-from code_agent.settings import as_config_dict
 from langchain_ollama import ChatOllama
 
 #: Shared helper so the provider layer and ``main.create_llm`` build
@@ -29,7 +29,7 @@ def _chat_ollama_from_config(config: dict[str, Any]) -> ChatOllama:
         ``codeagent.json``, ``codeagent.yml`` or ``codeagent.yaml`` keys (``ollama_*``) take
     precedence over the bare ``model`` / ``temperature`` etc. keys.
 
-    :param config: Configuration mapping, typically from :func:`code_agent.settings.as_config_dict`.
+    :param config: Configuration mapping, typically from :func:`code_agent.config.settings.as_config_dict`.
     :return: A configured ``ChatOllama`` instance.
     """
     model = config.get("ollama_model") or config.get(
@@ -58,10 +58,10 @@ class OllamaProvider(ProviderBase):
     name: str = "ollama"
 
     def __init__(
-            self,
-            model: str,
-            base_url: str | None = None,
-            **kwargs: Any,
+        self,
+        model: str,
+        base_url: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """Initialize the Ollama provider.
 
@@ -126,7 +126,9 @@ class OllamaProvider(ProviderBase):
                 "codeagent.yaml",
             ]
             for filename in config_file_candidates:
-                path = Path(__file__).resolve().parent.parent / "config" / filename
+                path = (
+                    Path(__file__).resolve().parent.parent / "config" / filename
+                )
                 if path.exists():
                     with path.open("r", encoding="utf-8") as f:
                         suffix = path.suffix.lower()

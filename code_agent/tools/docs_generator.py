@@ -3,17 +3,61 @@ This inspects files, extracts basic metadata and writes user-friendly .qmd pages
 (README.qmd, CODE_AGENT.qmd, FILES.qmd). Optionally uses an LLM to generate content.
 
 Usage:
-    from code_agent.docs_generator import generate_quarto_docs
+    from code_agent.tools.docs_generator import generate_quarto_docs
     generate_quarto_docs(output_dir='docs', overwrite=True, use_llm=True)
 """
 
 from __future__ import annotations
 
+from ast import parse
 from pathlib import Path
 
-from .file_generator import write_file
+from langchain.tools import tool
 
-from langchain.chat_models import BaseChatModel
+
+@tool(name_or_callable="generate_quarto_docs", parse_docstring=True,
+    description="Generate Quarto (.qmd) documentation pages for the repository. ",
+    response_format="content_and_artifact")
+def generate_quarto_docs(
+        output_dir: str | Path = "docs",
+        overwrite: bool = False,
+        use_llm: bool = True,
+        root: str | Path | None = None,
+) -> list[Path]:
+    """Generate Quarto (.qmd) documentation pages for the repository.
+
+    Writes README.qmd, CODE_AGENT.qmd and FILES.qmd into ``output_dir``.
+    The rendering is deterministic (no LLM calls); ``use_llm`` is accepted
+    for API compatibility and reserved for future LLM-enhanced generation.
+
+    :param output_dir: Directory where the generated .qmd files are written.
+    :param overwrite: When False, existing files are left untouched.
+    :param use_llm: Reserved for future LLM-enhanced generation (unused today).
+    :param root: Repository root to scan. Defaults to the current directory.
+
+    :return: List of paths to the files that were written.
+    """
+    repo_root = Path(root) if root is not None else Path.cwd()
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    info = _gather_repo_info(repo_root)
+    renderers: list[tuple[str, str]] = [
+        ("README.qmd", _render_readme_qmd(info)),
+        ("CODE_AGENT.qmd", _render_code_agent_qmd()),
+        ("FILES.qmd", _render_files_qmd(info)),
+    ]
+
+    written: list[Path] = []
+    for name, content in renderers:
+        target = out_dir / name
+        if target.exists() and not overwrite:
+            continue
+        target.write_text(content, encoding="utf-8")
+        written.append(target)
+
+    return written
+
 
 def _gather_repo_info(root: Path) -> dict[str, list[str]]:
     """Gather information about files in the repository.
@@ -120,17 +164,12 @@ def _render_code_agent_qmd() -> str:
     """
     try:
         from code_agent import __all__ as exports
-        from code_agent import (
-            build_agent,
-            create_default_tools,
-            create_llm,
-            create_project_scaffold,
-            load_config,
-        )
     except ImportError:
         exports = []
 
-    exports_list = "\n".join(f"- `{e}`" for e in sorted(exports)) if exports else ""
+    exports_list = (
+        "\n".join(f"- `{e}`" for e in sorted(exports)) if exports else ""
+    )
 
     return f"""---
 title: "Code Agent"
@@ -326,95 +365,3 @@ def _render_files_qmd(info: dict[str, list[str]]) -> str:
             lines.append(f"- `{p}`")
 
     return "\n".join(lines)
-
-
-def generate_quarto_docs(
-        output_dir: Path = Path("docs"),
-        overwrite: bool = False,
-        use_llm: bool = False,
-        llm: BaseChatModel | None = None,
-) -> list[str]:
-    """Generate a small set of .qmd files in `output_dir`.
-
-    :param output_dir: Directory to write documentation files
-    :param overwrite: Whether to overwrite existing files
-    :param use_llm: Whether to use LLM for enhanced documentation generation
-    :param llm: Optional LLM instance to use for content generation
-
-    :return: List of paths to the generated files
-    """
-    root = Path()
-    out = Path(output_dir)
-    out.mkdir(parents=True, exist_ok=True)
-    info = _gather_repo_info(root)
-    written: list[str] = []
-
-    # Generate README.qmd
-    readme_q = out / "README.qmd"
-    if not overwrite and readme_q.exists():
-        print(f"Skipping {readme_q} (already exists and overwrite=False)")
-    elif use_llm and llm:
-        try:
-            # Build a prompt for the LLM to generate a README
-            prompt = (
-                "You are an expert technical writer. Create a comprehensive README.qmd "
-                "for this project. Include sections for: project description, installation, "
-                "usage, and examples. Format it in Quarto markdown with a YAML header.\n\n"
-                f"Project files:\n"
-                f"Python files: {', '.join(info['py_files'][:20])}\n"
-                f"Data files: {', '.join(info['data_files'][:10])}\n"
-                f"Notebooks: {', '.join(info['notebooks'][:10])}\n"
-            )
-
-            # Use the provided LLM instance
-            content = llm.invoke(prompt)
-            if hasattr(content, "content"):
-                content = content.content
-
-            # Ensure we have a valid string
-            content = str(content).strip()
-
-            # Ensure it starts with --- for YAML front matter
-            if not content.startswith("---"):
-                content = (
-                        "---\n"
-                        'title: "Project Overview"\n'
-                        "format:\n"
-                        "  markdown_docs:\n"
-                        "    css: docs/styles/custom.css\n"
-                        "---\n\n" + content
-                )
-
-            write_file(readme_q, content)
-            written.append(str(readme_q))
-
-        except Exception as e:
-            print(f"Error generating README with LLM: {e}")
-            print("Falling back to template-based generation")
-            content = _render_readme_qmd(info)
-            write_file(readme_q, content)
-            written.append(str(readme_q))
-    else:
-        content = _render_readme_qmd(info)
-        write_file(readme_q, content)
-        written.append(str(readme_q))
-
-    # Generate CODE_AGENT.qmd
-    code_agent_q = out / "CODE_AGENT.qmd"
-    if not overwrite and code_agent_q.exists():
-        print(f"Skipping {code_agent_q} (already exists and overwrite=False)")
-    else:
-        content = _render_code_agent_qmd()
-        write_file(code_agent_q, content)
-        written.append(str(code_agent_q))
-
-    # Generate FILES.qmd
-    files_q = out / "FILES.qmd"
-    if not overwrite and files_q.exists():
-        print(f"Skipping {files_q} (already exists and overwrite=False)")
-    else:
-        content = _render_files_qmd(info)
-        write_file(files_q, content)
-        written.append(str(files_q))
-
-    return written

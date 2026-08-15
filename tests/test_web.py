@@ -8,16 +8,21 @@ do not require Node or a built frontend: the static SPA test is skipped when
 
 from __future__ import annotations
 
+import shutil
+
 from collections.abc import Iterator
 from pathlib import Path
-import shutil
 from unittest import mock
 
-from code_agent import cli
-from code_agent.ui.web import _DIST_DIR, app
+import pytest
+
 from fastapi.testclient import TestClient
 from langchain.messages import AIMessage, HumanMessage
-import pytest
+
+from code_agent import cli
+from code_agent.ui.web import _DIST_DIR  # ruff: ignore[import-private-name]
+from code_agent.ui.web import app  # ruff: ignore[import-private-name]
+
 
 # Path to the React SPA build dir, derived from the CLI module so it stays in
 # sync with where ``serve --web`` actually looks for it.
@@ -448,7 +453,7 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 # TODO: Uncomment when integration test infrastructure is complete
 #
 #
-# import code_agent.settings as settings
+# import code_agent.config.settings as settings
 # from code_agent.ui import web as web_module
 # from code_agent.ui.web import AuthMiddleware
 # from fastapi.testclient import TestClient
@@ -466,7 +471,7 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 #
 #     :return: A TestClient instance with auth enabled.
 #     """
-#     import code_agent.settings as settings_module
+#     import code_agent.config.settings as settings_module
 #
 #     # Create a mock settings object with auth_token set
 #     mock_settings = MagicMock()

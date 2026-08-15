@@ -9,14 +9,18 @@ from __future__ import annotations
 import logging
 import pathlib
 
-from code_agent.settings import Settings, get_settings
 import hypothesis
+import pytest
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
-import pytest
+
+from code_agent.config.settings import Settings, get_settings
+
 
 # Tag: Feature: agent-core-enhancement, Property 11: Settings checkpoint_dir validation never raises
 # Tag: Feature: agent-core-enhancement, Property 12: Settings round-trip
+
 
 @pytest.fixture(autouse=True)
 def reset_settings_cache():
@@ -39,17 +43,21 @@ class TestSettingsExtensions:
 
     # Tag: Feature: agent-core-enhancement, Property 11: Settings checkpoint_dir validation never raises
     @given(
-        checkpoint_dir=st.text(min_size=3, max_size=200)
-        .filter(lambda x: not any(c in x for c in ['\x00', '\n', '\r']))
+        checkpoint_dir=st
+        .text(min_size=3, max_size=200)
+        .filter(lambda x: not any(c in x for c in ["\x00", "\n", "\r"]))
         .filter(lambda x: not x.startswith("~")),  # Skip tilde paths
     )
-    @settings(max_examples=50, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+    @settings(
+        max_examples=50,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
     def test_checkpoint_dir_validation_never_raises(
-            self,
-            checkpoint_dir: str,
-            caplog: pytest.LogCaptureFixture,
-            tmp_path: pathlib.Path,
-            monkeypatch: pytest.MonkeyPatch,
+        self,
+        checkpoint_dir: str,
+        caplog: pytest.LogCaptureFixture,
+        tmp_path: pathlib.Path,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Property 11: Settings checkpoint_dir validation never raises.
 
@@ -82,9 +90,12 @@ class TestSettingsExtensions:
             st.lists(_make_provider_dict(), min_size=1, max_size=5),
         ),
     )
-    @settings(max_examples=50, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+    @settings(
+        max_examples=50,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
     def test_settings_round_trip(
-            self, stream_enabled: bool, provider_list: list[dict[str, str]] | None
+        self, stream_enabled: bool, provider_list: list[dict[str, str]] | None
     ) -> None:
         """Property 12: Settings round-trip preserves field values.
 
@@ -123,7 +134,7 @@ class TestSettingsExampleTests:
 
         # Note: Based on current implementation, stream_enabled defaults to False
         # and stream=True is a separate boolean for general streaming behavior
-        assert hasattr(settings, 'stream_enabled')
+        assert hasattr(settings, "stream_enabled")
 
         settings2 = Settings(stream_enabled=True)
 
@@ -131,7 +142,9 @@ class TestSettingsExampleTests:
 
     def test_provider_list_parses_json(self) -> None:
         """Example test: provider_list accepts JSON string and parses to dict."""
-        parsed_list: list[dict[str, str]] = [{"name": "ollama", "model": "gpt-oss-20b"}]
+        parsed_list: list[dict[str, str]] = [
+            {"name": "ollama", "model": "gpt-oss-20b"}
+        ]
         settings = Settings(provider_list=parsed_list)
 
         assert settings.provider_list is not None
@@ -139,7 +152,9 @@ class TestSettingsExampleTests:
         assert settings.provider_list[0]["name"] == "ollama"
         assert settings.provider_list[0]["model"] == "gpt-oss-20b"
 
-        parsed_list2: list[dict[str, str]] = [{"name": "openai", "model": "gpt-4o"}]
+        parsed_list2: list[dict[str, str]] = [
+            {"name": "openai", "model": "gpt-4o"}
+        ]
         settings2 = Settings(provider_list=parsed_list2)
 
         assert settings2.provider_list == parsed_list2

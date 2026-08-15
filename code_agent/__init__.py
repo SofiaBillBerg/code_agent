@@ -2,31 +2,41 @@
 
 from __future__ import annotations
 
+from code_agent.agents.base_agent import create_default_tools
+from code_agent.agents.deepagents_agent import (
+    build_deep_agent,
+    make_backend,
+    make_default_permissions,
+)
+
 # Import agent-related functions
-from .agents import build_agent, create_default_tools
+from code_agent.agents.persistent_agent import (
+    PersistentAgent,
+    build_agent,
+    get_persistent_agent,
+)
 
 # OAP-inspired capability layer (public API)
-from .capabilities.audit import AuditLog, Receipt
-from .capabilities.base import Capability, CapabilityBase, RiskClass
-from .capabilities.envelope import InvocationRequest, InvocationResponse
-from .capabilities.registry import CapabilityRegistry
-from .capabilities.tool_adapter import tool_to_capability
-from .exceptions import CodeAgentError, FileCreationError, InvalidToolError
-from .file_generator import (
-    append_file,
-    create_file,
-    create_from_template,
-    py_to_ipynb,
-    write_file,
+from code_agent.capabilities.audit import AuditLog, Receipt
+from code_agent.capabilities.base import Capability, CapabilityBase, RiskClass
+from code_agent.capabilities.envelope import (
+    InvocationRequest,
+    InvocationResponse,
 )
-from .main import create_llm, load_config
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.capabilities.tool_adapter import tool_to_capability
+from code_agent.exceptions import (
+    CodeAgentError,
+    FileCreationError,
+    InvalidToolError,
+)
+from code_agent.main import create_llm, load_config
 
 # Provider-agnostic LLM layer (public API)
-from .providers.base import LLMProvider, ProviderBase
-from .providers.factory import create_provider
-from .providers.ollama import OllamaProvider
-from .providers.openai import OpenAIProvider
-from .scaffold import create_project_scaffold
+from code_agent.providers.base import LLMProvider, ProviderBase
+from code_agent.providers.factory import create_provider
+from code_agent.providers.ollama import OllamaProvider
+from code_agent.providers.openai import OpenAIProvider
 
 # Explicitly expose the public API members
 __all__ = [
@@ -42,19 +52,18 @@ __all__ = [
     "LLMProvider",
     "OllamaProvider",
     "OpenAIProvider",
+    "PersistentAgent",
     "ProviderBase",
     "Receipt",
     "RiskClass",
-    "append_file",
     "build_agent",
+    "build_deep_agent",
     "create_default_tools",
-    "create_file",
-    "create_from_template",
     "create_llm",
-    "create_project_scaffold",
     "create_provider",
+    "get_persistent_agent",
     "load_config",
-    "py_to_ipynb",
+    "make_backend",
+    "make_default_permissions",
     "tool_to_capability",
-    "write_file",
 ]

@@ -5,7 +5,7 @@ Two agent harnesses are supported:
 * ``create_agent`` (default) - LangChain's ``create_agent`` with an
   :class:`InMemorySaver` checkpointer and a
   :class:`HumanInTheLoopMiddleware` that pauses sensitive tools for approval,
-* ``deepagents`` - :func:`code_agent.deepagents_agent.build_deep_agent`,
+* ``deepagents`` - :func:`code_agent.agents.deepagents_agent.build_deep_agent`,
   a DeepAgents (LangGraph) agent with the real working directory mounted at
   ``/workspace/``, built-in filesystem tools and permission-based
   human-in-the-loop review.
@@ -18,8 +18,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from code_agent.mcp import readonly_mcp_tool_names, sensitive_mcp_tool_names
-from code_agent.settings import DEFAULT_SYSTEM_PROMPT
+from code_agent.config.mcp import (
+    readonly_mcp_tool_names,
+    sensitive_mcp_tool_names,
+)
+from code_agent.config.settings import DEFAULT_SYSTEM_PROMPT
 from langchain.agents import create_agent
 from langchain.agents.middleware.human_in_the_loop import (
     HumanInTheLoopMiddleware,
@@ -50,7 +53,7 @@ def build_graph(
       :class:`InMemorySaver` checkpointer and a
       :class:`HumanInTheLoopMiddleware` that pauses
       write/edit/format/notebook/r-script tools for approval.
-    * ``"deepagents"`` - :func:`code_agent.deepagents_agent.build_deep_agent`
+    * ``"deepagents"`` - :func:`code_agent.agents.deepagents_agent.build_deep_agent`
       with the real working directory mounted at ``/workspace/``, built-in
       filesystem tools and permission-based HITL.  Custom tools whose names
       collide with the built-ins are dropped (the built-ins win).
@@ -68,7 +71,7 @@ def build_graph(
     :returns: A compiled agent runnable ready for execution.
     """
     if harness == "deepagents":
-        from code_agent.deepagents_agent import build_deep_agent
+        from code_agent.agents.deepagents_agent import build_deep_agent
 
         return build_deep_agent(
             llm=llm,
@@ -87,8 +90,8 @@ def build_graph(
         interrupt_on["new-file"] = True
     if "format-code" in tool_names:
         interrupt_on["format-code"] = True
-    if "notebook" in tool_names:
-        interrupt_on["notebook"] = True
+    if "notebook-tool" in tool_names:
+        interrupt_on["notebook-tool"] = True
     if "r-script" in tool_names:
         interrupt_on["r-script"] = True
 

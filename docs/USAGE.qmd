@@ -1,5 +1,4 @@
 ---
----
 title: "Usage Examples"
 author: "Sofia Billger Bergström"
 format: html
@@ -17,7 +16,10 @@ Python API, and interactive sessions.
 ```bash
 # Scaffold a new Flask project with standard structure
 mkdir my_web_app && cd my_web_app
-code-agent scaffold ./my_web_app --name MyWebApp
+code-agent chat << 'MSG'
+Scaffold a new Flask project: create src/my_web_app/app.py with a hello-world Flask app,
+tests/test_app.py with a smoke test, and docs/docs_web/index.qmd.
+MSG
 
 tree  # Shows: src/, tests/, docs/ directories created automatically
 ```
@@ -81,7 +83,7 @@ If you have a script with `#%%` cell markers, convert it interactively:
 
 ```bash
 # Your analysis.py contains multiple cells marked with #%%
-code-agent py2ipynb analysis.py analysis.ipynb
+python -c "from code_agent._io import py_to_ipynb; py_to_ipynb('analysis.py', 'analysis.ipynb')"
 
 ls -lh  # Shows notebook created (typically ~50-100KB)
 jupyter nbconvert --to html analysis.ipynb    # Optional: preview HTML output
@@ -109,14 +111,17 @@ MSG
 Run formatters via CLI or agent:
 
 ```bash
-# Using Black for Python files (default)
-code-agent format-code ./my_web_app/src/my_web_app/app.py  # Reformats to PEP8 style
+# Ask the agent to format Python files (e.g., Black, PEP8 style)
+code-agent chat << 'MSG'
+Run Black on src/my_web_app/app.py and reformat it to PEP8 style.
+MSG
 
-# For R code, use styler if available
-code-agent r-script << 'RSCRIPT'
+# For R code, ask the agent to use styler if available
+code-agent chat << 'MSG2'
+Use styler to format utils.R:
 library(styler)
-styler::style_file("utils.R")  # Format R source file
-RSCRIPT
+styler::style_file("utils.R")
+MSG2
 ```
 
 ## 🤖 Interactive Agent Sessions
@@ -175,8 +180,8 @@ The full power of `code_agent` is available through its Python API. This example
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.main import load_config, create_llm
-from code_agent.file_generator import write_file
-from langchain_core.messages import HumanMessage
+from code_agent.tools._io import create_file
+from langchain_core.messages import AIMessage, HumanMessage
 from pathlib import Path
 import os
 
@@ -192,10 +197,10 @@ llm = create_llm(config)         # Default: ChatOllama + GPT4AllEmbeddings
 
 # Create initial file
 initial_file = Path("my_module.py")
-write_file(initial_file, "# Utility functions module\n\n")
+create_file(initial_file, "# Utility functions module\n\n")
 
 # --- 2. Prepare Agent with Tools ---
-tools = create_default_tools(root_dir=".", llm=lll)
+tools = create_default_tools(root_dir=".", llm=llm)
 agent_app = build_agent(llm=llm, tools=tools)
 
 # --- 3. Define Task via Natural Language Prompt ---
@@ -204,7 +209,7 @@ prompt = (
     "- Function name: add_numbers\n"
     "- Include type hints\n"
     "- Add comprehensive docstring with examples\n"
-    "- Handle edge cases gracefully
+    "- Handle edge cases gracefully\n"
 ")
 
 print("--- Prompting Agent ---\n", prompt)

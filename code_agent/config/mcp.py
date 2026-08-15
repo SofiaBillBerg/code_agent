@@ -88,9 +88,12 @@ def server_from_prefixed(tool_name: str) -> str | None:
 SENSITIVE_SERVERS: frozenset[str] = frozenset({"github", "memory"})
 
 #: Servers that are strictly read-only and safe to call autonomously.
-READONLY_SERVERS: frozenset[str] = frozenset(
-    {"codegraph", "context7", "docs-langchain", "reference-langchain"}
-)
+READONLY_SERVERS: frozenset[str] = frozenset({
+    "codegraph",
+    "context7",
+    "docs-langchain",
+    "reference-langchain",
+})
 
 
 def is_sensitive_server(server_name: str) -> bool:

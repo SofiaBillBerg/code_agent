@@ -7,12 +7,17 @@ A log of the meaningful changes to the `code-agent` project.
 
 ## v0.3.0 (Unreleased)
 
-- **DeepAgents Migration**: Continued migration to DeepAgents architecture with middleware support, improving agent coordination and tool routing.
-- **Thread Routing Fixes**: Added `thread_id` support to serve, chat, CI agent invocation, and agent config for proper tool routing.
-- **Webapp Improvements**: Added CORS middleware, retry logic, and Vite proxy for web development; aligned `@vitejs/plugin-react` with Vite 8 and enabled on-demand UI builds.
+- **DeepAgents Migration**: Continued migration to DeepAgents architecture with middleware support, improving agent
+  coordination and tool routing.
+- **Thread Routing Fixes**: Added `thread_id` support to serve, chat, CI agent invocation, and agent config for proper
+  tool routing.
+- **Webapp Improvements**: Added CORS middleware, retry logic, and Vite proxy for web development; aligned
+  `@vitejs/plugin-react` with Vite 8 and enabled on-demand UI builds.
 - **Testing**: Added deepagents profile and thread accumulation tests to improve coverage.
-- **Code Quality**: Removed duplicated functions and dead code, updated docstrings, normalized imports, and enforced consistent formatting across `code_agent`.
-- **Documentation**: Relocated changelog to project root and updated references across project context and navigation docs.
+- **Code Quality**: Removed duplicated functions and dead code, updated docstrings, normalized imports, and enforced
+  consistent formatting across `code_agent`.
+- **Documentation**: Relocated changelog to project root and updated references across project context and navigation
+  docs.
 - **Dependencies**: Updated project dependencies to current versions.
 
 ## v0.2.0 (2025-11-10)

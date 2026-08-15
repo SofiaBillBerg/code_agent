@@ -11,7 +11,7 @@ sourced, in decreasing precedence, from:
 
 The JSONC file is parsed by :class:`JsoncConfigSettingsSource`, a
 JSONC-aware variant of pydantic-settings' ``JsonConfigSettingsSource`` that
-understands comments and trailing commas via :mod:`code_agent.jsonc`.
+understands comments and trailing commas via :mod:`code_agent.config.jsonc`.
 
 Sensible defaults live on the model so the application runs with zero
 configuration, while every value can be overridden per environment without
@@ -33,7 +33,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from code_agent.jsonc import loads as jsonc_loads
+from code_agent.config.jsonc import loads as jsonc_loads
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
@@ -96,7 +96,7 @@ class JsoncConfigSettingsSource(JsonConfigSettingsSource):
     """JSONC-aware variant of pydantic-settings' ``JsonConfigSettingsSource``.
 
     Reads the ``json_file`` configured on the settings model (by default
-    ``config/codeagent.jsonc``) and parses it with :func:`code_agent.jsonc.loads`
+    ``config/codeagent.jsonc``) and parses it with :func:`code_agent.config.jsonc.loads`
     so comments and trailing commas are accepted, unlike strict JSON.
     """
 

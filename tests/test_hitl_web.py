@@ -6,9 +6,14 @@ Tests for the /chat/resume endpoint and related HITL functionality.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Generator
 from typing import Literal
 
-from code_agent.ui.web import _hitl_decisions, _pending_hitl, app
+from code_agent.ui.web import (  # ruff: ignore[import-private-name]
+    _hitl_decisions,  # ruff: ignore[import-private-name]
+    _pending_hitl,  # ruff: ignore[import-private-name]
+    app,
+)
 from fastapi.testclient import TestClient
 import hypothesis
 from hypothesis import given, settings
@@ -19,7 +24,7 @@ import pytest
 # Tag: Feature: agent-core-enhancement, Property 7: Resume returns 409 for non-pending threads
 
 @pytest.fixture(autouse=True)
-def reset_hitl_state():
+def reset_hitl_state() -> Generator[None, None, None]:
     """Reset HITL state before each test.
 
     :yield: None
@@ -65,12 +70,15 @@ class TestResumeEndpoint:
         thread_id=st.uuids().map(str),
         decision=st.sampled_from(["approve", "reject"]),
     )
-    @settings(max_examples=100, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+    @settings(
+        max_examples=100,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
     def test_resume_approve_reject_works(
-            self,
-            client: TestClient,
-            thread_id: str,
-            decision: Literal["approve", "reject"],
+        self,
+        client: TestClient,
+        thread_id: str,
+        decision: Literal["approve", "reject"],
     ) -> None:
         """Property 6: HITL resume signals the pending event.
 
@@ -110,12 +118,15 @@ class TestResumeEndpoint:
         thread_id=st.uuids().map(str),
         decision=st.sampled_from(["approve", "reject"]),
     )
-    @settings(max_examples=100, suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture])
+    @settings(
+        max_examples=100,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
     def test_resume_409_for_non_pending_thread(
-            self,
-            client: TestClient,
-            thread_id: str,
-            decision: Literal["approve", "reject"],
+        self,
+        client: TestClient,
+        thread_id: str,
+        decision: Literal["approve", "reject"],
     ) -> None:
         """Property 7: Resume returns 409 for non-pending threads.
 
@@ -138,7 +149,7 @@ class TestResumeEndpoint:
         assert f"thread_id={thread_id!r}" in response.json()["detail"]
 
     def test_resume_409_when_event_already_resolved(
-            self, client: TestClient
+        self, client: TestClient
     ) -> None:
         """Resume returns 409 when SSE stream already closed.
 

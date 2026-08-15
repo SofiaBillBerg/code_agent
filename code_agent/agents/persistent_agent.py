@@ -147,9 +147,9 @@ class PersistentAgent:
         """
         final_text_parts: list[str] = []
         for event in stream_fn(
-                {"messages": self._history_to_messages()},
-                config={"configurable": {"thread_id": self.thread_id}},
-                version="v2",
+            {"messages": self._history_to_messages()},
+            config={"configurable": {"thread_id": self.thread_id}},
+            version="v2",
         ):
             data = event.get("data", {})
             if event.get("event") == "on_chat_model_stream":
@@ -191,7 +191,7 @@ agent = None
 
 
 def get_persistent_agent(
-        llm: BaseChatModel, tools: list[Any]
+    llm: BaseChatModel, tools: list[Any]
 ) -> Any | PersistentAgent | None:
     """
     Get persistent agent.

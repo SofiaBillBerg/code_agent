@@ -16,11 +16,14 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock
 
-from code_agent.graph import build_graph
+import pytest
+
 from langchain.messages import AIMessage, HumanMessage
 from langchain.tools import BaseTool, tool
 from langchain_core.utils.uuid import uuid7
-import pytest
+
+from code_agent.utils.graph import build_graph
+
 
 @pytest.fixture
 def mock_llm() -> MagicMock:
@@ -83,7 +86,7 @@ def _messages_of(state: dict[str, Any]) -> list:
 
 
 def test_checkpointer_accumulates_with_stable_thread_id(
-        agent_graph: Any,
+    agent_graph: Any,
 ) -> None:
     """State should grow across turns when reusing the same ``thread_id``.
 

@@ -84,7 +84,8 @@ Here is a comprehensive list of the tools that come with `code_agent`.
 One of the most powerful features of `code_agent` is its extensibility.
 
 ### 1. Create the Tool Class
-Create a new file in the [`code_agent/tools/`](../code_agent/tools/) directory. Your tool should be a class that inherits from `BaseTool` and defines its `name`, `description`, and `_run` method.
+Create a new file in the [`code_agent/tools/`](../code_agent/tools/__init__.py) directory. Your tool should be a class
+that inherits from `BaseTool` and defines its `name`, `description`, and `_run` method.
 
 ```python
 # In code_agent/tools/my_custom_tool.py

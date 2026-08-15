@@ -20,7 +20,7 @@ class TestProviderRoutingProperty:
         response = client.get("/providers")
 
         # Accept 200 (success), 401 (auth required), or 405 (method not allowed)
-        assert response.status_code in [200, 401, 405, 404]
+        assert response.status_code in {200, 401, 405, 404}
 
 
 class TestProviderRoutingExamples:
@@ -49,7 +49,7 @@ class TestProviderRoutingExamples:
 
         response = client.post("/providers/active", json=new_provider)
 
-        assert response.status_code in [200, 401, 404, 422, 405]
+        assert response.status_code in {200, 401, 404, 422, 405}
 
     def test_active_provider_endpoint_exists(self) -> None:
         """Example test: GET /providers/active endpoint exists."""
@@ -57,7 +57,7 @@ class TestProviderRoutingExamples:
 
         response = client.get("/providers/active")
 
-        assert response.status_code in [200, 401, 404]
+        assert response.status_code in {200, 401, 404}
 
     def test_providers_endpoint_has_correct_method(self) -> None:
         """Example test: GET /providers is the correct method, not POST."""
@@ -65,8 +65,8 @@ class TestProviderRoutingExamples:
 
         # GET should work
         get_response = client.get("/providers")
-        assert get_response.status_code in [200, 401, 404]
+        assert get_response.status_code in {200, 401, 404}
 
         # POST may not be allowed
         post_response = client.post("/providers", json={})
-        assert post_response.status_code in [405, 401, 404, 200, 201]
+        assert post_response.status_code in {405, 401, 404, 200, 201}

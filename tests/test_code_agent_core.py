@@ -1,16 +1,12 @@
-"""Unit tests for the public helpers in `code_agent.file_generator`."""
+"""Unit tests for the public helpers in `code_agent.tools`."""
 
 from pathlib import Path
-import textwrap
 from typing import Any
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.docs_generator import generate_quarto_docs
-from code_agent.file_generator import (
-    append_file,
-    create_from_template,
-    py_to_ipynb,
-    write_file,
+from code_agent.tools import notebook_tool
+from code_agent.tools._io import (  # ruff: ignore[import-private-name]
+    create_from_template,  # ruff: ignore[import-private-name]
 )
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
@@ -25,7 +21,6 @@ def dummy_llm() -> BaseChatModel:
     """A dummy LLM for testing agent creation.
 
     :return: A dummy LLM instance of BaseChatModel
-    :rtype: BaseChatModel
     :raises AssertionError: If the dummy LLM setup fails
     :raises ValueError: If the dummy LLM setup fails
     :raises TypeError: If the dummy LLM setup fails
@@ -35,12 +30,12 @@ def dummy_llm() -> BaseChatModel:
     class DummyLLM(BaseChatModel):
         """A dummy LLM implementation for testing."""
 
-        def _generate(
-                self,
-                messages: list[BaseMessage],
-                stop: list[str] | None = None,
-                **kwargs: Any,
-        ) -> ChatResult:
+        def _generate(  # ruff: ignore[no-self-use]
+            self,
+            messages: list[BaseMessage],
+            stop: list[str] | None = None,
+            **kwargs: Any,
+        ) -> ChatResult:  # ty: ignore[invalid-method-override]
             """Generate a dummy response.
 
             :param messages: A list of messages
@@ -57,8 +52,8 @@ def dummy_llm() -> BaseChatModel:
             )
 
         def bind_tools(
-                self, tools: list[BaseTool], **kwargs: Any
-        ) -> Runnable[Any, BaseMessage]:
+            self, tools: list[BaseTool], **kwargs: Any
+        ) -> Runnable[Any, BaseMessage]:  # ty: ignore[invalid-method-override]
             """Bind tools to the LLM.
 
             :param tools: A list of tools
@@ -76,34 +71,6 @@ def dummy_llm() -> BaseChatModel:
             return "dummy-chat-model"
 
     return DummyLLM()
-
-
-def test_create_and_append(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
-    """Test that files can be created and appended to.
-
-    :param  tmp_path: A temporary directory for testing
-    :param dummy_llm: A dummy LLM instance
-    :return: None
-    :raises AssertionError: If the file creation or append fails
-    """
-    # We need to create an agent to get the root_dir for tools
-    tools = create_default_tools(root_dir=str(tmp_path), llm=dummy_llm)
-    build_agent(
-        llm=dummy_llm, tools=tools
-    )  # Agent is not directly used here, but its creation sets up the context
-
-    # Test creating a file
-    file_path = tmp_path / "hello.md"
-    write_file(file_path, "# Hi")
-    assert file_path.exists()
-
-    # Test appending to the file
-    append_file(file_path, "\nMore")
-
-    # Verify content
-    content = file_path.read_text(encoding="utf-8")
-    assert "# Hi" in content
-    assert "More" in content
 
 
 def test_templates_and_nb(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
@@ -133,8 +100,8 @@ def test_templates_and_nb(tmp_path: Path, dummy_llm: BaseChatModel) -> None:
     py_path.write_text('# %%\nprint("Hello, World!")\n')
 
     nb_path = tmp_path / "test.ipynb"
-    result_nb = py_to_ipynb(py_path, nb_path)
-    assert result_nb.is_file()
+    result_path = notebook_tool.py_to_ipynb(py_path, nb_path)
+    assert result_path.exists()
 
 
 @pytest.fixture
@@ -145,54 +112,3 @@ def tmp_file(tmp_path: Path) -> Path:
     :return: A temporary file path
     """
     return tmp_path / "file.txt"
-
-
-def test_write_and_append(tmp_file: Path) -> None:
-    """Test that files are written and appended correctly.
-
-    :param tmp_file: A temporary file path
-    :return: None
-    :raises AssertionError: If the file writing or appending fails
-    """
-    write_file(tmp_file, "line1\n")
-    assert tmp_file.read_text(encoding="utf-8") == "line1\n"
-
-    append_file(tmp_file, "line2\n")
-    assert tmp_file.read_text(encoding="utf-8") == "line1\nline2\n"
-
-
-def test_convert_py_to_nb(tmp_path: Path) -> None:
-    """The notebook should contain the original code as a code cell.
-
-    :param tmp_path: A temporary directory for testing
-    :return: None
-    :raises AssertionError: If the notebook does not contain the expected content
-    """
-    script_path = tmp_path / "script.py"
-    script = textwrap.dedent("""
-                    def greet():
-                        '''Test docstring'''
-                        return "hello"
-                    """)
-    script_path.write_text(script)
-    notebook_path = py_to_ipynb(script_path, tmp_path / "greet.ipynb")
-    assert notebook_path.exists()
-    content = notebook_path.read_text()
-    # The JSON must include the source of the function
-    assert "def greet()" in content
-    assert "hello" in content
-
-
-def test_generate_docs_no_llm(tmp_path: Path) -> None:
-    """The docs generator should create a minimal output folder.
-
-    :param tmp_path: A temporary directory for testing
-    :return: None
-    :raises AssertionError: If the docs are not generated correctly
-    """
-    output_dir = tmp_path / "docs"
-    docs = generate_quarto_docs(output_dir=output_dir, use_llm=False)
-    assert output_dir.exists(), "Docs output directory should exist"
-    # Basic check: a README.qmd file is produced
-    assert len(docs) > 0
-    assert (output_dir / "README.qmd").exists()

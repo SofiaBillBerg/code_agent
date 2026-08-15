@@ -14,11 +14,21 @@ import pytest
 
 # Tag: Feature: agent-core-enhancement, Property 14: SSE stream properly formatted event
 
+
 class TestStreamingEndpoint:
-    """Tests for /chat/stream SSE endpoint."""
+    """Tests for /chat/stream SSE endpoint.
+
+    This class tests the Server-Sent Events (SSE) streaming responses from the chat endpoint.
+
+    Attributes:
+        client: FastAPI test client instance
+        timeout: Optional timeout for requests (default: 5 seconds)
+    """
 
     @pytest.mark.asyncio
-    async def test_sse_events_have_required_format(self) -> None:
+    async def test_sse_events_have_required_format(  # ruff: ignore[no-self-use]
+        self, timeout: int = 5
+    ) -> None:
         """Property 14: SSE events have the required `data:` prefix format.
 
         Each line yielded should start with `data: ` followed by valid JSON.
@@ -43,8 +53,8 @@ class TestStreamingEndpoint:
 
             :yield is the key here - it must be properly formatted
             """
-            yield "data: {\"type\": \"message\", \"content\": \"Hello\"}\n"
-            yield "data: {\"type\": \"done\", \"content\": null}\n"
+            yield 'data: {"type": "message", "content": "Hello"}\n'
+            yield 'data: {"type": "done", "content": null}\n'
 
         # Act: Verify event formatting
         events = []
@@ -80,7 +90,9 @@ class TestStreamingEndpoint:
         assert "type" in data
         assert isinstance(data["type"], str)
 
-    def test_streaming_response_is_streaming_response(self) -> None:
+    async def test_streaming_response_is_streaming_response(
+        self, timeout: int = 5
+    ) -> None:
         """Example test: /chat/stream returns StreamingResponse.
 
 
@@ -103,4 +115,8 @@ class TestStreamingEndpoint:
             timeout=5,
         )
 
-        assert response.status_code in [200, 401, 422]  # Auth or validation issues expected
+        assert response.status_code in {
+            200,
+            401,
+            422,
+        }  # Auth or validation issues expected

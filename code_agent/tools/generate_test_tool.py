@@ -27,9 +27,9 @@ class GenerateTestArgs(BaseModel):
     )
 
 
-@tool(args_schema=GenerateTestArgs)
+@tool(args_schema=GenerateTestArgs, parse_docstring=True, description="Generate a basic pytest test file for a given Python module.")
 def generate_test(
-        file_path: str, tests_dir: str = "tests", root_dir: Path | None = None
+    file_path: str, tests_dir: str = "tests", root_dir: Path | None = None
 ) -> str:
     """Generate a basic pytest test file for a given Python module.
 

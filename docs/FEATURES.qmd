@@ -11,26 +11,6 @@ output:
 
 This page provides a detailed overview of the features available in `code_agent`. All capabilities follow an OAP-inspired model where each action is audited with cryptographic receipts before execution.
 
-## 🏗️ Project Scaffolding
-
-Start new Python projects in seconds with the [`scaffold`](../code_agent/scaffold.py) command:
-
-```bash
-# Generate a complete project structure
-code-agent scaffold my-new-project --name MyProject
-
-tree  # Shows generated directories and files automatically
-```
-
-The scaffolds includes:
-- ✅ `src/` - Standard package source directory for your application code
-- ✅ `tests/` - Pre-configured pytest with smoke tests to verify setup works
-- ✅ `docs/docs_web/index.qmd` - Quarto documentation template ready for content
-- ✅ `.github/workflows/ci.yml` - GitHub Actions workflow for automated testing
-- ✅ Standard config files: `pyproject.toml`, `README.md`, etc.
-
-See [USAGE](./USAGE.qmd) for detailed examples of scaffold customization options.
-
 ## ✍️ File Generation & Manipulation
 
 All file operations are atomic and tracked via audit logs with hash-chained receipts:

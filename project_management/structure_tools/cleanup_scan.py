@@ -20,9 +20,8 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-import re
-
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDE_DIRS = {
@@ -49,6 +48,7 @@ if ARCHIVE_EXCLUDE_FILE.exists():
             s2 = s.replace("/", "\\").lstrip(".\\/")
             ARCHIVE_EXCLUDES.add(s2)
     except Exception:
+        # noinspection PyGlobalVariableRedeclarationInNotebook
         ARCHIVE_EXCLUDES = set()
 
 PY_EXT = ".py"
@@ -122,6 +122,13 @@ def is_excluded(path: Path) -> bool:
 
 
 def collect_files(root: Path) -> list[Path]:
+    """
+
+    :param root:
+    :type root:
+    :return:
+    :rtype:
+    """
     out = []
     for p in root.rglob("*"):
         if p.is_file():
@@ -133,6 +140,13 @@ def collect_files(root: Path) -> list[Path]:
 
 
 def parse_imports_from_py(path: Path) -> set[str]:
+    """
+
+    :param path:
+    :type path:
+    :return:
+    :rtype:
+    """
     names = set()
     try:
         text = path.read_text(encoding="utf8", errors="ignore")
@@ -149,6 +163,13 @@ def parse_imports_from_py(path: Path) -> set[str]:
 
 
 def map_module_to_file(py_files: list[Path]) -> dict[str, Path]:
+    """
+
+    :param py_files:
+    :type py_files:
+    :return:
+    :rtype:
+    """
     mapping = {}
     for p in py_files:
         name = p.stem
@@ -163,6 +184,13 @@ def map_module_to_file(py_files: list[Path]) -> dict[str, Path]:
 
 
 def find_entrypoints(all_files: list[Path]) -> set[Path]:
+    """
+
+    :param all_files:
+    :type all_files:
+    :return:
+    :rtype:
+    """
     eps = set()
     for p in all_files:
         # simple heuristics: file in project root with run_/main/cli or scripts in flow_pipeline/run_
@@ -182,6 +210,15 @@ def find_entrypoints(all_files: list[Path]) -> set[Path]:
 def build_import_graph(
     py_files: list[Path], mapping: dict[str, Path]
 ) -> dict[Path, set[Path]]:
+    """
+
+    :param py_files:
+    :type py_files:
+    :param mapping:
+    :type mapping:
+    :return:
+    :rtype:
+    """
     graph: dict[Path, set[Path]] = {p: set() for p in py_files}
     for p in py_files:
         imports = parse_imports_from_py(p)
@@ -194,6 +231,15 @@ def build_import_graph(
 def reachable_from(
     entrypoints: set[Path], graph: dict[Path, set[Path]]
 ) -> set[Path]:
+    """
+
+    :param entrypoints:
+    :type entrypoints:
+    :param graph:
+    :type graph:
+    :return:
+    :rtype:
+    """
     visited = set()
     stack = list(entrypoints)
     while stack:
@@ -208,6 +254,13 @@ def reachable_from(
 
 
 def find_duplicate_basenames(files: list[Path]) -> dict[str, list[Path]]:
+    """
+
+    :param files:
+    :type files:
+    :return:
+    :rtype:
+    """
     byname: dict[str, list[Path]] = {}
     for p in files:
         key = p.stem.lower()
@@ -216,6 +269,11 @@ def find_duplicate_basenames(files: list[Path]) -> dict[str, list[Path]]:
 
 
 def scan() -> tuple[list[dict], dict]:
+    """
+
+    :return:
+    :rtype:
+    """
     all_files = collect_files(ROOT)
     py_files = [p for p in all_files if p.suffix == PY_EXT]
     q_files = [p for p in all_files if p.suffix in Q_EXTS]
@@ -285,6 +343,13 @@ def scan() -> tuple[list[dict], dict]:
 
 
 def write_reports(rows: list[dict], extra: dict) -> None:
+    """
+
+    :param rows:
+    :type rows:
+    :param extra:
+    :type extra:
+    """
     outdir = ROOT / "output"
     outdir.mkdir(exist_ok=True)
     csvp = outdir / "cleanup_report.csv"
@@ -342,6 +407,7 @@ if __name__ == "__main__":
         for df in args.exclude_folder:
             if not df:
                 continue
+            # noinspection PyGlobalVariableRedeclarationInNotebook
             s = df.replace("/", "\\").lstrip(".\\/")
             # normalize to folder prefix (no trailing backslash)
             s = s.rstrip("\\/")
@@ -352,6 +418,7 @@ if __name__ == "__main__":
             try:
                 pth = Path(ef)
                 if not pth.is_absolute():
+                    # noinspection PyGlobalVariableRedeclarationInNotebook
                     pth = ROOT / ef
                 if pth.exists():
                     for L in pth.read_text(encoding="utf8").splitlines():

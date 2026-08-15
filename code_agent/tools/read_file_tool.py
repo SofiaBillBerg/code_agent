@@ -30,12 +30,12 @@ class ReadFileArgs(BaseModel):
     )
 
 
-@tool(args_schema=ReadFileArgs)
+@tool(args_schema=ReadFileArgs, parse_docstring=True, description="Read a file from the project and return its text content.")
 def read_file(
-        file_path: str,
-        offset: int = 0,
-        limit: int | None = None,
-        root_dir: Path | None = None,
+    file_path: str,
+    offset: int = 0,
+    limit: int | None = None,
+    root_dir: Path | None = None,
 ) -> str:
     """Read a file from the project and return its text content.
 

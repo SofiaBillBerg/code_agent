@@ -5,21 +5,20 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from code_agent.config.settings import Settings
 from code_agent.profiles import register_profiles_from_settings
-from code_agent.settings import Settings
 from deepagents import HarnessProfile
 import pytest
+
 
 def test_register_profiles_from_settings_noop_when_missing(
         monkeypatch: Any,
 ) -> None:
     """No profiles should be registered when settings.profiles is missing.
 
-
     This should not raise an exception.
 
     :param monkeypatch: The pytest-mock monkeypatch fixture.
-
     :raises AssertionError: If any profiles were registered.
     """
     settings = Settings(profiles=None)

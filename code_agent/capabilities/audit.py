@@ -67,7 +67,7 @@ class AuditLog:
         self._receipts: list[Receipt] = []
 
     def record(
-            self, request_id: str, capability_id: str, status: str
+        self, request_id: str, capability_id: str, status: str
     ) -> Receipt:
         """Append a receipt for a capability invocation.
 
