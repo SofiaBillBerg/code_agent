@@ -15,10 +15,8 @@ values are preserved verbatim.
 from __future__ import annotations
 
 import json
-
 from pathlib import Path
 from typing import Any
-
 
 def strip_comments(text: str) -> str:
     """Remove ``//`` line comments and ``/* ... */`` block comments.

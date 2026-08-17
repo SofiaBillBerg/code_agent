@@ -36,11 +36,9 @@ from __future__ import annotations
 
 import os
 import re
-
 from typing import Any
 
 from langchain.tools import BaseTool
-
 
 # ---------------------------------------------------------------------------
 # Naming convention

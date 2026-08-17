@@ -8,5 +8,4 @@ from __future__ import annotations
 
 from code_agent.profiles.router import register_profiles_from_settings
 
-
 __all__ = ["register_profiles_from_settings"]

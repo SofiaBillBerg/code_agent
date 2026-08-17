@@ -14,15 +14,10 @@ pointing to the created file, and raise ``CodeAgentError`` (defined in
 
 from __future__ import annotations
 
-import json
-
-from collections.abc import Iterable
 from pathlib import Path
 from types import ModuleType
-from typing import Any
 
 from code_agent.exceptions import CodeAgentError
-
 
 #: Optional Jupyter notebook dependency; ``None`` when unavailable.
 nbformat: ModuleType | None

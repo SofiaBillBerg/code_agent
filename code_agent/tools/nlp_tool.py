@@ -8,7 +8,6 @@ from langchain.messages import AIMessage
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel
 
-
 logger = logging.getLogger(__name__)
 
 

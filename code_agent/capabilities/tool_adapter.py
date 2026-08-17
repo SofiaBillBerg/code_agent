@@ -8,18 +8,15 @@ the tool's ``_run`` with the same keyword arguments LangChain would pass.
 
 from __future__ import annotations
 
-import inspect
-
 from collections.abc import Callable
+import inspect
 from typing import Any
-
-from langchain.tools import BaseTool
-from pydantic import BaseModel
-
-from code_agent.config.mcp import is_readonly_server, server_from_prefixed
 
 from .base import CapabilityBase, RiskClass
 
+from code_agent.config.mcp import is_readonly_server, server_from_prefixed
+from langchain.tools import BaseTool
+from pydantic import BaseModel
 
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (

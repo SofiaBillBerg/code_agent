@@ -29,13 +29,18 @@ Security notes:
 from __future__ import annotations
 
 import asyncio
-import uuid
-
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
+import uuid
 
+from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.config.settings import get_settings
+from code_agent.main import create_llm, load_config
+from code_agent.utils.checkpointer import build_checkpointer
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -46,14 +51,6 @@ from langchain.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from pydantic import BaseModel
-
-from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.config.settings import get_settings
-from code_agent.main import create_llm, load_config
-from code_agent.utils.checkpointer import build_checkpointer
-
 
 #: Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"

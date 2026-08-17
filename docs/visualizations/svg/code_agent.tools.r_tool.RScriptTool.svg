@@ -1,1 +1,290 @@
-<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="classDiagram" style="max-width: 313.305px; background-color: white;" viewBox="0 0 313.3046875 232" role="graphics-document document" aria-roledescription="class"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg g.classGroup text{fill:#9370DB;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#my-svg g.classGroup text .title{font-weight:bolder;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg .nodeLabel,#my-svg .edgeLabel{color:#131300;}#my-svg .noteLabel .nodeLabel,#my-svg .noteLabel .edgeLabel{color:black;}#my-svg .edgeLabel .label rect{fill:#ECECFF;}#my-svg .label text{fill:#131300;}#my-svg .labelBkg{background:#ECECFF;}#my-svg .edgeLabel .label span{background:#ECECFF;}#my-svg .classTitle{font-weight:bolder;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1;}#my-svg .divider{stroke:#9370DB;stroke-width:1;}#my-svg g.clickable{cursor:pointer;}#my-svg g.classGroup rect{fill:#ECECFF;stroke:#9370DB;}#my-svg g.classGroup line{stroke:#9370DB;stroke-width:1;}#my-svg .classLabel .box{stroke:none;stroke-width:0;fill:#ECECFF;opacity:0.5;}#my-svg .classLabel .label{fill:#9370DB;font-size:10px;}#my-svg .relation{stroke:#333333;stroke-width:1;fill:none;}#my-svg .dashed-line{stroke-dasharray:3;}#my-svg .dotted-line{stroke-dasharray:1 2;}#my-svg [id$="-compositionStart"],#my-svg .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-compositionEnd"],#my-svg .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-dependencyStart"],#my-svg .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-dependencyEnd"],#my-svg .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-extensionStart"],#my-svg .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-extensionEnd"],#my-svg .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-aggregationStart"],#my-svg .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-aggregationEnd"],#my-svg .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-lollipopStart"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-lollipopEnd"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg .edgeTerminals{font-size:11px;line-height:initial;}#my-svg .classTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg .edgeLabel[data-look="neo"]{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel[data-look="neo"] p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel[data-look="neo"] rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker id="my-svg_class-aggregationStart" class="marker aggregation class" refX="18" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-aggregationEnd" class="marker aggregation class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-aggregationStart-margin" class="marker aggregation class" refX="15" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/></marker></defs><defs><marker id="my-svg_class-aggregationEnd-margin" class="marker aggregation class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/></marker></defs><defs><marker id="my-svg_class-extensionStart" class="marker extension class" refX="18" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 1,7 L18,13 V 1 Z"/></marker></defs><defs><marker id="my-svg_class-extensionEnd" class="marker extension class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 1,1 V 13 L18,7 Z"/></marker></defs><marker id="my-svg_class-extensionStart-margin" class="marker extension class" refX="18" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14"><polygon points="10,7 18,13 18,1" style="stroke-width: 2; stroke-dasharray: 0;"/></marker><defs><marker id="my-svg_class-extensionEnd-margin" class="marker extension class" refX="9" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14"><polygon points="10,1 10,13 18,7" style="stroke-width: 2; stroke-dasharray: 0;"/></marker></defs><defs><marker id="my-svg_class-compositionStart" class="marker composition class" refX="18" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-compositionEnd" class="marker composition class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-compositionStart-margin" class="marker composition class" refX="15" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><path viewBox="0 0 15 15" d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-compositionEnd-margin" class="marker composition class" refX="3.5" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-dependencyStart" class="marker dependency class" refX="6" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 5,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-dependencyEnd" class="marker dependency class" refX="13" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-dependencyStart-margin" class="marker dependency class" refX="4" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><path d="M 5,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-dependencyEnd-margin" class="marker dependency class" refX="16" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L14,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-lollipopStart" class="marker lollipop class" refX="13" refY="7" markerWidth="190" markerHeight="240" orient="auto"><circle fill="transparent" cx="7" cy="7" r="6"/></marker></defs><defs><marker id="my-svg_class-lollipopEnd" class="marker lollipop class" refX="1" refY="7" markerWidth="190" markerHeight="240" orient="auto"><circle fill="transparent" cx="7" cy="7" r="6"/></marker></defs><defs><marker id="my-svg_class-lollipopStart-margin" class="marker lollipop class" refX="13" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/></marker></defs><defs><marker id="my-svg_class-lollipopEnd-margin" class="marker lollipop class" refX="1" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/></marker></defs><g class="root"><g class="clusters"/><g class="edgePaths"/><g class="edgeLabels"/><g class="nodes"><g class="node default" id="my-svg-classId-RScriptTool-0" data-look="classic" transform="translate(156.65234375, 116)"><g class="basic label-container outer-path"><path d="M-148.65234375 -108 L148.65234375 -108 L148.65234375 108 L-148.65234375 108" stroke="none" stroke-width="0" fill="[lavender" style="fill:[lavender"/><path d="M-148.65234375 -108 C-48.98195204942563 -108, 50.68843965114874 -108, 148.65234375 -108 M-148.65234375 -108 C-62.78554625276685 -108, 23.0812512444663 -108, 148.65234375 -108 M148.65234375 -108 C148.65234375 -30.712348745121034, 148.65234375 46.57530250975793, 148.65234375 108 M148.65234375 -108 C148.65234375 -23.806714589197412, 148.65234375 60.386570821605176, 148.65234375 108 M148.65234375 108 C55.12107948199521 108, -38.41018478600958 108, -148.65234375 108 M148.65234375 108 C38.02687253099661 108, -72.59859868800677 108, -148.65234375 108 M-148.65234375 108 C-148.65234375 60.219148674026, -148.65234375 12.438297348052004, -148.65234375 -108 M-148.65234375 108 C-148.65234375 30.971383086048732, -148.65234375 -46.057233827902536, -148.65234375 -108" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:[lavender"/></g><g class="annotation-group text" transform="translate(0, -84)"/><g class="label-group text" transform="translate(-44.7421875, -84)"><g class="label" style="font-weight: bolder" transform="translate(0,-12)"><foreignObject width="89.484375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 129px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>RScriptTool</p></span></div></foreignObject></g></g><g class="members-group text" transform="translate(-136.65234375, -36)"><g class="label" style="" transform="translate(0,-12)"><foreignObject width="228.5625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 256px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>args_schema : type[BaseModel]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,12)"><foreignObject width="108.484375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 150px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>description : str</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,36)"><foreignObject width="71.140625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 114px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>name : str</p></span></div></foreignObject></g></g><g class="methods-group text" transform="translate(-136.65234375, 60)"><g class="label" style="" transform="translate(0,-12)"><foreignObject width="82.6875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 127px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_arun() : str</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,12)"><foreignObject width="135.15625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 175px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_run(code: str) : str</p></span></div></foreignObject></g></g><g class="divider" style="fill:[lavender"><path d="M-148.65234375 -60 C-59.224338578262206 -59.999699204187046, 30.20366659347559 -59.99939840837409, 148.65234375 -59.999 M-148.65234375 -60 C-75.84251187328572 -59.999755100289576, -3.0326799965714315 -59.99951020057915, 148.65234375 -59.999" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:[lavender"/></g><g class="divider" style="fill:[lavender"><path d="M-148.65234375 36 C-88.55517464906026 36.00020213999855, -28.45800554812051 36.000404279997106, 148.65234375 36.001 M-148.65234375 36 C-52.28452609550351 36.000324138238334, 44.08329155899298 36.00064827647667, 148.65234375 36.001" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:[lavender"/></g></g></g></g></g><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="my-svg-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs></svg>
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg"
+     class="classDiagram" style="max-width: 313.305px; background-color: white;" viewBox="0 0 313.3046875 232"
+     role="graphics-document document" aria-roledescription="class">
+    <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes
+        edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
+        .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear
+        infinite;stroke-linecap:round;}#my-svg
+        .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear
+        infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg
+        .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg
+        .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg
+        .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg
+        .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg
+        .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet
+        ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg g.classGroup
+        text{fill:#9370DB;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#my-svg
+        g.classGroup text .title{font-weight:bolder;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label
+        span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .cluster
+        rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster
+        span{color:#333;}#my-svg .nodeLabel,#my-svg .edgeLabel{color:#131300;}#my-svg .noteLabel .nodeLabel,#my-svg
+        .noteLabel .edgeLabel{color:black;}#my-svg .edgeLabel .label rect{fill:#ECECFF;}#my-svg .label
+        text{fill:#131300;}#my-svg .labelBkg{background:#ECECFF;}#my-svg .edgeLabel .label
+        span{background:#ECECFF;}#my-svg .classTitle{font-weight:bolder;}#my-svg .node rect,#my-svg .node circle,#my-svg
+        .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1;}#my-svg
+        .divider{stroke:#9370DB;stroke-width:1;}#my-svg g.clickable{cursor:pointer;}#my-svg g.classGroup
+        rect{fill:#ECECFF;stroke:#9370DB;}#my-svg g.classGroup line{stroke:#9370DB;stroke-width:1;}#my-svg .classLabel
+        .box{stroke:none;stroke-width:0;fill:#ECECFF;opacity:0.5;}#my-svg .classLabel
+        .label{fill:#9370DB;font-size:10px;}#my-svg .relation{stroke:#333333;stroke-width:1;fill:none;}#my-svg
+        .dashed-line{stroke-dasharray:3;}#my-svg .dotted-line{stroke-dasharray:1 2;}#my-svg
+        [id$="-compositionStart"],#my-svg
+        .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-compositionEnd"],#my-svg
+        .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-dependencyStart"],#my-svg
+        .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-dependencyEnd"],#my-svg
+        .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-extensionStart"],#my-svg
+        .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-extensionEnd"],#my-svg
+        .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-aggregationStart"],#my-svg
+        .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-aggregationEnd"],#my-svg
+        .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-lollipopStart"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-lollipopEnd"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        .edgeTerminals{font-size:11px;line-height:initial;}#my-svg
+        .classTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg
+        .edgeLabel[data-look="neo"]{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg
+        .edgeLabel[data-look="neo"] p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel[data-look="neo"]
+        rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg
+        .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon
+        path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg
+        [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node
+        polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg
+        [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node
+        path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px
+        rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg
+        [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg
+        [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape
+        .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape
+        .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg
+        :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}
+    </style>
+    <g>
+        <defs>
+            <marker id="my-svg_class-aggregationStart" class="marker aggregation class" refX="18" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-aggregationEnd" class="marker aggregation class" refX="1" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-aggregationStart-margin" class="marker aggregation class" refX="15" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-aggregationEnd-margin" class="marker aggregation class" refX="1" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-extensionStart" class="marker extension class" refX="18" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 1,7 L18,13 V 1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-extensionEnd" class="marker extension class" refX="1" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 1,1 V 13 L18,7 Z"/>
+            </marker>
+        </defs>
+        <marker id="my-svg_class-extensionStart-margin" class="marker extension class" refX="18" refY="7"
+                markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14">
+            <polygon points="10,7 18,13 18,1" style="stroke-width: 2; stroke-dasharray: 0;"/>
+        </marker>
+        <defs>
+            <marker id="my-svg_class-extensionEnd-margin" class="marker extension class" refX="9" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14">
+                <polygon points="10,1 10,13 18,7" style="stroke-width: 2; stroke-dasharray: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionStart" class="marker composition class" refX="18" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionEnd" class="marker composition class" refX="1" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionStart-margin" class="marker composition class" refX="15" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <path viewBox="0 0 15 15" d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionEnd-margin" class="marker composition class" refX="3.5" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyStart" class="marker dependency class" refX="6" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto">
+                <path d="M 5,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyEnd" class="marker dependency class" refX="13" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 18,7 L9,13 L14,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyStart-margin" class="marker dependency class" refX="4" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 5,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyEnd-margin" class="marker dependency class" refX="16" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L14,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopStart" class="marker lollipop class" refX="13" refY="7" markerWidth="190"
+                    markerHeight="240" orient="auto">
+                <circle fill="transparent" cx="7" cy="7" r="6"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopEnd" class="marker lollipop class" refX="1" refY="7" markerWidth="190"
+                    markerHeight="240" orient="auto">
+                <circle fill="transparent" cx="7" cy="7" r="6"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopStart-margin" class="marker lollipop class" refX="13" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopEnd-margin" class="marker lollipop class" refX="1" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/>
+            </marker>
+        </defs>
+        <g class="root">
+            <g class="clusters"/>
+            <g class="edgePaths"/>
+            <g class="edgeLabels"/>
+            <g class="nodes">
+                <g class="node default" id="my-svg-classId-RScriptTool-0" data-look="classic"
+                   transform="translate(156.65234375, 116)">
+                    <g class="basic label-container outer-path">
+                        <path d="M-148.65234375 -108 L148.65234375 -108 L148.65234375 108 L-148.65234375 108"
+                              stroke="none" stroke-width="0" fill="[lavender" style="fill:[lavender"/>
+                        <path d="M-148.65234375 -108 C-85.49114490724708 -108, -22.329946064494152 -108, 148.65234375 -108 M-148.65234375 -108 C-79.09610664135771 -108, -9.539869532715414 -108, 148.65234375 -108 M148.65234375 -108 C148.65234375 -57.99326235850842, 148.65234375 -7.9865247170168345, 148.65234375 108 M148.65234375 -108 C148.65234375 -21.856918344726154, 148.65234375 64.28616331054769, 148.65234375 108 M148.65234375 108 C37.04504242137769 108, -74.56225890724463 108, -148.65234375 108 M148.65234375 108 C85.30232874861207 108, 21.952313747224153 108, -148.65234375 108 M-148.65234375 108 C-148.65234375 62.16281398689845, -148.65234375 16.325627973796898, -148.65234375 -108 M-148.65234375 108 C-148.65234375 47.73136245640928, -148.65234375 -12.537275087181442, -148.65234375 -108"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
+                              style="fill:[lavender"/>
+                    </g>
+                    <g class="annotation-group text" transform="translate(0, -84)"/>
+                    <g class="label-group text" transform="translate(-44.7421875, -84)">
+                        <g class="label" style="font-weight: bolder" transform="translate(0,-12)">
+                            <foreignObject width="89.484375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 129px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>RScriptTool</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="members-group text" transform="translate(-136.65234375, -36)">
+                        <g class="label" style="" transform="translate(0,-12)">
+                            <foreignObject width="228.5625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 256px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>args_schema : type[BaseModel]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,12)">
+                            <foreignObject width="108.484375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 150px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>description : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,36)">
+                            <foreignObject width="71.140625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 114px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>name : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="methods-group text" transform="translate(-136.65234375, 60)">
+                        <g class="label" style="" transform="translate(0,-12)">
+                            <foreignObject width="82.6875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 127px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_arun() : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,12)">
+                            <foreignObject width="135.15625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 175px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_run(code: str) : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="divider" style="fill:[lavender">
+                        <path d="M-148.65234375 -60 C-86.15432723937576 -59.99978978462453, -23.656310728751535 -59.99957956924907, 148.65234375 -59.999 M-148.65234375 -60 C-66.44758843043145 -59.99972349996897, 15.757166889137096 -59.99944699993794, 148.65234375 -59.999"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
+                              style="fill:[lavender"/>
+                    </g>
+                    <g class="divider" style="fill:[lavender">
+                        <path d="M-148.65234375 36 C-63.591693679972636 36.00028610598368, 21.46895639005473 36.00057221196736, 148.65234375 36.001 M-148.65234375 36 C-36.25932023199039 36.00037803986363, 76.13370328601923 36.00075607972725, 148.65234375 36.001"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
+                              style="fill:[lavender"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+    <defs>
+        <filter id="my-svg-drop-shadow" height="130%" width="130%">
+            <feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+    <defs>
+        <filter id="my-svg-drop-shadow-small" height="150%" width="150%">
+            <feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+</svg>

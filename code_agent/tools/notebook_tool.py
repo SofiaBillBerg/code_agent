@@ -3,19 +3,15 @@
 from __future__ import annotations
 
 import logging
-
 from pathlib import Path
 from typing import cast
 
-import nbformat
-
-from langchain.tools import BaseTool, tool
-from nbformat import NotebookNode
-from pydantic import BaseModel, Field
-
 from code_agent.exceptions import CodeAgentError
 from code_agent.tools.edit_file_tool import FileObject
-
+from langchain.tools import BaseTool, tool
+import nbformat
+from nbformat import NotebookNode
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 

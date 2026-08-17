@@ -3,17 +3,15 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import re
 
-from pathlib import Path
+from .edit_file_tool import FileObject
 
 from langchain.chat_models import BaseChatModel
 from langchain.messages import HumanMessage
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
-
-from .edit_file_tool import FileObject
-
 
 _MAX_FILE_SIZE: int = 2 * 1024 * 1024  # 2MB
 

@@ -9,11 +9,9 @@ Usage:
 
 from __future__ import annotations
 
-from ast import parse
 from pathlib import Path
 
 from langchain.tools import tool
-
 
 @tool(
     name_or_callable="generate_quarto_docs",

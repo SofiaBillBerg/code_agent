@@ -12,7 +12,6 @@ from code_agent.agents.persistent_agent import (
     get_persistent_agent,
 )
 
-
 __all__ = [
     "PersistentAgent",
     "build_agent",

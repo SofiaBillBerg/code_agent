@@ -7,19 +7,6 @@ Note:
 
 from __future__ import annotations
 
-from deepagents import create_deep_agent
-from deepagents.backends import (
-    CompositeBackend,
-    FilesystemBackend,
-    StateBackend,
-)
-from langchain.agents.middleware import (
-    HumanInTheLoopMiddleware,
-    ModelRetryMiddleware,
-    SummarizationMiddleware,
-    ToolRetryMiddleware,
-)
-
 from code_agent.tools import (
     edit_file,
     generate_test,
@@ -34,7 +21,18 @@ from code_agent.tools import (
 )
 from code_agent.tools.docs_generator import generate_quarto_docs
 from code_agent.utils.checkpointer import build_checkpointer
-
+from deepagents import create_deep_agent
+from deepagents.backends import (
+    CompositeBackend,
+    FilesystemBackend,
+    StateBackend,
+)
+from langchain.agents.middleware import (
+    HumanInTheLoopMiddleware,
+    ModelRetryMiddleware,
+    SummarizationMiddleware,
+    ToolRetryMiddleware,
+)
 
 default_middleware = [
     ToolRetryMiddleware(

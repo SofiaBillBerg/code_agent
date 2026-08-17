@@ -1,1 +1,1024 @@
-<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="classDiagram" style="max-width: 2809.45px; background-color: white;" viewBox="0 0 2809.4453125 2154" role="graphics-document document" aria-roledescription="class"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg g.classGroup text{fill:#9370DB;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#my-svg g.classGroup text .title{font-weight:bolder;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg .nodeLabel,#my-svg .edgeLabel{color:#131300;}#my-svg .noteLabel .nodeLabel,#my-svg .noteLabel .edgeLabel{color:black;}#my-svg .edgeLabel .label rect{fill:#ECECFF;}#my-svg .label text{fill:#131300;}#my-svg .labelBkg{background:#ECECFF;}#my-svg .edgeLabel .label span{background:#ECECFF;}#my-svg .classTitle{font-weight:bolder;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1;}#my-svg .divider{stroke:#9370DB;stroke-width:1;}#my-svg g.clickable{cursor:pointer;}#my-svg g.classGroup rect{fill:#ECECFF;stroke:#9370DB;}#my-svg g.classGroup line{stroke:#9370DB;stroke-width:1;}#my-svg .classLabel .box{stroke:none;stroke-width:0;fill:#ECECFF;opacity:0.5;}#my-svg .classLabel .label{fill:#9370DB;font-size:10px;}#my-svg .relation{stroke:#333333;stroke-width:1;fill:none;}#my-svg .dashed-line{stroke-dasharray:3;}#my-svg .dotted-line{stroke-dasharray:1 2;}#my-svg [id$="-compositionStart"],#my-svg .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-compositionEnd"],#my-svg .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-dependencyStart"],#my-svg .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-dependencyEnd"],#my-svg .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-extensionStart"],#my-svg .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-extensionEnd"],#my-svg .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-aggregationStart"],#my-svg .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-aggregationEnd"],#my-svg .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-lollipopStart"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg [id$="-lollipopEnd"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg .edgeTerminals{font-size:11px;line-height:initial;}#my-svg .classTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg .edgeLabel[data-look="neo"]{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel[data-look="neo"] p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel[data-look="neo"] rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .Runnable&gt;*{fill:blue!important;}#my-svg .Runnable span{fill:blue!important;}</style><g><defs><marker id="my-svg_class-aggregationStart" class="marker aggregation class" refX="18" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-aggregationEnd" class="marker aggregation class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-aggregationStart-margin" class="marker aggregation class" refX="15" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/></marker></defs><defs><marker id="my-svg_class-aggregationEnd-margin" class="marker aggregation class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/></marker></defs><defs><marker id="my-svg_class-extensionStart" class="marker extension class" refX="18" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 1,7 L18,13 V 1 Z"/></marker></defs><defs><marker id="my-svg_class-extensionEnd" class="marker extension class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 1,1 V 13 L18,7 Z"/></marker></defs><marker id="my-svg_class-extensionStart-margin" class="marker extension class" refX="18" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14"><polygon points="10,7 18,13 18,1" style="stroke-width: 2; stroke-dasharray: 0;"/></marker><defs><marker id="my-svg_class-extensionEnd-margin" class="marker extension class" refX="9" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14"><polygon points="10,1 10,13 18,7" style="stroke-width: 2; stroke-dasharray: 0;"/></marker></defs><defs><marker id="my-svg_class-compositionStart" class="marker composition class" refX="18" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-compositionEnd" class="marker composition class" refX="1" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-compositionStart-margin" class="marker composition class" refX="15" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><path viewBox="0 0 15 15" d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-compositionEnd-margin" class="marker composition class" refX="3.5" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-dependencyStart" class="marker dependency class" refX="6" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 5,7 L9,13 L1,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-dependencyEnd" class="marker dependency class" refX="13" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="my-svg_class-dependencyStart-margin" class="marker dependency class" refX="4" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><path d="M 5,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-dependencyEnd-margin" class="marker dependency class" refX="16" refY="7" markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse"><path d="M 18,7 L9,13 L14,7 L9,1 Z" style="stroke-width: 0;"/></marker></defs><defs><marker id="my-svg_class-lollipopStart" class="marker lollipop class" refX="13" refY="7" markerWidth="190" markerHeight="240" orient="auto"><circle fill="transparent" cx="7" cy="7" r="6"/></marker></defs><defs><marker id="my-svg_class-lollipopEnd" class="marker lollipop class" refX="1" refY="7" markerWidth="190" markerHeight="240" orient="auto"><circle fill="transparent" cx="7" cy="7" r="6"/></marker></defs><defs><marker id="my-svg_class-lollipopStart-margin" class="marker lollipop class" refX="13" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/></marker></defs><defs><marker id="my-svg_class-lollipopEnd-margin" class="marker lollipop class" refX="1" refY="7" markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse"><circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/></marker></defs><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M1404.723,1568L1404.723,1574.167C1404.723,1580.333,1404.723,1592.667,1404.723,1602.125C1404.723,1611.583,1404.723,1618.167,1404.723,1621.458L1404.723,1624.75" id="my-svg-id_Runnable_PersistentAgent_1" class="edge-thickness-normal edge-pattern-solid relation" style=";;;" data-edge="true" data-et="edge" data-id="id_Runnable_PersistentAgent_1" data-points="W3sieCI6MTQwNC43MjI2NTYyNSwieSI6MTU2OH0seyJ4IjoxNDA0LjcyMjY1NjI1LCJ5IjoxNjA1fSx7IngiOjE0MDQuNzIyNjU2MjUsInkiOjE2NDJ9XQ==" data-look="classic" marker-end="url(#my-svg_class-compositionEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(1404.72265625, 1605)"><g class="label" data-id="id_Runnable_PersistentAgent_1" transform="translate(-20.0234375, -12)"><foreignObject width="40.046875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>agent</p></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="my-svg-classId-PersistentAgent-0" data-look="classic" transform="translate(1404.72265625, 1894)"><g class="basic label-container outer-path"><path d="M-246.33203125 -252 L246.33203125 -252 L246.33203125 252 L-246.33203125 252" stroke="none" stroke-width="0" fill="[lavender" style="fill:[lavender"/><path d="M-246.33203125 -252 C-55.932109998200644 -252, 134.4678112535987 -252, 246.33203125 -252 M-246.33203125 -252 C-68.50601485148727 -252, 109.32000154702547 -252, 246.33203125 -252 M246.33203125 -252 C246.33203125 -80.59001651391296, 246.33203125 90.81996697217409, 246.33203125 252 M246.33203125 -252 C246.33203125 -119.69401424903415, 246.33203125 12.611971501931691, 246.33203125 252 M246.33203125 252 C111.21021685980108 252, -23.91159753039784 252, -246.33203125 252 M246.33203125 252 C83.63403079092137 252, -79.06396966815726 252, -246.33203125 252 M-246.33203125 252 C-246.33203125 78.10328468348814, -246.33203125 -95.79343063302372, -246.33203125 -252 M-246.33203125 252 C-246.33203125 97.69597285301992, -246.33203125 -56.60805429396015, -246.33203125 -252" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:[lavender"/></g><g class="annotation-group text" transform="translate(0, -228)"/><g class="label-group text" transform="translate(-61.3515625, -228)"><g class="label" style="font-weight: bolder" transform="translate(0,-12)"><foreignObject width="122.703125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 152px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>PersistentAgent</p></span></div></foreignObject></g></g><g class="members-group text" transform="translate(-234.33203125, -180)"><g class="label" style="" transform="translate(0,-12)"><foreignObject width="118.296875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 169px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_initialized : bool</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,12)"><foreignObject width="154.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 190px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_instance : NoneType</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,36)"><foreignObject width="72.9375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 124px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_state_file</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,60)"><foreignObject width="40.046875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 85px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>agent</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,84)"><foreignObject width="265.875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 301px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>conversation_history : list[dict[str, str]]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,108)"><foreignObject width="154.734375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 196px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>settings : dict[str, Any]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,132)"><foreignObject width="97.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 149px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>thread_id : str</p></span></div></foreignObject></g></g><g class="methods-group text" transform="translate(-234.33203125, 12)"><g class="label" style="" transform="translate(0,-12)"><foreignObject width="407.3125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 450px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>__init__(llm: BaseChatModel, tools: list[BaseTool]) : None</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,12)"><foreignObject width="156.25" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 214px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>__new__() : Any | Self</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,36)"><foreignObject width="136.0625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 177px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_chat_invoke() : str</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,60)"><foreignObject width="245.421875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 275px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_chat_stream(stream_fn: Any) : str</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,84)"><foreignObject width="190.328125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 222px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_ensure_state_dir() : None</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,108)"><foreignObject width="313.921875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 333px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_history_to_messages() : list[BaseMessage]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,132)"><foreignObject width="144.984375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 182px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_load_state() : None</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,156)"><foreignObject width="148.53125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 183px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>_save_state() : None</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,180)"><foreignObject width="163.59375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 195px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>chat(message: str) : str</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,204)"><foreignObject width="197.4375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 228px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:[lavender"><p>reset_conversation() : None</p></span></div></foreignObject></g></g><g class="divider" style="fill:[lavender"><path d="M-246.33203125 -204 C-112.26527928706466 -203.9997278738959, 21.801472675870684 -203.99945574779179, 246.33203125 -203.999 M-246.33203125 -204 C-145.4689232307606 -203.99979527001116, -44.60581521152119 -203.99959054002233, 246.33203125 -203.999" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:[lavender"/></g><g class="divider" style="fill:[lavender"><path d="M-246.33203125 -12 C-132.05329076788357 -11.99976803921946, -17.774550285767134 -11.999536078438918, 246.33203125 -11.999 M-246.33203125 -12 C-66.79699022796697 -11.999635583240817, 112.73805079406606 -11.999271166481636, 246.33203125 -11.999" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:[lavender"/></g></g><g class="node default" id="my-svg-classId-Runnable-1" data-look="classic" transform="translate(1404.72265625, 788)"><g class="basic label-container outer-path"><path d="M-1396.72265625 -780 L1396.72265625 -780 L1396.72265625 780 L-1396.72265625 780" stroke="none" stroke-width="0" fill="blue" style="fill:blue"/><path d="M-1396.72265625 -780 C-499.44577607703934 -780, 397.8311040959213 -780, 1396.72265625 -780 M-1396.72265625 -780 C-491.93576784424397 -780, 412.85112056151206 -780, 1396.72265625 -780 M1396.72265625 -780 C1396.72265625 -292.339643982488, 1396.72265625 195.32071203502403, 1396.72265625 780 M1396.72265625 -780 C1396.72265625 -219.81147536467108, 1396.72265625 340.37704927065784, 1396.72265625 780 M1396.72265625 780 C366.34765354366164 780, -664.0273491626767 780, -1396.72265625 780 M1396.72265625 780 C580.8613859890866 780, -234.9998842718269 780, -1396.72265625 780 M-1396.72265625 780 C-1396.72265625 386.80192782894227, -1396.72265625 -6.396144342115463, -1396.72265625 -780 M-1396.72265625 780 C-1396.72265625 384.78180488957156, -1396.72265625 -10.436390220856879, -1396.72265625 -780" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/></g><g class="annotation-group text" transform="translate(0, -756)"/><g class="label-group text" transform="translate(-36.4453125, -756)"><g class="label" style="font-weight: bolder" transform="translate(0,-12)"><foreignObject width="72.890625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 111px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>Runnable</p></span></div></foreignObject></g></g><g class="members-group text" transform="translate(-1384.72265625, -708)"><g class="label" style="" transform="translate(0,-12)"><foreignObject width="158.328125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>InputType : type[Input]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,12)"><foreignObject width="183.21875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 221px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>OutputType : type[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,36)"><foreignObject width="297.046875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 325px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>config_specs : list[ConfigurableFieldSpec]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,60)"><foreignObject width="227.40625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 256px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>input_schema : TypeBaseModel</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,84)"><foreignObject width="122.4375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 159px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>name : str | None</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,108)"><foreignObject width="237.1875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 264px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>output_schema : TypeBaseModel</p></span></div></foreignObject></g></g><g class="methods-group text" transform="translate(-1384.72265625, -540)"><g class="label" style="" transform="translate(0,-12)"><foreignObject width="532.75" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 570px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>__or__(other: Mapping[str, Any]) : RunnableSerializable[Input, dict[str, Any]]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,12)"><foreignObject width="490.640625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 528px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>__ror__(other: Mapping[str, Any]) : RunnableSerializable[Any, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,24)"><foreignObject width="2613" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2613px; text-align: center; width: 2613px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>_abatch_with_config(func: Callable[[list[Input]], Awaitable[list[Exception |Output]]]| Callable[[list[Input], list[AsyncCallbackManagerForChainRun]], Awaitable[list[Exception |Output]]]| Callable[[list[Input], list[AsyncCallbackManagerForChainRun], list[RunnableConfig]], Awaitable[list[Exception |Output]]], inputs: list[Input], config: RunnableConfig| list[RunnableConfig] | None) : list[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,72)"><foreignObject width="2246" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2246px; text-align: center; width: 2246px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p><em>acall_with_config(func: Callable[[Input], Awaitable[Output]] |Callable[[Input, AsyncCallbackManagerForChainRun], Awaitable[Output]]| Callable[[Input, AsyncCallbackManagerForChainRun, RunnableConfig], Awaitable[Output]], input</em>: Input, config: RunnableConfig |None, run_type: str| None, serialized: dict[str, Any] | None) : Output</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,120)"><foreignObject width="685" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 685px; text-align: center; width: 685px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>_astream_events_v1_v2(input: Any, config: RunnableConfig | None) : AsyncIterator[StreamEvent]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,180)"><foreignObject width="297.078125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 319px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>_astream_events_v3_unsupported() : Any</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,192)"><foreignObject width="2733" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2733px; text-align: center; width: 2733px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>_atransform_stream_with_config(inputs: AsyncIterator[Input], transformer: Callable[[AsyncIterator[Input]], AsyncIterator[Output]] |Callable[[AsyncIterator[Input], AsyncCallbackManagerForChainRun], AsyncIterator[Output]]| Callable[[AsyncIterator[Input], AsyncCallbackManagerForChainRun, RunnableConfig], AsyncIterator[Output]], config: RunnableConfig |None, run_type: str| None) : AsyncIterator[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,240)"><foreignObject width="2302" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2302px; text-align: center; width: 2302px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>_batch_with_config(func: Callable[[list[Input]], list[Exception |Output]]| Callable[[list[Input], list[CallbackManagerForChainRun]], list[Exception |Output]]| Callable[[list[Input], list[CallbackManagerForChainRun], list[RunnableConfig]], list[Exception |Output]], inputs: list[Input], config: RunnableConfig| list[RunnableConfig] | None) : list[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,288)"><foreignObject width="1936" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 1936px; text-align: center; width: 1936px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p><em>call_with_config(func: Callable[[Input], Output] |Callable[[Input, CallbackManagerForChainRun], Output]| Callable[[Input, CallbackManagerForChainRun, RunnableConfig], Output], input</em>: Input, config: RunnableConfig |None, run_type: str| None, serialized: dict[str, Any] | None) : Output</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,336)"><foreignObject width="2324" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2324px; text-align: center; width: 2324px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>_transform_stream_with_config(inputs: Iterator[Input], transformer: Callable[[Iterator[Input]], Iterator[Output]] |Callable[[Iterator[Input], CallbackManagerForChainRun], Iterator[Output]]| Callable[[Iterator[Input], CallbackManagerForChainRun, RunnableConfig], Iterator[Output]], config: RunnableConfig |None, run_type: str| None) : Iterator[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,396)"><foreignObject width="638" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 649px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>abatch(inputs: list[Input], config: RunnableConfig |list[RunnableConfig]| None) : list[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,408)"><foreignObject width="964" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 964px; text-align: center; width: 964px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>abatch_as_completed(inputs: Sequence[Input], config: RunnableConfig |Sequence[RunnableConfig]| None) : AsyncIterator[tuple[int, Output]]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,468)"><foreignObject width="432.875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 453px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>ainvoke(input: Input, config: RunnableConfig | None) : Output</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,492)"><foreignObject width="416.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 428px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>as_tool(args_schema: type[BaseModel] | None) : BaseTool</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,516)"><foreignObject width="292.3125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 322px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>assign() : RunnableSerializable[Any, Any]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,540)"><foreignObject width="537.78125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 549px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>astream(input: Input, config: RunnableConfig | None) : AsyncIterator[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,552)"><foreignObject width="628" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 628px; text-align: center; width: 628px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>astream_events(input: Any, config: RunnableConfig | None) : AsyncIterator[StreamEvent]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,612)"><foreignObject width="606.875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 613px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>astream_log(input: Any, config: RunnableConfig | None) : AsyncIterator[RunLogPatch]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,636)"><foreignObject width="658.71875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 666px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>atransform(input: AsyncIterator[Input], config: RunnableConfig | None) : AsyncIterator[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,660)"><foreignObject width="629.109375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 642px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>batch(inputs: list[Input], config: RunnableConfig |list[RunnableConfig]| None) : list[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,672)"><foreignObject width="917" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 917px; text-align: center; width: 917px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>batch_as_completed(inputs: Sequence[Input], config: RunnableConfig |Sequence[RunnableConfig]| None) : Iterator[tuple[int, Output]]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,732)"><foreignObject width="224.140625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 260px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>bind() : Runnable[Input, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,756)"><foreignObject width="250.796875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 281px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>config_schema() : type[BaseModel]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,780)"><foreignObject width="278.359375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 309px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_config_jsonschema() : dict[str, Any]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,804)"><foreignObject width="358.15625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 378px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_graph(config: RunnableConfig | None) : Graph</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,828)"><foreignObject width="488" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 502px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_input_jsonschema(config: RunnableConfig | None) : dict[str, Any]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,852)"><foreignObject width="486.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 495px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_input_schema(config: RunnableConfig | None) : TypeBaseModel</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,876)"><foreignObject width="227.953125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 259px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_name(suffix: str | None) : str</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,900)"><foreignObject width="497.78125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 510px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_output_jsonschema(config: RunnableConfig | None) : dict[str, Any]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,924)"><foreignObject width="496.625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 503px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_output_schema(config: RunnableConfig | None) : TypeBaseModel</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,948)"><foreignObject width="548.4375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 560px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>get_prompts(config: RunnableConfig | None) : list[BasePromptTemplate[Any]]</p></span></div></foreignObject></g><g class="label" style="font-style:italic;" transform="translate(0,972)"><foreignObject width="423.96875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 446px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>invoke(input: Input, config: RunnableConfig | None) : Output</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,996)"><foreignObject width="334.421875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 361px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>map() : Runnable[Sequence[Input], list[Output]]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1020)"><foreignObject width="393.34375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 421px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>pick(keys: str | list[str]) : RunnableSerializable[Any, Any]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1044)"><foreignObject width="298.84375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 326px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>pipe() : RunnableSerializable[Input, Other]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1068)"><foreignObject width="486.203125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 502px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>stream(input: Input, config: RunnableConfig | None) : Iterator[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1092)"><foreignObject width="576.609375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 581px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>stream_events(input: Any, config: RunnableConfig | None) : Iterator[StreamEvent]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1116)"><foreignObject width="564.453125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 579px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>transform(input: Iterator[Input], config: RunnableConfig | None) : Iterator[Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1140)"><foreignObject width="299.71875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 328px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>with_alisteners() : Runnable[Input, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1164)"><foreignObject width="491.578125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 510px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>with_config(config: RunnableConfig | None) : Runnable[Input, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1176)"><foreignObject width="724" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 724px; text-align: center; width: 724px;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>with_fallbacks(fallbacks: Sequence[Runnable[Input, Output]]) : RunnableWithFallbacksT[Input, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1236)"><foreignObject width="290.828125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 321px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>with_listeners() : Runnable[Input, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1260)"><foreignObject width="263.25" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 298px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>with_retry() : Runnable[Input, Output]</p></span></div></foreignObject></g><g class="label" style="" transform="translate(0,1284)"><foreignObject width="269.484375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 302px; text-align: center;"><span class="nodeLabel markdown-node-label" style="fill:blue"><p>with_types() : Runnable[Input, Output]</p></span></div></foreignObject></g></g><g class="divider" style="fill:blue"><path d="M-1396.72265625 -732 C-437.14362233474037 -731.9996564890569, 522.4354115805193 -731.9993129781137, 1396.72265625 -731.999 M-1396.72265625 -732 C-752.3306439815829 -731.999769319983, -107.9386317131657 -731.999538639966, 1396.72265625 -731.999" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/></g><g class="divider" style="fill:blue"><path d="M-1396.72265625 -564 C-743.5297308934613 -563.9997661694244, -90.33680553692261 -563.9995323388488, 1396.72265625 -563.999 M-1396.72265625 -564 C-615.7371354725306 -563.9997204221191, 165.2483853049389 -563.9994408442383, 1396.72265625 -563.999" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/></g></g></g></g></g><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="my-svg-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs></svg>
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg"
+     class="classDiagram" style="max-width: 2809.45px; background-color: white;" viewBox="0 0 2809.4453125 2154"
+     role="graphics-document document" aria-roledescription="class">
+    <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes
+        edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
+        .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear
+        infinite;stroke-linecap:round;}#my-svg
+        .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear
+        infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg
+        .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg
+        .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg
+        .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg
+        .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg
+        .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet
+        ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg g.classGroup
+        text{fill:#9370DB;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#my-svg
+        g.classGroup text .title{font-weight:bolder;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label
+        span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .cluster
+        rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster
+        span{color:#333;}#my-svg .nodeLabel,#my-svg .edgeLabel{color:#131300;}#my-svg .noteLabel .nodeLabel,#my-svg
+        .noteLabel .edgeLabel{color:black;}#my-svg .edgeLabel .label rect{fill:#ECECFF;}#my-svg .label
+        text{fill:#131300;}#my-svg .labelBkg{background:#ECECFF;}#my-svg .edgeLabel .label
+        span{background:#ECECFF;}#my-svg .classTitle{font-weight:bolder;}#my-svg .node rect,#my-svg .node circle,#my-svg
+        .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1;}#my-svg
+        .divider{stroke:#9370DB;stroke-width:1;}#my-svg g.clickable{cursor:pointer;}#my-svg g.classGroup
+        rect{fill:#ECECFF;stroke:#9370DB;}#my-svg g.classGroup line{stroke:#9370DB;stroke-width:1;}#my-svg .classLabel
+        .box{stroke:none;stroke-width:0;fill:#ECECFF;opacity:0.5;}#my-svg .classLabel
+        .label{fill:#9370DB;font-size:10px;}#my-svg .relation{stroke:#333333;stroke-width:1;fill:none;}#my-svg
+        .dashed-line{stroke-dasharray:3;}#my-svg .dotted-line{stroke-dasharray:1 2;}#my-svg
+        [id$="-compositionStart"],#my-svg
+        .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-compositionEnd"],#my-svg
+        .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-dependencyStart"],#my-svg
+        .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-dependencyEnd"],#my-svg
+        .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-extensionStart"],#my-svg
+        .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-extensionEnd"],#my-svg
+        .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-aggregationStart"],#my-svg
+        .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-aggregationEnd"],#my-svg
+        .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-lollipopStart"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        [id$="-lollipopEnd"],#my-svg .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#my-svg
+        .edgeTerminals{font-size:11px;line-height:initial;}#my-svg
+        .classTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg
+        .edgeLabel[data-look="neo"]{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg
+        .edgeLabel[data-look="neo"] p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel[data-look="neo"]
+        rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg
+        .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon
+        path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg
+        [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node
+        polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg
+        [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node
+        path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px
+        rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg
+        [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg
+        [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape
+        .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape
+        .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg
+        :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg .Runnable&gt;*{fill:blue!important;}#my-svg
+        .Runnable span{fill:blue!important;}
+    </style>
+    <g>
+        <defs>
+            <marker id="my-svg_class-aggregationStart" class="marker aggregation class" refX="18" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-aggregationEnd" class="marker aggregation class" refX="1" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-aggregationStart-margin" class="marker aggregation class" refX="15" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-aggregationEnd-margin" class="marker aggregation class" refX="1" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 2;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-extensionStart" class="marker extension class" refX="18" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 1,7 L18,13 V 1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-extensionEnd" class="marker extension class" refX="1" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 1,1 V 13 L18,7 Z"/>
+            </marker>
+        </defs>
+        <marker id="my-svg_class-extensionStart-margin" class="marker extension class" refX="18" refY="7"
+                markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14">
+            <polygon points="10,7 18,13 18,1" style="stroke-width: 2; stroke-dasharray: 0;"/>
+        </marker>
+        <defs>
+            <marker id="my-svg_class-extensionEnd-margin" class="marker extension class" refX="9" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 14">
+                <polygon points="10,1 10,13 18,7" style="stroke-width: 2; stroke-dasharray: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionStart" class="marker composition class" refX="18" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionEnd" class="marker composition class" refX="1" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionStart-margin" class="marker composition class" refX="15" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <path viewBox="0 0 15 15" d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-compositionEnd-margin" class="marker composition class" refX="3.5" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyStart" class="marker dependency class" refX="6" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto">
+                <path d="M 5,7 L9,13 L1,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyEnd" class="marker dependency class" refX="13" refY="7" markerWidth="20"
+                    markerHeight="28" orient="auto">
+                <path d="M 18,7 L9,13 L14,7 L9,1 Z"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyStart-margin" class="marker dependency class" refX="4" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 5,7 L9,13 L1,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-dependencyEnd-margin" class="marker dependency class" refX="16" refY="7"
+                    markerWidth="20" markerHeight="28" orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 18,7 L9,13 L14,7 L9,1 Z" style="stroke-width: 0;"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopStart" class="marker lollipop class" refX="13" refY="7" markerWidth="190"
+                    markerHeight="240" orient="auto">
+                <circle fill="transparent" cx="7" cy="7" r="6"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopEnd" class="marker lollipop class" refX="1" refY="7" markerWidth="190"
+                    markerHeight="240" orient="auto">
+                <circle fill="transparent" cx="7" cy="7" r="6"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopStart-margin" class="marker lollipop class" refX="13" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="my-svg_class-lollipopEnd-margin" class="marker lollipop class" refX="1" refY="7"
+                    markerWidth="190" markerHeight="240" orient="auto" markerUnits="userSpaceOnUse">
+                <circle fill="transparent" cx="7" cy="7" r="6" stroke-width="2"/>
+            </marker>
+        </defs>
+        <g class="root">
+            <g class="clusters"/>
+            <g class="edgePaths">
+                <path d="M1404.723,1568L1404.723,1574.167C1404.723,1580.333,1404.723,1592.667,1404.723,1602.125C1404.723,1611.583,1404.723,1618.167,1404.723,1621.458L1404.723,1624.75"
+                      id="my-svg-id_Runnable_PersistentAgent_1"
+                      class="edge-thickness-normal edge-pattern-solid relation" style=";;;" data-edge="true"
+                      data-et="edge" data-id="id_Runnable_PersistentAgent_1"
+                      data-points="W3sieCI6MTQwNC43MjI2NTYyNSwieSI6MTU2OH0seyJ4IjoxNDA0LjcyMjY1NjI1LCJ5IjoxNjA1fSx7IngiOjE0MDQuNzIyNjU2MjUsInkiOjE2NDJ9XQ=="
+                      data-look="classic" marker-end="url(#my-svg_class-compositionEnd)"/>
+            </g>
+            <g class="edgeLabels">
+                <g class="edgeLabel" transform="translate(1404.72265625, 1605)">
+                    <g class="label" data-id="id_Runnable_PersistentAgent_1" transform="translate(-20.0234375, -12)">
+                        <foreignObject width="40.046875" height="24">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel">
+                                    <p>agent</p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+            <g class="nodes">
+                <g class="node default" id="my-svg-classId-PersistentAgent-0" data-look="classic"
+                   transform="translate(1404.72265625, 1894)">
+                    <g class="basic label-container outer-path">
+                        <path d="M-246.33203125 -252 L246.33203125 -252 L246.33203125 252 L-246.33203125 252"
+                              stroke="none" stroke-width="0" fill="[lavender" style="fill:[lavender"/>
+                        <path d="M-246.33203125 -252 C-79.33134704835041 -252, 87.66933715329918 -252, 246.33203125 -252 M-246.33203125 -252 C-115.87066992263405 -252, 14.5906914047319 -252, 246.33203125 -252 M246.33203125 -252 C246.33203125 -144.74493473569632, 246.33203125 -37.48986947139264, 246.33203125 252 M246.33203125 -252 C246.33203125 -71.57862016985143, 246.33203125 108.84275966029713, 246.33203125 252 M246.33203125 252 C124.93047222078208 252, 3.5289131915641576 252, -246.33203125 252 M246.33203125 252 C99.75706171705227 252, -46.81790781589547 252, -246.33203125 252 M-246.33203125 252 C-246.33203125 79.14565883937297, -246.33203125 -93.70868232125406, -246.33203125 -252 M-246.33203125 252 C-246.33203125 85.66339002072374, -246.33203125 -80.67321995855252, -246.33203125 -252"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
+                              style="fill:[lavender"/>
+                    </g>
+                    <g class="annotation-group text" transform="translate(0, -228)"/>
+                    <g class="label-group text" transform="translate(-61.3515625, -228)">
+                        <g class="label" style="font-weight: bolder" transform="translate(0,-12)">
+                            <foreignObject width="122.703125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 152px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>PersistentAgent</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="members-group text" transform="translate(-234.33203125, -180)">
+                        <g class="label" style="" transform="translate(0,-12)">
+                            <foreignObject width="118.296875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 169px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_initialized : bool</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,12)">
+                            <foreignObject width="154.765625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 190px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_instance : NoneType</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,36)">
+                            <foreignObject width="72.9375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 124px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_state_file</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,60)">
+                            <foreignObject width="40.046875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 85px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>agent</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,84)">
+                            <foreignObject width="265.875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 301px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>conversation_history : list[dict[str, str]]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,108)">
+                            <foreignObject width="154.734375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 196px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>settings : dict[str, Any]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,132)">
+                            <foreignObject width="97.828125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 149px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>thread_id : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="methods-group text" transform="translate(-234.33203125, 12)">
+                        <g class="label" style="" transform="translate(0,-12)">
+                            <foreignObject width="407.3125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 450px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>__init__(llm: BaseChatModel, tools: list[BaseTool]) : None</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,12)">
+                            <foreignObject width="156.25" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 214px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>__new__() : Any | Self</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,36)">
+                            <foreignObject width="136.0625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 177px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_chat_invoke() : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,60)">
+                            <foreignObject width="245.421875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 275px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_chat_stream(stream_fn: Any) : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,84)">
+                            <foreignObject width="190.328125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 222px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_ensure_state_dir() : None</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,108)">
+                            <foreignObject width="313.921875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 333px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_history_to_messages() : list[BaseMessage]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,132)">
+                            <foreignObject width="144.984375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 182px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_load_state() : None</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,156)">
+                            <foreignObject width="148.53125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 183px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>_save_state() : None</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,180)">
+                            <foreignObject width="163.59375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 195px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>chat(message: str) : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,204)">
+                            <foreignObject width="197.4375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 228px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
+                                        <p>reset_conversation() : None</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="divider" style="fill:[lavender">
+                        <path d="M-246.33203125 -204 C-104.71673979493363 -203.9997125520162, 36.89855166013274 -203.9994251040324, 246.33203125 -203.999 M-246.33203125 -204 C-62.29864291464773 -203.9996264525823, 121.73474542070454 -203.9992529051646, 246.33203125 -203.999"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
+                              style="fill:[lavender"/>
+                    </g>
+                    <g class="divider" style="fill:[lavender">
+                        <path d="M-246.33203125 -12 C-50.66344086787774 -11.999602835673889, 145.00514951424452 -11.999205671347777, 246.33203125 -11.999 M-246.33203125 -12 C-68.96887627545502 -11.999639991693174, 108.39427869908997 -11.999279983386348, 246.33203125 -11.999"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
+                              style="fill:[lavender"/>
+                    </g>
+                </g>
+                <g class="node default" id="my-svg-classId-Runnable-1" data-look="classic"
+                   transform="translate(1404.72265625, 788)">
+                    <g class="basic label-container outer-path">
+                        <path d="M-1396.72265625 -780 L1396.72265625 -780 L1396.72265625 780 L-1396.72265625 780"
+                              stroke="none" stroke-width="0" fill="blue" style="fill:blue"/>
+                        <path d="M-1396.72265625 -780 C-793.7527695152629 -780, -190.78288278052582 -780, 1396.72265625 -780 M-1396.72265625 -780 C-435.3544994953545 -780, 526.013657259291 -780, 1396.72265625 -780 M1396.72265625 -780 C1396.72265625 -323.7070326272245, 1396.72265625 132.58593474555096, 1396.72265625 780 M1396.72265625 -780 C1396.72265625 -323.32914052407335, 1396.72265625 133.3417189518533, 1396.72265625 780 M1396.72265625 780 C471.7422814556645 780, -453.238093338671 780, -1396.72265625 780 M1396.72265625 780 C551.9174308033226 780, -292.8877946433547 780, -1396.72265625 780 M-1396.72265625 780 C-1396.72265625 296.59469821495344, -1396.72265625 -186.81060357009312, -1396.72265625 -780 M-1396.72265625 780 C-1396.72265625 275.2877087746026, -1396.72265625 -229.4245824507948, -1396.72265625 -780"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
+                    </g>
+                    <g class="annotation-group text" transform="translate(0, -756)"/>
+                    <g class="label-group text" transform="translate(-36.4453125, -756)">
+                        <g class="label" style="font-weight: bolder" transform="translate(0,-12)">
+                            <foreignObject width="72.890625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 111px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>Runnable</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="members-group text" transform="translate(-1384.72265625, -708)">
+                        <g class="label" style="" transform="translate(0,-12)">
+                            <foreignObject width="158.328125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>InputType : type[Input]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,12)">
+                            <foreignObject width="183.21875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 221px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>OutputType : type[Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,36)">
+                            <foreignObject width="297.046875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 325px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>config_specs : list[ConfigurableFieldSpec]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,60)">
+                            <foreignObject width="227.40625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 256px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>input_schema : TypeBaseModel</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,84)">
+                            <foreignObject width="122.4375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 159px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>name : str | None</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,108)">
+                            <foreignObject width="237.1875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 264px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>output_schema : TypeBaseModel</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="methods-group text" transform="translate(-1384.72265625, -540)">
+                        <g class="label" style="" transform="translate(0,-12)">
+                            <foreignObject width="532.75" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 570px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>__or__(other: Mapping[str, Any]) : RunnableSerializable[Input, dict[str,
+                                            Any]]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,12)">
+                            <foreignObject width="490.640625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 528px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>__ror__(other: Mapping[str, Any]) : RunnableSerializable[Any, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,24)">
+                            <foreignObject width="2613" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2613px; text-align: center; width: 2613px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>_abatch_with_config(func: Callable[[list[Input]], Awaitable[list[Exception
+                                            |Output]]]| Callable[[list[Input], list[AsyncCallbackManagerForChainRun]],
+                                            Awaitable[list[Exception |Output]]]| Callable[[list[Input],
+                                            list[AsyncCallbackManagerForChainRun], list[RunnableConfig]],
+                                            Awaitable[list[Exception |Output]]], inputs: list[Input], config:
+                                            RunnableConfig| list[RunnableConfig] | None) : list[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,72)">
+                            <foreignObject width="2246" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2246px; text-align: center; width: 2246px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p><em>acall_with_config(func: Callable[[Input], Awaitable[Output]]
+                                            |Callable[[Input, AsyncCallbackManagerForChainRun], Awaitable[Output]]|
+                                            Callable[[Input, AsyncCallbackManagerForChainRun, RunnableConfig],
+                                            Awaitable[Output]], input</em>: Input, config: RunnableConfig |None,
+                                            run_type: str| None, serialized: dict[str, Any] | None) : Output
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,120)">
+                            <foreignObject width="685" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 685px; text-align: center; width: 685px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>_astream_events_v1_v2(input: Any, config: RunnableConfig | None) :
+                                            AsyncIterator[StreamEvent]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,180)">
+                            <foreignObject width="297.078125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 319px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>_astream_events_v3_unsupported() : Any</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,192)">
+                            <foreignObject width="2733" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2733px; text-align: center; width: 2733px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>_atransform_stream_with_config(inputs: AsyncIterator[Input], transformer:
+                                            Callable[[AsyncIterator[Input]], AsyncIterator[Output]]
+                                            |Callable[[AsyncIterator[Input], AsyncCallbackManagerForChainRun],
+                                            AsyncIterator[Output]]| Callable[[AsyncIterator[Input],
+                                            AsyncCallbackManagerForChainRun, RunnableConfig], AsyncIterator[Output]],
+                                            config: RunnableConfig |None, run_type: str| None) : AsyncIterator[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,240)">
+                            <foreignObject width="2302" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2302px; text-align: center; width: 2302px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>_batch_with_config(func: Callable[[list[Input]], list[Exception |Output]]|
+                                            Callable[[list[Input], list[CallbackManagerForChainRun]], list[Exception
+                                            |Output]]| Callable[[list[Input], list[CallbackManagerForChainRun],
+                                            list[RunnableConfig]], list[Exception |Output]], inputs: list[Input],
+                                            config: RunnableConfig| list[RunnableConfig] | None) : list[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,288)">
+                            <foreignObject width="1936" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 1936px; text-align: center; width: 1936px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p><em>call_with_config(func: Callable[[Input], Output] |Callable[[Input,
+                                            CallbackManagerForChainRun], Output]| Callable[[Input,
+                                            CallbackManagerForChainRun, RunnableConfig], Output], input</em>: Input,
+                                            config: RunnableConfig |None, run_type: str| None, serialized: dict[str,
+                                            Any] | None) : Output
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,336)">
+                            <foreignObject width="2324" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 2324px; text-align: center; width: 2324px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>_transform_stream_with_config(inputs: Iterator[Input], transformer:
+                                            Callable[[Iterator[Input]], Iterator[Output]] |Callable[[Iterator[Input],
+                                            CallbackManagerForChainRun], Iterator[Output]]| Callable[[Iterator[Input],
+                                            CallbackManagerForChainRun, RunnableConfig], Iterator[Output]], config:
+                                            RunnableConfig |None, run_type: str| None) : Iterator[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,396)">
+                            <foreignObject width="638" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 649px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>abatch(inputs: list[Input], config: RunnableConfig |list[RunnableConfig]|
+                                            None) : list[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,408)">
+                            <foreignObject width="964" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 964px; text-align: center; width: 964px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>abatch_as_completed(inputs: Sequence[Input], config: RunnableConfig
+                                            |Sequence[RunnableConfig]| None) : AsyncIterator[tuple[int, Output]]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,468)">
+                            <foreignObject width="432.875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 453px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>ainvoke(input: Input, config: RunnableConfig | None) : Output</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,492)">
+                            <foreignObject width="416.828125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 428px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>as_tool(args_schema: type[BaseModel] | None) : BaseTool</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,516)">
+                            <foreignObject width="292.3125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 322px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>assign() : RunnableSerializable[Any, Any]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,540)">
+                            <foreignObject width="537.78125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 549px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>astream(input: Input, config: RunnableConfig | None) :
+                                            AsyncIterator[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,552)">
+                            <foreignObject width="628" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 628px; text-align: center; width: 628px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>astream_events(input: Any, config: RunnableConfig | None) :
+                                            AsyncIterator[StreamEvent]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,612)">
+                            <foreignObject width="606.875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 613px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>astream_log(input: Any, config: RunnableConfig | None) :
+                                            AsyncIterator[RunLogPatch]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,636)">
+                            <foreignObject width="658.71875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 666px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>atransform(input: AsyncIterator[Input], config: RunnableConfig | None) :
+                                            AsyncIterator[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,660)">
+                            <foreignObject width="629.109375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 642px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>batch(inputs: list[Input], config: RunnableConfig |list[RunnableConfig]|
+                                            None) : list[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,672)">
+                            <foreignObject width="917" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 917px; text-align: center; width: 917px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>batch_as_completed(inputs: Sequence[Input], config: RunnableConfig
+                                            |Sequence[RunnableConfig]| None) : Iterator[tuple[int, Output]]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,732)">
+                            <foreignObject width="224.140625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 260px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>bind() : Runnable[Input, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,756)">
+                            <foreignObject width="250.796875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 281px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>config_schema() : type[BaseModel]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,780)">
+                            <foreignObject width="278.359375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 309px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_config_jsonschema() : dict[str, Any]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,804)">
+                            <foreignObject width="358.15625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 378px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_graph(config: RunnableConfig | None) : Graph</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,828)">
+                            <foreignObject width="488" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 502px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_input_jsonschema(config: RunnableConfig | None) : dict[str, Any]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,852)">
+                            <foreignObject width="486.828125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 495px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_input_schema(config: RunnableConfig | None) : TypeBaseModel</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,876)">
+                            <foreignObject width="227.953125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 259px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_name(suffix: str | None) : str</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,900)">
+                            <foreignObject width="497.78125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 510px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_output_jsonschema(config: RunnableConfig | None) : dict[str, Any]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,924)">
+                            <foreignObject width="496.625" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 503px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_output_schema(config: RunnableConfig | None) : TypeBaseModel</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,948)">
+                            <foreignObject width="548.4375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 560px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>get_prompts(config: RunnableConfig | None) : list[BasePromptTemplate[Any]]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="font-style:italic;" transform="translate(0,972)">
+                            <foreignObject width="423.96875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 446px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>invoke(input: Input, config: RunnableConfig | None) : Output</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,996)">
+                            <foreignObject width="334.421875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 361px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>map() : Runnable[Sequence[Input], list[Output]]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1020)">
+                            <foreignObject width="393.34375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 421px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>pick(keys: str | list[str]) : RunnableSerializable[Any, Any]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1044)">
+                            <foreignObject width="298.84375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 326px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>pipe() : RunnableSerializable[Input, Other]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1068)">
+                            <foreignObject width="486.203125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 502px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>stream(input: Input, config: RunnableConfig | None) : Iterator[Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1092)">
+                            <foreignObject width="576.609375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 581px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>stream_events(input: Any, config: RunnableConfig | None) :
+                                            Iterator[StreamEvent]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1116)">
+                            <foreignObject width="564.453125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 579px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>transform(input: Iterator[Input], config: RunnableConfig | None) :
+                                            Iterator[Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1140)">
+                            <foreignObject width="299.71875" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 328px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>with_alisteners() : Runnable[Input, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1164)">
+                            <foreignObject width="491.578125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 510px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>with_config(config: RunnableConfig | None) : Runnable[Input, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1176)">
+                            <foreignObject width="724" height="48">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 724px; text-align: center; width: 724px;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>with_fallbacks(fallbacks: Sequence[Runnable[Input, Output]]) :
+                                            RunnableWithFallbacksT[Input, Output]
+                                        </p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1236)">
+                            <foreignObject width="290.828125" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 321px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>with_listeners() : Runnable[Input, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1260)">
+                            <foreignObject width="263.25" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 298px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>with_retry() : Runnable[Input, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        <g class="label" style="" transform="translate(0,1284)">
+                            <foreignObject width="269.484375" height="24">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 302px; text-align: center;">
+                                    <span class="nodeLabel markdown-node-label" style="fill:blue">
+                                        <p>with_types() : Runnable[Input, Output]</p>
+                                    </span>
+                                </div>
+                            </foreignObject>
+                        </g>
+                    </g>
+                    <g class="divider" style="fill:blue">
+                        <path d="M-1396.72265625 -732 C-721.2812401432367 -731.9997582048902, -45.839824036473374 -731.9995164097804, 1396.72265625 -731.999 M-1396.72265625 -732 C-764.9015281605367 -731.9997738201191, -133.08040007107343 -731.9995476402382, 1396.72265625 -731.999"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
+                    </g>
+                    <g class="divider" style="fill:blue">
+                        <path d="M-1396.72265625 -564 C-711.1906265665515 -563.9997545926435, -25.658596883102973 -563.999509185287, 1396.72265625 -563.999 M-1396.72265625 -564 C-597.118906736288 -563.9997137571493, 202.4848427774241 -563.9994275142986, 1396.72265625 -563.999"
+                              stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+    <defs>
+        <filter id="my-svg-drop-shadow" height="130%" width="130%">
+            <feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+    <defs>
+        <filter id="my-svg-drop-shadow-small" height="150%" width="150%">
+            <feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+</svg>
