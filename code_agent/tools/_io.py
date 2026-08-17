@@ -14,13 +14,15 @@ pointing to the created file, and raise ``CodeAgentError`` (defined in
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 import json
+
+from collections.abc import Iterable
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
 from code_agent.exceptions import CodeAgentError
+
 
 #: Optional Jupyter notebook dependency; ``None`` when unavailable.
 nbformat: ModuleType | None
@@ -35,7 +37,6 @@ __all__ = [
     "append_file",
     "create_file",
     "create_from_template",
-    # "py_to_ipynb", # moved to notebook_tool.py and registered as a LangChain tool
 ]
 
 

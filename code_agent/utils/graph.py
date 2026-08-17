@@ -18,11 +18,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from code_agent.config.mcp import (
-    readonly_mcp_tool_names,
-    sensitive_mcp_tool_names,
-)
-from code_agent.config.settings import DEFAULT_SYSTEM_PROMPT
 from langchain.agents import create_agent
 from langchain.agents.middleware.human_in_the_loop import (
     HumanInTheLoopMiddleware,
@@ -32,6 +27,13 @@ from langchain.chat_models import BaseChatModel
 from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
 from langgraph.checkpoint.memory import InMemorySaver
+
+from code_agent.config.mcp import (
+    readonly_mcp_tool_names,
+    sensitive_mcp_tool_names,
+)
+from code_agent.config.settings import DEFAULT_SYSTEM_PROMPT
+
 
 Harness = Literal["create_agent", "deepagents"]
 

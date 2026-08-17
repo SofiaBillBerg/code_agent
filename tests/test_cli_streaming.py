@@ -13,6 +13,7 @@ from unittest.mock import MagicMock
 
 from code_agent.cli import _stream_agent_response
 
+
 def _make_stream_agent(events: list[dict[str, object]]) -> MagicMock:
     """Make an agent that returns the given events when astream_events is called.
 
@@ -32,10 +33,12 @@ def test_stream_agent_response_collects_model_chunks() -> None:
     chunk = MagicMock()
     chunk.content = "hello"
 
-    agent = _make_stream_agent(events = [
-        {"event": "on_chat_model_stream", "data": {"chunk": chunk}},
-        {"event": "on_chain_end", "data": {"output": {"messages": []}}},
-    ])
+    agent = _make_stream_agent(
+        events=[
+            {"event": "on_chat_model_stream", "data": {"chunk": chunk}},
+            {"event": "on_chain_end", "data": {"output": {"messages": []}}},
+        ]
+    )
 
     response = _stream_agent_response(agent, [], "thread-1")
 
@@ -89,9 +92,14 @@ def test_stream_agent_response_handles_empty_message_content() -> None:
     message = MagicMock()
     message.content = None
 
-    agent = _make_stream_agent(events = [
-        {"event": "on_chain_end", "data": {"output": {"messages": [message]}}},
-    ])
+    agent = _make_stream_agent(
+        events=[
+            {
+                "event": "on_chain_end",
+                "data": {"output": {"messages": [message]}},
+            },
+        ]
+    )
 
     response = _stream_agent_response(agent, [], "thread-1")
 

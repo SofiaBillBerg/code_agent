@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TypedDict
 
+import langmem.short_term  # ty: ignore[unresolved-import]
+
 from langchain.chat_models import init_chat_model
 from langchain.messages import AnyMessage, HumanMessage, RemoveMessage
 from langchain_core.messages import AIMessage, RemoveMessage
@@ -11,7 +13,7 @@ from langchain_core.messages.utils import (
 )
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
-import langmem.short_term  # ty: ignore[unresolved-import]
+
 
 class State(MessagesState):
     summary: str

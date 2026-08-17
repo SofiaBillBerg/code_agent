@@ -1,25 +1,30 @@
 """Tool to generate notebooks."""
+
 from __future__ import annotations
 
 import logging
+
 from pathlib import Path
 from typing import cast
 
-from code_agent.exceptions import CodeAgentError
-from code_agent.tools.edit_file_tool import FileObject
-from langchain.tools import BaseTool, tool
 import nbformat
+
+from langchain.tools import BaseTool, tool
 from nbformat import NotebookNode
 from pydantic import BaseModel, Field
+
+from code_agent.exceptions import CodeAgentError
+from code_agent.tools.edit_file_tool import FileObject
+
 
 logger = logging.getLogger(__name__)
 
 
 def py_to_ipynb(
-        py_file: Path,
-        output_path: Path | None = None,
-        content: str = "",
-        mode: str = "create",
+    py_file: Path,
+    output_path: Path | None = None,
+    content: str = "",
+    mode: str = "create",
 ) -> Path:  # ruff: ignore[complex-structure]
     """Convert a Python script to a minimal Jupyter notebook.
 
@@ -135,15 +140,15 @@ def make_notebook_tool(root_dir: Path) -> BaseTool:
     root = Path(root_dir).expanduser().resolve()
 
     @tool(
-            name_or_callable="notebook-tool",
-            args_schema=NotebookArgs,
-            response_format="content_and_artifact",
-            description=(
-                    "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
-                    "append: add a markdown cell with content; replace: replace entire notebook with given "
-                    "content."
-            ),
-        )
+        name_or_callable="notebook-tool",
+        args_schema=NotebookArgs,
+        response_format="content_and_artifact",
+        description=(
+            "Create or edit Jupyter notebooks (.ipynb). Mode create: create a minimal notebook; "
+            "append: add a markdown cell with content; replace: replace entire notebook with given "
+            "content."
+        ),
+    )
     def notebook(
         file_path: str, content: str = "", mode: str = "create"
     ) -> tuple[str, FileObject]:

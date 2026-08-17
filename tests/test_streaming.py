@@ -5,12 +5,16 @@ Tests for Server-Sent Events streaming responses from the chat endpoint.
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
 import json
 
-from code_agent.ui.web import app
-from fastapi.testclient import TestClient
+from collections.abc import AsyncGenerator
+
 import pytest
+
+from fastapi.testclient import TestClient
+
+from code_agent.ui.web import app
+
 
 # Tag: Feature: agent-core-enhancement, Property 14: SSE stream properly formatted event
 

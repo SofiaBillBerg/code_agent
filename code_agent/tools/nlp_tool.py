@@ -8,6 +8,7 @@ from langchain.messages import AIMessage
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +30,8 @@ def make_natural_language_tool(
     """
     available_tools = tools if tools is not None else []
 
-    @tool(name_or_callable=  "process_natural_language",
+    @tool(
+        name_or_callable="process_natural_language",
         description=(
             "Process natural language queries and delegate to the appropriate tool. "
             "Use this when the user asks a question or makes a request in plain English."

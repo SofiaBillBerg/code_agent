@@ -7,4 +7,5 @@ from __future__ import annotations
 
 from .base import Capability, CapabilityBase, RiskClass
 
+
 __all__ = ["Capability", "CapabilityBase", "RiskClass"]

@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def create_scatter_plot() -> str:
     """Generates and saves a random scatter plot."""
     np.random.seed(0)

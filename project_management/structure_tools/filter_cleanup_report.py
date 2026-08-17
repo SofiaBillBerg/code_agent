@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import csv
 import json
+
 from pathlib import Path
+
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "output"
@@ -53,12 +55,10 @@ with csvp.open("w", encoding="utf8", newline="") as cf:
     )
     writer.writeheader()
     for r in filtered:
-        writer.writerow(
-            {
-                k: r.get(k, "")
-                for k in ["path", "size", "sha1", "category", "notes"]
-            }
-        )
+        writer.writerow({
+            k: r.get(k, "")
+            for k in ["path", "size", "sha1", "category", "notes"]
+        })
 
 # write JSON
 jsonp = OUT / "cleanup_report.filtered.json"

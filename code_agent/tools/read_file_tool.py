@@ -7,6 +7,7 @@ from pathlib import Path
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
+
 class ReadFileArgs(BaseModel):
     """Arguments for reading a file.
 
@@ -30,7 +31,11 @@ class ReadFileArgs(BaseModel):
     )
 
 
-@tool(args_schema=ReadFileArgs, parse_docstring=True, description="Read a file from the project and return its text content.")
+@tool(
+    args_schema=ReadFileArgs,
+    parse_docstring=True,
+    description="Read a file from the project and return its text content.",
+)
 def read_file(
     file_path: str,
     offset: int = 0,

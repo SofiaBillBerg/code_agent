@@ -15,14 +15,17 @@ from pathlib import Path
 from langchain.tools import tool
 
 
-@tool(name_or_callable="generate_quarto_docs", parse_docstring=True,
+@tool(
+    name_or_callable="generate_quarto_docs",
+    parse_docstring=True,
     description="Generate Quarto (.qmd) documentation pages for the repository. ",
-    response_format="content_and_artifact")
+    response_format="content_and_artifact",
+)
 def generate_quarto_docs(
-        output_dir: str | Path = "docs",
-        overwrite: bool = False,
-        use_llm: bool = True,
-        root: str | Path | None = None,
+    output_dir: str | Path = "docs",
+    overwrite: bool = False,
+    use_llm: bool = True,
+    root: str | Path | None = None,
 ) -> list[Path]:
     """Generate Quarto (.qmd) documentation pages for the repository.
 

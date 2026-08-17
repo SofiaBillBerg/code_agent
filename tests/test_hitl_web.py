@@ -6,25 +6,32 @@ Tests for the /chat/resume endpoint and related HITL functionality.
 from __future__ import annotations
 
 import asyncio
+
 from collections.abc import Generator
 from typing import Literal
 
-from code_agent.ui.web import (  # ruff: ignore[import-private-name]
-    _hitl_decisions,  # ruff: ignore[import-private-name]
-    _pending_hitl,  # ruff: ignore[import-private-name]
-    app,
-)
-from fastapi.testclient import TestClient
 import hypothesis
+import pytest
+
+from fastapi.testclient import TestClient
 from hypothesis import given, settings
 from hypothesis import strategies as st
-import pytest
+
+from code_agent.ui.web import (
+    _hitl_decisions,  # ruff: ignore[import-private-name]
+)
+from code_agent.ui.web import (
+    _pending_hitl,  # ruff: ignore[import-private-name]
+)
+from code_agent.ui.web import app  # ruff: ignore[import-private-name]
+
 
 # Tag: Feature: agent-core-enhancement, Property 6: HITL resume signals the pending event
 # Tag: Feature: agent-core-enhancement, Property 7: Resume returns 409 for non-pending threads
 
+
 @pytest.fixture(autouse=True)
-def reset_hitl_state() -> Generator[None, None, None]:
+def reset_hitl_state() -> Generator[None]:
     """Reset HITL state before each test.
 
     :yield: None

@@ -15,8 +15,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from code_agent.config.settings import get_settings
 from deepagents import HarnessProfile, register_harness_profile
+
+from code_agent.config.settings import get_settings
+
 
 def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
     """Convert a raw settings entry into a :class:`HarnessProfile`.

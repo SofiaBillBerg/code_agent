@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+
+from dataclasses import dataclass
 from pathlib import Path
 
 from langchain.tools import tool
 from pydantic import BaseModel, Field
+
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +48,11 @@ class EditFileArgs(BaseModel):
     )
 
 
-@tool(args_schema=EditFileArgs, parse_docstring=True, description="Edit an existing file by replacing, appending, or patching its content.")
+@tool(
+    args_schema=EditFileArgs,
+    parse_docstring=True,
+    description="Edit an existing file by replacing, appending, or patching its content.",
+)
 def edit_file(
     file_path: str,
     new_content: str,

@@ -28,17 +28,20 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 
 from __future__ import annotations
 
-from functools import lru_cache
 import logging
+
+from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from code_agent.config.jsonc import loads as jsonc_loads
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
 from pydantic_settings.sources.providers.json import JsonConfigSettingsSource
 from pydantic_settings.sources.providers.yaml import YamlConfigSettingsSource
+
+from code_agent.config.jsonc import loads as jsonc_loads
+
 
 if TYPE_CHECKING:
     from importlib.abc import Traversable

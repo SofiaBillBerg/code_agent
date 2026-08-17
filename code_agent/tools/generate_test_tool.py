@@ -7,6 +7,7 @@ from pathlib import Path
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
+
 class GenerateTestArgs(BaseModel):
     """Arguments for the generate-test tool.
 
@@ -27,7 +28,11 @@ class GenerateTestArgs(BaseModel):
     )
 
 
-@tool(args_schema=GenerateTestArgs, parse_docstring=True, description="Generate a basic pytest test file for a given Python module.")
+@tool(
+    args_schema=GenerateTestArgs,
+    parse_docstring=True,
+    description="Generate a basic pytest test file for a given Python module.",
+)
 def generate_test(
     file_path: str, tests_dir: str = "tests", root_dir: Path | None = None
 ) -> str:

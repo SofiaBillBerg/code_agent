@@ -15,11 +15,16 @@ from __future__ import annotations
 
 import hashlib
 import importlib
-from pathlib import Path
 import sys
 import types
+
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
+
+import pytest
+
+from pydantic import BaseModel, ValidationError
 
 from code_agent.capabilities.audit import (  # ruff: ignore [module-import-not-at-top-of-file]
     AuditLog,
@@ -40,8 +45,7 @@ from code_agent.capabilities.tool_adapter import (  # ruff: ignore [module-impor
     ToolResult,
     tool_to_capability,
 )
-from pydantic import BaseModel, ValidationError
-import pytest
+
 
 try:
     from langchain.tools import BaseTool  # noqa: ignore[F401]
