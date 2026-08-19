@@ -9,7 +9,6 @@ from pathlib import Path
 
 from code_agent.utils.checkpointer import build_checkpointer
 
-
 class TestBuildCheckpointerProperty:
     """Property tests for build_checkpointer function."""
 

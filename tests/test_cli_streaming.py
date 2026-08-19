@@ -13,7 +13,6 @@ from unittest.mock import MagicMock
 
 from code_agent.cli import _stream_agent_response
 
-
 def _make_stream_agent(events: list[dict[str, object]]) -> MagicMock:
     """Make an agent that returns the given events when astream_events is called.
 
@@ -60,7 +59,6 @@ def test_stream_agent_response_logs_tool_events() -> None:
 
     :return: None
     """
-
     agent = _make_stream_agent(
         events=[
             {

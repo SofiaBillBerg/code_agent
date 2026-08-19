@@ -5,10 +5,9 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from code_agent.tools._io import _atomic_write
 from langchain.tools import tool
 from pydantic import BaseModel, Field
-
-from code_agent.tools._io import _atomic_write
 
 log = logging.getLogger(__name__)
 

@@ -28,21 +28,20 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 
 from __future__ import annotations
 
+from functools import lru_cache
 import logging
 import os
-import re
-from functools import lru_cache
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+import re
+from typing import TYPE_CHECKING, Any
 
+from code_agent.config.jsonc import loads as jsonc_loads
 from dotenv import dotenv_values
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
 from pydantic_settings.sources.providers.json import JsonConfigSettingsSource
 from pydantic_settings.sources.providers.yaml import YamlConfigSettingsSource
-
-from code_agent.config.jsonc import loads as jsonc_loads
 
 #: Matches ``${env:VAR}`` or ``${VAR}`` placeholders for env substitution.
 _ENV_PLACEHOLDER_RE = re.compile(r"\$\{(?:env:)?([A-Za-z_][A-Za-z0-9_]*)\}")
@@ -348,6 +347,48 @@ class Settings(BaseSettings):
     #:
     #:   {"ollama:gpt-oss:20b": {"system_prompt_suffix": "Be concise."}}
     profiles: str | dict[str, Any] | None = None
+
+    #: --- DeepAgents skills -------------------------------------------------
+    #: Skill source paths (bare paths or ``(path, label)`` tuples) loaded
+    #: progressively by the harness from ``SKILL.md`` files.  Paths are
+    #: translated to workspace-virtual form by
+    #: :func:`code_agent.agents.deepagents_agent._resolve_workspace_paths`;
+    #: they must live under the mounted workspace.  Maps to
+    #: ``CODE_AGENT_SKILLS`` (JSON array of strings or ``[path, label]``
+    #: pairs).
+    skills: list[str | list[str]] | None = None
+
+    #: --- DeepAgents memory -------------------------------------------------
+    #: ``AGENTS.md`` memory file paths, always loaded into the agent's
+    #: context.  Same workspace-virtual translation rules as *skills*.
+    #: Maps to ``CODE_AGENT_MEMORY`` (JSON array of strings).
+    memory: list[str] | None = None
+
+    #: --- DeepAgents todo list ----------------------------------------------
+    #: When true (default) a
+    #: :class:`~langchain.agents.middleware.TodoListMiddleware` is added to
+    #: the agent so it can maintain a structured ``write_todos`` task list.
+    #: Maps to ``CODE_AGENT_TODOS_ENABLED``.
+    todos_enabled: bool = True
+
+    #: --- DeepAgents summarization (context offloading) ---------------------
+    #: Explicit summarization threshold(s) for the harness's
+    #: :class:`~deepagents.middleware.SummarizationMiddleware`.  Accepts a
+    #: JSON array in one of the forms::
+    #:
+    #:   ["fraction", 0.85]                          # 85% of context window
+    #:   ["messages", 50]                            # 50 messages
+    #:   [["fraction", 0.8], ["messages", 100]]      # OR list (whichever first)
+    #:   [{"tokens": 4000, "messages": 10}]          # AND clause
+    #:
+    #: When set, a configured middleware replaces the harness's built-in one.
+    #: Maps to ``CODE_AGENT_SUMMARIZATION_TRIGGER``.
+    summarization_trigger: list[Any] | None = None
+
+    #: Context retention policy after summarization, e.g. ``["messages", 20]``
+    #: or ``["fraction", 0.3]``.  Only used together with
+    #: *summarization_trigger*.  Maps to ``CODE_AGENT_SUMMARIZATION_KEEP``.
+    summarization_keep: list[Any] | None = None
 
     @model_validator(mode="after")
     def _split_combined_ollama_host(self) -> Settings:

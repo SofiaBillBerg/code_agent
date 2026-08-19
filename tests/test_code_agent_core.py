@@ -3,21 +3,18 @@
 from pathlib import Path
 from typing import Any
 
-import pytest
-
+from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.tools import notebook_tool
+from code_agent.tools._io import (
+    create_from_template,  # ruff: ignore[import-private-name]; ruff: ignore[import-private-name]
+)
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
 from langchain.tools import BaseTool
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
-
-from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.tools import notebook_tool
-from code_agent.tools._io import (
-    create_from_template,  # ruff: ignore[import-private-name]; ruff: ignore[import-private-name]
-)
-
+import pytest
 
 @pytest.fixture
 def dummy_llm() -> BaseChatModel:

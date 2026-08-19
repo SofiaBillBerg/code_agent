@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from langchain.messages import HumanMessage
-
 from code_agent.agents.persistent_agent import get_persistent_agent
-
+from langchain.messages import HumanMessage
 
 class DummyLLM:
     """Dummy LLM that always returns the same message."""

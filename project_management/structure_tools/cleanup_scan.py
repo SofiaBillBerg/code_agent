@@ -20,10 +20,8 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-import re
-
 from pathlib import Path
-
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDE_DIRS = {

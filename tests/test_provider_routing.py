@@ -7,10 +7,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi.testclient import TestClient
-
 from code_agent.ui.web import app
-
+from fastapi.testclient import TestClient
 
 class TestProviderRoutingProperty:
     """Property tests for provider routing."""

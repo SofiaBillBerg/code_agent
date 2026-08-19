@@ -5,12 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import cast
 
+from code_agent.exceptions import CodeAgentError
 import nbformat
 
-from code_agent.exceptions import CodeAgentError
-
-
-def py_to_ipynb(
+def py_to_ipynb(  # ruff: ignore[complex-structure]
     py_file: Path,
     output_path: Path | None = None,
     content: str = "",

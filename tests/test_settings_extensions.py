@@ -9,16 +9,20 @@ from __future__ import annotations
 import logging
 import pathlib
 
+from code_agent.config.settings import (
+    _ENV_UNSET,
+    Settings,
+    _expand_env_vars,
+    _load_substitution_env,
+    get_settings,
+)
 import hypothesis
+from hypothesis import given, settings
+from hypothesis import strategies as st
 import pytest
-from hypothesis import given, settings, strategies as st
-
-from code_agent.config.settings import (_ENV_UNSET, _expand_env_vars, _load_substitution_env, get_settings, Settings)
-
 
 # Tag: Feature: agent-core-enhancement, Property 11: Settings checkpoint_dir validation never raises
 # Tag: Feature: agent-core-enhancement, Property 12: Settings round-trip
-
 
 @pytest.fixture(autouse=True)
 def reset_settings_cache():

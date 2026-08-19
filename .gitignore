@@ -226,12 +226,15 @@ _site/
 mempalace.yaml
 entities.json
 /.tmp/
-notes/ # Private user notes
+notes/
+# Private user notes
 .*/
-/.*/  # Ignore hidden directories or only-local related files
+/.*/
+# Ignore hidden directories or only-local related files
 
 pdf_docs/
 /config/.mcp.jsonc
 /.mcp.json
 /.xml
 /whitelist.txt
+/notes/

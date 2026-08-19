@@ -13,13 +13,13 @@ implementation.
 from __future__ import annotations
 
 import json
-
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
-import pytest
-
+from code_agent.agents.base_agent import build_agent
+from code_agent.cli import app as cli_app
+from code_agent.main import load_config
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage, HumanMessage
 from langchain.tools import BaseTool
@@ -27,12 +27,8 @@ from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 from langchain_core.utils.uuid import uuid7
+import pytest
 from typer.testing import CliRunner
-
-from code_agent.agents.base_agent import build_agent
-from code_agent.cli import app as cli_app
-from code_agent.main import load_config
-
 
 @pytest.fixture
 def runner() -> CliRunner:

@@ -36,8 +36,8 @@ import pytest
 # which need ``langchain_ollama`` and ``langchain_openai``; stand in for
 # them too when they are missing.
 for _module_name, _attr in (
-        ("langchain_ollama", "ChatOllama"),
-        ("langchain_openai", "ChatOpenAI"),
+    ("langchain_ollama", "ChatOllama"),
+    ("langchain_openai", "ChatOpenAI"),
 ):
     try:
         importlib.import_module(_module_name)
@@ -316,7 +316,7 @@ def test_invocation_response_rejects_invalid_status() -> None:
 
 
 def test_register_and_discover_returns_metadata(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """Discover must return metadata for every registered capability.
 
@@ -334,7 +334,7 @@ def test_register_and_discover_returns_metadata(
 
 
 def test_register_replaces_existing_capability(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """Re-registering the same id must replace the previous entry.
 
@@ -363,7 +363,7 @@ def test_register_replaces_existing_capability(
 
 
 def test_dispatch_valid_params_returns_ok(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """A valid request dispatches to the capability and returns a result.
 
@@ -389,7 +389,7 @@ def test_dispatch_valid_params_returns_ok(
 
 
 def test_dispatch_invalid_params_returns_error_response(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """Invalid params must produce an error response, not an exception.
 
@@ -411,7 +411,7 @@ def test_dispatch_invalid_params_returns_error_response(
 
 
 def test_dispatch_unknown_capability_returns_error_response(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """An unknown capability id must produce an error response.
 
@@ -430,7 +430,7 @@ def test_dispatch_unknown_capability_returns_error_response(
 
 
 def test_dispatch_high_risk_gated_without_approval(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """High-risk capabilities must be gated until explicitly approved.
 
@@ -455,7 +455,7 @@ def test_dispatch_high_risk_gated_without_approval(
 
 
 def test_dispatch_invocation_exception_returns_error_response(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """An exception inside the capability surfaces as an error response.
 
@@ -504,7 +504,7 @@ def test_dispatch_records_audit_receipt(registry: CapabilityRegistry) -> None:
 
 
 def test_dispatch_receipts_are_hash_chained(
-        registry: CapabilityRegistry,
+    registry: CapabilityRegistry,
 ) -> None:
     """Receipts must link via prev_hash to the previous receipt.
 
@@ -654,10 +654,10 @@ def test_audit_persists_receipts_to_file(tmp_path: Path) -> None:
 
 
 def _make_tool(
-        name: str = "read_file",
-        description: str = "Read a file",
-        args_schema: type[BaseModel] | None = EchoInput,
-        run: Any = None,
+    name: str = "read_file",
+    description: str = "Read a file",
+    args_schema: type[BaseModel] | None = EchoInput,
+    run: Any = None,
 ) -> MagicMock:
     """Build a mocked LangChain tool for the adapter tests.
 

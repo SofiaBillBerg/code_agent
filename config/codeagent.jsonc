@@ -23,6 +23,26 @@
 "CODE_AGENT_LOG_LEVEL":"info",
 
 "CODE_AGENT_MCP_SERVERS": "config/.mcp.json",
+  //# DeepAgents skills: JSON array of paths (or [path, label] pairs) to
+  //# SKILL.md directories, loaded progressively by the harness.
+  //# Paths must live under the mounted workspace (CODE_AGENT_ROOT_DIR).
+  //"CODE_AGENT_SKILLS": "[\"skills/code-conventions\"]",
+
+  //# DeepAgents memory: JSON array of AGENTS.md file paths, always loaded.
+  //"CODE_AGENT_MEMORY": "[\"AGENTS.md\"]",
+
+  //# DeepAgents todo list: when true (default) the agent gets a write_todos
+  //# tool to maintain a structured task list during execution.
+  //"CODE_AGENT_TODOS_ENABLED": true,
+
+  //# DeepAgents summarization trigger (context offloading threshold).
+  //# One of: ["fraction", 0.85] | ["messages", 50] |
+  //#         [["fraction", 0.8], ["messages", 100]] (OR list) |
+  //#         [{"tokens": 4000, "messages": 10}] (AND clause)
+  //"CODE_AGENT_SUMMARIZATION_TRIGGER": "[\"fraction\", 0.85]",
+
+  //# Context retention after summarization, e.g. ["messages", 20].
+  //"CODE_AGENT_SUMMARIZATION_KEEP": "[\"messages\", 20]",
 
   //# MCP server secrets (git-ignored; referenced as ${VAR} in .mcp.json)
 "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}",

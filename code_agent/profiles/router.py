@@ -16,6 +16,12 @@ sources:
 
 The router is additive: it only registers profiles that are explicitly
 declared, so it never surprises existing behavior with unexpected defaults.
+
+The router is also stateful: every registration records its source in the
+module-level :data:`_registered` registry (``"settings"`` or
+``"config-file"``), and :func:`resolve_profile` returns the *effective*
+merged profile for a key (exact-model profile merged over provider-level
+profile, matching DeepAgents' own resolution order).
 """
 
 from __future__ import annotations
@@ -24,15 +30,66 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import yaml
-from deepagents import HarnessProfile, register_harness_profile
-
 from code_agent.config.settings import get_settings
+from deepagents import HarnessProfile, register_harness_profile
+import yaml
 
 log = logging.getLogger(__name__)
 
 #: Default location of the user-editable profiles config (repo-root config dir).
 DEFAULT_PROFILES_CONFIG = Path("/home/nvidia/code_agent/config/profiles.yaml")
+
+#: Stateful registry of profile keys this router has registered, mapping
+#: ``provider:model`` key -> source label (``"settings"`` or ``"config-file"``).
+#: Used by :func:`resolve_profile` to report where a profile came from.
+_registered: dict[str, str] = {}
+
+
+def _get_effective_profile(key: str) -> HarnessProfile | None:
+    """Return the effective (merged) profile for *key*.
+
+    Delegates to DeepAgents' internal resolver so the result matches exactly
+    what the harness will apply: an exact-model profile merged over a
+    provider-level profile when both exist.  Falls back to a plain registry
+    lookup if the private API moves.
+
+    :param key: ``provider:model`` profile key.
+    :return: The effective :class:`HarnessProfile`, or ``None``.
+    """
+    try:
+        from deepagents.profiles.harness.harness_profiles import (
+            _get_harness_profile,  # ruff: ignore[import-private-name] - private API, intentional
+        )
+
+        return _get_harness_profile(key)
+    except (ImportError, AttributeError):
+        from deepagents.profiles.harness.harness_profiles import (
+            _HARNESS_PROFILES,  # ruff: ignore[import-private-name] - private API, intentional
+        )
+
+        return _HARNESS_PROFILES.get(key)
+
+
+def resolve_profile(key: str) -> HarnessProfile | None:
+    """Resolve the effective harness profile for a ``provider:model`` key.
+
+    Returns the merged profile the harness would apply for *key* (exact-model
+    profile merged over provider-level profile), or ``None`` when nothing was
+    registered.  Logs the source (``"settings"`` / ``"config-file"``) when the
+    key was registered by this router.
+
+    :param key: ``provider:model`` profile key.
+    :return: The effective :class:`HarnessProfile`, or ``None``.
+    """
+    profile = _get_effective_profile(key)
+    source = _registered.get(key)
+    if profile is not None:
+        log.debug(
+            "Resolved harness profile for %r%s.",
+            key,
+            f" (registered via {source})" if source else "",
+        )
+    return profile
 
 
 def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
@@ -118,6 +175,7 @@ def register_profiles_from_settings() -> None:
         if profile is None:
             continue
         register_harness_profile(str(profile_key), profile)
+        _registered[str(profile_key)] = "settings"
 
 
 def load_profiles_from_config_file(
@@ -175,3 +233,4 @@ def register_profiles_from_config_file(
     """
     for profile_key, profile in load_profiles_from_config_file(path).items():
         register_harness_profile(profile_key, profile)
+        _registered[profile_key] = "config-file"

@@ -1,51 +1,31 @@
-#!/usr/bin/env bash
-# pre-commit-quick.sh - naming intentional
-# Pre-hook: runs all checks in graceful mode and shows aggregate summary.
-# Each sub-script exits 0 even on failures, so we collect results and decide at the end.
-
 chmod +x ./project_management/run_autofix.sh
 chmod +x ./project_management/run_tests.sh
-
 echo "Local CI: Running code quality checks before pushing..."
 echo ""
-
-# Run formatters (exits 0 even on failures)
 ./project_management/run_autofix.sh
 FORMATTERS_EXIT=$?
-
 ./project_management/run_tests.sh
 TESTS_EXIT=$?
-
-# --- Aggregate Summary ---
 echo ""
 echo "========================================================"
 echo "  LOCAL CI - AGGREGATE SUMMARY"
 echo "========================================================"
 echo ""
-
-# Parse results from each script
-# (Both scripts print their own summaries above; this is the combined view)
 TOTAL_FAILURES=0
-
-# Check formatters result
 if [ $FORMATTERS_EXIT -ne 0 ]; then
 	echo "  ✗ run_autofix.sh exited with code $FORMATTERS_EXIT"
 	TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
 else
 	echo "  ✓ run_autofix.sh completed (see above for details)"
 fi
-
-# Check tesy result
 if [ $TESTS_EXIT -ne 0 ]; then
 	echo "  ✗ run_tests.sh exited with code $TESTS_EXIT"
 	TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
 else
 	echo "  ✓ run_tests.sh completed (see above for details)"
 fi
-
 echo ""
 echo "========================================================"
-
 if [ $TOTAL_FAILURES -eq 0 ]; then
 	echo "  All checks passed! Proceeding with git push..."
 	echo "========================================================"
@@ -56,6 +36,5 @@ else
 	echo ""
 	echo "  You can fix the issues and try again, or push anyway."
 	echo "========================================================"
-	# Exit 0 - let the user decide
 	exit 0
 fi

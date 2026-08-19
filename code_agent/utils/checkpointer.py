@@ -26,8 +26,8 @@ from __future__ import (
 )
 
 import logging  # : Standard logging module for WARNING-level entries.
-import sqlite3  # : Standard sqlite3 for opening the checkpoint connection.
 from pathlib import Path  # : Pathlib for filesystem path handling.
+import sqlite3  # : Standard sqlite3 for opening the checkpoint connection.
 
 #: Import the LangGraph checkpointer classes needed for persistence.
 #: SqliteSaver provides persistent storage in an SQLite database.

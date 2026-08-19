@@ -3,21 +3,20 @@
 from __future__ import annotations
 
 import json
-
 from pathlib import Path
 from typing import Any
-
-import pytest
-
-from deepagents import HarnessProfile
 
 from code_agent.config.settings import Settings
 from code_agent.profiles import register_profiles_from_settings
 from code_agent.profiles.router import (
     DEFAULT_PROFILES_CONFIG,
+    _registered,  # ruff: ignore[import-private-name] - testing private registry
     load_profiles_from_config_file,
     register_profiles_from_config_file,
+    resolve_profile,
 )
+from deepagents import HarnessProfile
+import pytest
 
 def test_register_profiles_from_settings_noop_when_missing(
     monkeypatch: Any,
@@ -151,7 +150,9 @@ def test_register_profiles_from_settings_invalid_type(monkeypatch: Any) -> None:
     :raises TypeError: If the profile value is not a dict or HarnessProfile.
 
     """
-    from code_agent.profiles.router import _coerce_profile_entry
+    from code_agent.profiles.router import (
+        _coerce_profile_entry,  # ruff: ignore[import-private-name]
+    )
 
     with pytest.raises(TypeError, match="must be a dict or HarnessProfile"):
         _coerce_profile_entry(["bad"])
@@ -201,9 +202,9 @@ def test_default_profiles_config_path() -> None:
 
     :raises AssertionError: If the default path is not the expected location.
     """
-    assert DEFAULT_PROFILES_CONFIG == Path(
+    assert Path(
         "/home/nvidia/code_agent/config/profiles.yaml"
-    )
+    ) == DEFAULT_PROFILES_CONFIG
 
 
 def test_load_profiles_from_config_file_missing(
@@ -291,9 +292,8 @@ def test_build_deep_agent_registers_profiles_flag(
     """
     from unittest.mock import MagicMock
 
-    from langchain.chat_models import BaseChatModel
-
     from code_agent.agents import deepagents_agent
+    from langchain.chat_models import BaseChatModel
 
     calls = {"register": 0, "create": None}
     fake_llm = MagicMock(spec=BaseChatModel)
@@ -330,3 +330,86 @@ def test_build_deep_agent_registers_profiles_flag(
     deepagents_agent.build_deep_agent(fake_llm, register_profiles=False)
     assert calls["register"] == 0
     assert calls["create"] is not None
+
+
+def test_resolve_profile_returns_effective_profile(monkeypatch: Any) -> None:
+    """resolve_profile returns the effective merged profile for a key.
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+    :raises AssertionError: If the resolved profile is wrong.
+    """
+    saved = dict(_registered)
+    _registered.clear()
+    try:
+        monkeypatch.setattr(
+            "code_agent.profiles.router.get_settings",
+            lambda: Settings(
+                profiles={
+                    "ollama:gpt-oss-20b": {
+                        "system_prompt_suffix": "Be concise.",
+                    }
+                }
+            ),
+        )
+        register_profiles_from_settings()
+
+        profile = resolve_profile("ollama:gpt-oss-20b")
+        assert profile is not None
+        assert profile.system_prompt_suffix == "Be concise."
+    finally:
+        _registered.clear()
+        _registered.update(saved)
+
+
+def test_resolve_profile_unknown_key_returns_none() -> None:
+    """resolve_profile returns None for keys that were never registered.
+
+    :raises AssertionError: If an unknown key resolves to a profile.
+    """
+    assert resolve_profile("nope:model") is None
+
+
+def test_registered_tracks_source(monkeypatch: Any, tmp_path: Path) -> None:
+    """The _registered registry records where each profile came from.
+
+    :param monkeypatch: The pytest-mock monkeypatch fixture.
+    :param tmp_path: The pytest temporary directory fixture.
+    :raises AssertionError: If the recorded sources are wrong.
+    """
+    saved = dict(_registered)
+    _registered.clear()
+    try:
+        captured: dict[str, HarnessProfile] = {}
+
+        def fake_register(key: str, profile: HarnessProfile) -> None:
+            """Capture the profile.
+
+            :param key: The profile key.
+            :param profile: The profile.
+            """
+            captured[key] = profile
+
+        monkeypatch.setattr(
+            "code_agent.profiles.router.register_harness_profile",
+            fake_register,
+        )
+        monkeypatch.setattr(
+            "code_agent.profiles.router.get_settings",
+            lambda: Settings(
+                profiles={"openai:gpt-4o": {"system_prompt_suffix": "hi"}}
+            ),
+        )
+
+        register_profiles_from_settings()
+        assert _registered["openai:gpt-4o"] == "settings"
+
+        config = tmp_path / "profiles.yaml"
+        config.write_text(
+            '"ollama:gpt-oss-20b":\n  system_prompt_suffix: yo\n',
+            encoding="utf-8",
+        )
+        register_profiles_from_config_file(config)
+        assert _registered["ollama:gpt-oss-20b"] == "config-file"
+    finally:
+        _registered.clear()
+        _registered.update(saved)
