@@ -1,5 +1,5 @@
 <svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg"
-     class="classDiagram" style="max-width: 1050.23px; background-color: white;" viewBox="0 0 1050.234375 2274"
+     class="classDiagram" style="max-width: 1050.23px; background-color: white;" viewBox="0 0 1050.234375 2250"
      role="graphics-document document" aria-roledescription="class">
     <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes
         edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
@@ -186,16 +186,15 @@
         <g class="root">
             <g class="clusters"/>
             <g class="edgePaths">
-                <path d="M525.117,152L525.117,156.167C525.117,160.333,525.117,168.667,525.117,174.125C525.117,179.583,525.117,182.167,525.117,183.458L525.117,184.75"
-                      id="my-svg-id_ActiveProviderResponse_BaseModel_1"
-                      class="edge-thickness-normal edge-pattern-solid relation" style=";;;" data-edge="true"
-                      data-et="edge" data-id="id_ActiveProviderResponse_BaseModel_1"
-                      data-points="W3sieCI6NTI1LjExNzE4NzUsInkiOjE1Mn0seyJ4Ijo1MjUuMTE3MTg3NSwieSI6MTc3fSx7IngiOjUyNS4xMTcxODc1LCJ5IjoyMDJ9XQ=="
+                <path d="M525.117,128L525.117,132.167C525.117,136.333,525.117,144.667,525.117,150.125C525.117,155.583,525.117,158.167,525.117,159.458L525.117,160.75"
+                      id="my-svg-id_CancelRequest_BaseModel_1" class="edge-thickness-normal edge-pattern-solid relation"
+                      style=";;;" data-edge="true" data-et="edge" data-id="id_CancelRequest_BaseModel_1"
+                      data-points="W3sieCI6NTI1LjExNzE4NzUsInkiOjEyOH0seyJ4Ijo1MjUuMTE3MTg3NSwieSI6MTUzfSx7IngiOjUyNS4xMTcxODc1LCJ5IjoxNzh9XQ=="
                       data-look="classic" marker-end="url(#my-svg_class-extensionEnd)"/>
             </g>
             <g class="edgeLabels">
                 <g class="edgeLabel">
-                    <g class="label" data-id="id_ActiveProviderResponse_BaseModel_1" transform="translate(0, 0)">
+                    <g class="label" data-id="id_CancelRequest_BaseModel_1" transform="translate(0, 0)">
                         <foreignObject width="0" height="0">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
                                  style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
@@ -206,68 +205,58 @@
                 </g>
             </g>
             <g class="nodes">
-                <g class="node default" id="my-svg-classId-ActiveProviderResponse-0" data-look="classic"
-                   transform="translate(525.1171875, 80)">
+                <g class="node default" id="my-svg-classId-CancelRequest-0" data-look="classic"
+                   transform="translate(525.1171875, 68)">
                     <g class="basic label-container outer-path">
-                        <path d="M-106.703125 -72 L106.703125 -72 L106.703125 72 L-106.703125 72" stroke="none"
-                              stroke-width="0" fill="[lavender" style="fill:[lavender"/>
-                        <path d="M-106.703125 -72 C-27.487448050594537 -72, 51.728228898810926 -72, 106.703125 -72 M-106.703125 -72 C-47.02249377565941 -72, 12.658137448681174 -72, 106.703125 -72 M106.703125 -72 C106.703125 -36.42642301330331, 106.703125 -0.8528460266066133, 106.703125 72 M106.703125 -72 C106.703125 -15.65186740064157, 106.703125 40.69626519871686, 106.703125 72 M106.703125 72 C44.60749089984009 72, -17.488143200319826 72, -106.703125 72 M106.703125 72 C22.568557757284054 72, -61.56600948543189 72, -106.703125 72 M-106.703125 72 C-106.703125 29.595076586504092, -106.703125 -12.809846826991816, -106.703125 -72 M-106.703125 72 C-106.703125 41.53787977037746, -106.703125 11.075759540754916, -106.703125 -72"
+                        <path d="M-89.8125 -60 L89.8125 -60 L89.8125 60 L-89.8125 60" stroke="none" stroke-width="0"
+                              fill="[lavender" style="fill:[lavender"/>
+                        <path d="M-89.8125 -60 C-52.99892367140975 -60, -16.185347342819497 -60, 89.8125 -60 M-89.8125 -60 C-32.16376396000173 -60, 25.48497207999654 -60, 89.8125 -60 M89.8125 -60 C89.8125 -28.4476827056574, 89.8125 3.104634588685201, 89.8125 60 M89.8125 -60 C89.8125 -20.38240004801203, 89.8125 19.23519990397594, 89.8125 60 M89.8125 60 C45.49711648238604 60, 1.1817329647720811 60, -89.8125 60 M89.8125 60 C19.133633132789 60, -51.545233734422 60, -89.8125 60 M-89.8125 60 C-89.8125 20.184140898807676, -89.8125 -19.631718202384647, -89.8125 -60 M-89.8125 60 C-89.8125 32.801137101782786, -89.8125 5.602274203565571, -89.8125 -60"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
-                    <g class="annotation-group text" transform="translate(0, -48)"/>
-                    <g class="label-group text" transform="translate(-94.703125, -48)">
+                    <g class="annotation-group text" transform="translate(0, -36)"/>
+                    <g class="label-group text" transform="translate(-57.796875, -36)">
                         <g class="label" style="font-weight: bolder" transform="translate(0,-12)">
-                            <foreignObject width="189.40625" height="24">
+                            <foreignObject width="115.59375" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 209px; text-align: center;">
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 147px; text-align: center;">
                                     <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>ActiveProviderResponse</p>
+                                        <p>CancelRequest</p>
                                     </span>
                                 </div>
                             </foreignObject>
                         </g>
                     </g>
-                    <g class="members-group text" transform="translate(-94.703125, 0)">
+                    <g class="members-group text" transform="translate(-77.8125, 12)">
                         <g class="label" style="" transform="translate(0,-12)">
-                            <foreignObject width="74.6875" height="24">
+                            <foreignObject width="97.828125" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 119px; text-align: center;">
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 149px; text-align: center;">
                                     <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>model : str</p>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </g>
-                        <g class="label" style="" transform="translate(0,12)">
-                            <foreignObject width="88.921875" height="24">
-                                <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 133px; text-align: center;">
-                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>provider : str</p>
+                                        <p>thread_id : str</p>
                                     </span>
                                 </div>
                             </foreignObject>
                         </g>
                     </g>
-                    <g class="methods-group text" transform="translate(-94.703125, 72)"/>
+                    <g class="methods-group text" transform="translate(-77.8125, 60)"/>
                     <g class="divider" style="fill:[lavender">
-                        <path d="M-106.703125 -24 C-57.69356691552599 -23.999770346191433, -8.684008831051983 -23.999540692382865, 106.703125 -23.999 M-106.703125 -24 C-50.74908266073215 -23.99973780504395, 5.204959678535701 -23.999475610087902, 106.703125 -23.999"
+                        <path d="M-89.8125 -12 C-52.19503561095974 -11.999790577790458, -14.577571221919484 -11.999581155580916, 89.8125 -11.999 M-89.8125 -12 C-25.347628735959262 -11.999641114147451, 39.117242528081476 -11.999282228294904, 89.8125 -11.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
                     <g class="divider" style="fill:[lavender">
-                        <path d="M-106.703125 48 C-38.404223186070794 48.000320041712996, 29.89467862785841 48.00064008342599, 106.703125 48.001 M-106.703125 48 C-53.782872764215874 48.00024797892393, -0.8626205284317479 48.00049595784787, 106.703125 48.001"
+                        <path d="M-89.8125 36 C-31.189680395973056 36.000326362252494, 27.433139208053888 36.00065272450498, 89.8125 36.001 M-89.8125 36 C-20.436758098582516 36.00038622542464, 48.93898380283497 36.00077245084928, 89.8125 36.001"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
                 </g>
                 <g class="node default" id="my-svg-classId-BaseModel-1" data-look="classic"
-                   transform="translate(525.1171875, 1234)">
+                   transform="translate(525.1171875, 1210)">
                     <g class="basic label-container outer-path">
                         <path d="M-517.1171875 -1032 L517.1171875 -1032 L517.1171875 1032 L-517.1171875 1032"
                               stroke="none" stroke-width="0" fill="blue" style="fill:blue"/>
-                        <path d="M-517.1171875 -1032 C-279.9651146798477 -1032, -42.813041859695375 -1032, 517.1171875 -1032 M-517.1171875 -1032 C-138.5381651444514 -1032, 240.0408572110972 -1032, 517.1171875 -1032 M517.1171875 -1032 C517.1171875 -314.02284063710977, 517.1171875 403.95431872578047, 517.1171875 1032 M517.1171875 -1032 C517.1171875 -375.2912482450208, 517.1171875 281.41750350995835, 517.1171875 1032 M517.1171875 1032 C309.77332957525607 1032, 102.42947165051208 1032, -517.1171875 1032 M517.1171875 1032 C106.94995434832293 1032, -303.21727880335413 1032, -517.1171875 1032 M-517.1171875 1032 C-517.1171875 369.59940793291116, -517.1171875 -292.8011841341777, -517.1171875 -1032 M-517.1171875 1032 C-517.1171875 502.85774674874096, -517.1171875 -26.28450650251807, -517.1171875 -1032"
+                        <path d="M-517.1171875 -1032 C-285.46560022382334 -1032, -53.814012947646745 -1032, 517.1171875 -1032 M-517.1171875 -1032 C-296.0599587828428 -1032, -75.00273006568557 -1032, 517.1171875 -1032 M517.1171875 -1032 C517.1171875 -570.7718926320437, 517.1171875 -109.54378526408732, 517.1171875 1032 M517.1171875 -1032 C517.1171875 -376.87765324210557, 517.1171875 278.24469351578887, 517.1171875 1032 M517.1171875 1032 C124.31258189770995 1032, -268.4920237045801 1032, -517.1171875 1032 M517.1171875 1032 C129.5099153072132 1032, -258.0973568855736 1032, -517.1171875 1032 M-517.1171875 1032 C-517.1171875 614.522378766251, -517.1171875 197.0447575325021, -517.1171875 -1032 M-517.1171875 1032 C-517.1171875 436.95532649996824, -517.1171875 -158.08934700006353, -517.1171875 -1032"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
                     </g>
                     <g class="annotation-group text" transform="translate(0, -1008)"/>
@@ -1109,11 +1098,11 @@
                         </g>
                     </g>
                     <g class="divider" style="fill:blue">
-                        <path d="M-517.1171875 -984 C-140.38667192073194 -983.9996357397079, 236.34384365853612 -983.9992714794157, 517.1171875 -983.999 M-517.1171875 -984 C-271.7401103236027 -983.9997627451928, -26.363033147205442 -983.9995254903857, 517.1171875 -983.999"
+                        <path d="M-517.1171875 -984 C-280.5204728835904 -983.9997712349151, -43.923758267180744 -983.9995424698302, 517.1171875 -983.999 M-517.1171875 -984 C-130.85584488881955 -983.9996265243624, 255.4054977223609 -983.9992530487249, 517.1171875 -983.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
                     </g>
                     <g class="divider" style="fill:blue">
-                        <path d="M-517.1171875 -216 C-280.39035360768435 -215.9997711091029, -43.663519715368636 -215.99954221820582, 517.1171875 -215.999 M-517.1171875 -216 C-123.71519341689918 -215.99961962007492, 269.68680066620163 -215.99923924014982, 517.1171875 -215.999"
+                        <path d="M-517.1171875 -216 C-140.3067901792823 -215.9996356624703, 236.5036071414354 -215.9992713249406, 517.1171875 -215.999 M-517.1171875 -216 C-250.108279958752 -215.99974182940153, 16.900627582495986 -215.9994836588031, 517.1171875 -215.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
                     </g>
                 </g>

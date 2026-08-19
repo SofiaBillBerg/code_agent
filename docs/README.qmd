@@ -37,6 +37,13 @@ code-agent chat
 - **Web UI**: FastAPI + React interface for browser-based interaction
 - **Provider-agnostic**: OpenAI-compatible pattern; supports Ollama, OpenAI, Anthropic, and more
 
+## Class & Package Diagrams
+
+![Class diagram](../docs/visualizations/svg/classes.svg)
+
+
+![Package diagram](../docs/visualizations/svg/packages.svg)
+
 ## Documentation
 
 | Page                                       | Description                                       |

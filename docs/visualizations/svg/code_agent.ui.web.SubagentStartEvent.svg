@@ -1,5 +1,5 @@
 <svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg"
-     class="classDiagram" style="max-width: 1050.23px; background-color: white;" viewBox="0 0 1050.234375 2322"
+     class="classDiagram" style="max-width: 1050.23px; background-color: white;" viewBox="0 0 1050.234375 2298"
      role="graphics-document document" aria-roledescription="class">
     <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes
         edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
@@ -186,15 +186,16 @@
         <g class="root">
             <g class="clusters"/>
             <g class="edgePaths">
-                <path d="M525.117,200L525.117,204.167C525.117,208.333,525.117,216.667,525.117,222.125C525.117,227.583,525.117,230.167,525.117,231.458L525.117,232.75"
-                      id="my-svg-id_NotebookArgs_BaseModel_1" class="edge-thickness-normal edge-pattern-solid relation"
-                      style=";;;" data-edge="true" data-et="edge" data-id="id_NotebookArgs_BaseModel_1"
-                      data-points="W3sieCI6NTI1LjExNzE4NzUsInkiOjIwMH0seyJ4Ijo1MjUuMTE3MTg3NSwieSI6MjI1fSx7IngiOjUyNS4xMTcxODc1LCJ5IjoyNTB9XQ=="
+                <path d="M525.117,176L525.117,180.167C525.117,184.333,525.117,192.667,525.117,198.125C525.117,203.583,525.117,206.167,525.117,207.458L525.117,208.75"
+                      id="my-svg-id_SubagentStartEvent_BaseModel_1"
+                      class="edge-thickness-normal edge-pattern-solid relation" style=";;;" data-edge="true"
+                      data-et="edge" data-id="id_SubagentStartEvent_BaseModel_1"
+                      data-points="W3sieCI6NTI1LjExNzE4NzUsInkiOjE3Nn0seyJ4Ijo1MjUuMTE3MTg3NSwieSI6MjAxfSx7IngiOjUyNS4xMTcxODc1LCJ5IjoyMjZ9XQ=="
                       data-look="classic" marker-end="url(#my-svg_class-extensionEnd)"/>
             </g>
             <g class="edgeLabels">
                 <g class="edgeLabel">
-                    <g class="label" data-id="id_NotebookArgs_BaseModel_1" transform="translate(0, 0)">
+                    <g class="label" data-id="id_SubagentStartEvent_BaseModel_1" transform="translate(0, 0)">
                         <foreignObject width="0" height="0">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
                                  style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
@@ -205,88 +206,78 @@
                 </g>
             </g>
             <g class="nodes">
-                <g class="node default" id="my-svg-classId-NotebookArgs-0" data-look="classic"
-                   transform="translate(525.1171875, 104)">
+                <g class="node default" id="my-svg-classId-SubagentStartEvent-0" data-look="classic"
+                   transform="translate(525.1171875, 92)">
                     <g class="basic label-container outer-path">
-                        <path d="M-130.59765625 -96 L130.59765625 -96 L130.59765625 96 L-130.59765625 96" stroke="none"
+                        <path d="M-88.4609375 -84 L88.4609375 -84 L88.4609375 84 L-88.4609375 84" stroke="none"
                               stroke-width="0" fill="[lavender" style="fill:[lavender"/>
-                        <path d="M-130.59765625 -96 C-53.71416906370685 -96, 23.169318122586304 -96, 130.59765625 -96 M-130.59765625 -96 C-51.00481185484087 -96, 28.588032540318267 -96, 130.59765625 -96 M130.59765625 -96 C130.59765625 -19.875471829607037, 130.59765625 56.24905634078593, 130.59765625 96 M130.59765625 -96 C130.59765625 -43.885510600144066, 130.59765625 8.228978799711868, 130.59765625 96 M130.59765625 96 C48.161895553990064 96, -34.27386514201987 96, -130.59765625 96 M130.59765625 96 C47.05434050406437 96, -36.48897524187126 96, -130.59765625 96 M-130.59765625 96 C-130.59765625 20.15275189370695, -130.59765625 -55.6944962125861, -130.59765625 -96 M-130.59765625 96 C-130.59765625 49.97881856953431, -130.59765625 3.9576371390686234, -130.59765625 -96"
+                        <path d="M-88.4609375 -84 C-30.904075350253898 -84, 26.652786799492205 -84, 88.4609375 -84 M-88.4609375 -84 C-48.22826169960607 -84, -7.995585899212145 -84, 88.4609375 -84 M88.4609375 -84 C88.4609375 -16.89324830203438, 88.4609375 50.21350339593124, 88.4609375 84 M88.4609375 -84 C88.4609375 -40.24695470039544, 88.4609375 3.5060905992091165, 88.4609375 84 M88.4609375 84 C32.81743440085548 84, -22.826068698289035 84, -88.4609375 84 M88.4609375 84 C31.674718458588984 84, -25.111500582822032 84, -88.4609375 84 M-88.4609375 84 C-88.4609375 17.84947884767709, -88.4609375 -48.30104230464582, -88.4609375 -84 M-88.4609375 84 C-88.4609375 40.180316993192186, -88.4609375 -3.6393660136156285, -88.4609375 -84"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
-                    <g class="annotation-group text" transform="translate(0, -72)"/>
-                    <g class="label-group text" transform="translate(-55.1171875, -72)">
+                    <g class="annotation-group text" transform="translate(0, -60)"/>
+                    <g class="label-group text" transform="translate(-76.4609375, -60)">
                         <g class="label" style="font-weight: bolder" transform="translate(0,-12)">
-                            <foreignObject width="110.234375" height="24">
+                            <foreignObject width="152.921875" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 144px; text-align: center;">
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 178px; text-align: center;">
                                     <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>NotebookArgs</p>
+                                        <p>SubagentStartEvent</p>
                                     </span>
                                 </div>
                             </foreignObject>
                         </g>
                     </g>
-                    <g class="members-group text" transform="translate(-118.59765625, -24)">
+                    <g class="members-group text" transform="translate(-76.4609375, -12)">
                         <g class="label" style="" transform="translate(0,-12)">
-                            <foreignObject width="152.078125" height="24">
+                            <foreignObject width="43.5625" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 192px; text-align: center;">
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 92px; text-align: center;">
                                     <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>content : Optional[str]</p>
+                                        <p>id : str</p>
                                     </span>
                                 </div>
                             </foreignObject>
                         </g>
                         <g class="label" style="" transform="translate(0,12)">
-                            <foreignObject width="160.09375" height="24">
+                            <foreignObject width="71.140625" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 202px; text-align: center;">
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 114px; text-align: center;">
                                     <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>file_path : Optional[str]</p>
+                                        <p>name : str</p>
                                     </span>
                                 </div>
                             </foreignObject>
                         </g>
                         <g class="label" style="" transform="translate(0,36)">
-                            <foreignObject width="139.625" height="24">
+                            <foreignObject width="61.359375" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 181px; text-align: center;">
+                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 107px; text-align: center;">
                                     <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>mode : Optional[str]</p>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </g>
-                        <g class="label" style="" transform="translate(0,60)">
-                            <foreignObject width="182.078125" height="24">
-                                <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 213px; text-align: center;">
-                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>output_path : Path | None</p>
+                                        <p>type : str</p>
                                     </span>
                                 </div>
                             </foreignObject>
                         </g>
                     </g>
-                    <g class="methods-group text" transform="translate(-118.59765625, 96)"/>
+                    <g class="methods-group text" transform="translate(-76.4609375, 84)"/>
                     <g class="divider" style="fill:[lavender">
-                        <path d="M-130.59765625 -48 C-77.8791305644463 -47.99979816434996, -25.1606048788926 -47.99959632869992, 130.59765625 -47.999 M-130.59765625 -48 C-77.32666357413498 -47.99979604920102, -24.055670898269952 -47.999592098402026, 130.59765625 -47.999"
+                        <path d="M-88.4609375 -36 C-41.98568654371489 -35.999737312014375, 4.489564412570218 -35.99947462402876, 88.4609375 -35.999 M-88.4609375 -36 C-18.541612940399176 -35.99960480113293, 51.37771161920165 -35.999209602265864, 88.4609375 -35.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
                     <g class="divider" style="fill:[lavender">
-                        <path d="M-130.59765625 72 C-66.37161739076352 72.00024589276984, -2.145578531527036 72.00049178553968, 130.59765625 72.001 M-130.59765625 72 C-70.34658249865498 72.00023067440674, -10.095508747309964 72.00046134881346, 130.59765625 72.001"
+                        <path d="M-88.4609375 60 C-35.97439433998528 60.00029666508542, 16.512148820029438 60.000593330170844, 88.4609375 60.001 M-88.4609375 60 C-28.571510023023457 60.000338507759295, 31.317917453953086 60.00067701551859, 88.4609375 60.001"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
                 </g>
                 <g class="node default" id="my-svg-classId-BaseModel-1" data-look="classic"
-                   transform="translate(525.1171875, 1282)">
+                   transform="translate(525.1171875, 1258)">
                     <g class="basic label-container outer-path">
                         <path d="M-517.1171875 -1032 L517.1171875 -1032 L517.1171875 1032 L-517.1171875 1032"
                               stroke="none" stroke-width="0" fill="blue" style="fill:blue"/>
-                        <path d="M-517.1171875 -1032 C-281.5339152204397 -1032, -45.95064294087945 -1032, 517.1171875 -1032 M-517.1171875 -1032 C-295.8320767475215 -1032, -74.54696599504302 -1032, 517.1171875 -1032 M517.1171875 -1032 C517.1171875 -251.36219537585578, 517.1171875 529.2756092482884, 517.1171875 1032 M517.1171875 -1032 C517.1171875 -208.74630923343182, 517.1171875 614.5073815331364, 517.1171875 1032 M517.1171875 1032 C144.03379043270678 1032, -229.04960663458644 1032, -517.1171875 1032 M517.1171875 1032 C195.32538089556192 1032, -126.46642570887616 1032, -517.1171875 1032 M-517.1171875 1032 C-517.1171875 457.7571691973917, -517.1171875 -116.48566160521659, -517.1171875 -1032 M-517.1171875 1032 C-517.1171875 263.84887906377026, -517.1171875 -504.3022418724595, -517.1171875 -1032"
+                        <path d="M-517.1171875 -1032 C-157.09133760429228 -1032, 202.93451229141544 -1032, 517.1171875 -1032 M-517.1171875 -1032 C-140.7003820305066 -1032, 235.7164234389868 -1032, 517.1171875 -1032 M517.1171875 -1032 C517.1171875 -219.4139035278787, 517.1171875 593.1721929442426, 517.1171875 1032 M517.1171875 -1032 C517.1171875 -322.46307891032257, 517.1171875 387.07384217935487, 517.1171875 1032 M517.1171875 1032 C140.91653727221768 1032, -235.28411295556464 1032, -517.1171875 1032 M517.1171875 1032 C119.14991344971816 1032, -278.8173606005637 1032, -517.1171875 1032 M-517.1171875 1032 C-517.1171875 595.5697673639673, -517.1171875 159.1395347279347, -517.1171875 -1032 M-517.1171875 1032 C-517.1171875 309.54719833640445, -517.1171875 -412.9056033271911, -517.1171875 -1032"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
                     </g>
                     <g class="annotation-group text" transform="translate(0, -1008)"/>
@@ -1128,11 +1119,11 @@
                         </g>
                     </g>
                     <g class="divider" style="fill:blue">
-                        <path d="M-517.1171875 -984 C-282.52297497906045 -983.999773171132, -47.92876245812096 -983.999546342264, 517.1171875 -983.999 M-517.1171875 -984 C-294.2569278061711 -983.9997845166772, -71.39666811234224 -983.9995690333544, 517.1171875 -983.999"
+                        <path d="M-517.1171875 -984 C-199.92256188088123 -983.9996933048898, 117.27206373823753 -983.9993866097795, 517.1171875 -983.999 M-517.1171875 -984 C-148.24357606579815 -983.9996433365393, 220.6300353684037 -983.9992866730785, 517.1171875 -983.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
                     </g>
                     <g class="divider" style="fill:blue">
-                        <path d="M-517.1171875 -216 C-121.37062622740274 -215.99961735311567, 274.3759350451945 -215.9992347062313, 517.1171875 -215.999 M-517.1171875 -216 C-286.3821607943315 -215.99977690257424, -55.64713408866311 -215.99955380514845, 517.1171875 -215.999"
+                        <path d="M-517.1171875 -216 C-156.4531150504713 -215.99965127433282, 204.2109573990574 -215.9993025486656, 517.1171875 -215.999 M-517.1171875 -216 C-148.36862644568225 -215.9996434574503, 220.3799346086355 -215.99928691490058, 517.1171875 -215.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0" style="fill:blue"/>
                     </g>
                 </g>

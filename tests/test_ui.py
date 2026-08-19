@@ -11,8 +11,15 @@ registry, keeping the suite hermetic and fast.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
 import io
+
+from collections.abc import Callable, Iterator
+
+import pytest
+
+from fastapi.testclient import TestClient
+from pydantic import BaseModel
+from rich.console import Console
 
 from code_agent.capabilities.audit import Receipt
 from code_agent.capabilities.base import CapabilityBase, RiskClass
@@ -23,10 +30,7 @@ from code_agent.capabilities.envelope import (
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.ui import cli_ui
 from code_agent.ui.web import app
-from fastapi.testclient import TestClient
-from pydantic import BaseModel
-import pytest
-from rich.console import Console
+
 
 # ---------------------------------------------------------------------------
 # Dummy capabilities (no network required)
@@ -442,8 +446,9 @@ def test_web_capabilities_proxied_through_vite_target(
         "code_agent.ui.web.get_registry", _make_registry, raising=True
     )
 
-    from code_agent.ui.web import app as web_app
     from fastapi.testclient import TestClient
+
+    from code_agent.ui.web import app as web_app
 
     proxy_client = TestClient(web_app, base_url="http://localhost:5173")
     response = proxy_client.get("/capabilities")

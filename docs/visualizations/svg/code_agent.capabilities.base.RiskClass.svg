@@ -1,5 +1,5 @@
 <svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg"
-     class="classDiagram" style="max-width: 246.859px; background-color: white;" viewBox="0 0 246.859375 208"
+     class="classDiagram" style="max-width: 246.859px; background-color: white;" viewBox="0 0 246.859375 184"
      role="graphics-document document" aria-roledescription="class">
     <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes
         edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
@@ -188,16 +188,16 @@
             <g class="edgeLabels"/>
             <g class="nodes">
                 <g class="node default" id="my-svg-classId-RiskClass-0" data-look="classic"
-                   transform="translate(123.4296875, 104)">
+                   transform="translate(123.4296875, 92)">
                     <g class="basic label-container outer-path">
-                        <path d="M-115.4296875 -96 L115.4296875 -96 L115.4296875 96 L-115.4296875 96" stroke="none"
+                        <path d="M-115.4296875 -84 L115.4296875 -84 L115.4296875 84 L-115.4296875 84" stroke="none"
                               stroke-width="0" fill="[lavender" style="fill:[lavender"/>
-                        <path d="M-115.4296875 -96 C-43.94872196109222 -96, 27.532243577815564 -96, 115.4296875 -96 M-115.4296875 -96 C-63.308411322879856 -96, -11.187135145759711 -96, 115.4296875 -96 M115.4296875 -96 C115.4296875 -38.21959992343598, 115.4296875 19.560800153128042, 115.4296875 96 M115.4296875 -96 C115.4296875 -48.94708283085956, 115.4296875 -1.8941656617191143, 115.4296875 96 M115.4296875 96 C32.438866128296894 96, -50.55195524340621 96, -115.4296875 96 M115.4296875 96 C30.21157447663282 96, -55.00653854673436 96, -115.4296875 96 M-115.4296875 96 C-115.4296875 57.16293048328691, -115.4296875 18.325860966573813, -115.4296875 -96 M-115.4296875 96 C-115.4296875 35.59489184590166, -115.4296875 -24.810216308196686, -115.4296875 -96"
+                        <path d="M-115.4296875 -84 C-40.33241093043354 -84, 34.76486563913292 -84, 115.4296875 -84 M-115.4296875 -84 C-55.28313773792542 -84, 4.863412024149156 -84, 115.4296875 -84 M115.4296875 -84 C115.4296875 -48.21684866091663, 115.4296875 -12.433697321833264, 115.4296875 84 M115.4296875 -84 C115.4296875 -19.594117548732783, 115.4296875 44.811764902534435, 115.4296875 84 M115.4296875 84 C42.97522079322498 84, -29.479245913550045 84, -115.4296875 84 M115.4296875 84 C48.225357607145284 84, -18.978972285709432 84, -115.4296875 84 M-115.4296875 84 C-115.4296875 41.899830590865996, -115.4296875 -0.20033881826800837, -115.4296875 -84 M-115.4296875 84 C-115.4296875 24.976358971027622, -115.4296875 -34.047282057944756, -115.4296875 -84"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
-                    <g class="annotation-group text" transform="translate(0, -72)"/>
-                    <g class="label-group text" transform="translate(-38.25, -72)">
+                    <g class="annotation-group text" transform="translate(0, -60)"/>
+                    <g class="label-group text" transform="translate(-38.25, -60)">
                         <g class="label" style="font-weight: bolder" transform="translate(0,-12)">
                             <foreignObject width="76.5" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
@@ -209,7 +209,7 @@
                             </foreignObject>
                         </g>
                     </g>
-                    <g class="members-group text" transform="translate(-103.4296875, -24)">
+                    <g class="members-group text" transform="translate(-103.4296875, -12)">
                         <g class="label" style="" transform="translate(0,-12)">
                             <foreignObject width="143.71875" height="24">
                                 <div xmlns="http://www.w3.org/1999/xhtml"
@@ -241,25 +241,14 @@
                             </foreignObject>
                         </g>
                     </g>
-                    <g class="methods-group text" transform="translate(-103.4296875, 72)">
-                        <g class="label" style="font-style:italic;" transform="translate(0,-12)">
-                            <foreignObject width="118.296875" height="24">
-                                <div xmlns="http://www.w3.org/1999/xhtml"
-                                     style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 179px; text-align: center;">
-                                    <span class="nodeLabel markdown-node-label" style="fill:[lavender">
-                                        <p>__init__() : None</p>
-                                    </span>
-                                </div>
-                            </foreignObject>
-                        </g>
-                    </g>
+                    <g class="methods-group text" transform="translate(-103.4296875, 84)"/>
                     <g class="divider" style="fill:[lavender">
-                        <path d="M-115.4296875 -48 C-48.251721729303554 -47.99970900914996, 18.92624404139289 -47.99941801829992, 115.4296875 -47.999 M-115.4296875 -48 C-34.696741485525294 -47.99965029383791, 46.03620452894941 -47.99930058767581, 115.4296875 -47.999"
+                        <path d="M-115.4296875 -36 C-42.743214553533235 -35.99968514827285, 29.94325839293353 -35.99937029654571, 115.4296875 -35.999 M-115.4296875 -36 C-26.753450925605534 -35.99961588635257, 61.92278564878893 -35.999231772705144, 115.4296875 -35.999"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>
                     <g class="divider" style="fill:[lavender">
-                        <path d="M-115.4296875 48 C-30.950183334489097 48.00036593490806, 53.529320831021806 48.00073186981612, 115.4296875 48.001 M-115.4296875 48 C-58.82986880444849 48.00024517011144, -2.2300501088969753 48.000490340222875, 115.4296875 48.001"
+                        <path d="M-115.4296875 60 C-28.917173352662545 60.00037474117803, 57.59534079467491 60.00074948235606, 115.4296875 60.001 M-115.4296875 60 C-27.3879958792334 60.00038136502631, 60.6536957415332 60.00076273005262, 115.4296875 60.001"
                               stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"
                               style="fill:[lavender"/>
                     </g>

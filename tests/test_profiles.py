@@ -3,20 +3,26 @@
 from __future__ import annotations
 
 import json
+
 from pathlib import Path
 from typing import Any
+
+import pytest
+
+from deepagents import HarnessProfile
 
 from code_agent.config.settings import Settings
 from code_agent.profiles import register_profiles_from_settings
 from code_agent.profiles.router import (
-    DEFAULT_PROFILES_CONFIG,
     _registered,  # ruff: ignore[import-private-name] - testing private registry
+)
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
     load_profiles_from_config_file,
     register_profiles_from_config_file,
     resolve_profile,
 )
-from deepagents import HarnessProfile
-import pytest
+
 
 def test_register_profiles_from_settings_noop_when_missing(
     monkeypatch: Any,
@@ -293,8 +299,9 @@ def test_build_deep_agent_registers_profiles_flag(
     """
     from unittest.mock import MagicMock
 
-    from code_agent.agents import deepagents_agent
     from langchain.chat_models import BaseChatModel
+
+    from code_agent.agents import deepagents_agent
 
     calls = {"register": 0, "create": None}
     fake_llm = MagicMock(spec=BaseChatModel)

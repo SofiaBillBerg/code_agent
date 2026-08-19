@@ -61,3 +61,9 @@ See [docs/CONFIGURATION.qmd](docs/CONFIGURATION.qmd) for the full reference.
 - [Configuration](docs/CONFIGURATION.qmd) - Config file, `.env`, and env vars
 - [Contributing](docs/CONTRIBUTING.qmd) - Guidelines for contributing
 - [Changelog](CHANGELOG.qmd) - Release notes and version history
+
+## Class & Package Diagrams
+
+![Class diagram](docs/visualizations/svg/classes.svg)
+
+![Package diagram](docs/visualizations/svg/packages.svg)

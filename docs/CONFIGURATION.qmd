@@ -108,3 +108,15 @@ Given:
 - Environment: `CODE_AGENT_TEMPERATURE=0.5`
 
 The effective value is `0.5` (environment variable wins).
+
+
+## Configuration classes diagrams
+
+
+![Settings diagram](../docs/visualizations/svg/code_agent.config.settings.Settings.svg)
+
+
+![Jsonc Config Settings Source diagram](../docs/visualizations/svg/code_agent.config.settings.JsoncConfigSettingsSource.svg)
+
+
+![EnvExpandingYamlConfigSettingsSource diagram](../docs/visualizations/svg/code_agent.config.settings.EnvExpandingYamlConfigSettingsSource.svg)

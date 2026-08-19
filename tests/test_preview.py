@@ -11,16 +11,22 @@ File-helper coverage (``write_file`` / ``py_to_ipynb``) lives in
 from pathlib import Path
 from typing import Any
 
-# Import the helpers from the public API
-from code_agent.agents.deepagents_agent import build_agent, create_default_tools
-from code_agent.main import create_llm
+import pytest
+
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
 from langchain.tools import BaseTool
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
-import pytest
+
+# Import the helpers from the public API
+from code_agent.agents.deepagents_agent import (
+    build_agent,
+    create_default_tools,
+)
+from code_agent.main import create_llm
+
 
 # --------------------------------------------------------------------------- #
 # Tests for agent creation

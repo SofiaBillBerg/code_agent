@@ -6,22 +6,29 @@ added to the Settings class, plus validation behavior.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 import logging
 import pathlib
+
+from collections.abc import Generator
 from typing import Any
+
+import hypothesis
+import pytest
+
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from code_agent.config.settings import (
     _ENV_UNSET,  # ruff: ignore[import-private-name]
-    Settings,
-    _expand_env_vars,  # ruff: ignore[import-private-name]
-    _load_substitution_env,  # ruff: ignore[import-private-name]
-    get_settings,
 )
-import hypothesis
-from hypothesis import given, settings
-from hypothesis import strategies as st
-import pytest
+from code_agent.config.settings import (
+    _expand_env_vars,  # ruff: ignore[import-private-name]
+)
+from code_agent.config.settings import (
+    _load_substitution_env,  # ruff: ignore[import-private-name]
+)
+from code_agent.config.settings import Settings, get_settings
+
 
 # Tag: Feature: agent-core-enhancement, Property 11: Settings checkpoint_dir validation never raises
 # Tag: Feature: agent-core-enhancement, Property 12: Settings round-trip

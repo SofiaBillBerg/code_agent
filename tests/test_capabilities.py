@@ -15,11 +15,16 @@ from __future__ import annotations
 
 import hashlib
 import importlib
-from pathlib import Path
 import sys
 import types
+
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
+
+import pytest
+
+from pydantic import BaseModel, ValidationError
 
 from code_agent.capabilities.audit import AuditLog, Receipt
 from code_agent.capabilities.base import CapabilityBase, RiskClass
@@ -29,8 +34,7 @@ from code_agent.capabilities.envelope import (
 )
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.capabilities.tool_adapter import ToolResult, tool_to_capability
-from pydantic import BaseModel, ValidationError
-import pytest
+
 
 # ``code_agent/__init__.py`` also eagerly imports the provider modules,
 # which need ``langchain_ollama`` and ``langchain_openai``; stand in for
