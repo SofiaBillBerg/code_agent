@@ -6,6 +6,16 @@ so agent behavior can be tuned per model without manual wiring.
 
 from __future__ import annotations
 
-from code_agent.profiles.router import register_profiles_from_settings
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
+    load_profiles_from_config_file,
+    register_profiles_from_config_file,
+    register_profiles_from_settings,
+)
 
-__all__ = ["register_profiles_from_settings"]
+__all__ = [
+    "DEFAULT_PROFILES_CONFIG",
+    "load_profiles_from_config_file",
+    "register_profiles_from_config_file",
+    "register_profiles_from_settings",
+]

@@ -28,22 +28,100 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 
 from __future__ import annotations
 
-from functools import lru_cache
 import logging
+import os
+import re
+from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any, TYPE_CHECKING
 
-from code_agent.config.jsonc import loads as jsonc_loads
+from dotenv import dotenv_values
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
 from pydantic_settings.sources.providers.json import JsonConfigSettingsSource
 from pydantic_settings.sources.providers.yaml import YamlConfigSettingsSource
 
+from code_agent.config.jsonc import loads as jsonc_loads
+
+#: Matches ``${env:VAR}`` or ``${VAR}`` placeholders for env substitution.
+_ENV_PLACEHOLDER_RE = re.compile(r"\$\{(?:env:)?([A-Za-z_][A-Za-z0-9_]*)\}")
+
+
+class _EnvUnset:
+    """Sentinel marking a config value that referenced an unset env var."""
+
+
+#: Singleton sentinel returned for unset single-placeholder values so the
+#: settings source can drop the key and let the field default apply.
+_ENV_UNSET = _EnvUnset()
+
+
+def _load_substitution_env() -> dict[str, str]:
+    """Build the env mapping used for ``${env:VAR}`` substitution in config.
+
+    Merges the project ``.env`` (read without mutating :data:`os.environ`)
+    under the current process environment, so explicit environment variables
+    win over ``.env`` values - the same precedence pydantic-settings uses.
+
+    :return: Mapping of variable name to value for substitution.
+    """
+    dotenv_vars = {
+        k: v
+        for k, v in (dotenv_values(PROJECT_ROOT / ".env") or {}).items()
+        if v is not None
+    }
+    env: dict[str, str] = dict(dotenv_vars)
+    env.update(os.environ)  # process env overrides .env
+    return env
+
+
+def _expand_env_vars(value: Any, env: dict[str, str]) -> Any:
+    """Recursively expand ``${env:VAR}`` / ``${VAR}`` placeholders.
+
+    A value that is *exactly* one placeholder referencing an unset variable is
+    replaced by :data:`_ENV_UNSET` so the calling settings source can drop the
+    key and let the field default (or a higher-precedence source) apply.
+    Other strings have any embedded placeholders expanded in place.
+
+    :param value: Parsed config node (str / dict / list / scalar).
+    :param env: Environment mapping to resolve placeholders against.
+    :return: The value with placeholders expanded, or :data:`_ENV_UNSET`.
+    """
+    if isinstance(value, str):
+        stripped = value.strip()
+        match = _ENV_PLACEHOLDER_RE.fullmatch(stripped)
+        if match:
+            return env.get(match.group(1), _ENV_UNSET)
+        if "${" in value:
+            return _ENV_PLACEHOLDER_RE.sub(
+                lambda m: env.get(m.group(1), m.group(0)), value
+            )
+        return value
+    if isinstance(value, dict):
+        result: dict[str, Any] = {}
+        for key, val in value.items():
+            expanded = _expand_env_vars(val, env)
+            if expanded is not _ENV_UNSET:
+                result[key] = expanded
+        return result
+    if isinstance(value, list):
+        result_list: list[Any] = []
+        for item in value:
+            expanded = _expand_env_vars(item, env)
+            if expanded is not _ENV_UNSET:
+                result_list.append(expanded)
+        return result_list
+    return value
+
+
 if TYPE_CHECKING:
     from importlib.abc import Traversable
 #: Project root (parent of the ``code_agent`` package), where ``.env`` lives.
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# Repo root (parent of the ``code_agent`` package), where ``.env`` and
+# ``config/`` live.  ``settings.py`` sits at ``code_agent/config/settings.py``,
+# so the root is three parents up.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 #: Default system prompt used when none is supplied via config / ``.env``.
 DEFAULT_SYSTEM_PROMPT = """You are a coding agent. Use tools for every filesystem action.
@@ -62,7 +140,6 @@ TOOL SELECTION:
 - edit-file: replace, append, or patch a file
 - new-file: create a file
 - search-explain: search codebase and explain matches
-- linker: read file and return artifact
 - generate-test: generate pytest tests for code
 - format-code: format Python code
 - notebook: create Jupyter notebooks
@@ -102,7 +179,25 @@ class JsoncConfigSettingsSource(JsonConfigSettingsSource):
 
     def _read_file(self, file_path: Path | Traversable) -> dict[str, Any]:
         with file_path.open(encoding=self.json_file_encoding) as jsonc_file:
-            return jsonc_loads(jsonc_file.read())
+            raw = jsonc_loads(jsonc_file.read())
+        return _expand_env_vars(raw, _load_substitution_env())
+
+
+class EnvExpandingYamlConfigSettingsSource(YamlConfigSettingsSource):
+    """YAML config source that expands ``${env:VAR}`` placeholders.
+
+    Reads ``config/codeagent.yaml`` and substitutes ``${env:VAR}`` / ``${VAR}``
+    references against the process environment (with ``.env`` merged in) before
+    pydantic-settings consumes the values, so secrets can live in ``.env`` and
+    be referenced from the YAML config.
+    """
+
+    def _read_file(self, file_path: Path | Traversable) -> dict[str, Any]:
+        import yaml
+
+        with file_path.open(encoding=self.yaml_file_encoding) as yaml_file:
+            raw = yaml.safe_load(yaml_file) or {}
+        return _expand_env_vars(raw, _load_substitution_env())
 
 
 class Settings(BaseSettings):
@@ -177,7 +272,7 @@ class Settings(BaseSettings):
             env_settings,
             dotenv_settings,
             JsoncConfigSettingsSource(settings_cls),
-            YamlConfigSettingsSource(settings_cls),
+            EnvExpandingYamlConfigSettingsSource(settings_cls),
         )
 
     #: --- Provider selection -------------------------------------------------

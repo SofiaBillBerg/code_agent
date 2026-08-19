@@ -7,7 +7,6 @@ with Ollama LLM integration for automated code and documentation generation.
 
 import os
 import sys
-
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -25,7 +24,6 @@ from code_agent import build_agent, create_llm
 from code_agent.agents.base_agent import create_default_tools
 from code_agent.main import load_config
 from code_agent.tools._io import _atomic_write, create_from_template
-
 
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -162,33 +160,6 @@ def example_llm_generation() -> None:
         print("Make sure Ollama is running and the model is available")
 
 
-def example_documentation_generation() -> None:
-    """Example 3: Generate documentation."""
-    print("\n" + "=" * 60)
-    print("Example 3: Documentation Generation")
-    print("=" * 60)
-
-    import tempfile
-
-    from code_agent.tools.docs_generator import (  # NOTE: DEPRECATED
-        generate_quarto_docs,
-    )
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        print(f"Generating docs in temporary directory: {tmpdir}")
-        try:
-            # Generate docs
-            files = generate_quarto_docs(
-                output_dir=Path(tmpdir),
-                overwrite=True,
-            )
-            print(f"✓ Generated {len(files)} documentation files:")
-            for f in files:
-                print(f"  - {Path(f).name}")
-        except Exception as e:
-            print(f"Error generating documentation: {e}")
-
-
 def example_config_loading() -> None:
     """Example 4: Loading and using configuration."""
     print("\n" + "=" * 60)
@@ -266,7 +237,6 @@ def main() -> None:
     examples = [
         ("Basic File Operations", example_basic_file_operations),
         ("LLM Content Generation", example_llm_generation),
-        ("Documentation Generation", example_documentation_generation),
         ("Configuration Loading", example_config_loading),
         ("Article Evaluation", example_article_evaluation),
     ]

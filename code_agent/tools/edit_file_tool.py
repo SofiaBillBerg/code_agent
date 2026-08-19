@@ -2,29 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
 from pathlib import Path
 
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
+from code_agent.tools._io import _atomic_write
+
 log = logging.getLogger(__name__)
-
-
-@dataclass
-class FileObject:
-    """Artifact representing a file.
-
-    Attributes:
-        path: Path to the file, relative to the project root.
-        contents: Content of the file.
-        status: Status of the file, either "success" or "error".
-    """
-
-    path: Path
-    contents: str
-    status: str = "success"
 
 
 class EditFileArgs(BaseModel):
@@ -78,10 +64,10 @@ def edit_file(
 
     try:  # ruff: ignore[too-many-statements-in-try-clause]
         if mode == "replace":
-            full_path.write_text(new_content, encoding="utf-8")
+            _atomic_write(full_path, new_content)
         elif mode == "append":
             original = full_path.read_text(encoding="utf-8")
-            full_path.write_text(original + new_content, encoding="utf-8")
+            _atomic_write(full_path, original + new_content)
         elif mode == "patch":
             original = full_path.read_text(encoding="utf-8")
             start_marker = "<!-- AUTOGEN START -->"
@@ -100,7 +86,7 @@ def edit_file(
                 )
             else:
                 new_full = original + "\n" + new_content
-            full_path.write_text(new_full, encoding="utf-8")
+            _atomic_write(full_path, new_full)
         else:
             return f"❌ Unknown mode: {mode}"
 

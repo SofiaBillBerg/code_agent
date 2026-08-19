@@ -1,11 +1,11 @@
-"""Low-level, synchronous file-system helpers used by the *code_agent* package.
+"""Low-level, synchronous file-system helpers and shared artifacts.
 
-This module is the private home of the package's atomic file-write helper
-and the small set of pure, stateless file helpers the agent uses to create,
-append, template and convert files.  It was extracted from the legacy
-:mod:`code_agent.file_generator` module (which has been removed) so that
-consumers (CLI, tools, documentation generator, tests) share a single
-implementation.
+This module is the private home of the package's atomic file-write helper,
+the small set of pure, stateless file helpers the agent uses to template
+files, and the :class:`FileObject` artifact shared by the file tools.  It
+was extracted from the legacy :mod:`code_agent.file_generator` module
+(which has been removed) so that consumers (CLI, tools, tests) share a
+single implementation.
 
 All functions are stateless, return a :class:`pathlib.Path` instance
 pointing to the created file, and raise ``CodeAgentError`` (defined in
@@ -14,6 +14,7 @@ pointing to the created file, and raise ``CodeAgentError`` (defined in
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 
@@ -27,12 +28,22 @@ except Exception:  # pragma: no cover - handled at runtime
     # noinspection PyGlobalVariableRedeclarationInNotebook
     nbformat = None
 
-__all__ = [
-    "_atomic_write",
-    "append_file",
-    "create_file",
-    "create_from_template",
-]
+__all__ = ["FileObject", "_atomic_write", "create_from_template"]
+
+
+@dataclass
+class FileObject:
+    """Artifact representing a file.
+
+    Attributes:
+        path: Path to the file, relative to the project root.
+        contents: Content of the file.
+        status: Status of the file, either "success" or "error".
+    """
+
+    path: Path
+    contents: str
+    status: str = "success"
 
 
 def _atomic_write(
@@ -68,50 +79,6 @@ def _atomic_write(
         return target
     except OSError as exc:  # pragma: no cover - exercised via tests
         raise CodeAgentError(f"Failed to write file {target!s}: {exc}") from exc
-
-
-def create_file(
-    path: Path | str,
-    content: str,
-    *,
-    overwrite: bool = False,
-) -> Path:
-    """Create *path* and write *content*.
-
-    This is a convenience wrapper around :func:`_atomic_write` that adds an
-    overwrite guard: by default an existing file raises
-    :class:`CodeAgentError` unless ``overwrite=True`` is passed.
-
-    :param path: Target file path.
-    :param content: Text to write.
-    :param overwrite: If ``False`` (the default) an existing file will raise
-        a :class:`CodeAgentError`.
-    :return: Absolute path of the created file.
-    """
-    path = Path(path).expanduser().resolve()
-    if path.exists() and not overwrite:
-        raise CodeAgentError(
-            f"File {path!s} already exists - use overwrite=True to replace it"
-        )
-    return _atomic_write(path, content)
-
-
-def append_file(path: Path | str, content: str) -> Path:
-    """Append *content* to *path*.
-
-    The function opens the file in append mode, writes the content and
-    returns the absolute file path.  The file must already exist.
-
-    :param path: Target file path.
-    :param content: Text to append.
-    :return: Absolute path of the modified file.
-    """
-    path = Path(path).expanduser().resolve()
-    if not path.exists():
-        raise CodeAgentError(f"File {path!s} does not exist - cannot append")
-    with path.open("a", encoding="utf-8") as fp:
-        fp.write(content)
-    return path
 
 
 def create_from_template(

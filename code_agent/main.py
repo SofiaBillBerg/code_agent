@@ -8,19 +8,20 @@ so ``python -m code_agent`` routes there through :mod:`code_agent.__main__`.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 import json
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from code_agent.config.jsonc import loads as jsonc_loads
-from code_agent.config.settings import Settings, get_settings
+import yaml
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic_settings import BaseSettings
-import yaml
+
+from code_agent.config.jsonc import loads as jsonc_loads
+from code_agent.config.settings import get_settings, Settings
 
 __all__ = ["create_llm", "load_config"]
 

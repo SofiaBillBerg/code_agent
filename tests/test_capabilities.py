@@ -17,13 +17,11 @@ import hashlib
 import importlib
 import sys
 import types
-
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-
 from pydantic import BaseModel, ValidationError
 
 from code_agent.capabilities.audit import (  # ruff: ignore [module-import-not-at-top-of-file]
@@ -41,11 +39,8 @@ from code_agent.capabilities.envelope import (  # ruff: ignore [module-import-no
 from code_agent.capabilities.registry import (
     CapabilityRegistry,  # ruff: ignore [module-import-not-at-top-of-file]
 )
-from code_agent.capabilities.tool_adapter import (  # ruff: ignore [module-import-not-at-top-of-file]
-    ToolResult,
-    tool_to_capability,
-)
-
+from code_agent.capabilities.tool_adapter import (tool_to_capability,
+    ToolResult)  # ruff: ignore [module-import-not-at-top-of-file]
 
 try:
     from langchain.tools import BaseTool  # noqa: ignore[F401]
@@ -700,7 +695,7 @@ def _make_tool(
     tool.description = description
     tool.args_schema = args_schema
     if run is not None:
-        tool.notebook_tool.side_effect = run
+        tool._run.side_effect = run
     return tool
 
 
@@ -814,7 +809,7 @@ def test_tool_to_capability_falls_back_to_invoke() -> None:
     :raises ValueError: If the args are not properly formed.
     """
     tool = _make_tool()
-    tool.notebook_tool.side_effect = NotImplementedError
+    tool._run.side_effect = NotImplementedError
     tool.invoke.return_value = "fallback output"
     capability = tool_to_capability(tool)
     result = capability.invoke(EchoInput(text="hello"))

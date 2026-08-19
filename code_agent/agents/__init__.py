@@ -6,11 +6,7 @@ from code_agent.agents.deepagents_agent import (
     make_backend,
     make_default_permissions,
 )
-from code_agent.agents.persistent_agent import (
-    PersistentAgent,
-    build_agent,
-    get_persistent_agent,
-)
+from code_agent.agents.persistent_agent import (build_agent, get_persistent_agent, PersistentAgent)
 
 __all__ = [
     "PersistentAgent",

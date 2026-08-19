@@ -1,0 +1,26 @@
+# DeepAgents harness profiles (user-editable).
+#
+# Each top-level key is either a bare provider name (e.g. "ollama") for
+# provider-wide defaults, or "provider:model" for a per-model override.
+# IMPORTANT: a model identifier that itself contains a ":" (e.g. the Ollama
+# model "gpt-oss:20b") can NOT be used as an exact "provider:model" key -
+# register it under the bare provider key instead, which matches all models
+# of that provider.
+#
+# Values are HarnessProfile fields. Common fields:
+#   base_system_prompt:   str | None   - replaces the agent base prompt
+#   system_prompt_suffix: str | None   - appended to the base prompt
+#   excluded_tools:       list[str]    - built-in tools hidden from the model
+#   tool_description_overrides: {tool: "new description"}
+#   excluded_middleware:  list[str]    - middleware classes to disable
+#
+# JSON files are also accepted (JSON is a YAML subset).  This file is read by
+# code_agent.agents.deepagents_agent.build_deep_agent by default; pass
+# register_profiles=False to launch without these profiles.
+
+# Example: tune every Ollama model (covers "gpt-oss:20b" whose id has a ":").
+"ollama":
+  system_prompt_suffix: "Be concise and prefer minimal, focused diffs."
+  excluded_tools: [ ]
+  tool_description_overrides:
+    read_file: "Read a file from the workspace (read-only)."

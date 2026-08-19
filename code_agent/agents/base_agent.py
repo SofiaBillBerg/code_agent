@@ -6,11 +6,12 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from code_agent.tools.notebook_tool import py_to_ipynb
-from code_agent.utils.graph import Harness, build_graph
 from langchain.chat_models import BaseChatModel
 from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
+
+from code_agent.tools.notebook_tool import py_to_ipynb
+from code_agent.utils.graph import build_graph, Harness
 
 __all__ = ["build_agent", "create_default_tools"]
 
@@ -19,7 +20,7 @@ def build_agent(
     llm: BaseChatModel,
     tools: Iterable[BaseTool],
     *,
-    harness: Harness = "create_agent",
+    harness: Harness = "deepagents",
     root_dir: str | Path = ".",
     **kwargs: Any,
 ) -> Runnable:
@@ -27,8 +28,10 @@ def build_agent(
 
     :param llm: The language model to use.
     :param tools: The tools to bind to the LLM.
-    :param harness: Agent harness to use - ``"create_agent"`` (default) or
-        ``"deepagents"``.
+    :param harness: Agent harness to use - ``"deepagents"`` (default, a
+        DeepAgents/LangGraph agent with a virtual filesystem and
+        permission-based human-in-the-loop) or ``"create_agent"`` (LangChain's
+        ``create_agent``).
     :param root_dir: Working directory mounted at ``/workspace/`` when
         *harness* is ``"deepagents"``.
     :param kwargs: Extra keyword arguments forwarded to the harness builder.
@@ -52,18 +55,18 @@ def create_default_tools(
     """
     from functools import wraps
 
+    from langchain_core.tools import StructuredTool
+
     from code_agent.tools import (
         edit_file,
         generate_test,
         make_format_code_tool,
         make_general_chat_tool,
-        make_linker_tool,
         make_new_file_tool,
         make_r_script_tool,
         make_search_explain_tool,
         read_file,
     )
-    from langchain_core.tools import StructuredTool
 
     root_path = Path(root_dir) if root_dir else Path.cwd()
 
@@ -107,11 +110,14 @@ def create_default_tools(
             if llm
             else None
         ),
-        make_linker_tool(root_dir=root_path),
         make_new_file_tool(root_dir=root_path),
         bind_root_dir(generate_test),
         make_format_code_tool(root_dir=root_path),
-        py_to_ipynb,
+        # ``py_to_ipynb`` is a plain function, not a ``BaseTool``; wrap it so
+        # downstream code that expects ``.name``/``.args_schema`` (e.g. the
+        # capability adapter) behaves. The function stays callable for its
+        # direct callers.
+        StructuredTool.from_function(py_to_ipynb),
         (make_general_chat_tool(llm=llm) if llm else None),
         make_r_script_tool(),
     ]

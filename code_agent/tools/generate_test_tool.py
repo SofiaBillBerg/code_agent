@@ -7,6 +7,9 @@ from pathlib import Path
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
+from code_agent.tools._io import _atomic_write
+
+
 class GenerateTestArgs(BaseModel):
     """Arguments for the generate-test tool.
 
@@ -74,5 +77,5 @@ def test_{module_name}_smoke():
     if test_file.exists():
         return f"❌ Test file already exists: {test_file}"
 
-    test_file.write_text(scaffold, encoding="utf-8")
+    _atomic_write(test_file, scaffold)
     return f"✅ Generated test scaffold: {test_file}"

@@ -12,9 +12,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from langchain_ollama import ChatOllama
+
 from code_agent.config.settings import as_config_dict
 from code_agent.providers.base import ProviderBase
-from langchain_ollama import ChatOllama
+
 
 #: Shared helper so the provider layer and ``main.create_llm`` build
 #: ``ChatOllama`` from the same config keys.  Keeping this in one place

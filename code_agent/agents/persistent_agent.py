@@ -1,16 +1,19 @@
 """Persistent agent implementation for the code_agent package."""
 
 import json
+import uuid
 from pathlib import Path
 from typing import Any, Self
-import uuid
 
-from code_agent.agents.base_agent import build_agent
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage, HumanMessage, SystemMessage
 from langchain.tools import BaseTool
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables import Runnable
+
+from code_agent.agents.base_agent import build_agent
+from code_agent.utils.graph import Harness
+
 
 class PersistentAgent:
     """A persistent agent that maintains state between sessions."""
@@ -30,17 +33,28 @@ class PersistentAgent:
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self, llm: BaseChatModel, tools: list[BaseTool]) -> None:
+    def __init__(
+        self,
+        llm: BaseChatModel,
+        tools: list[BaseTool],
+        *,
+        harness: Harness = "create_agent",
+    ) -> None:
         """Initialize the agent with the given LLM and tools.
 
         :param llm: The language model to use.
         :param tools: The tools to use.
+        :param harness: Agent harness to use. ``PersistentAgent`` is a thin
+            state-management wrapper, so it defaults to LangChain's
+            ``create_agent`` rather than the DeepAgents filesystem harness.
         :return: None
         """
         if self._initialized:  # type: ignore[has-type]
             return
 
-        self.agent: Runnable = build_agent(llm=llm, tools=tools)
+        self.agent: Runnable = build_agent(
+            llm=llm, tools=tools, harness=harness
+        )
         self.conversation_history: list[dict[str, str]] = []
         self.settings: dict[str, Any] = {}
         self.thread_id = str(uuid.uuid4())
@@ -191,13 +205,17 @@ agent = None
 
 
 def get_persistent_agent(
-    llm: BaseChatModel, tools: list[Any]
+    llm: BaseChatModel,
+    tools: list[Any],
+    *,
+    harness: Harness = "create_agent",
 ) -> Any | PersistentAgent | None:
     """
     Get persistent agent.
 
     :param llm: Description of llm
     :param tools: Description of tools
+    :param harness: Agent harness to use (forwarded to ``PersistentAgent``).
     :return: Description of return value.
 
     Example::
@@ -206,7 +224,7 @@ def get_persistent_agent(
     """
     global agent  # ruff: ignore[global-statement, undefined-export]
     if agent is None:
-        agent = PersistentAgent(llm=llm, tools=tools)
+        agent = PersistentAgent(llm=llm, tools=tools, harness=harness)
     return agent
 
 

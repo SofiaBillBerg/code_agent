@@ -8,15 +8,15 @@ the tool's ``_run`` with the same keyword arguments LangChain would pass.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 import inspect
+from collections.abc import Callable
 from typing import Any
 
-from .base import CapabilityBase, RiskClass
-
-from code_agent.config.mcp import is_readonly_server, server_from_prefixed
 from langchain.tools import BaseTool
 from pydantic import BaseModel
+
+from code_agent.config.mcp import is_readonly_server, server_from_prefixed
+from .base import CapabilityBase, RiskClass
 
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (
@@ -119,7 +119,7 @@ def _make_execute(tool: BaseTool) -> Callable[[BaseModel], BaseModel]:
             output = tool.invoke(tool_args)
         else:
             try:
-                output = tool.notebook_tool(**tool_args)
+                output = tool._run(**tool_args)
             except NotImplementedError:
                 output = tool.invoke(tool_args)
         return ToolResult(output=output)

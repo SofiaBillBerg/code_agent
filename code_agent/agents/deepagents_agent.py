@@ -20,8 +20,12 @@ cover:
   marks for review,
 * an :class:`langgraph.checkpoint.memory.InMemorySaver` checkpointing is
   attached automatically (mandatory for HITL pauses to work),
-* optional *harness profiles* (registered under ``provider:model`` keys) can
-  tune the system prompt, tool descriptions and excluded tools per model.
+* optional *harness profiles* (registered under ``provider:model`` keys) tune
+  the system prompt, tool descriptions and excluded tools per model.  By
+  default :func:`build_deep_agent` loads them from the user-editable config
+  file ``/home/nvidia/code_agent/config/profiles.yaml`` (see
+  :data:`~code_agent.profiles.router.DEFAULT_PROFILES_CONFIG`); pass
+  ``register_profiles=False`` to launch without them.
 
 The built-in filesystem tool set provided by ``create_deep_agent`` is
 ``ls, read_file, write_file, edit_file, glob, grep, delete, execute, task``.
@@ -33,26 +37,28 @@ backend/permissions, so they win), avoiding duplicate-tool errors.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 import logging
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from deepagents import (
-    FilesystemPermission,
-    HarnessProfile,
-    create_deep_agent,
-    register_harness_profile,
-)
+from deepagents import (create_deep_agent, FilesystemPermission, HarnessProfile, register_harness_profile)
 from deepagents.backends import CompositeBackend, StateBackend
 from deepagents.backends.filesystem import FilesystemBackend
 from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
 from langchain.chat_models import BaseChatModel
 from langchain.messages import SystemMessage
 from langchain.tools import BaseTool
+from langchain_core.tools import StructuredTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
+
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
+    register_profiles_from_config_file,
+    register_profiles_from_settings,
+)
 
 log = logging.getLogger(__name__)
 
@@ -179,6 +185,8 @@ def build_deep_agent(
     drop_builtin_collisions: bool = True,
     profile: HarnessProfile | None = None,
     profile_key: str | None = None,
+    register_profiles: bool = True,
+    profiles_config: str | Path | None = None,
     **kwargs: Any,
 ) -> CompiledStateGraph:
     """Create a DeepAgents agent wired for this project.
@@ -211,7 +219,17 @@ def build_deep_agent(
         built-in tools (built-ins are wired to the backend and win).
     :param profile: Optional harness profile to register under *profile_key*.
     :param profile_key: Key of the form ``provider:model`` (e.g.
-        ``"ollama:gpt-oss:20b"``) under which *profile* is registered.
+        ``"ollama:gpt-oss"``) or a bare provider (e.g. ``"ollama"``) under
+        which *profile* is registered.  Note: a model identifier that itself
+        contains a ``:`` (such as ``gpt-oss:20b``) cannot be used as an exact
+        ``provider:model`` key - register it under the bare provider key.
+    :param register_profiles: When true (default), register every harness
+        profile declared in the config file at *profiles_config* (default
+        :data:`DEFAULT_PROFILES_CONFIG`, i.e.
+        ``/home/nvidia/code_agent/config/profiles.yaml``) before building the
+        agent.  Pass false to launch without any config-file profiles.
+    :param profiles_config: Override path for the profiles config file; only
+        used when *register_profiles* is true.
     :param kwargs: Extra keyword arguments forwarded to
         :func:`deepagents.create_deep_agent` (e.g. ``middleware``,
         ``subagents``, ``memory``, ``response_format``, ``debug``).
@@ -220,8 +238,36 @@ def build_deep_agent(
     """
     backend = make_backend(root_dir, workspace_prefix=workspace_prefix)
 
+    # Register all harness profiles from the user-editable config file by
+    # default (see code_agent.profiles.router.DEFAULT_PROFILES_CONFIG, i.e.
+    # /home/nvidia/code_agent/config/profiles.yaml).  Pass
+    # register_profiles=False to launch without them, or profiles_config to
+    # point at a different file.
+    if register_profiles:
+        config_path = (
+            Path(profiles_config)
+            if profiles_config
+            else DEFAULT_PROFILES_CONFIG
+        )
+        register_profiles_from_config_file(config_path)
+        # Also apply any profiles declared in the main app config
+        # (codeagent.jsonc / codeagent.yaml via the ``profiles`` key, or the
+        # CODE_AGENT_PROFILES env entry) so both config surfaces load by default.
+        register_profiles_from_settings()
+
     # Custom tools are additive; drop any that shadow the built-ins.
-    tool_list = list(tools) if tools is not None else []
+    # Bare callables (e.g. ``py_to_ipynb``) are wrapped into StructuredTools
+    # so they expose ``.name`` and play nicely with ``create_deep_agent``.
+    tool_list: list[BaseTool] = []
+    for item in tools or []:
+        if isinstance(item, BaseTool):
+            tool_list.append(item)
+        elif callable(item):
+            tool_list.append(StructuredTool.from_function(item))
+        else:
+            raise TypeError(
+                f"Unsupported tool entry: {item!r} (expected BaseTool or callable)"
+            )
     if drop_builtin_collisions and tool_list:
         original_names = {t.name for t in tool_list}
         tool_list = [t for t in tool_list if t.name not in FS_BUILTIN_TOOLS]

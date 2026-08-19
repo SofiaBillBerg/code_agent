@@ -1,22 +1,39 @@
 """Profile routing for DeepAgents harness profiles.
 
-This module bridges the project's :class:`~code_agent.config.settings.Settings`
-into DeepAgents' ``register_harness_profile`` mechanism.  Instead of
-requiring callers to manually construct and register ``HarnessProfile``
-objects, :func:`register_profiles_from_settings` reads the active config
-and registers any declared profiles under their ``provider:model`` keys.
+This module bridges the project's configuration into DeepAgents'
+``register_harness_profile`` mechanism.  Instead of requiring callers to
+manually construct and register ``HarnessProfile`` objects, it reads declared
+profiles and registers them under their ``provider:model`` keys from two
+sources:
+
+* :func:`register_profiles_from_settings` - profiles declared in
+  :class:`~code_agent.config.settings.Settings` (e.g. the ``CODE_AGENT_PROFILES``
+  ``.env`` entry), and
+* :func:`register_profiles_from_config_file` - profiles declared in the
+  user-editable config file :data:`DEFAULT_PROFILES_CONFIG`
+  (``/home/nvidia/code_agent/config/profiles.yaml``), which
+  :func:`code_agent.agents.deepagents_agent.build_deep_agent` calls by default.
 
 The router is additive: it only registers profiles that are explicitly
-declared in settings, so it never surprises existing behavior with
-unexpected defaults.
+declared, so it never surprises existing behavior with unexpected defaults.
 """
 
 from __future__ import annotations
 
+import logging
+from pathlib import Path
 from typing import Any
 
-from code_agent.config.settings import get_settings
+import yaml
 from deepagents import HarnessProfile, register_harness_profile
+
+from code_agent.config.settings import get_settings
+
+log = logging.getLogger(__name__)
+
+#: Default location of the user-editable profiles config (repo-root config dir).
+DEFAULT_PROFILES_CONFIG = Path("/home/nvidia/code_agent/config/profiles.yaml")
+
 
 def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
     """Convert a raw settings entry into a :class:`HarnessProfile`.
@@ -35,7 +52,23 @@ def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
     if isinstance(raw, dict):
         if not raw:
             return None
-        return HarnessProfile(**raw)
+        coerced = dict(raw)
+        # HarnessProfile expects frozensets; YAML/JSON give lists.  Without
+        # this, merging a config profile with a built-in one fails with
+        # "frozenset | list" during profile resolution.
+        if "excluded_tools" in coerced and not isinstance(
+            coerced["excluded_tools"], frozenset
+        ):
+            coerced["excluded_tools"] = frozenset(
+                coerced["excluded_tools"] or []
+            )
+        if "excluded_middleware" in coerced and not isinstance(
+            coerced["excluded_middleware"], frozenset
+        ):
+            coerced["excluded_middleware"] = frozenset(
+                coerced["excluded_middleware"] or []
+            )
+        return HarnessProfile(**coerced)
     raise TypeError(
         f"Profile entry must be a dict or HarnessProfile, got {type(raw).__name__}"
     )
@@ -85,3 +118,60 @@ def register_profiles_from_settings() -> None:
         if profile is None:
             continue
         register_harness_profile(str(profile_key), profile)
+
+
+def load_profiles_from_config_file(
+    path: str | Path = DEFAULT_PROFILES_CONFIG,
+) -> dict[str, HarnessProfile]:
+    """Read harness profiles from a YAML (or JSON) config file.
+
+    Each top-level key is a ``provider:model`` profile key; its value is a
+    mapping of :class:`HarnessProfile` fields.  ``None``/empty values are
+    skipped.  JSON files are also accepted (JSON is a YAML subset).
+
+    :param path: Path to the profiles config.  Defaults to
+        :data:`DEFAULT_PROFILES_CONFIG`.
+    :return: Mapping of profile key -> :class:`HarnessProfile`.  Empty when the
+        file does not exist.
+    """
+    path = Path(path)
+    if not path.exists():
+        log.info(
+            "Profiles config '%s' not found; no profiles registered.", path
+        )
+        return {}
+
+    parsed = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if parsed is None:
+        return {}
+    if not isinstance(parsed, dict):
+        raise TypeError(
+            f"Profiles config '{path}' must be a mapping, got "
+            f"{type(parsed).__name__}"
+        )
+
+    profiles: dict[str, HarnessProfile] = {}
+    for profile_key, entry in parsed.items():
+        profile = _coerce_profile_entry(entry)
+        if profile is None:
+            continue
+        profiles[str(profile_key)] = profile
+    log.info("Loaded %d harness profile(s) from '%s'", len(profiles), path)
+    return profiles
+
+
+def register_profiles_from_config_file(
+    path: str | Path = DEFAULT_PROFILES_CONFIG,
+) -> None:
+    """Register DeepAgents harness profiles declared in a config file.
+
+    Reads the config at *path* (default :data:`DEFAULT_PROFILES_CONFIG`) and
+    registers every declared profile under its ``provider:model`` key via
+    :func:`deepagents.register_harness_profile`.  A missing file is not an
+    error - it simply registers nothing.
+
+    :param path: Path to the profiles config file.
+    :return: None
+    """
+    for profile_key, profile in load_profiles_from_config_file(path).items():
+        register_harness_profile(profile_key, profile)
