@@ -15,56 +15,29 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+from pathlib import Path
 import sys
 import types
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
-import pytest
-from pydantic import BaseModel, ValidationError
-
-from code_agent.capabilities.audit import (  # ruff: ignore [module-import-not-at-top-of-file]
-    AuditLog,
-    Receipt,
-)
-from code_agent.capabilities.base import (  # ruff: ignore [module-import-not-at-top-of-file]
-    CapabilityBase,
-    RiskClass,
-)
-from code_agent.capabilities.envelope import (  # ruff: ignore [module-import-not-at-top-of-file]
+from code_agent.capabilities.audit import AuditLog, Receipt
+from code_agent.capabilities.base import CapabilityBase, RiskClass
+from code_agent.capabilities.envelope import (
     InvocationRequest,
     InvocationResponse,
 )
-from code_agent.capabilities.registry import (
-    CapabilityRegistry,  # ruff: ignore [module-import-not-at-top-of-file]
-)
-from code_agent.capabilities.tool_adapter import (tool_to_capability,
-    ToolResult)  # ruff: ignore [module-import-not-at-top-of-file]
-
-try:
-    from langchain.tools import BaseTool  # noqa: ignore[F401]
-except (ImportError, AttributeError):
-    # Inject a stand-in before any ``code_agent`` import because
-    # ``code_agent/__init__.py`` eagerly imports ``tool_adapter`` and the
-    # provider modules, all of which import langchain packages.
-    langchain_tools = sys.modules.get("langchain.tools")
-    if langchain_tools is None:
-        langchain_tools = types.ModuleType("langchain.tools")
-        sys.modules["langchain.tools"] = langchain_tools
-    langchain_tools.BaseTool = type("BaseTool", (), {})
-    langchain_pkg = sys.modules.get("langchain")
-    if langchain_pkg is None:
-        langchain_pkg = types.ModuleType("langchain")
-        sys.modules["langchain"] = langchain_pkg
-    langchain_pkg.tools = langchain_tools
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.capabilities.tool_adapter import ToolResult, tool_to_capability
+from pydantic import BaseModel, ValidationError
+import pytest
 
 # ``code_agent/__init__.py`` also eagerly imports the provider modules,
 # which need ``langchain_ollama`` and ``langchain_openai``; stand in for
 # them too when they are missing.
 for _module_name, _attr in (
-    ("langchain_ollama", "ChatOllama"),
-    ("langchain_openai", "ChatOpenAI"),
+        ("langchain_ollama", "ChatOllama"),
+        ("langchain_openai", "ChatOpenAI"),
 ):
     try:
         importlib.import_module(_module_name)
@@ -104,7 +77,7 @@ class EchoCapability(CapabilityBase):
     output_model = EchoOutput
     risk_class = RiskClass.LOW
 
-    def _execute(self, params: BaseModel) -> BaseModel:
+    def _execute(self, params: BaseModel) -> BaseModel:  # ruff: ignore[no-self-use]
         """Execute the echo command.
 
         :param params: The parsed and validated input parameters.
@@ -145,7 +118,7 @@ class UpperEchoCapability(CapabilityBase):
     output_model = EchoOutput
     risk_class = RiskClass.LOW
 
-    def _execute(self, params: BaseModel) -> BaseModel:
+    def _execute(self, params: BaseModel) -> BaseModel:  # ruff: ignore[no-self-use]
         """Execute the echo command.
 
         :param params: The parsed and validated input parameters.
@@ -179,7 +152,7 @@ class FailingCapability(CapabilityBase):
     input_model = EchoInput
     output_model = EchoOutput
 
-    def _execute(self, params: BaseModel) -> BaseModel:
+    def _execute(self, params: BaseModel) -> BaseModel:  # ruff: ignore[no-self-use]
         """Execute the echo command.
 
         :param params: The parsed and validated input parameters.
@@ -233,7 +206,8 @@ def registry() -> CapabilityRegistry:
     :rtype: CapabilityRegistry
     """
     reg = CapabilityRegistry()
-    reg.register(EchoCapability())  # type: ignore[arg-type]
+    # pyrefly: ignore [bad-argument-type]
+    reg.register(EchoCapability())
     return reg
 
 
@@ -252,7 +226,8 @@ def test_capability_base_rejects_wrong_params_type() -> None:
     """
     capability = EchoCapability()
     with pytest.raises(TypeError, match="EchoInput"):
-        capability.invoke({"text": "nope"})  # type: ignore[arg-type]
+        # pyrefly: ignore [bad-argument-type]
+        capability.invoke({"text": "nope"})
 
 
 # ---------------------------------------------------------------------------
@@ -270,7 +245,8 @@ def test_invocation_request_requires_ids() -> None:
     :raises ValidationError: When either field is missing.
     """
     with pytest.raises(ValidationError):
-        InvocationRequest()  # type: ignore[call-arg]
+        # pyrefly: ignore [missing-argument]
+        InvocationRequest()
 
 
 def test_invocation_request_defaults() -> None:
@@ -329,7 +305,8 @@ def test_invocation_response_rejects_invalid_status() -> None:
         InvocationResponse(
             request_id="r1",
             capability_id="echo",
-            status="maybe",  # type: ignore[arg-type]
+            # pyrefly: ignore [bad-argument-type]
+            status="maybe",
         )
 
 
@@ -339,7 +316,7 @@ def test_invocation_response_rejects_invalid_status() -> None:
 
 
 def test_register_and_discover_returns_metadata(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """Discover must return metadata for every registered capability.
 
@@ -357,7 +334,7 @@ def test_register_and_discover_returns_metadata(
 
 
 def test_register_replaces_existing_capability(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """Re-registering the same id must replace the previous entry.
 
@@ -368,7 +345,8 @@ def test_register_replaces_existing_capability(
     :raises ValidationError: If the capability is not replaced.
     :raises TypeError: If the capability is not replaced.
     """
-    registry.register(UpperEchoCapability())  # type: ignore[arg-type]
+    # pyrefly: ignore [bad-argument-type]
+    registry.register(UpperEchoCapability())
     assert len(registry.discover()) == 1
     response, _ = registry.dispatch(
         InvocationRequest(
@@ -385,7 +363,7 @@ def test_register_replaces_existing_capability(
 
 
 def test_dispatch_valid_params_returns_ok(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """A valid request dispatches to the capability and returns a result.
 
@@ -411,7 +389,7 @@ def test_dispatch_valid_params_returns_ok(
 
 
 def test_dispatch_invalid_params_returns_error_response(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """Invalid params must produce an error response, not an exception.
 
@@ -433,7 +411,7 @@ def test_dispatch_invalid_params_returns_error_response(
 
 
 def test_dispatch_unknown_capability_returns_error_response(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """An unknown capability id must produce an error response.
 
@@ -452,7 +430,7 @@ def test_dispatch_unknown_capability_returns_error_response(
 
 
 def test_dispatch_high_risk_gated_without_approval(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """High-risk capabilities must be gated until explicitly approved.
 
@@ -464,7 +442,8 @@ def test_dispatch_high_risk_gated_without_approval(
     :raises AssertionError: If the response is not an error.
     """
     GatedCapability.executed = False
-    registry.register(GatedCapability())  # type: ignore[arg-type]
+    # pyrefly: ignore [bad-argument-type]
+    registry.register(GatedCapability())
     response, _ = registry.dispatch(
         InvocationRequest(
             request_id="r1", capability_id="gated", params={"text": "x"}
@@ -476,7 +455,7 @@ def test_dispatch_high_risk_gated_without_approval(
 
 
 def test_dispatch_invocation_exception_returns_error_response(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """An exception inside the capability surfaces as an error response.
 
@@ -488,7 +467,8 @@ def test_dispatch_invocation_exception_returns_error_response(
     :raises AssertionError: If the response is not an error.
     :raises RuntimeError: When the test capability raises an exception.
     """
-    registry.register(FailingCapability())  # type: ignore[arg-type]
+    # pyrefly: ignore [bad-argument-type]
+    registry.register(FailingCapability())
     response, _ = registry.dispatch(
         InvocationRequest(
             request_id="r1", capability_id="boom", params={"text": "x"}
@@ -524,7 +504,7 @@ def test_dispatch_records_audit_receipt(registry: CapabilityRegistry) -> None:
 
 
 def test_dispatch_receipts_are_hash_chained(
-    registry: CapabilityRegistry,
+        registry: CapabilityRegistry,
 ) -> None:
     """Receipts must link via prev_hash to the previous receipt.
 
@@ -674,10 +654,10 @@ def test_audit_persists_receipts_to_file(tmp_path: Path) -> None:
 
 
 def _make_tool(
-    name: str = "read_file",
-    description: str = "Read a file",
-    args_schema: type[BaseModel] | None = EchoInput,
-    run: Any = None,
+        name: str = "read_file",
+        description: str = "Read a file",
+        args_schema: type[BaseModel] | None = EchoInput,
+        run: Any = None,
 ) -> MagicMock:
     """Build a mocked LangChain tool for the adapter tests.
 
@@ -749,6 +729,30 @@ def test_tool_to_capability_infers_medium_risk_for_mutating_tool() -> None:
     """
     capability = tool_to_capability(_make_tool(name="write_file"))
     assert capability.risk_class == RiskClass.MEDIUM
+
+
+def test_tool_to_capability_infers_high_risk_for_sensitive_mcp_tool() -> None:
+    """Tools from sensitive MCP servers map to high risk.
+
+    :raises AssertionError: If the risk class is not high.
+    :raises ValidationError: When the tool is not properly formed.
+    :raises TypeError: When the tool is not properly formed.
+    :raises KeyError: If the tool name is not properly formed.
+    """
+    capability = tool_to_capability(_make_tool(name="mcp_github__create_issue"))
+    assert capability.risk_class == RiskClass.HIGH
+
+
+def test_tool_to_capability_infers_low_risk_for_readonly_mcp_tool() -> None:
+    """Tools from read-only MCP servers map to low risk.
+
+    :raises AssertionError: If the risk class is not low.
+    :raises ValidationError: When the tool is not properly formed.
+    :raises TypeError: When the tool is not properly formed.
+    :raises KeyError: If the tool name is not properly formed.
+    """
+    capability = tool_to_capability(_make_tool(name="mcp_codegraph__explore"))
+    assert capability.risk_class == RiskClass.LOW
 
 
 def test_tool_to_capability_explicit_risk_class_override() -> None:
@@ -830,7 +834,8 @@ def test_tool_to_capability_dispatchable_through_registry() -> None:
     """
     tool = _make_tool(name="read_file", run=lambda **kwargs: kwargs["text"])
     registry = CapabilityRegistry()
-    registry.register(tool_to_capability(tool))  # type: ignore[arg-type]
+    # pyrefly: ignore [bad-argument-type]
+    registry.register(tool_to_capability(tool))
     response, receipt = registry.dispatch(
         InvocationRequest(
             request_id="r1",

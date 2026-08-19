@@ -16,26 +16,22 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from langchain.messages import AIMessage, HumanMessage, ToolMessage
-from langchain.tools import BaseTool, tool
-from langchain_core.runnables import RunnableConfig
-from langchain_core.utils.uuid import uuid7
-from typing_extensions import override
-
 from code_agent.agents.deepagents_agent import (
     build_deep_agent,
     make_backend,
     make_default_permissions,
 )
 from code_agent.utils.graph import build_graph
-
+from langchain.messages import AIMessage, HumanMessage, ToolMessage
+from langchain.tools import BaseTool, tool
+from langchain_core.runnables import RunnableConfig
+from langchain_core.utils.uuid import uuid7
+import pytest
+from typing_extensions import override
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
-
 
 @pytest.fixture
 def mock_llm() -> MagicMock:
@@ -160,6 +156,48 @@ def test_graph_handles_llm_error(
 
     with pytest.raises(RuntimeError, match="LLM failure"):
         graph.invoke(state, config=config)
+
+
+def test_readonly_mcp_tools_are_not_gated(mock_llm: MagicMock) -> None:
+    """Read-only MCP tools must never be added to ``interrupt_on``.
+
+    Sensitive MCP tools (e.g. ``github``) are gated for human approval, while
+    read-only MCP tools (e.g. ``codegraph``) stay autonomous.
+
+    :param mock_llm: The mock LLM.
+    :return: None
+    """
+    from code_agent.config.mcp import apply_mcp_tool_prefixes
+
+    @tool
+    def create_issue(title: str) -> str:
+        """Create a GitHub issue.
+
+        :param title: The issue title.
+        :return: A confirmation string.
+        """
+        return f"created {title}"
+
+    @tool
+    def explore(query: str) -> str:
+        """Explore the codebase.
+
+        :param query: The query.
+        :return: Exploration results.
+        """
+        return f"results for {query}"
+
+    github_tool = apply_mcp_tool_prefixes([create_issue], "github")[0]
+    codegraph_tool = apply_mcp_tool_prefixes([explore], "codegraph")[0]
+
+    with patch("code_agent.utils.graph.create_agent") as mock_create_agent:
+        build_graph(llm=mock_llm, tools=[github_tool, codegraph_tool])
+
+    mock_create_agent.assert_called_once()
+    middleware = mock_create_agent.call_args.kwargs["middleware"]
+    interrupt_on = middleware[0].interrupt_on
+    assert github_tool.name in interrupt_on
+    assert codegraph_tool.name not in interrupt_on
 
 
 # ---------------------------------------------------------------------------

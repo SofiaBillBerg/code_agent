@@ -8,15 +8,19 @@ the tool's ``_run`` with the same keyword arguments LangChain would pass.
 
 from __future__ import annotations
 
-import inspect
 from collections.abc import Callable
+import inspect
 from typing import Any
 
+from .base import CapabilityBase, RiskClass
+
+from code_agent.config.mcp import (
+    is_readonly_server,
+    is_sensitive_server,
+    server_from_prefixed,
+)
 from langchain.tools import BaseTool
 from pydantic import BaseModel
-
-from code_agent.config.mcp import is_readonly_server, server_from_prefixed
-from .base import CapabilityBase, RiskClass
 
 # Name fragments that suggest a tool only reads, never mutates state.
 _READ_ONLY_HINTS: tuple[str, ...] = (
@@ -52,17 +56,21 @@ def _kebab_case(name: str) -> str:
 def _infer_risk_class(tool: BaseTool) -> str:
     """Heuristically assign a risk class to a tool.
 
-    Tools originating from a read-only MCP server (see
-    :func:`code_agent.config.mcp.is_readonly_server`) and tools whose names contain
-    read-only hints are treated as low risk; everything else is medium risk.
-    This is a simple heuristic - callers may override it with an explicit
-    ``risk_class``.
+    Tools originating from a sensitive MCP server (see
+    :func:`code_agent.config.mcp.is_sensitive_server`) are treated as high
+    risk; tools from a read-only MCP server (see
+    :func:`code_agent.config.mcp.is_readonly_server`) and tools whose names
+    contain read-only hints are treated as low risk; everything else is
+    medium risk. This is a simple heuristic - callers may override it with an
+    explicit ``risk_class``.
 
     :param tool: The tool to classify.
 
     :return: One of the :data:`RiskClass` values.
     """
     server = server_from_prefixed(tool.name)
+    if server is not None and is_sensitive_server(server):
+        return RiskClass.HIGH
     if server is not None and is_readonly_server(server):
         return RiskClass.LOW
     lowered = tool.name.lower()
