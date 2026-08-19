@@ -104,8 +104,6 @@ code_agent/
 │   ├── envelope.py    # InvocationRequest/Response
 │   ├── registry.py    # CapabilityRegistry
 │   └── tool_adapter.py # Tool → Capability adapter
-├── docs_generator.py  # Quarto documentation generation
-├── file_generator.py  # Atomic file I/O: write, create, append, py→ipynb
 ├── graph.py           # LangGraph StateGraph for agent orchestration
 ├── main.py            # Library: load_config(), create_llm()
 ├── providers/         # LLM backend abstraction
@@ -115,6 +113,7 @@ code_agent/
 ├── scaffold.py        # Project skeleton generator
 ├── settings.py        # Pydantic Settings (CODE_AGENT_ prefixed env vars)
 ├── tools/             # LangChain BaseTool implementations
+│   ├── _io.py         # Atomic file I/O: _atomic_write(), create_from_template(), FileObject
 │   ├── edit_file_tool.py
 │   ├── read_file_tool.py
 │   ├── new_file_tool.py
@@ -122,7 +121,6 @@ code_agent/
 │   ├── generate_test_tool.py
 │   ├── format_code_tool.py
 │   ├── notebook_tool.py
-│   ├── linker_tool.py
 │   ├── r_tool.py
 │   └── general_chat_tool.py
 ├── ui/                # Web + CLI UI

@@ -12,17 +12,16 @@ This document provides a high-level summary of the key files and directories in 
 
 ## Core Package Structure
 
-| File / Directory                        | Purpose                                                                                   | Key Functions / Components                                                                                  |
-|-----------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `code_agent/__init__.py`                | **Package entry point** - exports public API                                              | All core functions & classes listed in [`__all__`](../code_agent/__init__.py)                               |
-| `code_agent/cli.py`                     | Typer-based command-line interface.                                                       | `app`, `serve`, `chat`, `scaffold` commands                                                                 |
-| `code_agent/main.py`                    | Library helpers for LLM configuration                                                     | [`load_config()`](../code_agent/main.py), [`create_llm()`]()                                                |
-| `code_agent/settings.py`                | Pydantic Settings model with `.env` override support.                                     | [`Settings`](settings), [`get_settings()`]                                                                  |
-| `../code_agent/utils/graph.py`          | LangGraph StateGraph for agent orchestration (deprecated, migrating to LangChain harness) | Legacy graph builder                                                                                        |
-| `code_agent/scaffold.py`                | Project skeleton generator with template support.                                         | [`create_project_scaffold()`]()                                                                             |
-| `../code_agent/tools/docs_generator.py` | Quarto documentation generation from repo structure.                                      | [`generate_quarto_docs()`]()                                                                                |
-| `code_agent/file_generator.py`          | Atomic file I/O utilities for agent tools.                                                | [`write_file()``, `read_file()`, `edit_file()`, `append_file()`, `create_from_template()`, `py_to_ipynb()`] |
-| `code_agent/exceptions.py`              | Custom exception types for error handling                                                 | [`CodeAgentError`](exceptions), [`FileCreationError`](exceptions)                                           |
+| File / Directory               | Purpose                                                                                   | Key Functions / Components                                                    |
+|--------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| `code_agent/__init__.py`       | **Package entry point** - exports public API                                              | All core functions & classes listed in [`__all__`](../code_agent/__init__.py) |
+| `code_agent/cli.py`            | Typer-based command-line interface.                                                       | `app`, `serve`, `chat`, `scaffold` commands                                   |
+| `code_agent/main.py`           | Library helpers for LLM configuration                                                     | [`load_config()`](../code_agent/main.py), [`create_llm()`]()                  |
+| `code_agent/settings.py`       | Pydantic Settings model with `.env` override support.                                     | [`Settings`](settings), [`get_settings()`]                                    |
+| `../code_agent/utils/graph.py` | LangGraph StateGraph for agent orchestration (deprecated, migrating to LangChain harness) | Legacy graph builder                                                          |
+| `code_agent/scaffold.py`       | Project skeleton generator with template support.                                         | [`create_project_scaffold()`]()                                               |
+| `code_agent/tools/_io.py`      | Atomic file I/O utilities for agent tools.                                                | [`_atomic_write()`, `create_from_template()`, `FileObject`]                   |
+| `code_agent/exceptions.py`     | Custom exception types for error handling                                                 | [`CodeAgentError`](exceptions), [`FileCreationError`](exceptions)             |
 
 ## Agent Layer
 

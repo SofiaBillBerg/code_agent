@@ -160,7 +160,7 @@ graph TD
   end
 
   subgraph "Filesystem Operations"
-    FileOps[[file_generator.py]] → [Atomic writes with rollback support via diff tracking]
+    FileOps[[tools/_io.py]] → [Atomic writes with rollback support via diff tracking]
   end
 
   CLI & Chat --> Main;

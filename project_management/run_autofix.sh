@@ -50,7 +50,7 @@ echo "Output directories created: $CODE_QUALITY_DIR"
 
 # 2. Code formatting and import sorting
 run_step "uv format" uv format --preview-features format-command
-run_step "isort" uv run isort . --float-to-top --sp pyproject.toml --gitignore
+run_step "isort" uv run isort . --overwrite-in-place --dedup-headings -s stubs --float-to-top --sp pyproject.toml --gitignore
 run_step "ruff format" uv run ruff format
 # ruff check is non-critical: autofix what it can, never block on lint findings
 # run_step "ruff check (autofix, non-blocking)" uv run ruff check code_agent --fix --extend-ignore E501 --output-file "$CODE_QUALITY_DIR"/ruff_report.txt || true

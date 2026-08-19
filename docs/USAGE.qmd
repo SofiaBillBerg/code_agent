@@ -180,7 +180,7 @@ The full power of `code_agent` is available through its Python API. This example
 
 from code_agent.agents.base_agent import build_agent, create_default_tools
 from code_agent.main import load_config, create_llm
-from code_agent.tools._io import create_file
+from code_agent.tools._io import _atomic_write
 from langchain_core.messages import AIMessage, HumanMessage
 from pathlib import Path
 import os
@@ -197,7 +197,7 @@ llm = create_llm(config)         # Default: ChatOllama + GPT4AllEmbeddings
 
 # Create initial file
 initial_file = Path("my_module.py")
-create_file(initial_file, "# Utility functions module\n\n")
+_atomic_write(initial_file, "# Utility functions module\n\n")
 
 # --- 2. Prepare Agent with Tools ---
 tools = create_default_tools(root_dir=".", llm=llm)

@@ -177,12 +177,11 @@ for event in agent_runnable.stream(state_dict):
 
 ## File Operation Details
 
-The file helpers use atomic writes with diff tracking for rollback capability:
+The file helpers in [`code_agent/tools/_io.py`](../code_agent/tools/_io.py) use atomic writes with rollback capability:
 
-- **`write_file(path, content)`**: Overwrites file atomically (creates if missing)
-- **`read_file(path)`**: Returns full contents as string
-- **`edit_file(path, fn)`**: Calls `fn(content)` and applies changes; tracks edits via audit log
-- **`append_file(path, text)`**: Appends to existing files without overwriting
+- **`_atomic_write(path, content)`**: Overwrites a file atomically (creates if missing)
+- **`create_from_template(...)`**: Creates a file from a template
+- **`FileObject`**: Dataclass returned by file operations (`path`, `contents`, `status`)
 
 All operations are logged through the [`CapabilityRegistry`](../code_agent/capabilities/registry.py) for auditing.
 See [TOOLS](./TOOLS.qmd) for tool-specific details.
