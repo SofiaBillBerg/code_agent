@@ -44,7 +44,7 @@ import time
 from typing import Any, cast
 import uuid
 
-from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
 from code_agent.capabilities.envelope import (
     InvocationRequest,
@@ -326,7 +326,7 @@ def _prompt_hitl_decision(action_request: Any) -> dict[str, Any]:
                 "edited_action": {"name": name, "args": edited_args},
             }
         return {"type": "approve"}
-    # Default to approve for any unrecognised input.
+    # Default to approve for any unrecognized input.
     return {"type": "approve"}
 
 
@@ -448,7 +448,7 @@ def capabilities_invoke(
 def _ensure_webapp_built() -> None:
     """Build the React SPA into ``webapp/dist`` if it is missing.
 
-    ``dist/`` is gitignored, so a fresh checkout ships no built UI until the
+    ``dist/`` is in gitignore, so a fresh checkout ships no built UI until the
     frontend is compiled. When Node/npm are available we build it lazily so
     ``code-agent serve --web`` works out of the box. A missing toolchain is
     non-fatal: the API still serves, just without the static single-page app.
@@ -841,7 +841,7 @@ def serve(  # ruff: ignore [complex-structure]
         return
 
     try:  # ruff: ignore [too-many-statements-in-try-clause]
-        from code_agent.agents.base_agent import create_default_tools
+        from code_agent.agents.deepagents_agent import create_default_tools
         from code_agent.main import create_llm
 
         cfg = load_config(config_path)
@@ -1092,7 +1092,7 @@ def chat(  # ruff: ignore [complex-structure]
 def _setup_agent_and_tools(
     cfg: dict[str, Any], llm: BaseChatModel
 ) -> tuple[Any, list[BaseTool], Path]:
-    """Setup the agent and tools for the chat session.
+    """Set up the agent and tools for the chat session.
 
     :param cfg: Configuration dictionary.
     :param llm: Language model instance.

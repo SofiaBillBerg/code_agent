@@ -207,7 +207,7 @@ def registry() -> CapabilityRegistry:
     """
     reg = CapabilityRegistry()
     # pyrefly: ignore [bad-argument-type]
-    reg.register(EchoCapability())
+    reg.register(EchoCapability())  # ty: ignore[invalid-argument-type]
     return reg
 
 
@@ -227,7 +227,7 @@ def test_capability_base_rejects_wrong_params_type() -> None:
     capability = EchoCapability()
     with pytest.raises(TypeError, match="EchoInput"):
         # pyrefly: ignore [bad-argument-type]
-        capability.invoke({"text": "nope"})
+        capability.invoke({"text": "nope"})  # ty: ignore[invalid-argument-type]
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +246,7 @@ def test_invocation_request_requires_ids() -> None:
     """
     with pytest.raises(ValidationError):
         # pyrefly: ignore [missing-argument]
-        InvocationRequest()
+        InvocationRequest()  # ty: ignore[missing-argument]
 
 
 def test_invocation_request_defaults() -> None:
@@ -306,7 +306,7 @@ def test_invocation_response_rejects_invalid_status() -> None:
             request_id="r1",
             capability_id="echo",
             # pyrefly: ignore [bad-argument-type]
-            status="maybe",
+            status="maybe",  # ty: ignore[invalid-argument-type]
         )
 
 
@@ -346,7 +346,7 @@ def test_register_replaces_existing_capability(
     :raises TypeError: If the capability is not replaced.
     """
     # pyrefly: ignore [bad-argument-type]
-    registry.register(UpperEchoCapability())
+    registry.register(UpperEchoCapability())  # ty: ignore[invalid-argument-type]
     assert len(registry.discover()) == 1
     response, _ = registry.dispatch(
         InvocationRequest(
@@ -443,7 +443,7 @@ def test_dispatch_high_risk_gated_without_approval(
     """
     GatedCapability.executed = False
     # pyrefly: ignore [bad-argument-type]
-    registry.register(GatedCapability())
+    registry.register(GatedCapability())  # ty: ignore[invalid-argument-type]
     response, _ = registry.dispatch(
         InvocationRequest(
             request_id="r1", capability_id="gated", params={"text": "x"}
@@ -468,7 +468,7 @@ def test_dispatch_invocation_exception_returns_error_response(
     :raises RuntimeError: When the test capability raises an exception.
     """
     # pyrefly: ignore [bad-argument-type]
-    registry.register(FailingCapability())
+    registry.register(FailingCapability())  # ty: ignore[invalid-argument-type]
     response, _ = registry.dispatch(
         InvocationRequest(
             request_id="r1", capability_id="boom", params={"text": "x"}
@@ -835,7 +835,7 @@ def test_tool_to_capability_dispatchable_through_registry() -> None:
     tool = _make_tool(name="read_file", run=lambda **kwargs: kwargs["text"])
     registry = CapabilityRegistry()
     # pyrefly: ignore [bad-argument-type]
-    registry.register(tool_to_capability(tool))
+    registry.register(tool_to_capability(tool))  # ty: ignore[invalid-argument-type]
     response, receipt = registry.dispatch(
         InvocationRequest(
             request_id="r1",

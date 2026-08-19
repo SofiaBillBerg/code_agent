@@ -9,13 +9,15 @@ and records every invocation as an audit :class:`Receipt`.
 from __future__ import annotations
 
 import time
+
 from typing import Any, Literal
+
+from pydantic import BaseModel, ValidationError
 
 from .audit import AuditLog, Receipt
 from .base import Capability, RiskClass
 from .envelope import InvocationRequest, InvocationResponse
 
-from pydantic import BaseModel, ValidationError
 
 class CapabilityRegistry:
     """Registry of capabilities with discovery and dispatch.

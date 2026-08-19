@@ -1,447 +1,53 @@
-import React, {useEffect, useRef, useState} from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-
-const STORAGE_KEY = "code_agent_chat_history";
-
-/**
- * Load chat history from localStorage
- * Returns array of messages or empty array on error
- */
-function loadHistory() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
-    } catch {
-        // ignore corrupt history
-    }
-    return [];
-}
+import React, {useEffect} from "react";
+import "./styles.css";
+import ToolCallRow from "./components/ToolCallRow";
+import ProviderSelector from "./components/ProviderSelector";
+import HitlSurface from "./components/HitlSurface";
+import InputBar from "./components/InputBar";
+import SubagentCard from "./components/SubagentCard";
+import ThreadHistory from "./components/ThreadHistory";
+import TodoList from "./components/TodoList";
 
 /**
- * Save chat history to localStorage
- * Silently ignores storage errors
+ * App component - orchestrator for the chat webapp
+ * Handles SSE streaming, provider switching, HITL, and state management
  */
-function saveHistory(history) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-    } catch {
-        // ignore storage failures
-    }
-}
-
-/**
- * MarkdownRenderer component
- * Wraps react-markdown with remark-gfm and rehype-highlight
- * Never throws on malformed partial markdown - catches errors and displays raw text
- */
-function MarkdownRenderer({content}) {
-    // Catch rendering errors gracefully
-    const [renderedContent, setRenderedContent] = useState(content);
-
-    useEffect(() => {
-        try {
-            setRenderedContent(content);
-        } catch {
-            // If anything goes wrong, keep raw text
-            setRenderedContent(content);
-        }
-    }, [content]);
-
-    return (
-        <div style={{margin: 0}}>
-            <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
-                components={{
-                    // Safe rendering - ensure code blocks don't break on unknown languages
-                    code({node, inline, className, children, ...props}) {
-                        const match = /language-(\w+)/.exec(className || "");
-                        const lang = match ? match[1] : "";
-                        // Always render with pre/code tags, even if unknown language
-                        return inline ? (
-                            <code {...props} style={{
-                                fontFamily: "monospace",
-                                background: "#f5f5f5",
-                                padding: "0.2em 0.4em",
-                                borderRadius: "3px"
-                            }}>
-                                {children}
-                            </code>
-                        ) : (
-                            <pre {...props}
-                                 style={{background: "#f5f5f5", padding: "1em", borderRadius: "5px", overflow: "auto"}}>
-								<code className={className} {...props}>
-									{children}
-								</code>
-							</pre>
-                        );
-                    },
-                }}
-            >
-                {renderedContent}
-            </ReactMarkdown>
-        </div>
-    );
-}
-
-/**
- * ToolCallRow component
- * Shows tool execution progress: spinner on start, elapsed time + output on end
- * Collapsible display for tool output
- */
-function ToolCallRow({toolCall}) {
-    const [expanded, setExpanded] = useState(false);
-    const [elapsed, setElapsed] = useState(0);
-
-    // Track elapsed time from tool_start
-    useEffect(() => {
-        if (toolCall.status === "pending") {
-            // Start timer when tool starts
-            setElapsed(0);
-            const startTime = Date.now();
-            const interval = setInterval(() => {
-                setElapsed((Date.now() - startTime) / 1000);
-            }, 100);
-            return () => clearInterval(interval);
-        }
-    }, [toolCall.status]);
-
-    // Update elapsed time when tool ends with specific duration
-    useEffect(() => {
-        if (toolCall.status === "done" && toolCall.elapsedS !== undefined) {
-            setElapsed(toolCall.elapsedS);
-        }
-    }, [toolCall.status, toolCall.elapsedS]);
-
-    // Truncate output to 200 chars with ellipsis
-    const truncatedOutput =
-        toolCall.output && toolCall.output.length > 200
-            ? toolCall.output.substring(0, 200) + "…"
-            : toolCall.output;
-
-    return (
-        <div
-            style={{
-                marginTop: "0.5rem",
-                border: "1px solid #e0e0e0",
-                borderRadius: "6px",
-                overflow: "hidden",
-            }}
-        >
-            <button
-                onClick={() => setExpanded(!expanded)}
-                style={{
-                    width: "100%",
-                    padding: "0.5rem 0.75rem",
-                    background: "transparent",
-                    border: "none",
-                    textAlign: "left",
-                    cursor: "pointer",
-                    fontSize: "0.85rem",
-                    fontFamily: "inherit",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                }}
-            >
-				<span style={{fontFamily: "monospace", color: "#1a73e8"}}>
-					{toolCall.status === "pending" && (
-                        <span style={{marginRight: "0.5rem"}}>
-							<span style={{animation: "spin 1s linear infinite", display: "inline-block"}}>⟳</span>
-						</span>
-                    )}
-                    {toolCall.tool}
-				</span>
-                <span style={{color: "#666", fontSize: "0.8rem"}}>
-					{toolCall.status === "done"
-                        ? `${elapsed.toFixed(1)}s`
-                        : toolCall.status === "pending"
-                            ? `${elapsed.toFixed(1)}s...`
-                            : ""}
-				</span>
-            </button>
-            {expanded && toolCall.status === "done" && (
-                <div
-                    style={{
-                        padding: "0.75rem",
-                        background: "#fafafa",
-                        borderTop: "1px solid #e0e0e0",
-                    }}
-                >
-                    <div style={{fontSize: "0.75rem", color: "#666", marginBottom: "0.5rem"}}>
-                        Output: {truncatedOutput}
-                    </div>
-                    {toolCall.output && toolCall.output.length > 200 && (
-                        <details>
-                            <summary style={{fontSize: "0.75rem", color: "#666", cursor: "pointer"}}>
-                                Show full output
-                            </summary>
-                            <div
-                                style={{
-                                    marginTop: "0.5rem",
-                                    padding: "0.5rem",
-                                    background: "#f5f5f5",
-                                    borderRadius: "4px",
-                                    whiteSpace: "pre-wrap",
-                                    wordBreak: "break-word",
-                                    fontFamily: "monospace",
-                                    fontSize: "0.8rem",
-                                }}
-                            >
-                                {toolCall.output}
-                            </div>
-                        </details>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
-
-/**
- * ProviderSelector component
- * Displays available providers and allows switching active provider
- * Shows auto-dismiss notification on successful switch
- */
-function ProviderSelector({activeProvider, providers, onSwitch}) {
-    const [notice, setNotice] = useState(null);
-
-    useEffect(() => {
-        // Auto-dismiss notification after 5 seconds
-        if (notice) {
-            const timer = setTimeout(() => setNotice(null), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [notice]);
-
-    const handleSwitch = async (provider, model) => {
-        if (provider === activeProvider?.provider && model === activeProvider?.model) {
-            return; // No-op if already selected
-        }
-        try {
-            const res = await fetch("/providers/active", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({provider, model}),
-            });
-            if (res.ok) {
-                setNotice(`Switched to ${provider} (${model})`);
-                if (onSwitch) onSwitch(provider, model);
-            } else {
-                const body = await res.json().catch(() => ({}));
-                setNotice(`Failed to switch: ${body?.detail || res.statusText}`);
-            }
-        } catch (err) {
-            setNotice(`Error switching provider: ${err.message}`);
-        }
-    };
-
-    return (
-        <div style={{marginBottom: "1rem"}}>
-            <div
-                style={{
-                    display: "flex",
-                    gap: "1rem",
-                    alignItems: "center",
-                    padding: "0.5rem 0.75rem",
-                    background: "#f5f5f5",
-                    borderRadius: "6px",
-                    fontSize: "0.9rem",
-                }}
-            >
-                <span style={{color: "#666"}}>Provider:</span>
-                <select
-                    value={activeProvider ? `${activeProvider.provider}:${activeProvider.model}` : ""}
-                    onChange={(e) => {
-                        const [provider, model] = e.target.value.split(":");
-                        if (provider && model) handleSwitch(provider, model);
-                    }}
-                    style={{
-                        padding: "0.35rem 0.5rem",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                        fontFamily: "inherit",
-                        minWidth: "200px",
-                    }}
-                >
-                    {providers?.map((p, idx) => (
-                        <option key={idx} value={`${p.name}:${p.model}`}>
-                            {p.name} ({p.model})
-                        </option>
-                    ))}
-                </select>
-                <span style={{color: "#1a73e8", fontWeight: "500"}}>
-					{activeProvider ? `${activeProvider.provider} → ${activeProvider.model}` : "Loading..."}
-				</span>
-            </div>
-            {notice && (
-                <div
-                    style={{
-                        marginTop: "0.5rem",
-                        padding: "0.5rem 0.75rem",
-                        background: "#e8f5e9",
-                        border: "1px solid #c8e6c9",
-                        borderRadius: "4px",
-                        color: "#2e7d32",
-                        fontSize: "0.85rem",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                    }}
-                >
-                    {notice}
-                    {notice.startsWith("Switched") && (
-                        <span style={{fontSize: "0.7rem", color: "#2e7d32"}}>Auto-dismissing...</span>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
-
-/**
- * HitlSurface component
- * Displays HITL pending interrupt with Approve/Reject buttons
- * Disables InputBar while displayed
- */
-function HitlSurface({pending, onApprove, onReject}) {
-    if (!pending) return null;
-
-    return (
-        <div
-            style={{
-                margin: "1rem 0",
-                padding: "1rem",
-                background: "#fff8e1",
-                border: "2px solid #ffca28",
-                borderRadius: "8px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.75rem",
-            }}
-        >
-            <div style={{fontSize: "0.9rem", fontWeight: "600", color: "#e65100"}}>
-                Human Approval Required
-            </div>
-            <div style={{fontSize: "0.85rem"}}>
-                <span style={{fontFamily: "monospace", color: "#1a73e8"}}>{pending.tool}</span>
-                <span style={{color: "#666"}}>wants to execute:</span>
-            </div>
-            <div
-                style={{
-                    padding: "0.75rem",
-                    background: "#fafafa",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: "4px",
-                    fontFamily: "monospace",
-                    fontSize: "0.75rem",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    maxHeight: "200px",
-                    overflowY: "auto",
-                }}
-            >
-                {JSON.stringify(pending.input, null, 2)}
-            </div>
-            <div style={{display: "flex", gap: "0.75rem", marginTop: "0.5rem"}}>
-                <button
-                    onClick={onApprove}
-                    style={{
-                        flex: 1,
-                        padding: "0.6rem 1rem",
-                        border: "none",
-                        borderRadius: "6px",
-                        background: "#2e7d32",
-                        color: "#fff",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        fontWeight: "500",
-                    }}
-                >
-                    Approve
-                </button>
-                <button
-                    onClick={onReject}
-                    style={{
-                        flex: 1,
-                        padding: "0.6rem 1rem",
-                        border: "none",
-                        borderRadius: "6px",
-                        background: "#c62828",
-                        color: "#fff",
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        fontWeight: "500",
-                    }}
-                >
-                    Reject
-                </button>
-            </div>
-        </div>
-    );
-}
-
-/**
- * InputBar component
- * Chat input field with send button
- * Disabled while streaming or HITL pending
- */
-function InputBar({input, setInput, onSend, disabled, onKeyDown}) {
-    return (
-        <div style={{display: "flex", gap: "0.5rem"}}>
-			<textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder="Type a message..."
-                rows={2}
-                disabled={disabled}
-                style={{
-                    flex: 1,
-                    resize: "vertical",
-                    padding: "0.6rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
-                    fontFamily: "inherit",
-                    opacity: disabled ? 0.7 : 1,
-                    backgroundColor: disabled ? "#f5f5f5" : "#fff",
-                }}
-            />
-            <button
-                onClick={onSend}
-                disabled={disabled || !input.trim()}
-                style={{
-                    padding: "0.6rem 1rem",
-                    borderRadius: "6px",
-                    border: "none",
-                    background: disabled ? "#ccc" : "#111",
-                    color: "#fff",
-                    cursor: disabled ? "not-allowed" : "pointer",
-                    fontWeight: "500",
-                    opacity: disabled ? 0.7 : 1,
-                }}
-            >
-                {disabled ? "Sending..." : "Send"}
-            </button>
-        </div>
-    );
-}
-
 export default function App() {
-    const [history, setHistory] = useState(() => loadHistory());
-    const [input, setInput] = useState("");
-    const [providers, setProviders] = useState(null); // null = loading, [] = none
-    const [activeProvider, setActiveProvider] = useState(null);
-    const [streamingContent, setStreamingContent] = useState("");
-    const [toolCalls, setToolCalls] = useState({});
-    const [hitlPending, setHitlPending] = useState(null);
-    const [streaming, setStreaming] = useState(false);
-    const [error, setError] = useState(null);
-    const [currentThreadId, setCurrentThreadId] = useState(null);
-    const messagesRef = useRef(null);
+    const [history, setHistory] = React.useState(() => {
+        try {
+            const raw = localStorage.getItem("code_agent_chat_history");
+            return raw ? JSON.parse(raw) : [];
+        } catch {
+            return [];
+        }
+    });
+    const [input, setInput] = React.useState("");
+    const [providers, setProviders] = React.useState(null);
+    const [activeProvider, setActiveProvider] = React.useState(null);
+    const [streamingContent, setStreamingContent] = React.useState("");
+    const [toolCalls, setToolCalls] = React.useState({});
+    const [hitlPending, setHitlPending] = React.useState(null);
+    const [streaming, setStreaming] = React.useState(false);
+    const [error, setError] = React.useState(null);
+    const [currentThreadId, setCurrentThreadId] = React.useState(null);
+    const [theme, setTheme] = React.useState("light");
+    const [connectionStatus, setConnectionStatus] = React.useState("disconnected");
+    const [subagents, setSubagents] = React.useState({});
+    const [todos, setTodos] = React.useState([]);
+    const messagesRef = React.useRef(null);
+
+    // Detect system color scheme preference
+    useEffect(() => {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setTheme(prefersDark ? "dark" : "light");
+    }, []);
+
+    // Apply theme to root element
+    useEffect(() => {
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+    }, [theme]);
 
     // Load providers on mount
     useEffect(() => {
@@ -461,6 +67,58 @@ export default function App() {
             .catch(() => setActiveProvider(null));
     }, []);
 
+    // Connection state tracking
+    useEffect(() => {
+        let visible = true;
+        let heartbeatTimer = null;
+        let lastMessageTime = Date.now();
+
+        const updateConnectionStatus = () => {
+            const now = Date.now();
+            const timeSinceLastMessage = now - lastMessageTime;
+
+            if (streaming) {
+                setConnectionStatus("live");
+            } else if (hitlPending) {
+                setConnectionStatus("pending");
+            } else if (visible) {
+                // Check if we received a message recently
+                if (timeSinceLastMessage < 30000) {
+                    setConnectionStatus("live");
+                } else if (timeSinceLastMessage < 120000) {
+                    setConnectionStatus("reconnecting");
+                } else {
+                    setConnectionStatus("disconnected");
+                }
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            visible = !document.hidden;
+            updateConnectionStatus();
+        };
+
+        const handleMessageEvent = () => {
+            lastMessageTime = Date.now();
+            updateConnectionStatus();
+        };
+
+        // Listen for SSE events to update connection status
+        const sseEventListener = (event) => {
+            if (event.type) {
+                lastMessageTime = Date.now();
+                updateConnectionStatus();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+        };
+    }, [streaming, hitlPending]);
+
     // Auto-scroll messages on new content
     useEffect(() => {
         if (messagesRef.current) {
@@ -470,13 +128,14 @@ export default function App() {
 
     // Save history to localStorage
     useEffect(() => {
-        saveHistory(history);
+        try {
+            localStorage.setItem("code_agent_chat_history", JSON.stringify(history));
+        } catch {
+            // ignore storage failures
+        }
     }, [history]);
 
-    /**
-     * Send message via SSE streaming endpoint
-     * Reads events: token, tool_start, tool_end, hitl_pending, done, error
-     */
+    // Send message via SSE streaming endpoint
     const sendStream = async () => {
         const message = input.trim();
         if (!message || streaming || hitlPending) return;
@@ -609,6 +268,41 @@ export default function App() {
                     setToolCalls({});
                 }
                 break;
+
+            case "todos":
+                setTodos(event.todos || []);
+                break;
+
+            case "subagent_start":
+                setSubagents((prev) => ({
+                    ...prev,
+                    [event.id]: {
+                        id: event.id,
+                        name: event.name,
+                        status: "running",
+                        toolCalls: [],
+                        output: "",
+                    },
+                }));
+                break;
+
+            case "subagent_end":
+                setSubagents((prev) => {
+                    const existing = prev[event.id];
+                    if (!existing) return prev;
+                    return {
+                        ...prev,
+                        [event.id]: {
+                            ...existing,
+                            status: event.status === "error" ? "failed" : "completed",
+                        },
+                    };
+                });
+                break;
+
+            case "ping":
+                // Keep connection alive - no state update needed
+                break;
         }
     };
 
@@ -650,7 +344,9 @@ export default function App() {
     const onKeyDown = (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
-            sendStream();
+            sendStream().then(r => {
+            }).catch(e => {
+            });
         }
     };
 
@@ -672,22 +368,44 @@ export default function App() {
     }
 
     return (
-        <div
-            style={{
-                maxWidth: 860,
-                margin: "0 auto",
-                padding: "1.5rem",
-                fontFamily: "system-ui, sans-serif",
-                height: "100vh",
-                display: "flex",
-                flexDirection: "column",
-            }}
-        >
-            <header style={{marginBottom: "1rem"}}>
-                <h1 style={{margin: 0}}>Code Agent Chat</h1>
-                <p style={{margin: "0.25rem 0 0", color: "#555"}}>
-                    Chat with the agent. It can read, edit, and create files for you.
-                </p>
+        <div className="app-container">
+            <header className="app-header">
+                <div style={{display: "flex", justifyContent: "space-between", alignItems: "flex-start"}}>
+                    <div>
+                        <h1 style={{margin: 0}}>Code Agent Chat</h1>
+                        <p className="app-header-subtitle">
+                            Chat with the agent. It can read, edit, and create files for you.
+                        </p>
+                        {currentThreadId && (
+                            <p className="thread-id">
+                                Thread: {currentThreadId}
+                            </p>
+                        )}
+                    </div>
+                    <div className="header-actions">
+                        <button
+                            onClick={() => {
+                                setCurrentThreadId(null);
+                                setHistory([]);
+                                setStreamingContent("");
+                                setToolCalls({});
+                                setHitlPending(null);
+                                setError(null);
+                                localStorage.removeItem("code_agent_chat_history");
+                            }}
+                            className="btn-secondary"
+                        >
+                            New Thread
+                        </button>
+                        <button
+                            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                            className="btn-secondary"
+                            aria-label="Toggle dark mode"
+                        >
+                            {theme === "light" ? "🌙" : "☀️"}
+                        </button>
+                    </div>
+                </div>
             </header>
 
             {/* Provider Selector */}
@@ -706,20 +424,41 @@ export default function App() {
                 onReject={handleReject}
             />
 
+            {/* Todo List */}
+            {todos.length > 0 && (
+                <TodoList todos={todos}/>
+            )}
+
+            {/* Subagent Cards */}
+            {Object.values(subagents).length > 0 && (
+                <div style={{marginBottom: "0.75rem"}}>
+                    {Object.values(subagents).map((subagent) => (
+                        <SubagentCard key={subagent.id} subagent={subagent}/>
+                    ))}
+                </div>
+            )}
+
+            {/* Thread History */}
+            {currentThreadId && (
+                <div style={{marginBottom: "0.75rem"}}>
+                    <ThreadHistory history={history}/>
+                </div>
+            )}
+
             {/* Messages Area */}
             <section
                 ref={messagesRef}
                 style={{
                     flex: 1,
                     overflowY: "auto",
-                    border: "1px solid #e5e5e5",
-                    borderRadius: 8,
+                    border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                    borderRadius: "8px",
                     padding: "1rem",
-                    background: "#fafafa",
+                    backgroundColor: theme === "light" ? "#fafafa" : "#2a2a2a",
                 }}
             >
                 {history.length === 0 && !streamingContent && (
-                    <p style={{color: "#777"}}>
+                    <p style={{color: theme === "light" ? "#777" : "#aaa"}}>
                         No messages yet. Try: "Create a Python module with a factorial function."
                     </p>
                 )}
@@ -734,16 +473,20 @@ export default function App() {
                     >
                         <div
                             style={{
-                                background: item.role === "user" ? "#e5f0ff" : "#ffffff",
-                                border: "1px solid #e5e5e5",
-                                borderRadius: 8,
+                                background: item.role === "user" ? "#e5f0ff" : "#2a4a6a",
+                                border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                                borderRadius: "8px",
                                 padding: "0.6rem 0.8rem",
                                 maxWidth: "75%",
                                 whiteSpace: "pre-wrap",
                                 wordBreak: "break-word",
                             }}
                         >
-                            <div style={{fontSize: "0.75rem", color: "#888", marginBottom: "0.2rem"}}>
+                            <div style={{
+                                fontSize: "0.75rem",
+                                color: theme === "light" ? "#888" : "#aaa",
+                                marginBottom: "0.2rem"
+                            }}>
                                 {item.role === "user" ? "You" : "Agent"}
                             </div>
                             <div>
@@ -769,29 +512,55 @@ export default function App() {
                     </div>
                 ))}
                 {streaming && !hitlPending && (
-                    <div style={{marginBottom: "0.75rem", display: "flex", justifyContent: "flex-start"}}>
+                    <div
+                        style={{marginBottom: "0.75rem", display: "flex", justifyContent: "flex-start", gap: "0.5rem"}}>
                         <div
                             style={{
                                 background: "#ffffff",
-                                border: "1px solid #e5e5e5",
-                                borderRadius: 8,
+                                border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                                borderRadius: "8px",
                                 padding: "0.6rem 0.8rem",
-                                color: "#777",
+                                color: theme === "light" ? "#777" : "#aaa",
                             }}
                         >
                             <span style={{animation: "spin 1s linear infinite", marginRight: "0.5rem"}}>⟳</span>
                             Thinking...
                         </div>
+                        <button
+                            onClick={async () => {
+                                if (!currentThreadId) return;
+                                try {
+                                    await fetch("/chat/cancel", {
+                                        method: "POST",
+                                        headers: {"Content-Type": "application/json"},
+                                        body: JSON.stringify({thread_id: currentThreadId}),
+                                    });
+                                } catch (err) {
+                                    console.error("Cancel failed:", err);
+                                }
+                            }}
+                            style={{
+                                padding: "0.4rem 0.75rem",
+                                borderRadius: "4px",
+                                border: "1px solid #b00020",
+                                background: "rgba(176, 0, 32, 0.1)",
+                                color: "#b00020",
+                                fontSize: "0.8rem",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Cancel
+                        </button>
                     </div>
                 )}
             </section>
 
             {error && (
-                <p style={{color: "#b00020", marginTop: "0.6rem"}}>{error}</p>
+                <p className="error-text">{error}</p>
             )}
 
             {/* Input Bar */}
-            <div style={{marginTop: "0.8rem"}}>
+            <div className="input-bar">
                 <InputBar
                     input={input}
                     setInput={setInput}
@@ -800,18 +569,40 @@ export default function App() {
                     onKeyDown={onKeyDown}
                 />
                 {streaming && (
-                    <p style={{fontSize: "0.75rem", color: "#666", marginTop: "0.5rem", textAlign: "center"}}>
-                        Streaming response...
-                    </p>
+                    <p className="streaming-status">Streaming response...</p>
                 )}
             </div>
-
-            <style>{`
-				@keyframes spin {
-					0% { transform: rotate(0deg); }
-					100% { transform: rotate(360deg); }
-				}
-			`}</style>
         </div>
     );
 }
+
+/**
+ * ConnectionBadge component
+ * Shows connection state: live / reconnecting / disconnected
+ */
+function ConnectionBadge({status}) {
+    const statusMap = {
+        live: {color: "#2e7d32", label: "Live"},
+        reconnecting: {color: "#f9a825", label: "Reconnecting"},
+        disconnected: {color: "#b00020", label: "Disconnected"},
+    };
+
+    const s = statusMap[status] || statusMap.disconnected;
+
+    return (
+        <div
+            style={{
+                padding: "0.4rem 0.75rem",
+                borderRadius: "4px",
+                background: s.color === "#b00020" ? "rgba(176, 0, 32, 0.1)" : "rgba(46, 125, 50, 0.1)",
+                color: s.color,
+                fontSize: "0.85rem",
+                fontWeight: "500",
+                border: `1px solid ${s.color}`,
+            }}
+        >
+            {s.label}
+        </div>
+    );
+}
+

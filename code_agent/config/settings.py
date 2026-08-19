@@ -28,20 +28,23 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 
 from __future__ import annotations
 
-from functools import lru_cache
 import logging
 import os
-from pathlib import Path
 import re
+
+from functools import lru_cache
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from code_agent.config.jsonc import loads as jsonc_loads
 from dotenv import dotenv_values
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
 from pydantic_settings.sources.providers.json import JsonConfigSettingsSource
 from pydantic_settings.sources.providers.yaml import YamlConfigSettingsSource
+
+from code_agent.config.jsonc import loads as jsonc_loads
+
 
 #: Matches ``${env:VAR}`` or ``${VAR}`` placeholders for env substitution.
 _ENV_PLACEHOLDER_RE = re.compile(r"\$\{(?:env:)?([A-Za-z_][A-Za-z0-9_]*)\}")
@@ -169,7 +172,7 @@ EXTERNAL MCP TOOLS (security policy):
 
 
 class JsoncConfigSettingsSource(JsonConfigSettingsSource):
-    """JSONC-aware variant of pydantic-settings' ``JsonConfigSettingsSource``.
+    """JSONC-aware variant of pydantic-settings ``JsonConfigSettingsSource``.
 
     Reads the ``json_file`` configured on the settings model (by default
     ``config/codeagent.jsonc``) and parses it with :func:`code_agent.config.jsonc.loads`
@@ -456,7 +459,7 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return a cached :class:`Settings` instance.
 
-    The result is memoised so the ``codeagent.jsonc`` (or .json, .yml, .yaml), ``.env`` file and environment are read only
+    The result is memorized so the ``codeagent.jsonc`` (or .json, .yml, .yaml), ``.env`` file and environment are read only
     once per process.
 
     :return: The validated settings.

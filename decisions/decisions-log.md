@@ -2,32 +2,33 @@
 
 # Decisions Log
 
-**Purpose**: Canonical project decisions live here. This file is mirrored in `.opencode/context/project-intelligence/decisions-log.md` for project-intelligence routing; keep both files in sync when updating decisions.
+**Purpose**: Canonical project decisions live here. This file is mirrored in
+`.opencode/context/project-intelligence/decisions-log.md` for project-intelligence routing; keep both files in sync when
+updating decisions.
 
 **Last Updated**: 2026-08-13
 
 ## Quick Reference
 
 **Update Triggers**: Architecture changes | Technology decisions | Design choices | Verification/process learnings
-**Audience**: Developers, architects, AI agents
-**Source of truth**: Git history, project documentation, AGENTS.md
+**Audience**: Developers, architects, AI agents **Source of truth**: Git history, project documentation, AGENTS.md
 
 ## Decision Index
 
-| Date | Decision | Rationale | Impact |
-| ------ | ---------- | ----------- | -------- |
-| 2026-08-11 | Use LangChain + LangGraph + DeepAgents | Established agent framework with graph capabilities | Foundation for agent architecture |
-| 2026-08-11 | Provider-agnostic approach | Flexibility across LLM providers | Reduced vendor lock-in |
-| 2026-08-11 | Human-in-the-loop middleware | Better control and oversight | Enhanced user experience |
-| 2026-08-11 | Persistent state management | Session continuity | Improved user experience |
-| 2026-08-11 | Tool-based architecture | Reusable capabilities | Modular design |
-| 2026-08-12 | Close duplicate plans before claiming completion | Prevents stale active plans after compaction boundaries | Accurate project state |
-| 2026-08-12 | Trust project-venv verification over LSP/static warnings when they conflict | Static analysis can be misconfigured; runtime/pyrefly results reflect actual state | Faster debugging, fewer false alarms |
-| 2026-08-13 | MCP tool prefixing | All 43 MCP tools use `mcp_<server>__<tool>` naming format (github: 26, memory: 9, context7: 2, codegraph: 1, docs-langchain: 3, reference-langchain: 2) | Consistent tool naming enables HITL gating and env var expansion |
-| 2026-08-13 | Human-in-the-loop gating | Sensitive servers (github, memory) intercepted via HumanInTheLoopMiddleware; read-only servers (context7, docs-langchain, reference-langchain) functional without interruption | Enhanced security and user control per policy |
-| 2026-08-13 | Environment variable expansion | ${VAR} placeholders in .mcp.json resolved from gitignored .env file at config load; verified expand_env_vars() functional | Secrets never hardcoded; gitignored .env file used for actual values |
-| 2026-08-13 | .mcp.json hardening | ${GITHUB_PERSONAL_ACCESS_TOKEN} and ${CONTEXT7_API_KEY} placeholders (not hardcoded); actual secrets in gitignored .env | Security best practice; .mcp.json version-controlled safely |
-| 2026-08-13 | DEFAULT_SYSTEM_PROMPT MCP guardrail | Section added documenting MCP security policy: github/memory interception, HITL approval flow, read-only server exception | Policy enforcement in agent system prompt |
+| Date       | Decision                                                                    | Rationale                                                                                                                                                                      | Impact                                                               |
+|------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| 2026-08-11 | Use LangChain + LangGraph + DeepAgents                                      | Established agent framework with graph capabilities                                                                                                                            | Foundation for agent architecture                                    |
+| 2026-08-11 | Provider-agnostic approach                                                  | Flexibility across LLM providers                                                                                                                                               | Reduced vendor lock-in                                               |
+| 2026-08-11 | Human-in-the-loop middleware                                                | Better control and oversight                                                                                                                                                   | Enhanced user experience                                             |
+| 2026-08-11 | Persistent state management                                                 | Session continuity                                                                                                                                                             | Improved user experience                                             |
+| 2026-08-11 | Tool-based architecture                                                     | Reusable capabilities                                                                                                                                                          | Modular design                                                       |
+| 2026-08-12 | Close duplicate plans before claiming completion                            | Prevents stale active plans after compaction boundaries                                                                                                                        | Accurate project state                                               |
+| 2026-08-12 | Trust project-venv verification over LSP/static warnings when they conflict | Static analysis can be misconfigured; runtime/pyrefly results reflect actual state                                                                                             | Faster debugging, fewer false alarms                                 |
+| 2026-08-13 | MCP tool prefixing                                                          | All 43 MCP tools use `mcp_<server>__<tool>` naming format (github: 26, memory: 9, context7: 2, codegraph: 1, docs-langchain: 3, reference-langchain: 2)                        | Consistent tool naming enables HITL gating and env var expansion     |
+| 2026-08-13 | Human-in-the-loop gating                                                    | Sensitive servers (github, memory) intercepted via HumanInTheLoopMiddleware; read-only servers (context7, docs-langchain, reference-langchain) functional without interruption | Enhanced security and user control per policy                        |
+| 2026-08-13 | Environment variable expansion                                              | ${VAR} placeholders in .mcp.json resolved from gitignored .env file at config load; verified expand_env_vars() functional                                                      | Secrets never hardcoded; gitignored .env file used for actual values |
+| 2026-08-13 | .mcp.json hardening                                                         | ${GITHUB_PERSONAL_ACCESS_TOKEN} and ${CONTEXT7_API_KEY} placeholders (not hardcoded); actual secrets in gitignored .env                                                        | Security best practice; .mcp.json version-controlled safely          |
+| 2026-08-13 | DEFAULT_SYSTEM_PROMPT MCP guardrail                                         | Section added documenting MCP security policy: github/memory interception, HITL approval flow, read-only server exception                                                      | Policy enforcement in agent system prompt                            |
 
 ## Current Architecture Decisions
 
@@ -38,11 +39,13 @@
 **Context**: Modern Python ecosystem with strong typing support
 
 **Implications**:
+
 - Full type annotations required
 - Modern Python features available
 - Easy dependency management
 
 **Alternatives Considered**:
+
 - Node.js/TypeScript: Rich ecosystem but less typing
 - Java: Strong typing but verbose syntax
 - Go: Performance but less AI ecosystem
@@ -54,12 +57,14 @@
 **Context**: Need for agent orchestration, graph capabilities, and profiles
 
 **Implications**:
+
 - Established AI agent ecosystem
 - Graph-based workflow execution
 - Profile-based agent capabilities
 - Integration with existing LangChain tools
 
 **Alternatives Considered**:
+
 - AutoGen: Microsoft-backed but less mature
 - CrewAI: Simpler but less feature-rich
 - LlamaIndex: Focus on retrieval but less agent-specific
@@ -71,12 +76,14 @@
 **Context**: Flexibility across providers while maintaining consistency
 
 **Implications**:
+
 - Support for multiple LLM providers
 - Consistent API patterns
 - Easy switching between providers
 - Reduced vendor lock-in
 
 **Alternatives Considered**:
+
 - Single provider: Simpler but less flexible
 - Proprietary APIs: Better integration but less portability
 - Custom APIs: Maximum control but higher maintenance
@@ -88,12 +95,14 @@
 **Context**: Need for human oversight and control
 
 **Implications**:
+
 - Better safety and control
 - Enhanced user experience
 - Complex but necessary for production use
 - Requires careful UX design
 
 **Alternatives Considered**:
+
 - Fully automated: Simpler but less safe
 - Manual intervention only: Too restrictive
 - AI-only decisions: Risky for critical operations
@@ -105,12 +114,14 @@
 **Context**: Need for session continuity and complex workflows
 
 **Implications**:
+
 - Better user experience
 - Complex workflow support
 - Higher memory requirements
 - More complex architecture
 
 **Alternatives Considered**:
+
 - Stateless: Simpler but less user-friendly
 - Session-only: Limited persistence
 - Database-only: More scalable but complex
@@ -122,6 +133,7 @@
 **Context**: Need for reusable, testable capabilities with remote server connectivity
 
 **Rationale**:
+
 - Follows LangChain patterns
 - Easy testing and validation
 - Reusable across different agents
@@ -129,29 +141,32 @@
 - MCP server integration for extended capabilities
 
 **Implementation**:
+
 - MCP tools use `mcp_<server>__<tool>` naming format
-- Sensitive servers (github, memory) intercepted via HumanInTheLoopMiddleware
+- Sensitive servers (GitHub, memory) intercepted via HumanInTheLoopMiddleware
 - Read-only servers (context7, docs-langchain, reference-langchain) functional without interruption
-- ${VAR} placeholders in .mcp.json resolved from gitignored .env file
+- ${VAR} placeholders in .mcp.json resolved from the gitignore .env file
 - System prompt documents MCP security policy
 
 ### 7. Configuration Management
 
-**Decision**: Pydantic v2 + pydantic-settings for configuration with .env, yaml, and json sources
+**Decision**: Pydantic v2 + pydantic-settings for configuration with .env, YAML, and JSON sources
 
 **Context**: Need for robust configuration management across multiple sources
 
 **Rationale**:
+
 - Strong typing for configuration
-- Support for multiple sources (.env, yaml, json)
+- Support for multiple sources (.env, YAML, JSON)
 - Validation and defaults
 - Environment-specific configurations
 
 **Implementation**:
+
 - Settings loaded from `.env` file at startup
 - ${VAR} placeholders expanded via `expand_env_vars()`
 - .mcp.json contains placeholder secrets (not hardcoded)
-- Actual secrets stored in gitignored .env file
+- Actual secrets stored in git-ignored .env file
 
 ## Decision Process
 
@@ -191,7 +206,7 @@ Document the decision and rationale
 4. **Scalability**: Does it scale with the project?
 5. **Security**: Is it secure?
 
-## Decision Making Framework
+## Decision-Making Framework
 
 ### 1. Problem Statement
 
@@ -275,9 +290,12 @@ Document the decision and rationale
 
 ## 📂 Codebase References
 
-**Implementation**: `code_agent/providers/` (provider implementations), `code_agent/tools/` (tool definitions), `code_agent/settings.py` (configuration), `code_agent/graph.py` (HITL middleware), `.mcp.json` (MCP server config), `decisions/decisions-log.md` (decision documentation)
+**Implementation**: `code_agent/providers/` (provider implementations), `code_agent/tools/` (tool definitions),
+`code_agent/settings.py` (configuration), `code_agent/graph.py` (HITL middleware), `.mcp.json` (MCP server config),
+`decisions/decisions-log.md` (decision documentation)
 
-**Documentation**: `docs/CHANGELOG.md` and `decisions/decisions-log.md` (decision documentation), `README.md` (project overview)
+**Documentation**: `docs/CHANGELOG.md` and `decisions/decisions-log.md` (decision documentation), `README.md` (project
+overview)
 
 **Goals**: `notes/current_goals.md` (project goals and roadmap)
 
@@ -303,11 +321,13 @@ Document the decision and rationale
 2. **Team Skills**: Does the team have the skills?
 3. **Resource Availability**: Are resources available?
 4. **Long-term Viability**: Will it be viable long-term?
-5. **Cost Effectiveness**: Is it cost-effective?
+5. **Cost-effectiveness**: Is it cost-effective?
 
 ## Conclusion
 
-The decisions log serves as a record of architectural and design decisions, providing context for future decisions and ensuring consistency across the project. It helps teams understand why certain choices were made and provides a basis for evaluating future decisions.
+The decisions log serves as a record of architectural and design decisions, providing context for future decisions and
+ensuring consistency across the project. It helps teams understand why certain choices were made and provides a basis
+for evaluating future decisions.
 
 By documenting decisions, the project can:
 
@@ -317,4 +337,5 @@ By documenting decisions, the project can:
 4. **Support evolution**: Provide a basis for future decisions
 5. **Improve communication**: Ensure clear communication about design choices
 
-The decisions log is a living document that evolves with the project, reflecting the ongoing nature of software development and architecture.
+The decisions log is a living document that evolves with the project, reflecting the ongoing nature of software
+development and architecture.

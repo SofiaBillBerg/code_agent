@@ -3,88 +3,108 @@ title: "Configuration"
 format: html
 ---
 
-This page provides a comprehensive guide to configuring `code_agent`.
+# Configuration
 
-## Configuration Methods
+`code_agent` uses a three-layer configuration system. Values are resolved in order of increasing precedence:
 
-`code_agent` is configured through a single typed `Settings` model
-(`code_agent/settings.py`) built on `pydantic_settings`. Values are
-resolved in the following order of precedence (later methods override
-earlier ones):
+1. **Config file**: `config/codeagent.jsonc`, `config/codeagent.yaml`, or
+   `config/codeagent.yml`.
+2. **`.env` file**: A `.env` file at the project root. Values can be referenced from the config file using
+   `${env:VAR_NAME}` or `${VAR_NAME}`
+   placeholders.
+3. **Environment variables**: Any `CODE_AGENT_*` environment variable overrides the config file and `.env` values.
 
-1.  **`.env` file** at the project root - the recommended place for your
-    default configuration (connection details, model names, secrets).
-2.  **Environment Variables** - override `.env` values, especially
-    useful in CI/CD environments or for temporary changes.
-3.  **Programmatic Overrides** - pass a dictionary of options when
-    creating the LLM or agent in Python scripts.
+By default, the agent loads **all config files** including `config/profiles.yaml`
+for DeepAgents harness profiles.
+
+## Config File
+
+The config file is the primary place to define agent behavior. JSONC files support comments and trailing commas.
+
+Example `config/codeagent.jsonc`:
+
+```jsonc
+{
+  "CODE_AGENT_PROVIDER": "ollama",
+  "CODE_AGENT_OLLAMA_MODEL": "${env:CODE_AGENT_OLLAMA_MODEL}",
+  "CODE_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
+  "CODE_AGENT_TEMPERATURE": 0.7,
+  "CODE_AGENT_STREAM_ENABLED": true
+}
+```
+
+Example `config/codeagent.yaml`:
+
+```yaml
+CODE_AGENT_PROVIDER: ollama
+CODE_AGENT_OLLAMA_MODEL: "${env:CODE_AGENT_OLLAMA_MODEL}"
+CODE_AGENT_OLLAMA_BASE_URL: "http://localhost:11434"
+CODE_AGENT_TEMPERATURE: 0.7
+CODE_AGENT_STREAM_ENABLED: true
+```
 
 ## `.env` File
 
-The primary configuration lives in a `.env` file at the project root (a
-committed `.env.example` documents every available key). Here is an
-example with commonly used options:
+Store secrets and defaults in a `.env` file at the project root. Values referenced from the config file with
+`${env:VAR_NAME}` are resolved from here.
 
-``` dotenv
-CODE_AGENT_OLLAMA_SCHEME=http
-CODE_AGENT_OLLAMA_HOST=localhost
-CODE_AGENT_OLLAMA_PORT=11434
-CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b-cloud
+Example `.env`:
+
+```dotenv
+CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b
+CODE_AGENT_OLLAMA_BASE_URL=http://localhost:11434
 CODE_AGENT_TEMPERATURE=0.7
 ```
 
-### Options
-
-- `CODE_AGENT_OLLAMA_HOST`: The hostname or IP address of the Ollama
-  server. Defaults to `localhost`.
-- `CODE_AGENT_OLLAMA_PORT`: The port on which the Ollama server is
-  running. Defaults to `11434`.
-- `CODE_AGENT_OLLAMA_MODEL`: The name of the Ollama model to use (e.g.,
-  `"gpt-oss:20b-cloud"`). This model is used for both chat and
-  embeddings.
-- `CODE_AGENT_TEMPERATURE`: The sampling temperature for the LLM. Higher
-  values result in more creative but less predictable responses.
-  Defaults to `0.7`.
-
 ## Environment Variables
 
-You can override any setting using an environment variable with the same
-name as the `Settings` field, upper-cased with the `CODE_AGENT_` prefix:
+Any setting can be overridden with an environment variable. The variable name matches the config key, upper-cased with
+the `CODE_AGENT_` prefix.
 
-- `CODE_AGENT_OLLAMA_HOST`
-- `CODE_AGENT_OLLAMA_PORT`
-- `CODE_AGENT_OLLAMA_MODEL`
-- `CODE_AGENT_TEMPERATURE`
-- `CODE_AGENT_OPENAI_API_KEY` (and `CODE_AGENT_OPENAI_MODEL`,
-  `CODE_AGENT_OPENAI_BASE_URL`)
+Common variables:
 
-For example, to use a different Ollama model:
+- `CODE_AGENT_PROVIDER`: LLM provider (`ollama`, `openai`, `anthropic`).
+- `CODE_AGENT_OLLAMA_MODEL`: Ollama model name.
+- `CODE_AGENT_OLLAMA_BASE_URL`: Ollama server URL.
+- `CODE_AGENT_OPENAI_API_KEY`: OpenAI API key.
+- `CODE_AGENT_OPENAI_BASE_URL`: OpenAI-compatible API base URL.
+- `CODE_AGENT_OPENAI_MODEL`: OpenAI model name.
+- `CODE_AGENT_TEMPERATURE`: Sampling temperature (default `0.7`).
+- `CODE_AGENT_STREAM_ENABLED`: Enable SSE streaming (`true`/`false`).
 
-``` bash
-export CODE_AGENT_OLLAMA_MODEL="another-model:latest"
+## Profiles
+
+DeepAgents harness profiles are loaded automatically from `config/profiles.yaml`
+by default. Profiles tune the system prompt, tool visibility, and middleware per model.
+
+Example `config/profiles.yaml`:
+
+```yaml
+"ollama":
+  system_prompt_suffix: "Be concise and prefer minimal, focused diffs."
+  excluded_tools: []
+  tool_description_overrides:
+    read_file: "Read a file from the workspace (read-only)."
 ```
 
-## Programmatic Overrides
+Profile keys can be:
+- A bare provider name (e.g. `"ollama"`) for provider-wide defaults
+- A `provider:model` pair (e.g. `"openai:gpt-4o"`) for per-model overrides
 
-When creating the LLM instance in a Python script, you can pass a
-dictionary of configuration overrides to the `create_llm` function.
+Note: model identifiers containing `:` (e.g. `gpt-oss:20b`) cannot be used as exact `provider:model` keys — register
+them under the bare provider key instead.
 
-``` python
-from code_agent.main import create_llm, load_config
+## CLI Flags
 
-# Load base configuration
-config = load_config()
+- `--config <path>`: Load a specific config file instead of the default
+  `config/codeagent.jsonc` / `config/codeagent.yaml`.
 
-# Override specific settings
-config["ollama_model"] = "a-third-model:latest"
-config["temperature"] = 0.9
+## Precedence Example
 
-# Create LLM with overrides
-llm = create_llm(config)
-```
+Given:
 
-![Class diagram for code_agent Settings]
+- Config file: `CODE_AGENT_TEMPERATURE = 0.7`
+- `.env`: `CODE_AGENT_TEMPERATURE=0.9`
+- Environment: `CODE_AGENT_TEMPERATURE=0.5`
 
-  [Class diagram for code_agent Settings]: visualizations/svg/code_agent.settings.Settings.svg
-  {.class-diagram fig-alt="Class diagram for code_agent Settings
-  " width="637"}
+The effective value is `0.5` (environment variable wins).

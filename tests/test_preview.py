@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 # Import the helpers from the public API
-from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
 from code_agent.main import create_llm
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
@@ -53,7 +53,7 @@ def dummy_llm() -> BaseChatModel:
         It is used to test agent construction without making actual LLM calls.
         """
 
-        def _generate(
+        def _generate(  # ruff: ignore[no-self-use]
             self,
             messages: list[BaseMessage],
             stop: list[str] | None = None,
@@ -87,7 +87,7 @@ def dummy_llm() -> BaseChatModel:
 
         @property
         def _llm_type(self) -> str:
-            """Return the type of the LLM - required by BaseChatModel.
+            """Acquire the type of the LLM - required by BaseChatModel.
 
             :return:  The type of the LLM.
             """

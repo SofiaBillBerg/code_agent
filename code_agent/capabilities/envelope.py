@@ -13,6 +13,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+
 class InvocationRequest(BaseModel):
     """A request to invoke a capability.
 

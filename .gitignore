@@ -238,3 +238,4 @@ pdf_docs/
 /.xml
 /whitelist.txt
 /notes/
+/coverage.lcov

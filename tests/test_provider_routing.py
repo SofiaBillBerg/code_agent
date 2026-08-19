@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 class TestProviderRoutingProperty:
     """Property tests for provider routing."""
 
-    def test_providers_endpoint_exists(self) -> None:
+    def test_providers_endpoint_exists(self) -> None:  # ruff: ignore[no-self-use]
         """Property 15: Providers endpoint exists and is accessible."""
         client = TestClient(app)
 
@@ -26,7 +26,7 @@ class TestProviderRoutingProperty:
 class TestProviderRoutingExamples:
     """Example tests for provider routing endpoints."""
 
-    def test_list_providers_returns_proper_structure(self) -> None:
+    def test_list_providers_returns_proper_structure(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: GET /providers returns object with providers key."""
         client = TestClient(app)
 
@@ -38,7 +38,7 @@ class TestProviderRoutingExamples:
             assert "providers" in data
             assert isinstance(data["providers"], list)
 
-    def test_set_active_provider_updates_state(self) -> None:
+    def test_set_active_provider_updates_state(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: POST /providers/active updates the active provider."""
         client = TestClient(app)
 
@@ -51,7 +51,7 @@ class TestProviderRoutingExamples:
 
         assert response.status_code in {200, 401, 404, 422, 405}
 
-    def test_active_provider_endpoint_exists(self) -> None:
+    def test_active_provider_endpoint_exists(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: GET /providers/active endpoint exists."""
         client = TestClient(app)
 
@@ -59,7 +59,7 @@ class TestProviderRoutingExamples:
 
         assert response.status_code in {200, 401, 404}
 
-    def test_providers_endpoint_has_correct_method(self) -> None:
+    def test_providers_endpoint_has_correct_method(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: GET /providers is the correct method, not POST."""
         client = TestClient(app)
 

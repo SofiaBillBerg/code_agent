@@ -202,9 +202,10 @@ def test_default_profiles_config_path() -> None:
 
     :raises AssertionError: If the default path is not the expected location.
     """
-    assert Path(
-        "/home/nvidia/code_agent/config/profiles.yaml"
-    ) == DEFAULT_PROFILES_CONFIG
+    assert (
+        Path("/home/nvidia/code_agent/config/profiles.yaml")
+        == DEFAULT_PROFILES_CONFIG
+    )
 
 
 def test_load_profiles_from_config_file_missing(
@@ -303,7 +304,7 @@ def test_build_deep_agent_registers_profiles_flag(
 
         :param path: The config path that would have been read.
         """
-        calls["register"] += 1
+        calls["register"] += 1  # ty: ignore[unsupported-operator]
 
     def fake_create(**kwargs: Any) -> str:
         """Record the create call and return a sentinel.
@@ -311,7 +312,7 @@ def test_build_deep_agent_registers_profiles_flag(
         :param kwargs: Arguments forwarded to create_deep_agent.
         :return: A sentinel graph marker.
         """
-        calls["create"] = kwargs
+        calls["create"] = kwargs  # ty: ignore[invalid-assignment]
         return "GRAPH"
 
     monkeypatch.setattr(

@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import logging
+
 from pathlib import Path
 
-from code_agent.tools._io import _atomic_write
 from langchain.tools import tool
 from pydantic import BaseModel, Field
+
+from code_agent.tools._io import _atomic_write
+
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +47,7 @@ def edit_file(
 ) -> str:
     """Edit an existing file by replacing, appending, or patching its content.
 
-    Use this when the user asks to change, fix, update, or append to a file.
+    Use this when the user asks to change, edit, update, or append to a file.
     Pass the path relative to the project root.
 
     :param file_path: Path to the file to edit, relative to the project root.

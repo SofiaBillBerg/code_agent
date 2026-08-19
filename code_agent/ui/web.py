@@ -29,18 +29,13 @@ Security notes:
 from __future__ import annotations
 
 import asyncio
+import uuid
+
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
-import uuid
 
-from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.config.settings import get_settings
-from code_agent.main import create_llm, load_config
-from code_agent.utils.checkpointer import build_checkpointer
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -51,6 +46,17 @@ from langchain.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from pydantic import BaseModel
+
+from code_agent.agents.deepagents_agent import (
+    build_agent,
+    create_default_tools,
+)
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.config.settings import get_settings
+from code_agent.main import create_llm, load_config
+from code_agent.utils.checkpointer import build_checkpointer
+
 
 #: Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
@@ -104,6 +110,28 @@ _hitl_decisions: dict[str, str] = {}
 #: chat requests during the reinitialization window.
 _provider_switch_lock: asyncio.Lock = asyncio.Lock()
 _switching: bool = False
+
+#: Cancel state
+#: -------------------------------------------------------------------
+#: _pending_cancel maps thread_id -> asyncio.Event. When /chat/cancel is
+#: called, the event is set so the SSE stream can stop early.
+_pending_cancel: dict[str, asyncio.Event] = {}
+
+#: _thread_tasks maps thread_id -> asyncio.Task. The /chat/stream endpoint
+#: registers the background task here so /chat/cancel can cancel it.
+_thread_tasks: dict[str, asyncio.Task] = {}
+
+#: Audit store
+#: -------------------------------------------------------------------
+#: _audit_log stores per-thread audit entries in memory, keyed by thread_id.
+#: Each entry is a dict with action, details, timestamp, user fields.
+_audit_log: dict[str, list[dict[str, Any]]] = {}
+
+#: _audit_store is a flat list of audit entries used by /chat/audit endpoints.
+_audit_store: list[dict[str, Any]] = []
+
+#: Ping interval in seconds for SSE heartbeat.
+_PING_INTERVAL_S: float = 15.0
 
 
 #: -------------------------------------------------------------------
@@ -656,9 +684,147 @@ class ResumeRequest(BaseModel):
     decision: Literal["approve", "reject"]
 
 
+class CancelRequest(BaseModel):
+    """Body for POST /chat/cancel.
+
+    Attributes:
+        thread_id: The thread whose running agent should be cancelled.
+    """
+
+    thread_id: str
+
+
+class HistoryRequest(BaseModel):
+    """Query params for GET /chat/history.
+
+    Attributes:
+        thread_id: The thread whose history is requested.
+        limit: Maximum number of messages to return (default 20).
+    """
+
+    thread_id: str
+    limit: int = 20
+
+
+class HistoryResponse(BaseModel):
+    """Response from GET /chat/history.
+
+    Attributes:
+        messages: List of message dicts with role, content, and optional tool_calls.
+    """
+
+    messages: list[dict[str, Any]]
+
+
+class AuditEntry(BaseModel):
+    """A single audit log entry.
+
+    Attributes:
+        action: "approve", "reject", or "edit".
+        details: Free-form dict of additional context.
+        timestamp: ISO-8601 timestamp string.
+        user: User identifier who performed the action.
+    """
+
+    action: str
+    details: dict[str, Any]
+    timestamp: str
+    user: str
+
+
+class AuditRequest(BaseModel):
+    """Body for POST /chat/audit.
+
+    Attributes:
+        thread_id: The thread to record the audit entry for.
+        action: "approve", "reject", or "edit".
+        details: Free-form dict of additional context.
+        timestamp: ISO-8601 timestamp string.
+        user: User identifier.
+    """
+
+    thread_id: str
+    action: Literal["approve", "reject", "edit"]
+    details: dict[str, Any] = {}
+    timestamp: str
+    user: str
+
+
+class AuditResponse(BaseModel):
+    """Response from POST /chat/audit.
+
+    Attributes:
+        status: "recorded" on success.
+    """
+
+    status: str
+
+
+class AuditListResponse(BaseModel):
+    """Response from GET /chat/audit.
+
+    Attributes:
+        entries: List of audit entries for the thread.
+    """
+
+    entries: list[dict[str, Any]]
+
+
+class TodoEvent(BaseModel):
+    """SSE event emitted when the todos list changes.
+
+    Attributes:
+        type: Event type identifier ("todos").
+        todos: The current list of todo items from PlanningState.
+    """
+
+    type: str = "todos"
+    todos: list[dict[str, Any]]
+
+
+class SubagentStartEvent(BaseModel):
+    """SSE event emitted when a subagent starts.
+
+    Attributes:
+        type: Event type identifier ("subagent_start").
+        id: Identifier derived from the namespace or run id.
+        name: The graph/node name of the subagent.
+    """
+
+    type: str = "subagent_start"
+    id: str
+    name: str
+
+
+class SubagentEndEvent(BaseModel):
+    """SSE event emitted when a subagent ends.
+
+    Attributes:
+        type: Event type identifier ("subagent_end").
+        id: Identifier matching the subagent_start event.
+        name: The graph/node name of the subagent.
+        status: "success" or "error".
+    """
+
+    type: str = "subagent_end"
+    id: str
+    name: str
+    status: str = "success"
+
+
+class PingEvent(BaseModel):
+    """SSE heartbeat event emitted periodically to keep the connection alive.
+
+    Attributes:
+        type: Event type identifier ("ping").
+    """
+
+    type: str = "ping"
+
+
 @app.post("/chat/resume")
 async def chat_resume(request: ResumeRequest) -> dict[str, str]:
-    """Deliver an approve/reject decision for a paused HITL interrupt.
+    """Deliver an approval/reject decision for a paused HITL interrupt.
 
     This endpoint is called by the browser when the user clicks Approve or Reject
     on the HITL Surface component. It resolves the pending HITL interrupt by:
@@ -763,8 +929,30 @@ async def chat_stream(request: ChatRequest) -> StreamingResponse:
     state = await get_agent_async()
     effective_thread = request.thread_id or state.thread_id
 
+    async def _stream_wrapper():
+        try:
+            async for chunk in _stream_agent_events(
+                state.agent, request.message, effective_thread
+            ):
+                yield chunk
+        finally:
+            _thread_tasks.pop(effective_thread, None)
+
+    streamer = _stream_wrapper()
+    task = asyncio.create_task(streamer.__anext__())
+    _thread_tasks[effective_thread] = task
+
+    async def _consume_stream():
+        try:
+            async for chunk in streamer:
+                yield chunk
+        except asyncio.CancelledError:
+            pass
+        finally:
+            _thread_tasks.pop(effective_thread, None)
+
     return StreamingResponse(
-        _stream_agent_events(state.agent, request.message, effective_thread),
+        _consume_stream(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -823,8 +1011,13 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
         return
 
     tool_start_times: dict[str, float] = {}
+    last_ping_time = time.monotonic()
+    seen_subagents: set[str] = set()
 
     try:  # ruff: ignore[too-many-statements-in-try-clause]
+        #: Emit initial ping to confirm connection
+        yield _sse({"type": "ping"})
+
         async for event in stream_fn(
             {"messages": [HumanMessage(content=message)]},
             config={"configurable": {"thread_id": thread_id}},
@@ -833,6 +1026,12 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
             etype = event.get("event", "")
             data = event.get("data", {})
             event_name = event.get("name", "")
+
+            #: Periodic ping to keep connection alive
+            now = time.monotonic()
+            if now - last_ping_time >= _PING_INTERVAL_S:
+                yield _sse({"type": "ping"})
+                last_ping_time = now
 
             if etype == "on_chat_model_stream":
                 chunk = data.get("chunk")
@@ -864,6 +1063,18 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
                     "elapsed_s": elapsed,
                 })
 
+            elif etype == "on_chain_start":
+                #: Detect subagent start from lifecycle events
+                if event_name and event_name not in seen_subagents:
+                    # Heuristic: subagent nodes often have names like "agent:xxx" or "subgraph:xxx"
+                    if ":" in event_name or event_name.startswith("agent"):
+                        seen_subagents.add(event_name)
+                        yield _sse({
+                            "type": "subagent_start",
+                            "id": event_name,
+                            "name": event_name,
+                        })
+
             elif etype == "on_chain_end":
                 output = data.get("output", {})
                 if isinstance(output, dict) and output.get("__interrupt__"):
@@ -892,6 +1103,29 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
                             _pending_hitl.pop(thread_id, None)
                             _hitl_decisions.pop(thread_id, None)
 
+                #: Detect subagent end from lifecycle events
+                if event_name and event_name in seen_subagents:
+                    seen_subagents.discard(event_name)
+                    status = (
+                        "error"
+                        if isinstance(output, dict) and output.get("error")
+                        else "success"
+                    )
+                    yield _sse({
+                        "type": "subagent_end",
+                        "id": event_name,
+                        "name": event_name,
+                        "status": status,
+                    })
+
+                #: Emit todos update if present in state output
+                if isinstance(output, dict) and "todos" in output:
+                    yield _sse({
+                        "type": "todos",
+                        "todos": output["todos"],
+                    })
+
+        yield _sse({"type": "ping"})
         yield _sse({"type": "done"})
 
     except asyncio.CancelledError:
@@ -906,6 +1140,97 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
         #: Ensure any exceptions are caught and converted to SSE error events
         if "exc" in locals():
             yield _sse({"type": "error", "reason": "internal_error"})
+
+
+@app.post("/chat/cancel")
+async def chat_cancel(request: CancelRequest) -> dict[str, str]:
+    """Cancel a running agent thread.
+
+    This endpoint is called by the browser when the user clicks a Cancel button.
+    It looks up the asyncio.Task for the given thread_id in ``_thread_tasks``
+    and cancels it. If the task is already done or no task is registered for
+    the thread, returns HTTP 409.
+
+    :param request: CancelRequest containing the thread_id to cancel.
+    :return: {"status": "cancelled"} on success.
+    :raises HTTPException: 409 if no running task for thread_id.
+    """
+    task = _thread_tasks.get(request.thread_id)
+    if task is None or task.done():
+        raise HTTPException(
+            status_code=409,
+            detail=f"No running task for thread_id={request.thread_id!r}",
+        )
+    task.cancel()
+    return {"status": "cancelled"}
+
+
+@app.get("/chat/history")
+async def chat_history(thread_id: str, limit: int = 20) -> HistoryResponse:
+    """Return the message history for a thread.
+
+    This endpoint reads the checkpointed state for the given thread_id and
+    returns the list of messages. If the thread has no history, returns an
+    empty list.
+
+    :param thread_id: The thread whose history is requested.
+    :param limit: Maximum number of messages to return (default 20).
+    :return: HistoryResponse with a list of message dicts.
+    """
+    state = await get_agent_async()
+    checkpointer = getattr(state.agent, "checkpointer", None)
+    if checkpointer is None:
+        return HistoryResponse(messages=[])
+
+    try:
+        config = {"configurable": {"thread_id": thread_id}}
+        state_data = await checkpointer.aget(config)
+        messages = state_data.get("messages", []) if state_data else []
+        # Convert message objects to dicts, truncating to limit
+        result = []
+        for msg in messages[-limit:]:
+            if hasattr(msg, "to_dict"):
+                result.append(msg.to_dict())
+            elif hasattr(msg, "content"):
+                result.append({"role": "user", "content": msg.content})
+            else:
+                result.append({"role": "user", "content": str(msg)})
+        return HistoryResponse(messages=result)
+    except Exception:
+        return HistoryResponse(messages=[])
+
+
+@app.post("/chat/audit")
+async def chat_audit(request: AuditRequest) -> AuditResponse:
+    """Record an audit log entry for a thread.
+
+    This endpoint is called by the browser when the user performs an action
+    that should be audited (approve, reject, edit). It stores the entry in
+    the in-memory ``_audit_store``.
+
+    :param request: AuditRequest containing thread_id, action, details, timestamp, and user.
+    :return: AuditResponse with status "recorded".
+    """
+    entry = {
+        "thread_id": request.thread_id,
+        "action": request.action,
+        "details": request.details,
+        "timestamp": request.timestamp,
+        "user": request.user,
+    }
+    _audit_store.append(entry)
+    return AuditResponse(status="recorded")
+
+
+@app.get("/chat/audit")
+async def chat_audit_list(thread_id: str) -> AuditListResponse:
+    """List audit log entries for a thread.
+
+    :param thread_id: The thread whose audit entries are requested.
+    :return: AuditListResponse with a list of audit entries.
+    """
+    entries = [e for e in _audit_store if e.get("thread_id") == thread_id]
+    return AuditListResponse(entries=entries)
 
 
 @app.get("/capabilities")

@@ -20,6 +20,7 @@ from types import ModuleType
 
 from code_agent.exceptions import CodeAgentError
 
+
 #: Optional Jupyter notebook dependency; ``None`` when unavailable.
 nbformat: ModuleType | None
 try:  # Optional dependency - used only for the notebook path.

@@ -12,15 +12,20 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
-from code_agent.agents.deepagents_agent import (
-    _normalize_context_size,  # ruff: ignore[import-private-name] - testing private helper
-    _resolve_workspace_paths,  # ruff: ignore[import-private-name] - testing private helper
-    build_deep_agent,
-)
-from code_agent.config.settings import Settings
+import pytest
+
 from deepagents.middleware import SummarizationMiddleware
 from langchain.chat_models import BaseChatModel
-import pytest
+
+from code_agent.agents.deepagents_agent import (
+    _normalize_context_size,  # ruff: ignore[import-private-name] - testing private helper
+)
+from code_agent.agents.deepagents_agent import (
+    _resolve_workspace_paths,  # ruff: ignore[import-private-name] - testing private helper
+)
+from code_agent.agents.deepagents_agent import build_deep_agent
+from code_agent.config.settings import Settings
+
 
 def test_resolve_workspace_paths_translation(tmp_path: Path) -> None:
     """Paths are translated to workspace-virtual form.
@@ -68,9 +73,10 @@ def test_normalize_context_size() -> None:
     :raises AssertionError: If normalization is wrong.
     """
     assert _normalize_context_size(["messages", 50]) == ("messages", 50)
-    assert _normalize_context_size(
-        [["messages", 100], ["fraction", 0.9]]
-    ) == [("messages", 100), ("fraction", 0.9)]
+    assert _normalize_context_size([["messages", 100], ["fraction", 0.9]]) == [
+        ("messages", 100),
+        ("fraction", 0.9),
+    ]
     assert _normalize_context_size({"tokens": 4000, "messages": 10}) == {
         "tokens": 4000,
         "messages": 10,
@@ -105,10 +111,14 @@ def _build_with(
         return "GRAPH"
 
     monkeypatch.setattr(
-        deepagents_agent, "register_profiles_from_config_file", lambda *a, **k: None
+        deepagents_agent,
+        "register_profiles_from_config_file",
+        lambda *a, **k: None,
     )
     monkeypatch.setattr(
-        deepagents_agent, "register_profiles_from_settings", lambda *a, **k: None
+        deepagents_agent,
+        "register_profiles_from_settings",
+        lambda *a, **k: None,
     )
     monkeypatch.setattr(deepagents_agent, "create_deep_agent", fake_create)
     if settings is not None:
@@ -204,13 +214,17 @@ def test_build_deep_agent_summarization_middleware(monkeypatch: Any) -> None:
         summarization_trigger=("messages", 50),
         summarization_keep=("messages", 20),
     )
-    sm = next(m for m in captured["middleware"] if m.name == "SummarizationMiddleware")
+    sm = next(
+        m for m in captured["middleware"] if m.name == "SummarizationMiddleware"
+    )
     assert sm._lc_helper.trigger == ("messages", 50)
     assert sm._lc_helper.keep == ("messages", 20)
 
     # No trigger -> no SummarizationMiddleware added (harness built-in applies).
     captured = _build_with(monkeypatch)
-    assert not any(m.name == "SummarizationMiddleware" for m in captured["middleware"])
+    assert not any(
+        m.name == "SummarizationMiddleware" for m in captured["middleware"]
+    )
 
 
 def test_build_deep_agent_explicit_middleware_not_duplicated(

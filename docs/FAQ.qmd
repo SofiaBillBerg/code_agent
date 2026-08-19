@@ -8,49 +8,105 @@ format: html
 
 ## 1. How does the agent remember conversations?
 
-The agent uses a local vector store (`ChromaDB`) to save the history of your interactions. A directory named
-`.code_agent_memory` is created in your project root to store this data. This allows the agent to use past conversations
-as context for new requests, improving its relevance and accuracy over time.
+The agent uses **LangGraph checkpointing** to persist conversation state across turns. When running in the CLI or web
+UI, each session gets a unique `thread_id` and the graph state (including message history) is saved to a checkpointer.
+By default, the web UI uses an in-memory checkpointer; you can configure a persistent SQLite checkpointer via
+`CODE_AGENT_CHECKPOINT_DIR`.
 
-## 2. Why does the agent run locally?
+Additionally, the DeepAgents harness can load **memory files** (`AGENTS.md`) that are always injected into the agent's
+context, giving it persistent instructions and preferences across conversations.
 
-**Privacy, Security, and Cost.** By running the LLM and all tools on your local machine, your code and data never leave
-your computer. This is crucial for maintaining the confidentiality of proprietary or sensitive projects. It also means
-there are no API costs associated with using the agent.
+## 2. Can I use a cloud LLM instead of Ollama?
 
-## 3. Can I use a different local LLM?
+Yes. The agent is provider-agnostic. Set `CODE_AGENT_PROVIDER=openai` (or `anthropic`) and provide the corresponding API
+key:
 
-**Yes.** The agent is configured via the `.env` file at the project root (see
-`.env.example`). You can change `OLLAMA_MODEL` to any other model you have
-available in Ollama (e.g., `llama3`, `codellama`, etc.). The `create_llm`
-function is designed to be easily adaptable to other local LLM providers as well.
+```dotenv
+CODE_AGENT_PROVIDER=openai
+CODE_AGENT_OPENAI_API_KEY=sk-...
+CODE_AGENT_OPENAI_MODEL=gpt-4o
+```
 
-## 4. What happens if the Ollama server is not running?
+You can also configure multiple providers and switch between them at runtime via the web UI (`POST /providers/active`)
+or by setting `CODE_AGENT_PROVIDER_LIST`.
 
-If the agent cannot connect to the Ollama server, the `create_llm` function will automatically create a **fallback LLM
-**. This fallback model doesn't perform any actions but returns a clear error message, ensuring that the application
-remains responsive and informs you of the connection issue.
+## 3. What happens if the LLM server is not running?
 
-## 5. Is it safe to let the agent edit my files?
+If the agent cannot connect to the configured LLM backend, the `create_llm` function will raise an error when you try to
+invoke the agent. The CLI and web UI will surface the error message so you can diagnose the connection issue.
 
-The agent's file system tools are designed with safety in mind:
-- **Sandboxed:** All file operations are restricted to the project's root directory. The tools will prevent any attempt
-  to access files outside of this directory.
-- **Backups:** The `edit-file` tool automatically creates a backup (`.bak`) of any file it modifies, allowing you to
-  easily revert any unwanted changes.
+## 4. Is it safe to let the agent edit my files?
 
-For maximum security, especially on critical projects, consider running the agent in a containerized environment like
-Docker.
+The agent's filesystem tools are sandboxed to a configured `root_dir` (default: the current working directory). When
+using the DeepAgents harness, the working directory is mounted at `/workspace/` with `virtual_mode=True`, which blocks
+path escapes (`..`, `~`, absolute paths outside the root).
 
-## 6. How do I add a new tool to the agent?
+Additionally, mutating tools (`write_file`, `edit_file`, `delete`, `execute`) default to **human-in-the-loop** review:
+the agent pauses before executing them and asks for your approval.
 
-1. Create a new Python file in the [`code_agent/tools/`](../code_agent/tools/__init__.py) directory.
-2. Define a new class that inherits from `langchain_core.tools.BaseTool`.
-3. Implement the `_run` method with your tool's logic.
-4. Add your new tool to the `create_default_tools` function in [`code_agent/agents/base_agent.py`](../code_agent/agents/base_agent.py) .
+You can further restrict access with filesystem permissions:
 
-See the existing tools for examples.
+```python
+from deepagents import create_deep_agent
+from deepagents.backends.filesystem import FilesystemPermission
 
-## 7. Why does `code-agent chat` sometimes look empty or delayed?
+agent = create_deep_agent(
+    model="anthropic:claude-sonnet-4-6",
+    permissions=[
+        FilesystemPermission(operations=["read", "write"], paths=["/workspace/**"], mode="allow"),
+        FilesystemPermission(operations=["read", "write"], paths=["/workspace/.env"], mode="deny"),
+    ],
+)
+```
 
-The chat interface now streams live output when possible. If the final model reply is empty, the CLI shows `(empty response)` instead of a blank line. If your backend does not support streaming, the interface falls back to a normal blocking request automatically. Use `--verbose` if you want more visible agent activity during execution.
+## 5. How do I add a new tool to the agent?
+
+Add your tool to `create_default_tools` in [
+`code_agent/agents/deepagents_agent.py`](../code_agent/agents/deepagents_agent.py):
+
+```python
+from langchain.tools import tool
+
+@tool
+def my_custom_tool(arg: str) -> str:
+    """Description of what the tool does."""
+    return f"Result for {arg}"
+
+# In create_default_tools():
+standard_tools = [
+    # ... existing tools ...
+    my_custom_tool(),
+]
+```
+
+When using the DeepAgents harness, custom tools are additive. If a custom tool has the same name as a built-in
+filesystem tool, the built-in wins (the custom one is dropped).
+
+## 6. Why does `code-agent chat` sometimes look empty or delayed?
+
+The chat interface streams live output when possible. If the final model reply is empty, the CLI shows
+`(no text response)` instead of a blank line. If your backend does not support streaming, the interface falls back to a
+normal blocking request automatically.
+
+Use `--verbose` if you want more visible agent activity during execution.
+
+## 7. How do I configure MCP servers?
+
+Set `CODE_AGENT_MCP_SERVERS` in your `.env` or config file. The value can be inline JSON or a path to a JSON file:
+
+```dotenv
+CODE_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
+```
+
+Or:
+
+```dotenv
+CODE_AGENT_MCP_SERVERS=mcp.json
+```
+
+Secrets in MCP server configs can reference `${env:VAR}` placeholders, which are resolved from your `.env` file at
+startup.
+
+## 8. What Python version do I need?
+
+Python 3.11 or newer. The project uses `uv` for dependency management.

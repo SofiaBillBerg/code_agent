@@ -27,12 +27,16 @@ profile, matching DeepAgents' own resolution order).
 from __future__ import annotations
 
 import logging
+
 from pathlib import Path
 from typing import Any
 
-from code_agent.config.settings import get_settings
-from deepagents import HarnessProfile, register_harness_profile
 import yaml
+
+from deepagents import HarnessProfile, register_harness_profile
+
+from code_agent.config.settings import get_settings
+
 
 log = logging.getLogger(__name__)
 
@@ -110,7 +114,7 @@ def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
         if not raw:
             return None
         coerced = dict(raw)
-        # HarnessProfile expects frozensets; YAML/JSON give lists.  Without
+        # HarnessProfile expects frozen sets; YAML/JSON give lists.  Without
         # this, merging a config profile with a built-in one fails with
         # "frozenset | list" during profile resolution.
         if "excluded_tools" in coerced and not isinstance(
@@ -187,7 +191,7 @@ def load_profiles_from_config_file(
     mapping of :class:`HarnessProfile` fields.  ``None``/empty values are
     skipped.  JSON files are also accepted (JSON is a YAML subset).
 
-    :param path: Path to the profiles config.  Defaults to
+    :param path: Path to the profiles' config.  Defaults to
         :data:`DEFAULT_PROFILES_CONFIG`.
     :return: Mapping of profile key -> :class:`HarnessProfile`.  Empty when the
         file does not exist.

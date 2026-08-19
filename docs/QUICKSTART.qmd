@@ -3,26 +3,20 @@ title: "Quick Start"
 format: html
 ---
 
-This guide provides the essential steps to get `code_agent` installed
-and running on your local machine.
+This guide provides the essential steps to get `code_agent` installed and running on your local machine.
 
 ## 1. Prerequisites
 
-- **Python 3.10+**: Ensure you have a modern version of Python
-  installed.
+- **Python 3.11+**: Ensure you have a modern version of Python installed.
 
-- **`uv` or `pip`**: A Python package manager. `uv` is recommended for
-  its speed.
+- **`uv` or `pip`**: A Python package manager. `uv` is recommended for its speed.
 
-- **Ollama**: For the agent's LLM capabilities, you need [Ollama]
-  installed and running. You also need to have a model pulled. We
-  recommend starting with `llama3`.
+- **Ollama or OpenAI-compatible API**: For the agent's LLM capabilities, you need a running provider. We recommend
+  starting with Ollama and pulling a model such as `gpt-oss:20b`.
 
   ``` bash
-  ollama pull llama3
+  ollama pull gpt-oss:20b
   ```
-
-  [Ollama]: https://ollama.com/
 
 ## 2. Installation
 
@@ -33,8 +27,7 @@ git clone https://github.com/your-username/code_agent.git
 cd code_agent
 ```
 
-Next, create a virtual environment and install the package in editable
-mode. Including the `[dev]` dependencies is recommended for development.
+Next, create a virtual environment and install the package in editable mode.
 
 ``` bash
 # Create and activate the virtual environment
@@ -42,18 +35,36 @@ uv venv
 source .venv/bin/activate
 
 # Install the package
-uv pip install -e .[dev]
+uv pip install -e .
 ```
 
 ## 3. Configuration
 
-Before running the agent, copy `.env.example` to `.env` at the project
-root and set `OLLAMA_MODEL` to the model you have downloaded. For
-example:
+`code_agent` supports three configuration layers, loaded in order of increasing precedence:
 
-``` dotenv
-OLLAMA_MODEL=llama3
-TEMPERATURE=0.7
+1. **Config file**: `config/codeagent.jsonc`, `config/codeagent.yaml`, or `config/codeagent.yml`. JSONC files support
+   comments and trailing commas.
+2. **`.env` file**: A `.env` file at the project root. Values can be referenced from the config file using `${env:VAR}`
+   or `${VAR}`
+   placeholders.
+3. **Environment variables**: Any `CODE_AGENT_*` environment variable overrides the config file and `.env` values.
+
+Example `config/codeagent.jsonc`:
+
+```jsonc
+{
+  "CODE_AGENT_OLLAMA_MODEL": "${env:CODE_AGENT_OLLAMA_MODEL}",
+  "CODE_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
+  "CODE_AGENT_TEMPERATURE": 0.7,
+  "CODE_AGENT_STREAM_ENABLED": true
+}
+```
+
+Example `.env`:
+
+```dotenv
+CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b
+CODE_AGENT_OLLAMA_BASE_URL=http://localhost:11434
 ```
 
 ## 4. Basic Usage
@@ -62,44 +73,43 @@ You can now use `code_agent` directly from your terminal.
 
 ### Interactive Chat
 
-The primary way to use the agent is through the interactive chat
-session.
+The primary way to use the agent is through the interactive chat session.
 
 ``` bash
 code-agent chat
 ```
 
-You can now give instructions to the agent in plain English: \> "Create
-a Python file named 'app.py' and add a simple Flask 'Hello, World!'
+You can now give instructions to the agent in plain English: \> "Create a Python file named 'app.py' and add a simple
+Flask 'Hello, World!'
 application to it."
 
-### Project Scaffolding
+### Web UI
 
-To create a new, well-structured Python project, use the `scaffold`
-command.
+Start the FastAPI + React web UI:
 
 ``` bash
-code-agent scaffold my-new-project --name MyProject
+code-agent serve --web
 ```
 
-This will generate a new directory `my-new-project` with a recommended
-layout for source code, tests, and documentation.
+### Capabilities
+
+List registered capabilities:
+
+``` bash
+code-agent capabilities list
+```
+
+Invoke a specific capability:
+
+``` bash
+code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
+```
 
 ## Next Steps
 
-You have now installed `code_agent` and seen how to perform basic tasks.
-To learn more, check out these documents:
+You have now installed `code_agent` and seen how to perform basic tasks. To learn more, check out these documents:
 
-- [**Usage**][]: See a wide range of examples for both CLI and Python
-  API usage.
-- [**Tools**][]: Discover the full suite of tools available to the
-  agent.
-- [**Configuration**][]: Learn how to configure `code_agent` for your
-  needs.
-- [**Agent Workflow**][]: Understand how the agent processes your
-  requests.
-
-  [**Usage**]: USAGE.qmd
-  [**Tools**]: TOOLS.qmd
-  [**Configuration**]: CONFIGURATION.qmd
-  [**Agent Workflow**]: AGENT_WORKFLOW.qmd
+- [**Usage**](../docs/USAGE.qmd) - See a wide range of examples for both CLI and Python API usage.
+- [**Tools**](../docs/TOOLS.qmd) - Discover the full suite of tools available to the agent.
+- [**Configuration**](../docs/CONFIGURATION.qmd) - Learn how to configure
+  `code_agent` for your needs.

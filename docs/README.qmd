@@ -14,8 +14,7 @@ knitr::opts_chunk$set(
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent.git/HEAD)
 
-> A lightweight, LLM-driven assistant that can scaffold projects, edit files, generate documentation, and operate as an
-interactive chatbot.
+> A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
 
 ## Quick Start
 
@@ -23,96 +22,40 @@ interactive chatbot.
 # Install dependencies (uv is recommended)
 uv venv .venv
 source .venv/bin/activate
-uv pip install -e .[dev]  # Include dev extras for development tools
+uv pip install -e .
 
-# Run the CLI agent directly
-code-agent help
+# Run the interactive agent
+code-agent chat
 ```
 
-You can now type queries, e.g.:
-> Show me a simple project scaffold
-> Add a new function to utils.py
+## Features
 
-## Architecture Overview
+- **Agentic coding**: DeepAgents-powered agent with tools for read, write, edit, search, and more
+- **Filesystem access**: Full read/write/edit/create access through dedicated tools
+- **MCP integration**: Load tools from external MCP servers (stdio or HTTP)
+- **Human-in-the-loop**: Pause for approval on sensitive operations
+- **Web UI**: FastAPI + React interface for browser-based interaction
+- **Provider-agnostic**: OpenAI-compatible pattern; supports Ollama, OpenAI, Anthropic, and more
 
-The `code_agent` package uses an OAP-inspired capability layer with hash-chained audit logs for security. All tools
-inherit from LangChain's [`BaseTool`](https://python.langchain.com/docs/concepts/#base-tool).
+## Documentation
 
-```{mermaid}
-flowchart LR
-  CLI[Typer CLI] --> Main[Main Driver/LLM Wrapper]
-  Main --\u003e Graph[LangGraph StateGraph (deprecated)]
-    subgraph "Agent Core"
-      Graph[LGraph Orchestrator]
-      Tools[[BaseTool Registry]]
-      Memory[(ChromaDB Vector Store)]
-    end
-
-  CLI --> Chat[Interactive Loop/CLI Commands]
-  Main --\u003e Providers[LLM Provider Layer (Ollama/OpenAI)]
-```
-
-**Key Design Patterns:**
-- **Capability-Based Security**: All tool invocations are audited with cryptographic receipts before execution.
-- **Backend-Agnostic LLM Abstraction**: Swap between Ollama, OpenAI, or any LangChain-compatible model without changing
-  agent logic.
-- **Atomic File Operations**: Write/read/edit operations support rollback via diff tracking and audit logging.
-
-## Features at a Glance
-
-See [FEATURES](./FEATURES.qmd) for detailed capability lists:
-- 🏗️ Project scaffolding with `scaffold` command (generates src/, tests/, docs/)
-- ✍️ File manipulation tools (create, read, edit, delete via agent or Python API)
-- 🔧 Extensible toolset (search-explain, generate-test, format-code, etc.)
-- 🤖 Interactive chatbot with context-aware responses
-
-## Public API
-
-The package exports these main functions from [`code_agent/__init__.py`](../code_agent):
-
-```python
-from code_agent import (build_agent, create_default_tools, create_llm, edit_file, load_config,
-    read_file)  # Core agent building & orchestration; File operations; Template utilities; LLM management; OAP capability layer
-
-config = load_config()
-llm = create_llm(config)  # Default: ChatOllama + GPT4AllEmbeddings
-agent_runnable = build_agent(llm=llm, tools=create_default_tools())
-```
-
-See [API Reference](./API.qmd) for complete documentation.
-
-## Installation & Setup
-
-For a full guide with configuration options, see [QUICKSTART](./QUICKSTART.qmd). Briefly:
-
-1. **Prerequisites**: Python 3.10+, Ollama running locally (or OpenAI API key), `uv` package manager
-2. Pull model: `ollama pull qwen3.5`
-3. Configure `.env`: Set `OLLAMA_MODEL=qwen3.5`, etc.
-4. Run agent: `code-agent chat` or use Python API
-
-## Documentation Structure
-
-| Page                                 | Description                                                         |
-|--------------------------------------|---------------------------------------------------------------------|
-| [CODE_AGENT](../docs/CODE_AGENT.qmd) | Core components, LLM integration, vector memory, orchestration flow |
-| [API Reference](../docs/API.qmd)     | Complete public API reference with examples                         |
-| [FILES](../docs/FILES.qmd)           | File-level overview of all modules                                  |
-| [FEATURES](../docs/FEATURES.qmd)     | Detailed feature descriptions and use cases                         |
-| [TOOLS](../docs/TOOLS.qmd)           | Deep dive into each built-in tool                                   |
-| [USAGE](../docs/USAGE.qmd)           | Example workflows for CLI and Python API usage                      |
-| [QUICKSTART](../docs/QUICKSTART.qmd) | Step-by-step installation guide                                     |
-| CONFIGURATION                        | Environment variables, settings model details                       |
-| [ROADMAP](../docs/ROADMAP.qmd)       | Development plans and upcoming features                             |
-| CHANGELOG                            | Version history                                                     |
-| [FAQ](../docs/FAQ.qmd)               | Common questions and troubleshooting                                |
+| Page                                       | Description                                       |
+|--------------------------------------------|---------------------------------------------------|
+| [QUICKSTART](../docs/QUICKSTART.qmd)       | Step-by-step installation and configuration guide |
+| [USAGE](../docs/USAGE.qmd)                 | Example workflows for CLI and Python API usage    |
+| [TOOLS](../docs/TOOLS.qmd)                 | Built-in filesystem and MCP tools                 |
+| [CONFIGURATION](../docs/CONFIGURATION.qmd) | Config file, `.env`, and environment variables    |
+| [CONTRIBUTING](../docs/CONTRIBUTING.qmd)   | Guidelines for contributing                       |
+| [CHANGELOG](../CHANGELOG.qmd)              | Version history                                   |
+| [FAQ](../docs/FAQ.qmd)                     | Common questions and troubleshooting              |
 
 ## Getting Help
 
-- Read the [QUICKSTART guide](./QUICKSTART.qmd) for installation
-- Check [USAGE examples](./USAGE.qmd) for common workflows
-- See [TOOLS documentation](./TOOLS.qmd) to understand agent capabilities
-- Review [FAQ](./FAQ.qmd) for troubleshooting tips
+- Read the [QUICKSTART guide](../docs/QUICKSTART.qmd) for installation
+- Check [USAGE examples](../docs/USAGE.qmd) for common workflows
+- See [TOOLS documentation](../docs/TOOLS.qmd) to understand agent capabilities
+- Review [FAQ](../docs/FAQ.qmd) for troubleshooting tips
 
 ---
 
-**Version**: 0.1.0 (Alpha) | **License**: MIT
+**Version**: 0.1.0 (Alpha) | [**License**](../LICENSE): MIT

@@ -32,6 +32,7 @@ import pytest
 # Fallback: load the real provider modules without optional langchain deps
 # ---------------------------------------------------------------------------
 
+
 def _is_importable(module_name: str) -> bool:
     """Return True when *module_name* can be imported from this environment."""
     try:
@@ -141,7 +142,8 @@ try:  # ruff: ignore [module-import-not-at-top-of-file]  (imports follow the fal
     import code_agent.providers.openai as _openai_mod  # ruff: ignore [module-import-not-at-top-of-file]
 except ImportError:
     # Minimal environment: load the real provider source files directly.
-    _base_mod, _factory_mod, _ollama_mod, _openai_mod = _load_provider_modules()
+    # noinspection PyGlobalVariableRedeclarationInNotebook
+    _base_mod, _factory_mod, _ollama_mod, _openai_mod = _load_provider_modules()  # ty: ignore[invalid-assignment]
     # noinspection PyGlobalVariableRedeclarationInNotebook
     LLMProvider = _base_mod.LLMProvider  # ty: ignore[conflicting-declarations]
     # noinspection PyGlobalVariableRedeclarationInNotebook
@@ -179,6 +181,7 @@ class DummyProvider:
 
     name: str = "dummy"
 
+    # ruff: ignore[no-self-use]
     def complete(self, messages: list[dict[str, Any]]) -> str:
         """Return a canned completion.
 
@@ -241,6 +244,7 @@ class EchoProvider(ProviderBase):
 
     name: str = "echo"
 
+    # ruff: ignore[no-self-use]
     def complete(self, messages: list[dict[str, Any]]) -> str:
         """Return a canned completion.
 
@@ -285,7 +289,7 @@ class FakeProvider:
         if "name" in kwargs:
             self.name = kwargs["name"]
 
-    def complete(self, messages: list[dict[str, Any]]) -> str:
+    def complete(self, messages: list[dict[str, Any]]) -> str:  # ruff: ignore[no-self-use]
         """Return a canned completion.
 
         :param messages: A list of message dicts.

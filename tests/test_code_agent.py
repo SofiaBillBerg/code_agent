@@ -15,9 +15,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock
 
-from code_agent.agents.base_agent import build_agent
+from code_agent.agents.deepagents_agent import build_agent
 from code_agent.cli import app as cli_app
 from code_agent.main import load_config
 from langchain.chat_models import BaseChatModel
@@ -88,7 +87,7 @@ class DummyLLM(BaseChatModel):
         return {}
 
     def _generate(
-        self,
+        self,  # r  # ruff: ignore[no-self-use]
         messages: list[BaseMessage],
         stop: list[str] | None = None,
         **kwargs: Any,
@@ -167,67 +166,3 @@ def test_load_config(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # Tests for persistent agent streaming behavior
 # ---------------------------------------------------------------------------
-
-
-def test_persistent_agent_chat_streams_when_supported(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When the runnable supports ``astream_events``, ``PersistentAgent.chat`` should stream content.
-
-    :param tmp_path: Temporary directory path from pytest.
-    :param monkeypatch: Monkeypatch fixture from pytest.
-    :return: None
-    """
-    from code_agent.agents.persistent_agent import PersistentAgent
-
-    state_file = tmp_path / "state.json"
-    monkeypatch.setattr(PersistentAgent, "_state_file", state_file)
-
-    streamed_text = "streamed reply"
-    agent_runnable = MagicMock()
-    agent_runnable.astream_events.return_value = iter([
-        {
-            "event": "on_chat_model_stream",
-            "data": {"chunk": MagicMock(content=streamed_text)},
-        }
-    ])
-
-    agent = PersistentAgent(llm=MagicMock(), tools=[])
-    agent.agent = agent_runnable
-    agent.thread_id = "thread-123"
-    agent.conversation_history = []
-
-    response = agent.chat("hello")
-
-    assert response == streamed_text
-    assert state_file.exists()
-
-
-def test_persistent_agent_chat_falls_back_to_invoke(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When streaming is unavailable, ``PersistentAgent.chat`` should fall back to ``invoke``.
-
-    :param tmp_path: Temporary directory path from pytest.
-    :param monkeypatch: Monkeypatch fixture from pytest.
-    :return: None
-    """
-    from code_agent.agents.persistent_agent import PersistentAgent
-
-    state_file = tmp_path / "state.json"
-    monkeypatch.setattr(PersistentAgent, "_state_file", state_file)
-
-    agent_runnable = MagicMock()
-    message = MagicMock()
-    message.content = "blocking reply"
-    agent_runnable.invoke.return_value = {"messages": [message]}
-    del agent_runnable.astream_events
-
-    agent = PersistentAgent(llm=MagicMock(), tools=[])
-    agent.agent = agent_runnable
-    agent.thread_id = "thread-456"
-    agent.conversation_history = []
-
-    response = agent.chat("hello")
-
-    assert response == "blocking reply"

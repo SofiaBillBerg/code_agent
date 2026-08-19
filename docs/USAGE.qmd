@@ -6,277 +6,230 @@ format: html
 
 # Usage Examples
 
-This page provides a variety of examples to demonstrate how to use `code_agent` for common development tasks via CLI,
-Python API, and interactive sessions.
+This page shows how to use `code_agent` from the CLI, Python API, and web UI.
 
-## 🏗️ Project Scaffolding
+## CLI Commands
 
-### Create a New Web Application
+### Interactive Chat
 
-```bash
-# Scaffold a new Flask project with standard structure
-mkdir my_web_app && cd my_web_app
-code-agent chat << 'MSG'
-Scaffold a new Flask project: create src/my_web_app/app.py with a hello-world Flask app,
-tests/test_app.py with a smoke test, and docs/docs_web/index.qmd.
-MSG
-
-tree  # Shows: src/, tests/, docs/ directories created automatically
-```
-
-The generated scaffold includes:
-- `src/my_web_app/app.py` - Application entry point
-- `tests/test_app.py` - Sample smoke test
-- `docs/docs_web/index.qmd` - Quarto documentation source
-- `.github/workflows/ci.yml` - CI configuration for GitHub Actions
-
-## 📝 File Creation & Editing
-
-### Create Files via CLI
-
-```bash
-# Method 1: Create empty file, then edit interactively or with agent
-code-agent create ./my_web_app/src/my_web_app/app.py --content ""
-
-# Method 2: Use the agent to populate content directly
-echo "Add this Flask app:" > temp.txt
-cat << 'EOF' >> temp.txt
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def hello_world():
-    return 'Hello, from Code Agent!'
-
-if __name__ == '__main__':
-    app.run(debug=True)
-EOF
-
-code-agent create ./my_web_app/src/my_web_app/app.py --content "$(cat temp.txt)"
-rm temp.txt  # Clean up temporary file
-```
-
-### Edit Files Interactively
-
-Start the agent and give it natural language instructions:
-
-```bash
-code-agent chat << 'MSG'
-You need to add a utility function that calculates factorial.
-Add this to my_web_app/utils.py with signature `def factorial(n):`.
-Make sure to handle edge cases (n < 0, n = 0).
-Then create docstring explaining the algorithm and complexity analysis.
-
-# Agent will:
-1. Check if utils.py exists using read-file tool
-2. Create it if missing or use edit-file with append mode
-3. Write new function + comprehensive documentation
-MSG
-```
-
-## 🔄 Template-Based Generation
-
-### Convert Python to Jupyter Notebook
-
-If you have a script with `#%%` cell markers, convert it interactively:
-
-```bash
-# Your analysis.py contains multiple cells marked with #%%
-python -c "from code_agent._io import py_to_ipynb; py_to_ipynb('analysis.py', 'analysis.ipynb')"
-
-ls -lh  # Shows notebook created (typically ~50-100KB)
-jupyter nbconvert --to html analysis.ipynb    # Optional: preview HTML output
-```
-
-The agent will detect `#%%` markers and create a proper `.ipynb` with distinct cells.
-
-## 🧪 Generate Tests Automatically
-
-```bash
-# For src/my_web_app/app.py, ask the agent to generate tests:
-code-agent chat << 'MSG'
-Generate pytest tests for my_module.py that test:
-1. factorial(0) = 1 (base case)
-2. factorial(5) = 120
-3. Handle negative input gracefully
-4. Test edge cases and error handling
-
-Create the file at tests/test_my_module.py with proper fixture setup.
-MSG
-```
-
-## 🎨 Format Code Automatically
-
-Run formatters via CLI or agent:
-
-```bash
-# Ask the agent to format Python files (e.g., Black, PEP8 style)
-code-agent chat << 'MSG'
-Run Black on src/my_web_app/app.py and reformat it to PEP8 style.
-MSG
-
-# For R code, ask the agent to use styler if available
-code-agent chat << 'MSG2'
-Use styler to format utils.R:
-library(styler)
-styler::style_file("utils.R")
-MSG2
-```
-
-## 🤖 Interactive Agent Sessions
-
-For complex or iterative tasks, the chat interface is ideal:
-
-### Live Terminal Feedback
-
-The CLI chat now streams progress directly in your terminal:
-- a spinner while the agent is working
-- tool-call start/end lines as tools run
-- streamed assistant text instead of one final block
-- graceful handling when the model returns empty content
-
-Run it normally:
+Start an interactive chat session with the agent:
 
 ```bash
 code-agent chat
 ```
 
-For more internal output, use verbose mode:
+The chat session supports these built-in commands:
+
+- `help` — show available commands
+- `tools` — list all available tools
+- `clear` — clear conversation history
+- `exit` / `quit` / `q` — end the session
+
+Use `--verbose` / `-v` to show streaming "thinking" output:
 
 ```bash
 code-agent chat --verbose
 ```
 
-### Example Session Flow
+### Serve (Console or Web)
+
+Start the provider selected by the config and serve prompts:
 
 ```bash
-code-agent chat << 'MSG'
-I'm building a Flask app. Help me add features step-by-step:
-
-1. First, create utils.py with helper functions (factorial, fibonacci)
-2. Add type hints and docstrings to each function
-3. Write unit tests for factorial() covering edge cases
-4. Format all Python files using Black
-
-After each change, summarize what you did so I can review before continuing.
-
-# The agent will:
-- Create new file if missing (new-file tool)
-- Edit existing files with proper diff tracking
-- Generate test scaffolds automatically
-- Invoke formatters on changed modules
-MSG
+code-agent serve
 ```
 
-## 🐍 Python API Integration
+Start the web UI instead:
 
-The full power of `code_agent` is available through its Python API. This example shows integration into custom scripts:
+```bash
+code-agent serve --web
+```
+
+The web UI binds to `127.0.0.1:8000` by default. Change the port with `--web-port`:
+
+```bash
+code-agent serve --web --web-port 8080
+```
+
+### Create a File
+
+Create a new file with supplied content:
+
+```bash
+code-agent create ./my_web_app/src/my_web_app/app.py \
+  --content "from flask import Flask\n\napp = Flask(__name__)\n\n@app.route('/')\ndef hello_world():\n    return 'Hello, from Code Agent!'\n\nif __name__ == '__main__':\n    app.run(debug=True)"
+```
+
+Use `--overwrite` to replace an existing file:
+
+```bash
+code-agent create output.txt --content "New content" --overwrite
+```
+
+### Append to a File
+
+Append text to an existing file:
+
+```bash
+code-agent append ./src/utils.py --content "\n\ndef new_function(): ..."
+```
+
+### Capabilities
+
+List all registered capabilities:
+
+```bash
+code-agent capabilities list
+```
+
+Invoke a specific capability:
+
+```bash
+code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
+```
+
+## Python API
 
 ### Complete Workflow Example
 
 ```python
-"""Example: Use the agent to add a function via natural language."""
-
-from code_agent.agents.base_agent import build_agent, create_default_tools
-from code_agent.main import load_config, create_llm
-from code_agent.tools._io import _atomic_write
-from langchain_core.messages import AIMessage, HumanMessage
 from pathlib import Path
-import os
 
-# --- 1. Setup: Load config and initialize LLM ---
-project_dir = Path("./api_project_example")
-if not project_dir.exists():
-    project_dir.mkdir(parents=True)
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
+from code_agent.main import create_llm, load_config
+from langchain_core.messages import HumanMessage
 
-os.chdir(project_dir)
+# 1. Load config and initialize LLM
+config = load_config()
+llm = create_llm(config)
 
-config = load_config()           # Loads from .env or defaults
-llm = create_llm(config)         # Default: ChatOllama + GPT4AllEmbeddings
-
-# Create initial file
-initial_file = Path("my_module.py")
-_atomic_write(initial_file, "# Utility functions module\n\n")
-
-# --- 2. Prepare Agent with Tools ---
+# 2. Prepare agent with tools
 tools = create_default_tools(root_dir=".", llm=llm)
-agent_app = build_agent(llm=llm, tools=tools)
+agent = build_agent(llm=llm, tools=tools)
 
-# --- 3. Define Task via Natural Language Prompt ---
-prompt = (
-    "Add a Python function to 'my_module.py' that takes two numbers and returns their sum.\n"
-    "- Function name: add_numbers\n"
-    "- Include type hints\n"
-    "- Add comprehensive docstring with examples\n"
-    "- Handle edge cases gracefully\n"
-")
-
-print("--- Prompting Agent ---\n", prompt)
-
-# --- 4. Invoke the Agent ---
-response = agent_app.invoke({
-    "messages": [HumanMessage(content=prompt)]
-})
-
-# Print any thoughts/reasoning if available (optional logging for debugging):
-if hasattr(response, 'intermediate_steps'):
-    print("\n--- Agent Reasoning Steps ---")
-    for step in response.intermediate_steps:
-        # Log each tool invocation and its result...
-
-# --- 5. Verify Result ---
-final_content = initial_file.read_text()
-print(f"\nFinal content of {initial_file}:")
-print("=" * 60)
-print(final_content)
-print("=" * 60)
-
-```
-
-### Advanced: Stream Responses for Real-Time Feedback
-
-```python
-# For CLI streaming (similar to what `code-agent chat` uses):
-for event in agent_app.stream({"messages": [HumanMessage(content=prompt)]}):
-    print(event, end="")  # Process events as they arrive
-
-# You can also handle specific message types:
-if isinstance(event, AIMessage):
-    if hasattr(event, 'tool_calls'):   # Agent is selecting a tool to use...
-        pass
-elif isinstance(event, HumanMessage):
-    # User response or final answer received
-```
-
-## 💡 Tips for Best Results
-
-### Prompt Engineering Examples
-
-Good prompts help the agent understand your intent:
-
-| ❌ Vague         | ✅ Specific & Actionable                                                                     |
-|------------------|----------------------------------------------------------------------------------------------|
-| "Add a function" | "Create `calculate_average(data)` that computes mean of list, returns None if empty"         |
-| "Fix this bug"   | "The factorial(0) should return 1. Add base case and test it at tests/test_utils.py line 25" |
-
-### Using Tool Names Directly (Advanced)
-
-If you know the exact tool name:
-
-```python
-
-# Or use agent's internal mapping if exposed...
-tool_response = tools["edit-file"].invoke({
-    "path": "./my_module.py",
-    "content": "# Updated content with new function\n",  # Your edit logic here
+# 3. Invoke the agent
+response = agent.invoke({
+    "messages": [HumanMessage(content="Add a Python function to 'my_module.py' that takes two numbers and returns their sum.")]
 })
 ```
 
----
+By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the
+working directory at `/workspace/`.
+
+### Stream Responses
+
+```python
+for event in agent.stream({"messages": [HumanMessage(content="Hello")]}):
+    print(event)
+```
+
+### Available Tools
+
+`create_default_tools` returns these custom tools:
+
+| Tool             | Purpose                                                                                   |
+|------------------|-------------------------------------------------------------------------------------------|
+| `read_file`      | Read file contents (built-in wins if using DeepAgents)                                    |
+| `edit_file`      | Edit existing files — replace, append, or patch modes (built-in wins if using DeepAgents) |
+| `new-file`       | Create a new file with specified content                                                  |
+| `search-explain` | Search the codebase for a term or regex, then summarize matches                           |
+| `generate-test`  | Generate a basic pytest test file for a Python module                                     |
+| `format-code`    | Format Python or R source files                                                           |
+| `py_to_ipynb`    | Convert Python scripts to Jupyter notebooks                                               |
+| `general-chat`   | Fallback for non-filesystem questions                                                     |
+| `r-script`       | Execute R code                                                                            |
+
+When using the DeepAgents harness (the default), the following built-in filesystem tools are also available:
+
+| Tool         | Purpose                                    |
+|--------------|--------------------------------------------|
+| `ls`         | List files in a directory                  |
+| `write_file` | Create or overwrite a file                 |
+| `glob`       | Find files matching patterns               |
+| `grep`       | Search file contents                       |
+| `delete`     | Delete files or directories                |
+| `execute`    | Run shell commands (sandbox backends only) |
+| `task`       | Delegate to a subagent                     |
+
+## Web UI
+
+The web UI is a React single-page app served by FastAPI. Start it with:
+
+```bash
+code-agent serve --web
+```
+
+### API Endpoints
+
+| Method | Path                | Purpose                             |
+|--------|---------------------|-------------------------------------|
+| `GET`  | `/capabilities`     | List all registered capabilities    |
+| `POST` | `/invoke`           | Dispatch a capability invocation    |
+| `POST` | `/chat`             | Send a chat message (synchronous)   |
+| `POST` | `/chat/stream`      | Send a chat message (SSE streaming) |
+| `POST` | `/chat/resume`      | Resume a paused HITL interrupt      |
+| `POST` | `/chat/cancel`      | Cancel a running agent thread       |
+| `GET`  | `/chat/history`     | Get message history for a thread    |
+| `POST` | `/chat/audit`       | Record an audit log entry           |
+| `GET`  | `/chat/audit`       | List audit log entries for a thread |
+| `GET`  | `/providers`        | List configured providers           |
+| `GET`  | `/providers/active` | Get the currently active provider   |
+| `POST` | `/providers/active` | Switch the active provider          |
+
+### SSE Events
+
+The `/chat/stream` endpoint emits these event types:
+
+- `token` — LLM output token chunk
+- `tool_start` — tool call begins
+- `tool_end` — tool call completes
+- `hitl_pending` — graph paused for human approval
+- `subagent_start` — subagent begins
+- `subagent_end` — subagent completes
+- `todos` — todo list updated
+- `ping` — heartbeat
+- `done` — agent completed successfully
+- `error` — an error occurred
+
+## MCP Integration
+
+MCP (Model Context Protocol) servers extend the agent with external tools. Configure them via `CODE_AGENT_MCP_SERVERS`
+in `.env` or the config file:
+
+```dotenv
+CODE_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
+```
+
+Or point to a JSON file:
+
+```dotenv
+CODE_AGENT_MCP_SERVERS=mcp.json
+```
+
+MCP tools are prefixed with `mcp_<server>__<tool>` to avoid name collisions.
+
+## Human-in-the-Loop
+
+The agent pauses for approval before executing sensitive tools. In the CLI, you will see:
+
+```
+==================================================
+⚠️  Human approval required before tool execution
+Tool: edit_file
+Args:
+{
+  "file_path": "src/utils.py",
+  "content": "..."
+}
+==================================================
+Decide: [a]pprove  [r]eject  [e]dit  [m]essage
+```
+
+In the web UI, the HITL surface component shows the pending tool call and lets you approve, reject, or edit the
+arguments.
 
 ## See Also
 
-- [API Reference](./API.qmd) - Complete Python API documentation
-- [TOOLS](./TOOLS.qmd) - Detailed descriptions of each tool's capabilities
-- [FEATURES](./FEATURES.qmd) - Overview of all available features and use cases
+- [Configuration](CONFIGURATION.qmd) - Config file, `.env`, and environment variables
+- [Tools](TOOLS.qmd) - Built-in filesystem and MCP tools
+- [Quick Start](QUICKSTART.qmd) - Installation and first run

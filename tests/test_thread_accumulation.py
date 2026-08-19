@@ -16,11 +16,14 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock
 
-from code_agent.utils.graph import build_graph
+import pytest
+
 from langchain.messages import AIMessage, HumanMessage
 from langchain.tools import BaseTool, tool
 from langchain_core.utils.uuid import uuid7
-import pytest
+
+from code_agent.utils.graph import build_graph
+
 
 @pytest.fixture
 def mock_llm() -> MagicMock:

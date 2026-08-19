@@ -4,4 +4,5 @@ from __future__ import annotations
 
 from code_agent.config import jsonc, mcp, settings
 
+
 __all__ = ["jsonc", "mcp", "settings"]

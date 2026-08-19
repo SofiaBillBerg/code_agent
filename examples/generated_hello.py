@@ -1,4 +1,11 @@
 def greet(name: str) -> str:
+    """
+
+    :param name:
+    :type name:
+    :return:
+    :rtype:
+    """
     return f"Hello, {name}!"
 
 

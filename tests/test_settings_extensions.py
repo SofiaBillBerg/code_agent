@@ -6,14 +6,16 @@ added to the Settings class, plus validation behavior.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 import logging
 import pathlib
+from typing import Any
 
 from code_agent.config.settings import (
-    _ENV_UNSET,
+    _ENV_UNSET,  # ruff: ignore[import-private-name]
     Settings,
-    _expand_env_vars,
-    _load_substitution_env,
+    _expand_env_vars,  # ruff: ignore[import-private-name]
+    _load_substitution_env,  # ruff: ignore[import-private-name]
     get_settings,
 )
 import hypothesis
@@ -24,8 +26,9 @@ import pytest
 # Tag: Feature: agent-core-enhancement, Property 11: Settings checkpoint_dir validation never raises
 # Tag: Feature: agent-core-enhancement, Property 12: Settings round-trip
 
+
 @pytest.fixture(autouse=True)
-def reset_settings_cache():
+def reset_settings_cache() -> Generator[None, Any, None]:
     """Clear the Settings cache before each test to ensure fresh instances."""
     get_settings.cache_clear()
     yield
@@ -54,7 +57,7 @@ class TestSettingsExtensions:
         max_examples=50,
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
     )
-    def test_checkpoint_dir_validation_never_raises(
+    def test_checkpoint_dir_validation_never_raises(  # ruff: ignore[no-self-use]
         self,
         checkpoint_dir: str,
         caplog: pytest.LogCaptureFixture,
@@ -96,7 +99,7 @@ class TestSettingsExtensions:
         max_examples=50,
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
     )
-    def test_settings_round_trip(
+    def test_settings_round_trip(  # ruff: ignore[no-self-use]
         self, stream_enabled: bool, provider_list: list[dict[str, str]] | None
     ) -> None:
         """Property 12: Settings round-trip preserves field values.
@@ -120,7 +123,7 @@ class TestSettingsExtensions:
 class TestSettingsExampleTests:
     """Example tests for Settings extensions - concrete test cases."""
 
-    def test_checkpoint_dir_default(self) -> None:
+    def test_checkpoint_dir_default(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: checkpoint_dir has the expected default value."""
         settings = Settings()
 
@@ -130,7 +133,7 @@ class TestSettingsExampleTests:
 
         assert settings2.checkpoint_dir == "/tmp/test_checkpoints"
 
-    def test_stream_enabled_default_false(self) -> None:
+    def test_stream_enabled_default_false(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: stream_enabled defaults to False (based on current implementation)."""
         settings = Settings()
 
@@ -142,7 +145,7 @@ class TestSettingsExampleTests:
 
         assert settings2.stream_enabled is True
 
-    def test_provider_list_parses_json(self) -> None:
+    def test_provider_list_parses_json(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: provider_list accepts JSON string and parses to dict."""
         parsed_list: list[dict[str, str]] = [
             {"name": "ollama", "model": "gpt-oss-20b"}
@@ -161,13 +164,13 @@ class TestSettingsExampleTests:
 
         assert settings2.provider_list == parsed_list2
 
-    def test_checkpoint_dir_expands_tilde(self) -> None:
+    def test_checkpoint_dir_expands_tilde(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: checkpoint_dir preserves tilde in string form."""
         settings = Settings(checkpoint_dir="~/.code_agent/checkpoints")
 
         assert settings.checkpoint_dir.startswith("~")
 
-    def test_stream_enabled_accepted_as_config(self) -> None:
+    def test_stream_enabled_accepted_as_config(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: stream_enabled can be set during initialization."""
         settings = Settings(stream_enabled=True)
 
@@ -177,7 +180,7 @@ class TestSettingsExampleTests:
 class TestEnvSubstitution:
     """Tests for ``${env:VAR}`` / ``${VAR}`` substitution in config files."""
 
-    def test_exact_placeholder_expands(
+    def test_exact_placeholder_expands(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """A value that is exactly one placeholder expands to the env value."""
@@ -192,7 +195,7 @@ class TestEnvSubstitution:
             _expand_env_vars("${CODE_AGENT_SUBST_TEST}", env) == "secret-value"
         )
 
-    def test_embedded_placeholder_expands(
+    def test_embedded_placeholder_expands(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Placeholders embedded in a larger string expand in place."""
@@ -204,7 +207,7 @@ class TestEnvSubstitution:
             == "prefix-secret-value-suffix"
         )
 
-    def test_unset_exact_placeholder_is_dropped(
+    def test_unset_exact_placeholder_is_dropped(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """An exact placeholder for an unset var returns the drop sentinel."""
@@ -215,7 +218,7 @@ class TestEnvSubstitution:
             _expand_env_vars("${env:CODE_AGENT_SUBST_TEST}", env) is _ENV_UNSET
         )
 
-    def test_dict_drops_unset_keys(
+    def test_dict_drops_unset_keys(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Dict values referencing unset vars are dropped so defaults apply."""
@@ -234,7 +237,7 @@ class TestEnvSubstitution:
 
         assert result == {"keep": "value", "literal": "plain"}
 
-    def test_list_drops_unset_items(
+    def test_list_drops_unset_items(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """List items referencing unset vars are dropped."""
@@ -249,7 +252,7 @@ class TestEnvSubstitution:
 
         assert result == ["value"]
 
-    def test_non_string_values_passthrough(self) -> None:
+    def test_non_string_values_passthrough(self) -> None:  # ruff: ignore[no-self-use]
         """Non-string nodes are returned unchanged."""
         env = _load_substitution_env()
 

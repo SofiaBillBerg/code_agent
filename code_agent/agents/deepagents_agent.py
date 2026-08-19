@@ -22,7 +22,7 @@ cover:
   attached automatically (mandatory for HITL pauses to work),
 * optional *harness profiles* (registered under ``provider:model`` keys) tune
   the system prompt, tool descriptions and excluded tools per model.  By
-  default :func:`build_deep_agent` loads them from the user-editable config
+  default, :func:`build_deep_agent` loads them from the user-editable config
   file ``/home/nvidia/code_agent/config/profiles.yaml`` (see
   :data:`~code_agent.profiles.router.DEFAULT_PROFILES_CONFIG`); pass
   ``register_profiles=False`` to launch without them.
@@ -47,17 +47,12 @@ backend/permissions, so they win), avoiding duplicate-tool errors.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 import logging
+
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
 
-from code_agent.config.settings import get_settings
-from code_agent.profiles.router import (
-    DEFAULT_PROFILES_CONFIG,
-    register_profiles_from_config_file,
-    register_profiles_from_settings,
-)
 from deepagents import (
     FilesystemPermission,
     HarnessProfile,
@@ -69,21 +64,35 @@ from deepagents.backends.filesystem import FilesystemBackend
 from deepagents.middleware import SummarizationMiddleware
 from langchain.agents.middleware import TodoListMiddleware
 from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
-from langchain.agents.middleware.summarization import ContextSize, TriggerClause
+from langchain.agents.middleware.summarization import (
+    ContextSize,
+    TriggerClause,
+)
 from langchain.chat_models import BaseChatModel
 from langchain.messages import SystemMessage
 from langchain.tools import BaseTool
+from langchain_core.runnables import Runnable
 from langchain_core.tools import StructuredTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
+
+from code_agent.config.settings import get_settings
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
+    register_profiles_from_config_file,
+    register_profiles_from_settings,
+)
+
 
 log = logging.getLogger(__name__)
 
 __all__ = [
     "FS_BUILTIN_TOOLS",
     "_resolve_workspace_paths",
+    "build_agent",
     "build_deep_agent",
+    "create_default_tools",
     "make_backend",
     "make_default_permissions",
     "register_harness_profile",
@@ -270,7 +279,7 @@ def _normalize_context_size(value: Any) -> Any:
     """
     if isinstance(value, list):
         if len(value) == _CONTEXT_SIZE_PAIR_LEN and isinstance(value[0], str):
-            return (value[0], value[1])
+            return value[0], value[1]
         return [_normalize_context_size(item) for item in value]
     return value
 
@@ -603,7 +612,107 @@ def build_deep_agent(
         name=name,
         # The installed deepagents types skills/memory as list[str], but the
         # runtime (SkillsMiddleware) accepts (path, label) tuples too.
-        skills=skills_virtual,  # type: ignore[bad-argument-type]
-        memory=memory_virtual,  # type: ignore[bad-argument-type]
+        skills=skills_virtual,  # type: ignore[bad-argument-type]  # ty: ignore[invalid-argument-type]
+        memory=memory_virtual,  # type: ignore[bad-argument-type]  # ty: ignore[invalid-argument-type]
         **kwargs,
     )
+
+
+def build_agent(
+    llm: BaseChatModel,
+    tools: Iterable[BaseTool],
+    *,
+    root_dir: str | Path = ".",
+    checkpointer: Any | None = None,
+    **kwargs: Any,
+) -> Runnable:
+    """Build a DeepAgents agent with the given LLM and tools.
+
+    This is the primary agent factory for the project. It wraps
+    :func:`build_deep_agent` with the project's default backend, permissions,
+    and profile configuration.
+
+    :param llm: The language model to use.
+    :param tools: The tools to bind to the LLM.
+    :param root_dir: Working directory mounted at ``/workspace/``.
+    :param checkpointer: Optional LangGraph checkpointer. When omitted, an
+        :class:`InMemorySaver` is created automatically.
+    :param kwargs: Extra keyword arguments forwarded to :func:`build_deep_agent`.
+    :return: A compiled LangGraph state graph ready for execution.
+    """
+    return build_deep_agent(
+        llm=llm,
+        tools=list(tools),
+        root_dir=root_dir,
+        checkpointer=checkpointer,
+        **kwargs,
+    )
+
+
+def create_default_tools(
+    root_dir: str | None = None, llm: BaseChatModel | None = None
+) -> list[BaseTool]:
+    """Return the default tool set for the agent.
+
+    Includes file tools, search/explain, test generation, formatting,
+    notebook conversion, general chat, and R script execution. Tools that
+    require an LLM are omitted when *llm* is ``None``.
+
+    :param root_dir: The root directory for file tools.
+    :param llm: Optional language model for tools that need it.
+    :return: A list of :class:`BaseTool` instances.
+    """
+    from functools import wraps
+
+    from code_agent.tools import (
+        edit_file,
+        generate_test,
+        make_format_code_tool,
+        make_general_chat_tool,
+        make_new_file_tool,
+        make_r_script_tool,
+        make_search_explain_tool,
+        read_file,
+    )
+    from code_agent.tools.notebook_tool import py_to_ipynb
+
+    root_path = Path(root_dir) if root_dir else Path.cwd()
+
+    def bind_root_dir(tool: BaseTool) -> BaseTool:
+        """Bind the configured root directory to a function-based tool."""
+        func = getattr(tool, "func", None) or tool.invoke
+        root = root_path
+
+        @wraps(func)
+        def _bound(*args: Any, **kwargs: Any) -> Any:
+            kwargs.pop("root_dir", None)
+            return func(*args, root_dir=root, **kwargs)
+
+        return StructuredTool.from_function(
+            func=_bound,
+            name=tool.name,
+            description=tool.description,
+            args_schema=tool.args_schema,
+        )
+
+    standard_tools: list[BaseTool | None] = [
+        bind_root_dir(read_file),
+        bind_root_dir(edit_file),
+        (
+            make_search_explain_tool(root_dir=root_path, llm=llm)
+            if llm
+            else None
+        ),
+        make_new_file_tool(root_dir=root_path),
+        bind_root_dir(generate_test),
+        make_format_code_tool(root_dir=root_path),
+        StructuredTool.from_function(py_to_ipynb),
+        (make_general_chat_tool(llm=llm) if llm else None),
+        make_r_script_tool(),
+    ]
+
+    tools: list[BaseTool] = [
+        tool for tool in standard_tools if tool is not None
+    ]
+
+    return tools

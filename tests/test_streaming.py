@@ -14,6 +14,7 @@ import pytest
 
 # Tag: Feature: agent-core-enhancement, Property 14: SSE stream properly formatted event
 
+
 class TestStreamingEndpoint:
     """Tests for /chat/stream SSE endpoint.
 
@@ -65,7 +66,7 @@ class TestStreamingEndpoint:
             assert event.startswith("data: ")
 
     @pytest.mark.asyncio
-    async def test_sse_event_structure_valid_json(self) -> None:
+    async def test_sse_event_structure_valid_json(self) -> None:  # ruff: ignore[no-self-use]
         """Property 14 variant: SSE event data contains valid JSON.
 
         The payload after 'data: ' should be parseable as JSON.
@@ -89,7 +90,7 @@ class TestStreamingEndpoint:
         assert "type" in data
         assert isinstance(data["type"], str)
 
-    async def test_streaming_response_is_streaming_response(
+    async def test_streaming_response_is_streaming_response(  # ruff: ignore[no-self-use]
         self, timeout: int = 5
     ) -> None:
         """Example test: /chat/stream returns StreamingResponse.

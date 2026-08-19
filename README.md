@@ -1,70 +1,63 @@
 # Code Agent
 
-Sofia Billger Bergström
-2025-11-10
+A lightweight, LLM-driven code assistant built on **LangChain** + **DeepAgents** with a **local Ollama** or
+OpenAI-compatible backend. The agent has full filesystem access through its tools and can read, create, edit, and append
+files directly.
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+## Features
 
-<!-- badges: start -->
+- **Agentic coding**: DeepAgents-powered agent with tools for read, write, edit, search, and more
+- **Filesystem access**: Full read/write/edit/create access through dedicated tools
+- **MCP integration**: Load tools from external MCP servers (stdio or HTTP)
+- **Human-in-the-loop**: Pause for approval on sensitive operations
+- **Web UI**: FastAPI + React interface for browser-based interaction
+- **Persistent sessions**: Conversation history saved via LangGraph checkpointing
+- **Provider-agnostic**: OpenAI-compatible pattern; supports Ollama, OpenAI, Anthropic, and more
+- **Typed configuration**: Pydantic Settings with `.env` support, all keys prefixed `CODE_AGENT_`
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent/main/HEAD?urlpath=%2Fdoc%2Ftree%2Fdocs%2FREADME.qmd)
-<!-- badges: end -->
+## Quick Start
 
-> A lightweight, LLM-driven assistant that can scaffold projects, edit
-> files, generate documentation, and operate as an interactive chatbot.
-
-## Quick start
-
-``` bash
-# Install dependencies (uv is recommended)
-uv venv .venv
+```bash
+# Clone and install in editable mode
+git clone https://github.com/your-username/code_agent.git
+cd code_agent
+uv venv
 source .venv/bin/activate
 uv pip install -e .
-
-# Run the interactive agent
-code-agent
 ```
 
-You can now type queries, e.g.:
+See [docs/QUICKSTART.qmd](docs/QUICKSTART.qmd) for detailed setup, configuration, and first-run steps.
 
-```cli
-    > Show me a simple project scaffold
-    > Add a new function to utils.py
+## Usage
+
+```bash
+# Interactive chat
+code-agent chat
+
+# Start web UI
+code-agent serve --web
+
+# List available tools
+code-agent tools list
 ```
 
-## MCP and HITL Configuration
+See [docs/USAGE.qmd](docs/USAGE.qmd) for CLI and Python API examples.
 
-This project implements Model Context Protocol (MCP) server integration with human-in-the-loop (HITL) gating for sensitive operations:
+## Configuration
 
-- **MCP tool prefixing**: All 43 tools use `mcp_<server>__<tool>` naming format (e.g., `mcp_github__list_files`, `mcp_memory__search_entities`, `mcp_context7__resolve-library-id`)
-- **Sensitive server gating**: `github` and `memory` servers are intercepted for explicit human approval per security policy. Read-only servers (`context7`, `docs-langchain`, `reference-langchain`) function without interruption
-- **Environment variable expansion**: `${VAR}` placeholders in `.mcp.json` resolved from gitignored `.env` file at startup. Example: `${GITHUB_PERSONAL_ACCESS_TOKEN}` expands to actual token from `.env`
-- **.mcp.json hardening**: Secrets replaced with `${VAR}` placeholders (`${GITHUB_PERSONAL_ACCESS_TOKEN}`, `${CONTEXT7_API_KEY}`); actual values stored in gitignored `.env` file. No hardcoded API keys or secrets
-- **System prompt guardrail**: `DEFAULT_SYSTEM_PROMPT` includes MCP security policy section documenting the interception and approval flow for sensitive tools
+The agent uses a three-layer configuration system:
 
-## Package structure and class diagram
-```
+1. **Config file**: `config/codeagent.jsonc` or `config/codeagent.yaml`
+2. **`.env` file**: Values referenced from the config file with `${env:VAR_NAME}`
+3. **Environment variables**: `CODE_AGENT_*` variables override config and `.env`
 
-## Package structure and class diagram
+See [docs/CONFIGURATION.qmd](docs/CONFIGURATION.qmd) for the full reference.
 
-**Package diagram**: The following diagram illustrates the main packages and their relationships within the Code Agent project.
-![Package diagram](docs/visualizations/svg/packages.svg)
+## Documentation
 
-**Classes diagram**: The following diagram illustrates the main classes and their relationships within the Code Agent project.
-
-![Classes diagram](docs/visualizations/svg/classes.svg)
-
-For a deeper dive, see the following sections:
-
-- **[CODE_AGENT](docs/CODE_AGENT.qmd)** - Core components and internals.
-- **[USAGE](docs/USAGE.qmd)** - Detailed usage patterns.
-- **[FILES](docs/FILES.qmd)** - File-level overview of the repo.
-- **[FAQ & Troubleshooting](docs/FAQ.qmd)** - Common questions and solutions.
-- **[CONTRIBUTING](docs/CONTRIBUTING.qmd)** - Guidelines for contributing to
-  the project.
-- **[LICENSE](./LICENSE)** - Project licensing information.
-- **[ROADMAP](docs/ROADMAP.qmd)** - Future plans and development.
-- **[CHANGELOG](CHANGELOG.qmd)** - Version history and changes.
-- **[Agent Workflow](docs/AGENT_WORKFLOW.qmd)**
-- **[Class Visualizations](docs/visualizations/svg/classes.svg)** - Visual representation of class relationships. All class diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.
-- **[Package Visualizations](docs/visualizations/svg/packages.svg)** - Visual representation of package relationships. All package diagrams are generated using [Pyreverse](https://www.logilab.org/project/pyreverse) from the [Pylint](https://pylint.pycqa.org/) project.
+- [Quick Start](docs/QUICKSTART.qmd) - Installation and first run
+- [Usage](docs/USAGE.qmd) - CLI and Python API examples
+- [Tools](docs/TOOLS.qmd) - Built-in filesystem and MCP tools
+- [Configuration](docs/CONFIGURATION.qmd) - Config file, `.env`, and env vars
+- [Contributing](docs/CONTRIBUTING.qmd) - Guidelines for contributing
+- [Changelog](CHANGELOG.qmd) - Release notes and version history

@@ -7,7 +7,7 @@ factory, so business logic never references a concrete model backend.
 
 Extending: register a new provider by adding one entry to
 ``_PROVIDER_FACTORIES`` mapping its name to either a ``from_config``
-classmethod or a small builder function ``(config: dict) -> LLMProvider``.
+class method or a small builder function ``(config: dict) -> LLMProvider``.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from code_agent.providers.base import LLMProvider
 from code_agent.providers.ollama import OllamaProvider
 from code_agent.providers.openai import OpenAIProvider
 
+
 #: Provider used when ``config`` has no ``provider`` key (backward compat).
 DEFAULT_PROVIDER: str = "ollama"
 
@@ -29,7 +30,7 @@ ProviderFactory = Callable[[dict[str, Any]], LLMProvider]
 def _openai_from_config(config: dict[str, Any]) -> OpenAIProvider:
     """Build an ``OpenAIProvider`` from a config mapping.
 
-    ``OpenAIProvider`` has no ``from_config`` classmethod, so the factory
+    ``OpenAIProvider`` has no ``from_config`` class method, so the factory
     forwards the config keys it understands: ``model``, ``api_key``,
     ``base_url`` and the ``ChatOpenAI`` options ``temperature``,
     ``max_tokens`` and ``stream``. Keys absent from ``config`` are omitted so
@@ -73,7 +74,7 @@ def create_provider(config: dict[str, Any]) -> OllamaProvider | OpenAIProvider:
     The ``provider`` key of ``config`` names the backend (e.g. ``"ollama"``
     or ``"openai"``). When the key is missing (or ``None``) it defaults to
     ``DEFAULT_PROVIDER`` so existing configs keep working. The remaining keys
-    are passed to the selected provider's factory (``from_config`` classmethod
+    are passed to the selected provider's factory (``from_config`` class method
     or builder function).
 
     :param config: Configuration mapping containing at least a ``provider`` key plus the options for that provider.

@@ -32,6 +32,7 @@ from rich.console import Console
 # Dummy capabilities (no network required)
 # ---------------------------------------------------------------------------
 
+
 class _PingInput(BaseModel):
     """Empty input contract for the ping test capability."""
 
@@ -60,7 +61,7 @@ class PingCapability(CapabilityBase):
     output_model = _PingOutput
     risk_class = RiskClass.LOW
 
-    def _execute(self, params: BaseModel) -> BaseModel:
+    def _execute(self, params: BaseModel) -> BaseModel:  # ruff: ignore[no-self-use]
         """Return a fixed pong.
 
         :param params: The invocation parameters (ignored).
@@ -110,7 +111,7 @@ class AddCapability(CapabilityBase):
     output_model = _AddOutput
     risk_class = RiskClass.LOW
 
-    def _execute(self, params: BaseModel) -> BaseModel:
+    def _execute(self, params: BaseModel) -> BaseModel:  # ruff: ignore[no-self-use]
         """Increment the input integer and return it.
 
 
@@ -128,8 +129,8 @@ def _make_registry() -> CapabilityRegistry:
     :return: A new registry with the dummy capabilities registered.
     """
     registry = CapabilityRegistry()
-    registry.register(PingCapability())  # type: ignore[arg-type]
-    registry.register(AddCapability())  # type: ignore[arg-type]
+    registry.register(PingCapability())  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+    registry.register(AddCapability())  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
     return registry
 
 

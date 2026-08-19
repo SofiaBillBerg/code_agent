@@ -1,3 +1,4 @@
+#!/bin/bash
 chmod +x ./project_management/run_autofix.sh
 chmod +x ./project_management/run_tests.sh
 echo "Local CI: Running code quality checks before pushing..."

@@ -1,122 +1,162 @@
 ---
-title: "A Guide to Agent Tools"
+title: "Tools"
 author: "Sofia Billger Bergström"
 format: html
-output:
-  html:
-    css: styles/custom.css
 ---
 
-# A Guide to Agent Tools
+# Tools
 
-The power of the `code_agent` lies in its tools. This guide provides a deep dive into each of the built-in tools, explaining what they do and how they are used by the agent.
+`code_agent` uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are
+added on top. MCP servers can extend the agent with additional tools at runtime.
 
-## Understanding Tools
+## Tool Loading Order
 
-A tool is a function that the agent can call to interact with its environment. This can be anything from reading and writing files to searching for information or running code. The agent decides which tool to use based on the user's prompt and the context of the conversation. All tools are classes that inherit from `langchain_core.tools.BaseTool`.
+When the agent starts, tools are loaded in this order:
 
-## Built-in Tools
+1. **DeepAgents built-in filesystem tools** — always available unless excluded by a harness profile
+2. **Custom tools** from `create_default_tools` — added on top; if a custom tool has the same name as a built-in, the
+   built-in wins and the custom one is dropped
+3. **MCP tools** — loaded from configured MCP servers and prefixed with `mcp_<server>__<tool>`
 
-Here is a comprehensive list of the tools that come with `code_agent`.
+## Built-in Filesystem Tools
 
-### `new-file`
-- **Purpose**: Creates a new file with specified content.
-- **Why it's useful**: This is the primary tool for creating new source files, documentation, or any other text-based file in your project.
-- **Agent Usage**:
-  > **User**: "Create a new Python file named `utils.py` in the `src` directory with a function that adds two numbers."
-  Resource:  [`code_agent//utils/utils.py`](../code_agent/utils/utils.py).
+These tools are provided by the DeepAgents harness automatically:
 
-### `edit-file`
-- **Purpose**: Modifies an existing file. It supports three modes:
-    - `replace`: Overwrites the entire file with new content.
-    - `append`: Adds the new content to the end of the file.
-    - `patch`: Intelligently inserts content, often used for updating specific sections.
-- **Why it's useful**: Use this tool to add new functions to existing code, update documentation, or correct errors.
-- **Agent Usage**:
-  > **User**: "Add a new function to `code_agent/utils/utils.py` that subtracts two numbers."
-  Resource:  [`code_agent//utils/utils.py`](../code_agent/utils/utils.py).
+| Tool         | Purpose                                                   |
+|--------------|-----------------------------------------------------------|
+| `ls`         | List files in a directory with metadata                   |
+| `read_file`  | Read file contents with line numbers                      |
+| `write_file` | Create or overwrite a file                                |
+| `edit_file`  | Perform exact string replacements in files                |
+| `glob`       | Find files matching patterns (for example, `**/*.py`)     |
+| `grep`       | Search file contents                                      |
+| `delete`     | Delete a file or directory recursively                    |
+| `execute`    | Run shell commands (available with sandbox backends only) |
+| `task`       | Delegate to a subagent                                    |
 
-### `read-file`
-- **Purpose**: Reads the content of a specified file.
-- **Why it's useful**: Allows the agent to get context from existing files before making changes.
-- **Agent Usage**:
-  > **User**: "Read the content of `README.md` and tell me what it says."
+### Filesystem Permissions
 
-### `search-explain`
-- **Purpose**: Searches for a specific code snippet or keyword in your project and uses the LLM to explain it.
-- **Why it's useful**: Invaluable for understanding unfamiliar codebases. Instead of manually searching for definitions, you can ask the agent to find and explain a function or class.
-- **Agent Usage**:
-  > **User**: "Find the `build_agent` function and explain what it does."
+Declarative permission rules control which files and directories the agent can read or write. Rules are evaluated top to
+bottom, and the first matching rule wins. If no rule matches, the operation is allowed.
 
-### `generate-test`
-- **Purpose**: Generates a new `pytest` test file for a given Python source file.
-- **Why it's useful**: Automates the tedious process of creating boilerplate test code.
-- **Agent Usage**:
-  > **User**: "Generate tests for  [`code_agent//utils/utils.py`](../code_agent/utils/utils.py)."
+The default permissions:
+- Deny reads/writes to `.env` and `secrets/`
+- Allow reads anywhere under the workspace
+- Pause writes for human review (`mode="interrupt"`)
 
-### `format-code`
-- **Purpose**: Formats a code file using standard formatters (like Black or Ruff).
-- **Why it's useful**: Helps maintain a consistent and readable code style across the project.
-- **Agent Usage**:
-  > **User**: "Format the file [`code_agent//utils/utils.py`](../code_agent/utils/utils.py)."
-
-### `notebook`
-- **Purpose**: Executes Python code in a sandboxed, notebook-like environment.
-- **Why it's useful**: Allows the agent to run code, test solutions, and perform data analysis tasks dynamically.
-- **Agent Usage**:
-  > **User**: "Calculate the first 10 Fibonacci numbers and print them."
-
-### `linker`
-- **Purpose**: Analyzes dependencies and relationships between files in your project.
-- **Why it's useful**: Helps visualize the structure of your codebase, which is essential for large-scale refactoring.
-- **Agent Usage**:
-  > **User**: "What are the dependencies for `code_agent/main.py`?"
-  Reference: [code_agent/main.py](../code_agent/main.py)
-
-### `r-script`
-- **Purpose**: Executes R code.
-- **Why it's useful**: Enables the agent to perform statistical analysis and data visualization using R.
-- **Agent Usage**:
-  > **User**: "Create an R script that plots a histogram of 100 random numbers."
-
-## Extending the Agent with New Tools
-
-One of the most powerful features of `code_agent` is its extensibility.
-
-### 1. Create the Tool Class
-Create a new file in the [`code_agent/tools/`](../code_agent/tools/__init__.py) directory. Your tool should be a class
-that inherits from `BaseTool` and defines its `name`, `description`, and `_run` method.
+You can customize permissions when building the agent:
 
 ```python
-# In code_agent/tools/my_custom_tool.py
-from langchain_core.tools import BaseTool
+from deepagents import create_deep_agent
+from deepagents.backends.filesystem import FilesystemPermission
 
-class MyCustomTool(BaseTool):
-    name: str = "my-custom-tool"
-    description: str = "A simple tool that returns a custom greeting."
-
-    def _run(self, name: str) -> str:
-        """Returns a greeting for the given name."""
-        return f"Hello, {name}!"
+agent = create_deep_agent(
+    model="anthropic:claude-sonnet-4-6",
+    permissions=[
+        {"operations": ["read", "write"], "paths": ["/workspace/**"], "mode": "allow"},
+        {"operations": ["read", "write"], "paths": ["/workspace/.env"], "mode": "deny"},
+    ],
+)
 ```
 
-### 2. Register the New Tool
-Add your new tool to the `create_default_tools` function in [`code_agent/agents/base_agent.py`](../code_agent/agents/base_agent.py).
+## Custom Tools
+
+These tools are defined in `code_agent/tools/` and registered via `create_default_tools`:
+
+| Tool             | Purpose                                                                                       |
+|------------------|-----------------------------------------------------------------------------------------------|
+| `read_file`      | Read file contents with line numbers (collides with built-in; built-in wins)                  |
+| `edit_file`      | Edit existing files — replace, append, or patch modes (collides with built-in; built-in wins) |
+| `new-file`       | Create a new file with specified content                                                      |
+| `search-explain` | Search the codebase for a term or regex, then summarize matches                               |
+| `generate-test`  | Generate a basic pytest test file for a Python module                                         |
+| `format-code`    | Format Python or R source files                                                               |
+| `py_to_ipynb`    | Convert Python scripts (with `#%%` cell markers) to Jupyter notebooks                         |
+| `general-chat`   | Fallback for non-filesystem questions                                                         |
+| `r-script`       | Execute R code                                                                                |
+
+### Tool Registration
+
+Add new tools to `create_default_tools` in [
+`code_agent/agents/deepagents_agent.py`](../code_agent/agents/deepagents_agent.py):
 
 ```python
-# In code_agent/agents/base_agent.py
-from code_agent.tools.my_custom_tool import MyCustomTool
+from langchain.tools import tool
 
-def create_default_tools(...) -> list[BaseTool]:
-    """
+@tool
+def my_custom_tool(arg: str) -> str:
+    """Description of what the tool does."""
+    return f"Result for {arg}"
 
-    """
-    ...
-    standard_tools: list[BaseTool | None] = [
-        ...,
-        MyCustomTool(),  # Add your new tool here
-    ]
-    ...
+# In create_default_tools():
+standard_tools = [
+    # ... existing tools ...
+    my_custom_tool(),
+]
 ```
 
-That's it! The agent can now use your new tool when it determines it's appropriate based on the user's prompt.
+When using the DeepAgents harness, custom tools are additive. If a custom tool has the same name as a built-in
+filesystem tool, the built-in wins and the custom one is dropped.
+
+## MCP Tools
+
+MCP (Model Context Protocol) servers extend the agent with external tools. Tools are prefixed with
+`mcp_<server>__<tool>` to avoid name collisions.
+
+Example `.mcp.json`:
+
+```json
+[
+  {
+    "type": "http",
+    "url": "https://docs.langchain.com/mcp",
+    "name": "docs-langchain"
+  },
+  {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "name": "github",
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+    }
+  }
+]
+```
+
+Values using `${env:VAR_NAME}` are resolved from the `.env` file at startup. Secrets are never stored in `.mcp.json`.
+
+### HITL Gating for MCP Tools
+
+Sensitive MCP servers (for example, `github`, `memory`) are intercepted for explicit human approval before tool
+execution. Read-only servers (`context7`, `docs-langchain`, `reference-langchain`) function without interruption.
+
+## Human-in-the-Loop
+
+Mutating built-in tools default to human-in-the-loop review:
+
+- `write_file`
+- `edit_file`
+- `delete`
+- `execute`
+
+When the agent invokes one of these tools, execution pauses and the user must approve, reject, edit the arguments, or
+send a message back to the agent.
+
+In the CLI, the prompt looks like:
+
+```
+==================================================
+⚠️  Human approval required before tool execution
+Tool: edit_file
+Args:
+{
+  "file_path": "src/utils.py",
+  "content": "..."
+}
+==================================================
+Decide: [a]pprove  [r]eject  [e]dit  [m]essage
+```
+
+In the web UI, the HITL surface component shows the pending tool call and lets you approve, reject, or edit the
+arguments.

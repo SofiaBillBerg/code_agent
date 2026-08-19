@@ -17,6 +17,12 @@ from __future__ import annotations
 from typing import Any
 from unittest.mock import MagicMock
 
+import pytest
+
+from langchain.tools import BaseTool
+from pydantic import Field
+from typing_extensions import override
+
 from code_agent.config.mcp import (
     MCP_TOOL_PREFIX,
     READONLY_SERVERS,
@@ -31,14 +37,12 @@ from code_agent.config.mcp import (
     sensitive_mcp_tool_names,
     server_from_prefixed,
 )
-from langchain.tools import BaseTool
-from pydantic import Field
-import pytest
-from typing_extensions import override
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 class _GithubTool(BaseTool):
     """A tool that looks like it came from the ``github`` MCP server.

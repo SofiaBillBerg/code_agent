@@ -11,7 +11,9 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from code_agent.cli import _stream_agent_response
+from code_agent.cli import (
+    _stream_agent_response,  # ruff: ignore[import-private-name]
+)
 
 def _make_stream_agent(events: list[dict[str, object]]) -> MagicMock:
     """Make an agent that returns the given events when astream_events is called.
@@ -24,7 +26,7 @@ def _make_stream_agent(events: list[dict[str, object]]) -> MagicMock:
     :return: The mock agent.
     """
 
-    async def _event_stream(*_args: object, **_kwargs: object) -> object:
+    async def _event_stream(*_args: object, **_kwargs: object) -> object:  # ruff: ignore[unused-async]
         """Yield each event as an async stream."""
         for event in events:
             yield event

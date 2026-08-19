@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  code-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-agent
+    ports:
+      - "2024:2024"
+    volumes:
+      - ./config:/app/config:ro
+      - ./examples:/app/examples:ro
+      - code-agent-data:/data
+    environment:
+      - CODE_AGENT_PROVIDER=ollama
+      - CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b
+      - CODE_AGENT_OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - CODE_AGENT_CHECKPOINT_DIR=/data/checkpoints
+      - CODE_AGENT_SANDBOX_DIR=/data/sandboxes
+      - CODE_AGENT_STREAM_ENABLED=true
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:2024/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  code-agent-data:
+    driver: local

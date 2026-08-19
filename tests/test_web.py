@@ -592,3 +592,97 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 #     assert response.status_code == 200
 #     assert "provider" in response.json()
 #     assert "model" in response.json()
+
+
+# --- New endpoint tests (Phase 4) ---
+
+
+def test_chat_cancel_returns_409_when_no_task(client: TestClient) -> None:
+    """POST /chat/cancel returns 409 when no running task for thread_id.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
+    response = client.post("/chat/cancel", json={"thread_id": "missing-thread"})
+    assert response.status_code == 409
+    assert "No running task" in response.json()["detail"]
+
+
+def test_chat_history_returns_empty_when_no_checkpointer(
+    client: TestClient,
+) -> None:
+    """GET /chat/history returns empty list when checkpointer is None.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
+    from code_agent.ui.web import AgentState
+
+    fake_agent = mock.Mock()
+    mock_state = AgentState(
+        agent=fake_agent,
+        thread_id="thread-1",
+        checkpointer=None,
+        provider="test",
+        model="test-model",
+    )
+
+    with mock.patch(
+        "code_agent.ui.web.get_agent_async", return_value=mock_state
+    ):
+        response = client.get("/chat/history?thread_id=thread-1")
+    assert response.status_code == 200
+    assert response.json()["messages"] == []
+
+
+def test_chat_audit_records_entry(client: TestClient) -> None:
+    """POST /chat/audit records an audit entry and returns status recorded.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
+    response = client.post(
+        "/chat/audit",
+        json={
+            "thread_id": "thread-1",
+            "action": "approve",
+            "details": {"tool": "send_email"},
+            "timestamp": "2025-01-01T00:00:00Z",
+            "user": "alice",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "recorded"
+
+
+def test_chat_audit_list_returns_entries(client: TestClient) -> None:
+    """GET /chat/audit returns audit entries for a thread.
+
+    :param client: fixture that provides a TestClient instance.
+    :return: None
+    """
+    # Clear any entries from previous tests
+    from code_agent.ui.web import (
+        _audit_store,  # ruff: ignore[import-private-name]
+    )
+
+    _audit_store.clear()
+
+    # First, record an entry
+    client.post(
+        "/chat/audit",
+        json={
+            "thread_id": "thread-1",
+            "action": "approve",
+            "details": {},
+            "timestamp": "2025-01-01T00:00:00Z",
+            "user": "alice",
+        },
+    )
+
+    response = client.get("/chat/audit?thread_id=thread-1")
+    assert response.status_code == 200
+    entries = response.json()["entries"]
+    assert len(entries) == 1
+    assert entries[0]["action"] == "approve"
+    assert entries[0]["user"] == "alice"

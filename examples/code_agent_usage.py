@@ -5,16 +5,13 @@ This script demonstrates how to use the enhanced CodeAgent
 with Ollama LLM integration for automated code and documentation generation.
 """
 
-from collections.abc import Sequence
 import os
-from pathlib import Path
 import sys
+
+from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
-from code_agent import build_agent, create_llm
-from code_agent.agents.base_agent import create_default_tools
-from code_agent.main import load_config
-from code_agent.tools._io import _atomic_write, create_from_template
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage
 from langchain.tools import BaseTool
@@ -23,6 +20,12 @@ from langchain_core.language_models import LanguageModelInput
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
+
+from code_agent import build_agent, create_llm
+from code_agent.agents.deepagents_agent import create_default_tools
+from code_agent.main import load_config
+from code_agent.tools._io import _atomic_write, create_from_template
+
 
 # Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))

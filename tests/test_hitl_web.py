@@ -23,6 +23,7 @@ import pytest
 # Tag: Feature: agent-core-enhancement, Property 6: HITL resume signals the pending event
 # Tag: Feature: agent-core-enhancement, Property 7: Resume returns 409 for non-pending threads
 
+
 @pytest.fixture(autouse=True)
 def reset_hitl_state() -> Generator[None]:
     """Reset HITL state before each test.
@@ -74,7 +75,7 @@ class TestResumeEndpoint:
         max_examples=100,
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
     )
-    def test_resume_approve_reject_works(
+    def test_resume_approve_reject_works(  # ruff: ignore[no-self-use]
         self,
         client: TestClient,
         thread_id: str,
@@ -122,7 +123,7 @@ class TestResumeEndpoint:
         max_examples=100,
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
     )
-    def test_resume_409_for_non_pending_thread(
+    def test_resume_409_for_non_pending_thread(  # ruff: ignore[no-self-use]
         self,
         client: TestClient,
         thread_id: str,
@@ -148,7 +149,7 @@ class TestResumeEndpoint:
         assert response.status_code == 409
         assert f"thread_id={thread_id!r}" in response.json()["detail"]
 
-    def test_resume_409_when_event_already_resolved(
+    def test_resume_409_when_event_already_resolved(  # ruff: ignore[no-self-use]
         self, client: TestClient
     ) -> None:
         """Resume returns 409 when SSE stream already closed.

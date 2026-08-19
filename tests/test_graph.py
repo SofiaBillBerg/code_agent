@@ -33,6 +33,7 @@ from typing_extensions import override
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_llm() -> MagicMock:
     """Return a MagicMock that mimics a LangChain LLM for create_agent.

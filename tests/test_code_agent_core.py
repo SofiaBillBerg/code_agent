@@ -3,10 +3,10 @@
 from pathlib import Path
 from typing import Any
 
-from code_agent.agents.base_agent import build_agent, create_default_tools
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
 from code_agent.tools import notebook_tool
 from code_agent.tools._io import (
-    create_from_template,  # ruff: ignore[import-private-name]; ruff: ignore[import-private-name]
+    create_from_template,  # ruff: ignore[import-private-name]; ruff: ignore[import-private-name]; ruff: ignore[import-private-name]
 )
 from langchain.chat_models import BaseChatModel
 from langchain.messages import AIMessage

@@ -12,7 +12,7 @@ from code_agent.utils.checkpointer import build_checkpointer
 class TestBuildCheckpointerProperty:
     """Property tests for build_checkpointer function."""
 
-    def test_build_checkpointer_returns_non_none(self) -> None:
+    def test_build_checkpointer_returns_non_none(self) -> None:  # ruff: ignore[no-self-use]
         """Property 13: build_checkpointer always returns a checkpointer object.
 
         For any valid checkpoint directory path, the function should return
@@ -24,7 +24,7 @@ class TestBuildCheckpointerProperty:
 
         assert checkpointer is not None
 
-    def test_build_checkpointer_fallback_on_invalid_path(self) -> None:
+    def test_build_checkpointer_fallback_on_invalid_path(self) -> None:  # ruff: ignore[no-self-use]
         """Property 13 variant: Invalid paths return InMemorySaver fallback."""
         checkpointer = build_checkpointer(
             checkpoint_dir="/nonexistent/path/that/does/not/exist"
@@ -37,13 +37,13 @@ class TestBuildCheckpointerProperty:
 class TestBuildCheckpointerExample:
     """Example tests for build_checkpointer functionality."""
 
-    def test_default_reads_from_settings(self) -> None:
+    def test_default_reads_from_settings(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: default config uses Settings.checkpoint_dir."""
         checkpointer = build_checkpointer()
 
         assert checkpointer is not None
 
-    def test_custom_path_creates_checkpointer(self, tmp_path: Path) -> None:
+    def test_custom_path_creates_checkpointer(self, tmp_path: Path) -> None:  # ruff: ignore[no-self-use]
         """Example test: custom path creates checkpointer successfully."""
         custom_dir = tmp_path / "test_checkpoints"
 
@@ -51,7 +51,7 @@ class TestBuildCheckpointerExample:
 
         assert checkpointer is not None
 
-    def test_returns_valid_saver_type(self) -> None:
+    def test_returns_valid_saver_type(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: returned object is a valid saver type."""
         import tempfile
 
