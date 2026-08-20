@@ -57,9 +57,9 @@ def build_checkpointer(
     The checkpointer resolves the storage path from the *checkpoint_dir*
     argument, the environment variable ``CODE_AGENT_CHECKPOINT_DIR``, or
     the hard-coded default. It creates the directory if needed and
-    instantiates a :class:`SqliteSaver`. If the directory cannot be
+    instantiates a :class:`langgraph.checkpoint.sqlite.SqliteSaver`. If the directory cannot be
     accessed or the SQLite database fails to initialize, a WARNING is
-    logged and an :class:`InMemorySaver` is returned instead.
+    logged and an :class:`langgraph.checkpoint.memory.InMemorySaver` is returned instead.
 
     Resolution order for the checkpoint directory:
 
@@ -71,10 +71,8 @@ def build_checkpointer(
     All three paths are expanded (``~`` → home directory) and resolved
     to an absolute :class:`pathlib.Path`.
 
-    :param checkpoint_dir: Optional override for the storage directory.
-        If ``None``, the value is read from settings or the default.
-    :returns: A configured :class:`SqliteSaver` or fallback
-        :class:`InMemorySaver`.
+    :param checkpoint_dir: Optional override for the storage directory. If ``None``, the value is read from settings or the default.
+    :returns: A configured :class:`langgraph.checkpoint.sqlite.SqliteSaver` or fallback :class:`langgraph.checkpoint.memory.InMemorySaver`.
     """
     #: Resolve the checkpoint directory from the argument, settings, or default.
     resolved_dir = _resolve_checkpoint_dir(checkpoint_dir)

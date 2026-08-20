@@ -24,12 +24,9 @@ class OpenAIProvider(ProviderBase):
     """OpenAI-backed LLM provider.
 
     Attributes:
-        name: Stable provider identifier, ``"openai"``.
-        model: OpenAI model name, e.g. ``"gpt-4o"``.
-        api_key: OpenAI API key as a :class:`pydantic.SecretStr`, or ``None``
-            when read from ``OPENAI_API_KEY``.
-        base_url: Optional base URL for the API, e.g. for proxies or
-            emulators such as ``"https://api.openai.com/v1"``.
+        :ivar model: OpenAI model name, e.g. ``"gpt-4o"``.
+        :ivar api_key: OpenAI API key as a :class:`pydantic.SecretStr`, or ``None`` when read from ``OPENAI_API_KEY``.
+        :ivar base_url: Optional base URL for the API, e.g. for proxies or emulators such as ``"https://api.openai.com/v1"``.
     """
 
     name: str = "openai"
@@ -44,12 +41,9 @@ class OpenAIProvider(ProviderBase):
         """Initialize the OpenAI provider.
 
         :param model: OpenAI model name to use for completions.
-        :param api_key: OpenAI API key. When ``None`` it is read from the
-            ``OPENAI_API_KEY`` environment variable.
-        :param base_url: Optional base URL for the API, e.g. when using a
-            proxy or service emulator.
-        :param **kwargs: Extra options forwarded to ``ChatOpenAI``, e.g.
-            ``temperature``, ``max_tokens``, ``stream``.
+        :param api_key: OpenAI API key. When ``None`` it is read from the ``OPENAI_API_KEY`` environment variable.
+        :param base_url: Optional base URL for the API, e.g. when using a proxy or service emulator.
+        :param **kwargs: Extra options forwarded to ``ChatOpenAI``, e.g. ``temperature``, ``max_tokens``, ``stream``.
         :return: The initialized provider.
         """
         if api_key is None:

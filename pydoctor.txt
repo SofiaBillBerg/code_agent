@@ -1,0 +1,278 @@
+Failed to uncompress inventory from https:/
+Failed to uncompress inventory from https:/
+Failed to uncompress inventory from https:/
+Failed to uncompress inventory from https:/
+Failed to uncompress inventory from https://reference.langchain.com/python/langchain-core
+Failed to uncompress inventory from https://reference.langchain.com/python/langchain
+Failed to uncompress inventory from https://reference.langchain.com/python/langgraph
+Failed to uncompress inventory from https:/
+Failed to uncompress inventory from https:/
+adding directory /home/nvidia/code_agent/code_agent
+processing ['code_agent']
+processing ['code_agent.__main__']
+processing ['code_agent.__main__', 'code_agent.cli']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.agents.deepagents_agent']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.agents.deepagents_agent', 'code_agent.config.settings']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.agents.deepagents_agent', 'code_agent.config.settings', 'code_agent.config.jsonc']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.agents.deepagents_agent', 'code_agent.profiles.router']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.capabilities.audit']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.capabilities.envelope']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.capabilities.registry']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.capabilities.registry', 'code_agent.capabilities.base']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.capabilities.tool_adapter']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.capabilities.tool_adapter', 'code_agent.config.mcp']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.exceptions']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.main']
+processing ['code_agent.__main__', 'code_agent.cli', 'code_agent.tools._io']
+processing ['code_agent.agents']
+processing ['code_agent.capabilities']
+moving 'code_agent.capabilities.base.Capability' into 'code_agent.capabilities'
+moving 'code_agent.capabilities.base.CapabilityBase' into 'code_agent.capabilities'
+moving 'code_agent.capabilities.base.RiskClass' into 'code_agent.capabilities'
+processing ['code_agent.ci']
+processing ['code_agent.ci.check_output']
+processing ['code_agent.ci.run_agent']
+processing ['code_agent.config']
+processing ['code_agent.profiles']
+moving 'code_agent.profiles.router.DEFAULT_PROFILES_CONFIG' into 'code_agent.profiles'
+moving 'code_agent.profiles.router.load_profiles_from_config_file' into 'code_agent.profiles'
+moving 'code_agent.profiles.router.register_profiles_from_config_file' into 'code_agent.profiles'
+moving 'code_agent.profiles.router.register_profiles_from_settings' into 'code_agent.profiles'
+processing ['code_agent.providers']
+processing ['code_agent.providers', 'code_agent.providers.base']
+moving 'code_agent.providers.base.LLMProvider' into 'code_agent.providers'
+moving 'code_agent.providers.base.ProviderBase' into 'code_agent.providers'
+processing ['code_agent.providers.factory']
+processing ['code_agent.providers.factory', 'code_agent.providers.ollama']
+processing ['code_agent.providers.factory', 'code_agent.providers.openai']
+processing ['code_agent.tools']
+processing ['code_agent.tools', 'code_agent.tools.edit_file_tool']
+moving 'code_agent.tools.edit_file_tool.edit_file' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.format_code_tool']
+moving 'code_agent.tools.format_code_tool.make_format_code_tool' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.general_chat_tool']
+moving 'code_agent.tools.general_chat_tool.make_general_chat_tool' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.generate_test_tool']
+moving 'code_agent.tools.generate_test_tool.generate_test' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.new_file_tool']
+moving 'code_agent.tools.new_file_tool.make_new_file_tool' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.notebook_tool']
+moving 'code_agent.tools.notebook_tool.py_to_ipynb' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.r_tool']
+moving 'code_agent.tools.r_tool.make_r_script_tool' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.read_file_tool']
+moving 'code_agent.tools.read_file_tool.read_file' into 'code_agent.tools'
+processing ['code_agent.tools', 'code_agent.tools.search_explain_tool']
+moving 'code_agent.tools.search_explain_tool.make_search_explain_tool' into 'code_agent.tools'
+processing ['code_agent.ui']
+processing ['code_agent.ui', 'code_agent.ui.cli_ui']
+moving 'code_agent.ui.cli_ui.render_catalog' into 'code_agent.ui'
+moving 'code_agent.ui.cli_ui.render_progress' into 'code_agent.ui'
+moving 'code_agent.ui.cli_ui.render_receipt' into 'code_agent.ui'
+moving 'code_agent.ui.cli_ui.render_request' into 'code_agent.ui'
+moving 'code_agent.ui.cli_ui.render_response' into 'code_agent.ui'
+moving 'code_agent.ui.cli_ui.run_cli_ui' into 'code_agent.ui'
+processing ['code_agent.ui.protocol']
+processing ['code_agent.ui.web']
+processing ['code_agent.ui.web', 'code_agent.utils.checkpointer']
+processing ['code_agent.utils']
+processing ['code_agent.utils', 'code_agent.utils.diff_utils']
+moving 'code_agent.utils.diff_utils.apply_edit' into 'code_agent.utils'
+moving 'code_agent.utils.diff_utils.generate_diff' into 'code_agent.utils'
+moving 'code_agent.utils.diff_utils.preview_file_edit' into 'code_agent.utils'
+processing ['code_agent.utils', 'code_agent.utils.graph']
+processing ['code_agent.utils.utils']
+writing html to apidocs using pydoctor.templatewriter.writer.TemplateWriter
+starting ModuleIndexPage ...took 0.009644s
+starting ClassIndexPage ...took 0.013694s
+starting NameIndexPage ...took 0.023958s
+starting UndocumentedSummaryPage ...took 0.005666s
+starting HelpPage ...took 0.007443s
+starting AllDocuments ...
+/home/nvidia/code_agent/code_agent/providers/ollama.py:67: bad docstring: Inline strong start-string without end-string.
+/home/nvidia/code_agent/code_agent/providers/ollama.py:155: bad docstring: Field list ends without a blank line; unexpected unindent.
+/home/nvidia/code_agent/code_agent/providers/openai.py:45: bad docstring: Inline strong start-string without end-string.
+took 0.505349s
+starting lunr search index ...took 0.160905s
+Package 'code_agent'
+Module 'code_agent.__main__'
+/home/nvidia/code_agent/code_agent/__main__.py:4: Cannot find link target for "python -m code_agent"
+Package 'code_agent.agents'
+Module 'code_agent.agents.deepagents_agent'
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:3: Cannot find link target for "deepagents.create_deep_agent" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:8: Cannot find link target for "~deepagents.backends.composite.CompositeBackend" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:13: Cannot find link target for "~deepagents.backends.state.StateBackend" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:21: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:27: Cannot find link target for "~code_agent.profiles.router.DEFAULT_PROFILES_CONFIG" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:33: Cannot find link target for "~langchain.agents.middleware.TodoListMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:37: Cannot find link target for "~deepagents.middleware.SummarizationMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:633: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver", resolved from "InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:428: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver", resolved from "InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:440: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver", resolved from "InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:468: Cannot find link target for "~langchain.agents.middleware.TodoListMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:473: Cannot find link target for "~langchain.agents.middleware.summarization.TriggerClause" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:475: Cannot find link target for "~deepagents.middleware.SummarizationMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:483: Cannot find link target for "deepagents.create_deep_agent" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:657: Cannot find link target for "langchain.tools.BaseTool", resolved from "BaseTool" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:126: Cannot find link target for "deepagents.backends.CompositeBackend", resolved from "CompositeBackend" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:128: Cannot find link target for "deepagents.backends.filesystem.FilesystemBackend", resolved from "FilesystemBackend" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:131: Cannot find link target for "deepagents.backends.StateBackend", resolved from "StateBackend" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:141: Cannot find link target for "deepagents.backends.CompositeBackend", resolved from "CompositeBackend" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:170: Cannot find link target for "deepagents.FilesystemPermission", resolved from "FilesystemPermission" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:295: Cannot find link target for "langchain.agents.middleware.TodoListMiddleware", resolved from "TodoListMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:296: Cannot find link target for "deepagents.middleware.SummarizationMiddleware", resolved from "SummarizationMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/agents/deepagents_agent.py:268: Cannot find link target for "langchain.agents.middleware.summarization.TriggerClause", resolved from "TriggerClause" (you can link to external docs with --intersphinx)
+Package 'code_agent.capabilities'
+Module 'code_agent.capabilities.audit'
+Class 'code_agent.capabilities.audit.Receipt'
+Class 'code_agent.capabilities.audit.AuditLog'
+Module 'code_agent.capabilities.base'
+Module 'code_agent.capabilities.envelope'
+Class 'code_agent.capabilities.envelope.InvocationRequest'
+Class 'code_agent.capabilities.envelope.InvokeBody'
+Class 'code_agent.capabilities.envelope.InvocationResponse'
+Module 'code_agent.capabilities.registry'
+Class 'code_agent.capabilities.registry.CapabilityRegistry'
+Module 'code_agent.capabilities.tool_adapter'
+Class 'code_agent.capabilities.tool_adapter.ToolResult'
+Class 'code_agent.capabilities.Capability'
+Class 'code_agent.capabilities.CapabilityBase'
+Class 'code_agent.capabilities.RiskClass'
+Package 'code_agent.ci'
+Module 'code_agent.ci.check_output'
+Module 'code_agent.ci.run_agent'
+Module 'code_agent.cli'
+/home/nvidia/code_agent/code_agent/cli.py:254: Cannot find link target for "HumanInTheLoopMiddleware"
+/home/nvidia/code_agent/code_agent/cli.py:650: Cannot find link target for "langchain.tools.BaseTool", resolved from "BaseTool" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/cli.py:732: Cannot find link target for "langchain.tools.BaseTool", resolved from "BaseTool" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/cli.py:274: Cannot find link target for "HumanInTheLoopMiddleware"
+/home/nvidia/code_agent/code_agent/cli.py:166: Cannot find link target for "~langgraph.types.Command" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/cli.py:93: Cannot find link target for "HumanInTheLoopMiddleware"
+/home/nvidia/code_agent/code_agent/cli.py:102: Cannot find link target for "~langgraph.types.Command" (you can link to external docs with --intersphinx)
+Package 'code_agent.config'
+Module 'code_agent.config.jsonc'
+Module 'code_agent.config.mcp'
+/home/nvidia/code_agent/code_agent/config/mcp.py:8: Cannot find link target for "~langchain.agents.middleware.HumanInTheLoopMiddleware" (you can link to external docs with --intersphinx)
+Module 'code_agent.config.settings'
+Class 'code_agent.config.settings._EnvUnset'
+Class 'code_agent.config.settings.JsoncConfigSettingsSource'
+Class 'code_agent.config.settings.EnvExpandingYamlConfigSettingsSource'
+Class 'code_agent.config.settings.Settings'
+/home/nvidia/code_agent/code_agent/config/settings.py:341: Cannot find link target for "deepagents.HarnessProfile" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/config/settings.py:376: Cannot find link target for "~deepagents.middleware.SummarizationMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/config/settings.py:369: Cannot find link target for "~langchain.agents.middleware.TodoListMiddleware" (you can link to external docs with --intersphinx)
+Module 'code_agent.exceptions'
+Class 'code_agent.exceptions.CodeAgentError'
+Class 'code_agent.exceptions.FileCreationError'
+Class 'code_agent.exceptions.InvalidToolError'
+Module 'code_agent.main'
+/home/nvidia/code_agent/code_agent/main.py:102: Cannot find link target for "~code_agent.config.settings.Settings" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/main.py:105: Cannot find link target for "~langchain.chat_models.BaseChatModel" (you can link to external docs with --intersphinx)
+Package 'code_agent.profiles'
+/home/nvidia/code_agent/code_agent/profiles/router.py:187: Cannot find link target for "HarnessProfile"
+/home/nvidia/code_agent/code_agent/profiles/router.py:192: Cannot find link target for "HarnessProfile"
+/home/nvidia/code_agent/code_agent/profiles/router.py:228: Cannot find link target for "deepagents.register_harness_profile" (you can link to external docs with --intersphinx)
+Module 'code_agent.profiles.router'
+/home/nvidia/code_agent/code_agent/profiles/router.py:10: Cannot find link target for "~code_agent.config.settings.Settings" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/profiles/router.py:82: Cannot find link target for "deepagents.HarnessProfile", resolved from "HarnessProfile" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/profiles/router.py:96: Cannot find link target for "deepagents.HarnessProfile", resolved from "HarnessProfile" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/profiles/router.py:57: Cannot find link target for "deepagents.HarnessProfile", resolved from "HarnessProfile" (you can link to external docs with --intersphinx)
+Package 'code_agent.providers'
+Module 'code_agent.providers.base'
+Module 'code_agent.providers.factory'
+Module 'code_agent.providers.ollama'
+Class 'code_agent.providers.ollama.OllamaProvider'
+Module 'code_agent.providers.openai'
+Class 'code_agent.providers.openai.OpenAIProvider'
+Class 'code_agent.providers.LLMProvider'
+Class 'code_agent.providers.ProviderBase'
+Package 'code_agent.tools'
+/home/nvidia/code_agent/code_agent/tools/__init__.py:6: Cannot find link target for "langchain_core.tools.StructuredTool" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/tools/format_code_tool.py:30: Cannot find link target for "@tool"
+/home/nvidia/code_agent/code_agent/tools/general_chat_tool.py:30: Cannot find link target for "@tool"
+/home/nvidia/code_agent/code_agent/tools/new_file_tool.py:43: Cannot find link target for "@tool"
+/home/nvidia/code_agent/code_agent/tools/r_tool.py:25: Cannot find link target for "@tool"
+/home/nvidia/code_agent/code_agent/tools/search_explain_tool.py:37: Cannot find link target for "@tool"
+Module 'code_agent.tools._io'
+/home/nvidia/code_agent/code_agent/tools/_io.py:6: Cannot find link target for "code_agent.file_generator"
+Class 'code_agent.tools._io.FileObject'
+Module 'code_agent.tools.edit_file_tool'
+Class 'code_agent.tools.edit_file_tool.EditFileArgs'
+Module 'code_agent.tools.format_code_tool'
+Class 'code_agent.tools.format_code_tool.FormatCodeArgs'
+Module 'code_agent.tools.general_chat_tool'
+Class 'code_agent.tools.general_chat_tool.GeneralChatArgs'
+Module 'code_agent.tools.generate_test_tool'
+Class 'code_agent.tools.generate_test_tool.GenerateTestArgs'
+Module 'code_agent.tools.new_file_tool'
+Class 'code_agent.tools.new_file_tool.NewFileArgs'
+Module 'code_agent.tools.notebook_tool'
+Module 'code_agent.tools.r_tool'
+Class 'code_agent.tools.r_tool.RScriptArgs'
+Module 'code_agent.tools.read_file_tool'
+Class 'code_agent.tools.read_file_tool.ReadFileArgs'
+Module 'code_agent.tools.search_explain_tool'
+Class 'code_agent.tools.search_explain_tool.SearchExplainArgs'
+Package 'code_agent.ui'
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:158: Cannot find link target for "Console"
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:214: Cannot find link target for "Console"
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:268: Cannot find link target for "Console"
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:186: Cannot find link target for "Console"
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:234: Cannot find link target for "Console"
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:303: Cannot find link target for "Console"
+Module 'code_agent.ui.cli_ui'
+/home/nvidia/code_agent/code_agent/ui/cli_ui.py:9: Cannot find link target for "rich.console.Console" (you can link to external docs with --intersphinx)
+Module 'code_agent.ui.protocol'
+Module 'code_agent.ui.web'
+Class 'code_agent.ui.web.AgentState'
+Class 'code_agent.ui.web.ProviderConfig'
+Class 'code_agent.ui.web.ProviderListResponse'
+Class 'code_agent.ui.web.ActiveProviderResponse'
+Class 'code_agent.ui.web.ActiveProviderRequest'
+Class 'code_agent.ui.web.AuthMiddleware'
+Class 'code_agent.ui.web.ChatMessage'
+Class 'code_agent.ui.web.ChatRequest'
+Class 'code_agent.ui.web.ChatResponse'
+Class 'code_agent.ui.web.TokenEvent'
+Class 'code_agent.ui.web.ToolStartEvent'
+Class 'code_agent.ui.web.ToolEndEvent'
+Class 'code_agent.ui.web.DoneEvent'
+Class 'code_agent.ui.web.HitlPendingEvent'
+Class 'code_agent.ui.web.ErrorEvent'
+Class 'code_agent.ui.web.ResumeRequest'
+Class 'code_agent.ui.web.CancelRequest'
+Class 'code_agent.ui.web.HistoryRequest'
+Class 'code_agent.ui.web.HistoryResponse'
+Class 'code_agent.ui.web.AuditEntry'
+Class 'code_agent.ui.web.AuditRequest'
+Class 'code_agent.ui.web.AuditResponse'
+Class 'code_agent.ui.web.AuditListResponse'
+Class 'code_agent.ui.web.TodoEvent'
+Class 'code_agent.ui.web.SubagentStartEvent'
+Class 'code_agent.ui.web.SubagentEndEvent'
+Class 'code_agent.ui.web.PingEvent'
+Class 'code_agent.ui.web.ProtocolCommand'
+Class 'code_agent.ui.web.ProtocolStreamRequest'
+Package 'code_agent.utils'
+Module 'code_agent.utils.checkpointer'
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:7: Cannot find link target for "langgraph.checkpoint.sqlite.SqliteSaver", resolved from "SqliteSaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:10: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver", resolved from "InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:58: Cannot find link target for "langgraph.checkpoint.sqlite.SqliteSaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:60: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:66: Cannot find link target for "~code_agent.config.settings.get_settings" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:73: Cannot find link target for "langgraph.checkpoint.sqlite.SqliteSaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:73: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/checkpointer.py:124: Cannot find link target for "~code_agent.config.settings.get_settings" (you can link to external docs with --intersphinx)
+Module 'code_agent.utils.diff_utils'
+Module 'code_agent.utils.graph'
+/home/nvidia/code_agent/code_agent/utils/graph.py:6: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/graph.py:7: Cannot find link target for "langgraph.middleware.human_in_the_loop.HumanInTheLoopMiddleware" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/graph.py:13: Cannot find link target for "~langchain_core.runnables.Runnable" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/graph.py:53: Cannot find link target for "langgraph.checkpoint.memory.InMemorySaver" (you can link to external docs with --intersphinx)
+/home/nvidia/code_agent/code_agent/utils/graph.py:54: Cannot find link target for "langgraph.middleware.human_in_the_loop.HumanInTheLoopMiddleware" (you can link to external docs with --intersphinx)
+Module 'code_agent.utils.utils'
+Generating objects inventory at apidocs/objects.inv
+these 3 objects' docstrings contain syntax errors:
+    code_agent.providers.ollama.OllamaProvider.__init__
+    code_agent.providers.ollama.OllamaProvider.from_config
+    code_agent.providers.openai.OpenAIProvider.__init__

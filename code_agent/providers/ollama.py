@@ -26,11 +26,7 @@ from code_agent.providers.base import ProviderBase
 def _chat_ollama_from_config(config: dict[str, Any]) -> ChatOllama:
     """Construct a ``ChatOllama`` from a config mapping.
 
-    Reads ``ollama_model`` / ``model``, ``ollama_scheme``, ``ollama_host``,
-    ``ollama_port`` and the generation keys ``temperature``, ``max_tokens``,
-    ``stream``.  The canonical ``codeagent.jsonc``,
-        ``codeagent.json``, ``codeagent.yml`` or ``codeagent.yaml`` keys (``ollama_*``) take
-    precedence over the bare ``model`` / ``temperature`` etc. keys.
+    Reads ``ollama_model`` / ``model``, ``ollama_scheme``, ``ollama_host``, ``ollama_port`` and the generation keys ``temperature``, ``max_tokens``, ``stream``.  The canonical ``codeagent.jsonc``, ``codeagent.json``, ``codeagent.yml`` or ``codeagent.yaml`` keys (``ollama_*``) take precedence over the bare ``model`` / ``temperature`` etc. keys.
 
     :param config: Configuration mapping, typically from :func:`code_agent.config.settings.as_config_dict`.
     :return: A configured ``ChatOllama`` instance.
@@ -68,13 +64,9 @@ class OllamaProvider(ProviderBase):
     ) -> None:
         """Initialize the Ollama provider.
 
-        Args:
-            model: Ollama model name to use for completions.
-            base_url: Ollama server base URL. When ``None`` it is derived
-                from the ``scheme``/``host``/``port`` keyword arguments
-                (defaults ``http``/``localhost``/``11434``).
-            **kwargs: Extra options forwarded to ``ChatOllama``, e.g.
-                ``temperature``, ``max_tokens``, ``stream``.
+        :param model: Ollama model name to use for completions.
+        :param base_url: Ollama server base URL. When ``None`` it is derived from the ``scheme``/``host``/``port`` keyword arguments (defaults ``http``/``localhost``/``11434``).
+        :param **kwargs: Extra options forwarded to ``ChatOllama``, e.g. ``temperature``, ``max_tokens``, ``stream``.
         """
         scheme = kwargs.pop("scheme", "http")
         host = kwargs.pop("host", "localhost")
@@ -102,10 +94,11 @@ class OllamaProvider(ProviderBase):
     def bind_capabilities(self, caps: list[Any]) -> OllamaProvider:
         """Bind capabilities to the Ollama provider.
 
+        Ollama tool-binding is handled by the LangGraph layer; no-op here.
+
         :param caps: List of capabilities to bind.
         :return: The provider with bound capabilities.
         """
-        # Ollama tool-binding is handled by the LangGraph layer; no-op here.
         return self
 
     @staticmethod

@@ -3,8 +3,8 @@
 Two agent harnesses are supported:
 
 * ``create_agent`` (default) - LangChain's ``create_agent`` with an
-  :class:`InMemorySaver` checkpointer and a
-  :class:`HumanInTheLoopMiddleware` that pauses sensitive tools for approval,
+  :class:`langgraph.checkpoint.memory.InMemorySaver` checkpointer and a
+  :class:`langgraph.middleware.human_in_the_loop.HumanInTheLoopMiddleware` that pauses sensitive tools for approval,
 * ``deepagents`` - :func:`code_agent.agents.deepagents_agent.build_deep_agent`,
   a DeepAgents (LangGraph) agent with the real working directory mounted at
   ``/workspace/``, built-in filesystem tools and permission-based
@@ -52,8 +52,8 @@ def build_graph(
     The harness is selected with *harness*:
 
     * ``"create_agent"`` (default) - LangChain's ``create_agent`` with an
-      :class:`InMemorySaver` checkpointer and a
-      :class:`HumanInTheLoopMiddleware` that pauses
+      :class:`langgraph.checkpoint.memory.InMemorySaver` checkpointer and a
+      :class:`langgraph.middleware.human_in_the_loop.HumanInTheLoopMiddleware` that pauses
       write/edit/format/notebook/r-script tools for approval.
     * ``"deepagents"`` - :func:`code_agent.agents.deepagents_agent.build_deep_agent`
       with the real working directory mounted at ``/workspace/``, built-in

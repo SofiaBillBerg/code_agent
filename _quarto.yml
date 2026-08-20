@@ -1,24 +1,32 @@
 project:
   type: website
   output-dir: docs/docs_web
+  pre-render:
+    - "project_management/run_diagrams.sh"
   render:
-    - "CHANGELOG.qmd"
     - "docs/*.qmd"
+    - "docs/README.qmd"
     - "docs/*.md"
     - "docs/*.ipynb"
-    - "!docs/docs_web/*.qmd"
-    - "!docs/docs_web/*.md"
+    - "!docs/docs_web/**/*.*"
     - "!pdf_docs/*.qmd"
-    - "!docs/tools/cleanup_instructions.qmd"
-    - "!docs/docs_backup/*.*"
-    - "!docs/*_backup.qmd"
-    - "!docs/Notes.md"
+    - "!.*/*.*"
+    - "!notes/*.*"
+    - "!apidocs/**/*.*"
+    - "CHANGELOG.qmd"
 website:
   title: "Code Agent"
+  llms-txt: true
   navbar:
     left:
       - text: "Home"
         href: docs/README.qmd
+      - text: "API Reference"
+        href: docs/API.qmd
+      - text: "Guides"
+        href: docs/USAGE.qmd
+      - text: "Community"
+        href: docs/CONTRIBUTING.qmd
     right:
       - icon: github
         href: "https://github.com/SofiaBillBerg/code_agent"
@@ -29,19 +37,20 @@ website:
       contents:
         - text: "Quick Start"
           href: docs/QUICKSTART.qmd
-        - text: "Installation"
-          href: docs/INSTALLATION.qmd
     - title: "Guides"
       contents:
         - text: "Example Usage"
           href: docs/USAGE.qmd
-
-    - title: "Reference"
-      contents:
-        - text: "Configuration"
-          href: docs/CONFIGURATION.qmd
         - text: "Tools"
           href: docs/TOOLS.qmd
+        - text: "Configuration"
+          href: docs/CONFIGURATION.qmd
+    - title: "Reference"
+      contents:
+        - text: "API Reference Overview"
+          href: docs/API.qmd
+        - text: "API Reference"
+          href: apidocs/apidocs-help.html
     - title: "Community"
       contents:
         - text: "Contributing"
@@ -50,6 +59,7 @@ website:
           href: CHANGELOG.qmd
         - text: "FAQ & Troubleshooting"
           href: docs/FAQ.qmd
+
 
 format:
   html:
@@ -69,19 +79,19 @@ format:
     toc-title: "On this page"
     lightbox: true
     citations-hover: true
-    self-contained: true
+    # self-contained: true
     code-summary: "Show/Hide Code"
     date: "2025-11-02"
     date-format: "iso"
     code-links: true
     author: "Sofia Billger Bergström"
     date-modified: last-modified
-    embed-resources: true
+    # embed-resources: true
     fig-cap-location: bottom
+    fig-format: svg
     tbl-cap-location: top
     subtitle: "Documentation for The code_agent - an interactive, locally maintained LLM-powered assistant"
     description: "The code_agent is a local, LLM-driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
-
   pdf:
     latex-output-dir: pdf_docs
     pdf-engine: lualatex
@@ -99,3 +109,7 @@ resources:
   - docs/
   - LICENSE
   - docs/visualizations/svg/
+#  - apidocs/
+filters:
+  - include-code-files
+  - inline-svg

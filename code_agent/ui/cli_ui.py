@@ -36,7 +36,7 @@ from code_agent.capabilities.registry import CapabilityRegistry
 def _risk_style(risk_class: str) -> str:
     """Return a rich style token for a risk class.
 
-    :param risk_class: One of the :data:`RiskClass` values.
+    :param risk_class: One of the :data:`code_agent.capabilities.RiskClass` values.
 
     :return: A rich style name: green for low, yellow for medium, red for high,
         white for anything else.

@@ -23,6 +23,34 @@ mkdir -p docs/visualizations/svg
 RAW_VISUALIZATION_DIR="./docs/visualizations"
 SVG_DIR="$RAW_VISUALIZATION_DIR/svg"
 echo "Output directories created: $RAW_VISUALIZATION_DIR"
+
+echo "Creating Mermaid config for custom Plasma Pastel layout..."
+CONFIG_FILE="$RAW_VISUALIZATION_DIR/mermaid-config.json"
+cat << 'EOF' > "$CONFIG_FILE"
+{
+  "theme": "base",
+  "themeVariables": {
+    "background": "#f4f0fa",
+    "primaryColor": "#e8daff",
+    "primaryTextColor": "#4a2685",
+    "primaryBorderColor": "#b594f0",
+    "lineColor": "#936cd4",
+    "secondaryColor": "#ffd6f5",
+    "tertiaryColor": "#d6f0ff"
+  },
+  "flowchart": {
+    "nodeSpacing": 20,
+    "rankSpacing": 25,
+    "diagramPadding": 8
+  },
+  "class": {
+    "nodeSpacing": 20,
+    "rankSpacing": 25
+  }
+}
+EOF
+# --------------------------------------------------------------------
+
 PALETTE="[lavender,blue,purple,pink,ghostwhite,mediumorchid,coral,orangered,goldenrod,darkorange,lemonchiffon,gold,yellow,palegoldenrod]"
 FAILURES=()
 run_vis_step() {
@@ -71,16 +99,40 @@ for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
 		fi
 	fi
 done
+
+# --- FILTRERING, STÄDNING OCH RENDERINGS-LOOP ---
 for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
 	if [ -f "$mermaid_file" ]; then
+		filename=$(basename "$mermaid_file")
+
+		if [[ "$filename" != "packages_"* ]]; then
+			if ! grep -qE '(\-\->|\-\-\|>|\-\-\o)' "$mermaid_file"; then
+				echo "  ⏩ Skipping and deleting isolated diagram (no relationships): $filename"
+				rm -f "$mermaid_file"
+				continue
+			fi
+		fi
+
+		sed -i 's/fill:\[/fill:/g' "$mermaid_file"
+		sed -i 's/\]$//g' "$mermaid_file"
+
 		svg_file="$SVG_DIR/$(basename "$mermaid_file" .mmd).svg"
-		echo "  ▶ Converting $mermaid_file to $svg_file"
-		if ! mmdc -i "$mermaid_file" -o "$svg_file"; then
+
+		# Tvinga in horisontell riktning
+		if ! grep -q "direction LR" "$mermaid_file"; then
+			sed -i 's/classDiagram/classDiagram\n    direction LR/g' "$mermaid_file"
+		fi
+
+		echo "  ▶ Converting $mermaid_file to $svg_file (Plasma Pastel theme)"
+
+		if ! mmdc -i "$mermaid_file" -o "$svg_file" -c "$CONFIG_FILE" -b "#f4f0fa"; then
 			echo "    ✗ Conversion failed for $mermaid_file - continuing..."
 			FAILURES+=("Conversion failed for $mermaid_file")
 		fi
 	fi
 done
+# --------------------------------------------------------------------
+
 if [ ${#failed_classes[@]} -gt 0 ]; then
 	FAILURES+=("Per-class diagrams (${#failed_classes[@]} failures)")
 fi

@@ -1,40 +1,41 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState, useRef, useCallback} from "react";
+import {useStream, useMessages, useToolCalls} from "@langchain/react";
+import {AIMessage, HumanMessage} from "@langchain/core/messages";
 import "./styles.css";
 import ToolCallRow from "./components/ToolCallRow";
 import ProviderSelector from "./components/ProviderSelector";
 import HitlSurface from "./components/HitlSurface";
 import InputBar from "./components/InputBar";
 import SubagentCard from "./components/SubagentCard";
-import ThreadHistory from "./components/ThreadHistory";
 import TodoList from "./components/TodoList";
+import MarkdownRenderer from "./components/MarkdownRenderer";
+import {apiFetch} from "./api";
 
-/**
- * App component - orchestrator for the chat webapp
- * Handles SSE streaming, provider switching, HITL, and state management
- */
-export default function App() {
-    const [history, setHistory] = React.useState(() => {
-        try {
-            const raw = localStorage.getItem("code_agent_chat_history");
-            return raw ? JSON.parse(raw) : [];
-        } catch {
-            return [];
-        }
+const AGENT_URL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "http://localhost:8001");
+
+function AppContent() {
+    const stream = useStream({
+        assistantId: "code_agent",
+        apiUrl: AGENT_URL,
     });
-    const [input, setInput] = React.useState("");
-    const [providers, setProviders] = React.useState(null);
-    const [activeProvider, setActiveProvider] = React.useState(null);
-    const [streamingContent, setStreamingContent] = React.useState("");
-    const [toolCalls, setToolCalls] = React.useState({});
-    const [hitlPending, setHitlPending] = React.useState(null);
-    const [streaming, setStreaming] = React.useState(false);
-    const [error, setError] = React.useState(null);
-    const [currentThreadId, setCurrentThreadId] = React.useState(null);
-    const [theme, setTheme] = React.useState("light");
-    const [connectionStatus, setConnectionStatus] = React.useState("disconnected");
-    const [subagents, setSubagents] = React.useState({});
-    const [todos, setTodos] = React.useState([]);
-    const messagesRef = React.useRef(null);
+
+    const messages = useMessages(stream);
+    const toolCalls = useToolCalls(stream);
+    const subagents = [...stream.subagents.values()];
+    const todos = Array.isArray(stream.values?.todos) ? stream.values.todos : [];
+    const interrupt = stream.interrupt;
+    const isLoading = stream.isLoading;
+    const threadId = stream.threadId;
+    const error = stream.error;
+
+    const [input, setInput] = useState("");
+    const [theme, setTheme] = useState("light");
+    const [providers, setProviders] = useState(null);
+    const [activeProvider, setActiveProvider] = useState(null);
+    const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
 
     // Detect system color scheme preference
     useEffect(() => {
@@ -51,7 +52,7 @@ export default function App() {
 
     // Load providers on mount
     useEffect(() => {
-        fetch("/providers")
+        apiFetch("/providers")
             .then((res) => (res.ok ? res.json() : []))
             .then((data) => setProviders(data || []))
             .catch(() => setProviders([]));
@@ -59,7 +60,7 @@ export default function App() {
 
     // Load active provider on mount
     useEffect(() => {
-        fetch("/providers/active")
+        apiFetch("/providers/active")
             .then((res) => (res.ok ? res.json() : null))
             .then((data) => {
                 if (data) setActiveProvider(data);
@@ -67,305 +68,55 @@ export default function App() {
             .catch(() => setActiveProvider(null));
     }, []);
 
-    // Connection state tracking
-    useEffect(() => {
-        let visible = true;
-        let heartbeatTimer = null;
-        let lastMessageTime = Date.now();
-
-        const updateConnectionStatus = () => {
-            const now = Date.now();
-            const timeSinceLastMessage = now - lastMessageTime;
-
-            if (streaming) {
-                setConnectionStatus("live");
-            } else if (hitlPending) {
-                setConnectionStatus("pending");
-            } else if (visible) {
-                // Check if we received a message recently
-                if (timeSinceLastMessage < 30000) {
-                    setConnectionStatus("live");
-                } else if (timeSinceLastMessage < 120000) {
-                    setConnectionStatus("reconnecting");
-                } else {
-                    setConnectionStatus("disconnected");
-                }
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            visible = !document.hidden;
-            updateConnectionStatus();
-        };
-
-        const handleMessageEvent = () => {
-            lastMessageTime = Date.now();
-            updateConnectionStatus();
-        };
-
-        // Listen for SSE events to update connection status
-        const sseEventListener = (event) => {
-            if (event.type) {
-                lastMessageTime = Date.now();
-                updateConnectionStatus();
-            }
-        };
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        return () => {
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            if (heartbeatTimer) clearInterval(heartbeatTimer);
-        };
-    }, [streaming, hitlPending]);
-
     // Auto-scroll messages on new content
     useEffect(() => {
-        if (messagesRef.current) {
-            messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({behavior: "smooth"});
         }
-    }, [history, streamingContent, toolCalls, hitlPending]);
+    }, [messages, toolCalls, interrupt]);
 
-    // Save history to localStorage
-    useEffect(() => {
-        try {
-            localStorage.setItem("code_agent_chat_history", JSON.stringify(history));
-        } catch {
-            // ignore storage failures
-        }
-    }, [history]);
-
-    // Send message via SSE streaming endpoint
-    const sendStream = async () => {
+    const handleSend = useCallback(async () => {
         const message = input.trim();
-        if (!message || streaming || hitlPending) return;
+        if (!message || isLoading) return;
         setInput("");
-        setError(null);
-        setStreaming(true);
-        setHitlPending(null);
-
-        // Add user message to history
-        const userMsg = {role: "user", content: message};
-        setHistory((prev) => [...prev, userMsg]);
-        setStreamingContent("");
-        setToolCalls({});
-
-        const threadId = currentThreadId || undefined;
-
-        try {
-            const res = await fetch("/chat/stream", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message, thread_id: threadId}),
-            });
-
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body?.detail || `SSE stream failed: ${res.status}`);
-            }
-
-            // Capture new thread_id from response header
-            const newThreadId = res.headers.get("X-Thread-Id");
-            if (newThreadId) setCurrentThreadId(newThreadId);
-
-            // Process SSE stream using ReadableStream.getReader()
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
-
-            while (true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, {stream: true});
-                const lines = buffer.split("\n\n");
-                buffer = lines.pop(); // Keep incomplete line in buffer
-
-                for (const line of lines) {
-                    if (!line.startsWith("data: ")) continue;
-                    const dataStr = line.slice(6).trim();
-                    if (!dataStr) continue;
-
-                    try {
-                        const data = JSON.parse(dataStr);
-                        handleSseEvent(data);
-                    } catch (err) {
-                        // Ignore malformed JSON
-                    }
-                }
-            }
-        } catch (err) {
-            setError(String(err.message || err));
-        } finally {
-            setStreaming(false);
-        }
-    };
-
-    /**
-     * Handle SSE event and update state
-     */
-    const handleSseEvent = (event) => {
-        switch (event.type) {
-            case "token":
-                setStreamingContent((prev) => prev + event.content);
-                break;
-
-            case "tool_start":
-                setToolCalls((prev) => ({
-                    ...prev,
-                    [event.tool]: {
-                        tool: event.tool,
-                        input: event.input,
-                        status: "pending",
-                        timestamp: Date.now(),
-                    },
-                }));
-                break;
-
-            case "tool_end":
-                setToolCalls((prev) => {
-                    const existing = prev[event.tool];
-                    if (!existing) return prev; // Ignore orphaned tool_end
-
-                    return {
-                        ...prev,
-                        [event.tool]: {
-                            ...existing,
-                            output: event.output,
-                            elapsedS: event.elapsed_s,
-                            status: "done",
-                        },
-                    };
-                });
-                break;
-
-            case "hitl_pending":
-                setHitlPending({
-                    tool: event.tool,
-                    input: event.input,
-                    thread_id: event.thread_id,
-                });
-                setStreaming(false); // Pause streaming while HITL pending
-                break;
-
-            case "error":
-                setError(event.reason || "Stream error");
-                setStreaming(false);
-                break;
-
-            case "done":
-                // Commit streaming content to history
-                if (streamingContent || Object.keys(toolCalls).length > 0) {
-                    setHistory((prev) => [
-                        ...prev,
-                        {
-                            role: "assistant",
-                            content: streamingContent,
-                            toolCalls: Object.values(toolCalls),
-                        },
-                    ]);
-                    setStreamingContent("");
-                    setToolCalls({});
-                }
-                break;
-
-            case "todos":
-                setTodos(event.todos || []);
-                break;
-
-            case "subagent_start":
-                setSubagents((prev) => ({
-                    ...prev,
-                    [event.id]: {
-                        id: event.id,
-                        name: event.name,
-                        status: "running",
-                        toolCalls: [],
-                        output: "",
-                    },
-                }));
-                break;
-
-            case "subagent_end":
-                setSubagents((prev) => {
-                    const existing = prev[event.id];
-                    if (!existing) return prev;
-                    return {
-                        ...prev,
-                        [event.id]: {
-                            ...existing,
-                            status: event.status === "error" ? "failed" : "completed",
-                        },
-                    };
-                });
-                break;
-
-            case "ping":
-                // Keep connection alive - no state update needed
-                break;
-        }
-    };
-
-    /**
-     * Resume interrupted stream after HITL decision
-     */
-    const resumeStream = async (decision) => {
-        if (!hitlPending) return;
-
-        try {
-            const res = await fetch("/chat/resume", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    thread_id: hitlPending.thread_id,
-                    decision,
-                }),
-            });
-
-            if (res.ok) {
-                setHitlPending(null);
-                // After approval, stream continues automatically
-                // After rejection, agent sends rejection message as tokens
-            } else {
-                const body = await res.json().catch(() => ({}));
-                setError(`Resume failed: ${body?.detail || res.status}`);
-            }
-        } catch (err) {
-            setError(String(err.message || err));
-        }
-    };
-
-    const handleApprove = () => resumeStream("approve");
-    const handleReject = () => resumeStream("reject");
-
-    /**
-     * Handle keyboard input for textarea
-     */
-    const onKeyDown = (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            sendStream().then(r => {
-            }).catch(e => {
-            });
-        }
-    };
-
-    // Build combined messages for display
-    const displayMessages = history.map((msg, idx) => {
-        if (msg.role === "assistant" && msg.toolCalls && msg.toolCalls.length > 0) {
-            return {...msg, hasToolCalls: true};
-        }
-        return {...msg, hasToolCalls: false};
-    });
-
-    if (streamingContent) {
-        // Add streaming message to display
-        displayMessages.push({
-            role: "assistant",
-            content: streamingContent,
-            hasToolCalls: Object.keys(toolCalls).length > 0,
+        await stream.submit({
+            messages: [{type: "human", content: message}],
         });
-    }
+    }, [input, isLoading, stream]);
+
+    const handleApprove = useCallback(async () => {
+        await stream.respond({approved: true});
+    }, [stream]);
+
+    const handleReject = useCallback(async () => {
+        await stream.respond({approved: false});
+    }, [stream]);
+
+    const handleCancel = useCallback(async () => {
+        await stream.stop();
+    }, [stream]);
+
+    const onKeyDown = useCallback(
+        (event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                handleSend();
+            }
+        },
+        [handleSend],
+    );
+
+    // Build a lookup of assembled tool calls by call id
+    const toolCallsByCallId = useCallback(
+        (calls) => {
+            const map = new Map();
+            calls.forEach((tc) => map.set(tc.callId, tc));
+            return map;
+        },
+        [],
+    );
+
+    const toolCallMap = toolCallsByCallId(toolCalls);
 
     return (
         <div className="app-container">
@@ -376,22 +127,16 @@ export default function App() {
                         <p className="app-header-subtitle">
                             Chat with the agent. It can read, edit, and create files for you.
                         </p>
-                        {currentThreadId && (
+                        {threadId && (
                             <p className="thread-id">
-                                Thread: {currentThreadId}
+                                Thread: {threadId}
                             </p>
                         )}
                     </div>
                     <div className="header-actions">
                         <button
                             onClick={() => {
-                                setCurrentThreadId(null);
-                                setHistory([]);
-                                setStreamingContent("");
-                                setToolCalls({});
-                                setHitlPending(null);
-                                setError(null);
-                                localStorage.removeItem("code_agent_chat_history");
+                                window.dispatchEvent(new CustomEvent("new-thread"));
                             }}
                             className="btn-secondary"
                         >
@@ -419,7 +164,7 @@ export default function App() {
 
             {/* HITL Surface */}
             <HitlSurface
-                pending={hitlPending}
+                pending={interrupt}
                 onApprove={handleApprove}
                 onReject={handleReject}
             />
@@ -430,24 +175,17 @@ export default function App() {
             )}
 
             {/* Subagent Cards */}
-            {Object.values(subagents).length > 0 && (
+            {subagents.length > 0 && (
                 <div style={{marginBottom: "0.75rem"}}>
-                    {Object.values(subagents).map((subagent) => (
+                    {subagents.map((subagent) => (
                         <SubagentCard key={subagent.id} subagent={subagent}/>
                     ))}
                 </div>
             )}
 
-            {/* Thread History */}
-            {currentThreadId && (
-                <div style={{marginBottom: "0.75rem"}}>
-                    <ThreadHistory history={history}/>
-                </div>
-            )}
-
             {/* Messages Area */}
             <section
-                ref={messagesRef}
+                ref={messagesContainerRef}
                 style={{
                     flex: 1,
                     overflowY: "auto",
@@ -457,63 +195,83 @@ export default function App() {
                     backgroundColor: theme === "light" ? "#fafafa" : "#2a2a2a",
                 }}
             >
-                {history.length === 0 && !streamingContent && (
+                {messages.length === 0 && (
                     <p style={{color: theme === "light" ? "#777" : "#aaa"}}>
                         No messages yet. Try: "Create a Python module with a factorial function."
                     </p>
                 )}
-                {displayMessages.map((item, index) => (
+                {messages.map((msg, index) => {
+                    const isHuman = HumanMessage.isInstance(msg);
+                    const isAi = AIMessage.isInstance(msg);
+                    const msgToolCalls = isAi ? (msg.tool_calls || []) : [];
+
+                    return (
+                        <div
+                            key={msg.id || index}
+                            style={{
+                                marginBottom: "0.75rem",
+                                display: "flex",
+                                justifyContent: isHuman ? "flex-end" : "flex-start",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    background: isHuman ? "#e5f0ff" : "#2a4a6a",
+                                    border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                                    borderRadius: "8px",
+                                    padding: "0.6rem 0.8rem",
+                                    maxWidth: "75%",
+                                    whiteSpace: "pre-wrap",
+                                    wordBreak: "break-word",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        fontSize: "0.75rem",
+                                        color: theme === "light" ? "#888" : "#aaa",
+                                        marginBottom: "0.2rem",
+                                    }}
+                                >
+                                    {isHuman ? "You" : "Agent"}
+                                </div>
+                                <div>
+                                    <MarkdownRenderer
+                                        content={typeof msg.text === "string" ? msg.text : ""}
+                                    />
+                                    {msgToolCalls.length > 0 && (
+                                        <div style={{marginTop: "0.5rem"}}>
+                                            {msgToolCalls.map((tc, toolIdx) => {
+                                                const assembled = toolCallMap.get(tc.id);
+                                                return (
+                                                    <ToolCallRow
+                                                        key={toolIdx}
+                                                        toolCall={
+                                                            assembled || {
+                                                                name: tc.name,
+                                                                input: tc.args,
+                                                                status: "running",
+                                                                callId: tc.id,
+                                                            }
+                                                        }
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+                {isLoading && !interrupt && (
                     <div
-                        key={index}
                         style={{
                             marginBottom: "0.75rem",
                             display: "flex",
-                            justifyContent: item.role === "user" ? "flex-end" : "flex-start",
+                            justifyContent: "flex-start",
+                            gap: "0.5rem",
                         }}
                     >
-                        <div
-                            style={{
-                                background: item.role === "user" ? "#e5f0ff" : "#2a4a6a",
-                                border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
-                                borderRadius: "8px",
-                                padding: "0.6rem 0.8rem",
-                                maxWidth: "75%",
-                                whiteSpace: "pre-wrap",
-                                wordBreak: "break-word",
-                            }}
-                        >
-                            <div style={{
-                                fontSize: "0.75rem",
-                                color: theme === "light" ? "#888" : "#aaa",
-                                marginBottom: "0.2rem"
-                            }}>
-                                {item.role === "user" ? "You" : "Agent"}
-                            </div>
-                            <div>
-                                <MarkdownRenderer content={item.content}/>
-                                {item.hasToolCalls && (
-                                    <div style={{marginTop: "0.5rem"}}>
-                                        {history[index]?.toolCalls?.map((toolCall, toolIdx) => (
-                                            <ToolCallRow
-                                                key={toolIdx}
-                                                toolCall={{
-                                                    tool: toolCall.tool,
-                                                    input: toolCall.input,
-                                                    output: toolCall.output,
-                                                    elapsedS: toolCall.elapsedS,
-                                                    status: toolCall.status,
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ))}
-                {streaming && !hitlPending && (
-                    <div
-                        style={{marginBottom: "0.75rem", display: "flex", justifyContent: "flex-start", gap: "0.5rem"}}>
                         <div
                             style={{
                                 background: "#ffffff",
@@ -523,22 +281,18 @@ export default function App() {
                                 color: theme === "light" ? "#777" : "#aaa",
                             }}
                         >
-                            <span style={{animation: "spin 1s linear infinite", marginRight: "0.5rem"}}>⟳</span>
+                            <span
+                                style={{
+                                    animation: "spin 1s linear infinite",
+                                    marginRight: "0.5rem",
+                                }}
+                            >
+                                ⟳
+                            </span>
                             Thinking...
                         </div>
                         <button
-                            onClick={async () => {
-                                if (!currentThreadId) return;
-                                try {
-                                    await fetch("/chat/cancel", {
-                                        method: "POST",
-                                        headers: {"Content-Type": "application/json"},
-                                        body: JSON.stringify({thread_id: currentThreadId}),
-                                    });
-                                } catch (err) {
-                                    console.error("Cancel failed:", err);
-                                }
-                            }}
+                            onClick={handleCancel}
                             style={{
                                 padding: "0.4rem 0.75rem",
                                 borderRadius: "4px",
@@ -553,10 +307,11 @@ export default function App() {
                         </button>
                     </div>
                 )}
+                <div ref={messagesEndRef}/>
             </section>
 
             {error && (
-                <p className="error-text">{error}</p>
+                <p className="error-text">{typeof error === "string" ? error : String(error)}</p>
             )}
 
             {/* Input Bar */}
@@ -564,11 +319,11 @@ export default function App() {
                 <InputBar
                     input={input}
                     setInput={setInput}
-                    onSend={sendStream}
-                    disabled={streaming || !!hitlPending}
+                    onSend={handleSend}
+                    disabled={isLoading || !!interrupt}
                     onKeyDown={onKeyDown}
                 />
-                {streaming && (
+                {isLoading && (
                     <p className="streaming-status">Streaming response...</p>
                 )}
             </div>
@@ -576,33 +331,14 @@ export default function App() {
     );
 }
 
-/**
- * ConnectionBadge component
- * Shows connection state: live / reconnecting / disconnected
- */
-function ConnectionBadge({status}) {
-    const statusMap = {
-        live: {color: "#2e7d32", label: "Live"},
-        reconnecting: {color: "#f9a825", label: "Reconnecting"},
-        disconnected: {color: "#b00020", label: "Disconnected"},
-    };
+export default function App() {
+    const [streamKey, setStreamKey] = useState(0);
 
-    const s = statusMap[status] || statusMap.disconnected;
+    useEffect(() => {
+        const handler = () => setStreamKey((k) => k + 1);
+        window.addEventListener("new-thread", handler);
+        return () => window.removeEventListener("new-thread", handler);
+    }, []);
 
-    return (
-        <div
-            style={{
-                padding: "0.4rem 0.75rem",
-                borderRadius: "4px",
-                background: s.color === "#b00020" ? "rgba(176, 0, 32, 0.1)" : "rgba(46, 125, 50, 0.1)",
-                color: s.color,
-                fontSize: "0.85rem",
-                fontWeight: "500",
-                border: `1px solid ${s.color}`,
-            }}
-        >
-            {s.label}
-        </div>
-    );
+    return <AppContent key={streamKey}/>;
 }
-

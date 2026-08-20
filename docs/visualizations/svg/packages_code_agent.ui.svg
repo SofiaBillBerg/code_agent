@@ -1,0 +1,2287 @@
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     class="flowchart" style="max-width: 15802.1px; background-color: rgb(255, 255, 255);"
+     viewBox="0 0 15802.10546875 1700" role="graphics-document document" aria-roledescription="flowchart-v2">
+    <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes
+        edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
+        .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear
+        infinite;stroke-linecap:round;}#my-svg
+        .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear
+        infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg
+        .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg
+        .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg
+        .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg
+        .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#666;stroke:#666;}#my-svg
+        .marker.cross{stroke:#666;}#my-svg svg{font-family:"trebuchet
+        ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet
+        ms",verdana,arial,sans-serif;color:#000000;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label
+        span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg
+        span{fill:#000000;color:#000000;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node
+        polygon,#my-svg .node path{fill:#eee;stroke:#999;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node
+        .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex
+        path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg
+        .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg
+        .node.clickable{cursor:pointer;}#my-svg .root .anchor
+        path{fill:#666!important;stroke-width:0;stroke:#666;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath
+        .path{stroke:#666;stroke-width:1px;}#my-svg .flowchart-link{stroke:#666;fill:none;}#my-svg
+        .edgeLabel{background-color:white;text-align:center;}#my-svg .edgeLabel p{background-color:white;}#my-svg
+        .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#my-svg .labelBkg{background-color:rgba(255, 255,
+        255, 0.5);}#my-svg .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#my-svg
+        .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg
+        div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet
+        ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid
+        #707070;border-radius:2px;pointer-events:none;z-index:100;}#my-svg
+        .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#my-svg
+        rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg
+        .image-shape{background-color:white;text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape
+        p{background-color:white;padding:2px;}#my-svg .icon-shape .label rect,#my-svg .image-shape .label
+        rect{opacity:0.5;background-color:white;fill:white;}#my-svg
+        .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon
+        path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#999;}#my-svg
+        [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node
+        polygon{stroke:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg
+        [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node
+        path{stroke:url(#my-svg-gradient);stroke-width:1px;}#my-svg [data-look="neo"].node
+        .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg [data-look="neo"].node .neo-line
+        path{stroke:#999;filter:none;}#my-svg [data-look="neo"].node
+        circle{stroke:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg
+        [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape
+        .icon{fill:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg
+        [data-look="neo"].icon-shape .icon-neo path{stroke:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px
+        rgba(185,185,185,1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg
+        .internalNode&gt;*{fill:rgb(232, 218, 255)!important;stroke:rgb(181, 148,
+        240)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .internalNode span{fill:rgb(232, 218, 255)!important;stroke:rgb(181, 148,
+        240)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .internalNode tspan{fill:rgb(74, 38, 133)!important;}#my-svg .externalNode&gt;*{fill:rgb(255,
+        214, 245)!important;stroke:rgb(147, 108, 212)!important;stroke-width:2px!important;color:rgb(74, 38,
+        133)!important;font-family:"Segoe UI"!important;}#my-svg .externalNode span{fill:rgb(255, 214,
+        245)!important;stroke:rgb(147, 108, 212)!important;stroke-width:2px!important;color:rgb(74, 38,
+        133)!important;font-family:"Segoe UI"!important;}#my-svg .externalNode tspan{fill:rgb(74, 38,
+        133)!important;}#my-svg .moduleNode&gt;*{fill:rgb(214, 240, 255)!important;stroke:rgb(147, 108,
+        212)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .moduleNode span{fill:rgb(214, 240, 255)!important;stroke:rgb(147, 108,
+        212)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .moduleNode tspan{fill:rgb(74, 38, 133)!important;}
+    </style>
+    <g>
+        <marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5"
+                refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto">
+            <path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1"
+                refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto">
+            <polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath"
+                     style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5"
+                refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2"
+                refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12"
+                refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath"
+                  style="stroke-width: 2; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1"
+                refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath"
+                  style="stroke-width: 2; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15"
+                refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15"
+                refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath"
+                  style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <g class="root">
+            <g class="clusters">
+                <g class="cluster" id="my-svg-External_Connections" data-look="classic">
+                    <rect style="" x="15543.73046875" y="8" width="250.375" height="1684"/>
+                    <g class="cluster-label" transform="translate(15567.08203125, 8)">
+                        <foreignObject width="203.671875" height="24">
+                            <div xmlns="http://www.w3.org/1999/xhtml"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5;">
+                                <span class="nodeLabel">
+                                    <p>External Components Called</p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+            <g class="edgePaths">
+                <path d="M12325.106,292.5L12857.377,257.417C13389.648,222.333,14454.189,152.167,14990.626,117.083C15527.064,82,15535.397,82,15547.542,82C15559.686,82,15575.642,82,15583.62,82L15591.598,82"
+                      id="my-svg-L__coerce_param_loads_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L__coerce_param_loads_0"
+                      data-points="W3sieCI6MTIzMjUuMTA2MTg3ODIwNDM1LCJ5IjoyOTIuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6ODJ9LHsieCI6MTU1NDMuNzMwNDY4NzUsInkiOjgyfSx7IngiOjE1NTk1LjU5NzY1NjI1LCJ5Ijo4Mn1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M12978.569,292.5L13401.929,268.083C13825.29,243.667,14672.01,194.833,15099.537,170.417C15527.064,146,15535.397,146,15547.12,149.863C15558.844,153.726,15573.957,161.453,15581.514,165.316L15589.07,169.179"
+                      id="my-svg-L_render_catalog_discover_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_render_catalog_discover_0"
+                      data-points="W3sieCI6MTI5NzguNTY5MTgxMTY5NzgzLCJ5IjoyOTIuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MTQ2fSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5IjoxNDZ9LHsieCI6MTU1OTIuNjMxODM1OTM3NSwieSI6MTcxfV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M13849.853,292.5L14127.999,278.75C14406.146,265,14962.438,237.5,15244.751,223.75C15527.064,210,15535.397,210,15544.876,210C15554.355,210,15564.98,210,15570.293,210L15575.605,210"
+                      id="my-svg-L_run_cli_ui_discover_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_run_cli_ui_discover_0"
+                      data-points="W3sieCI6MTM4NDkuODUzMTcyMzAyMjQ2LCJ5IjoyOTIuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MjEwfSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5IjoyMTB9LHsieCI6MTU1NzkuNjA1NDY4NzUsInkiOjIxMH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,294.966L15497.897,294.805C15502.064,294.644,15510.397,294.322,15518.73,294.161C15527.064,294,15535.397,294,15544.914,295.88C15554.431,297.761,15565.131,301.522,15570.482,303.402L15575.832,305.283"
+                      id="my-svg-L_run_cli_ui_dispatch_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_run_cli_ui_dispatch_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjI5NC45NjU1MTYyMzU2MzMyM30seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6Mjk0fSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5IjoyOTR9LHsieCI6MTU1NzkuNjA1NDY4NzUsInkiOjMwNi42MDkwODYzNzA0NDQzNH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,412.586L15497.897,412.488C15502.064,412.39,15510.397,412.195,15518.73,412.098C15527.064,412,15535.397,412,15544.747,414.236C15554.098,416.472,15564.465,420.944,15569.648,423.18L15574.832,425.416"
+                      id="my-svg-L_run_cli_ui_InvocationRequest_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_run_cli_ui_InvocationRequest_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjQxMi41ODU3NDY1MTYyODQyfSx7IngiOjE1NTE4LjczMDQ2ODc1LCJ5Ijo0MTJ9LHsieCI6MTU1NDMuNzMwNDY4NzUsInkiOjQxMn0seyJ4IjoxNTU3OC41MDQ3NzQzMDU1NTUsInkiOjQyN31d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,594L15497.897,594C15502.064,594,15510.397,594,15518.73,594C15527.064,594,15535.397,594,15545.727,594C15556.056,594,15568.382,594,15574.544,594L15580.707,594"
+                      id="my-svg-L_get_registry__build_registry_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_registry__build_registry_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjU5NH0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6NTk0fSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5Ijo1OTR9LHsieCI6MTU1ODQuNzA3MDMxMjUsInkiOjU5NH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,721.588L15497.897,721.657C15502.064,721.725,15510.397,721.863,15518.73,721.931C15527.064,722,15535.397,722,15548.247,722C15561.098,722,15578.465,722,15587.148,722L15595.832,722"
+                      id="my-svg-L_get_agent_create_llm_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent_create_llm_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjcyMS41ODgwNDY0MDYxMjk4fSx7IngiOjE1NTE4LjczMDQ2ODc1LCJ5Ijo3MjJ9LHsieCI6MTU1NDMuNzMwNDY4NzUsInkiOjcyMn0seyJ4IjoxNTU5OS44MzIwMzEyNSwieSI6NzIyfV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,849.176L15497.897,849.313C15502.064,849.451,15510.397,849.725,15518.73,849.863C15527.064,850,15535.397,850,15547.542,850C15559.686,850,15575.642,850,15583.62,850L15591.598,850"
+                      id="my-svg-L_get_agent_build_agent_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent_build_agent_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjg0OS4xNzYwOTI4MTIyNTk2fSx7IngiOjE1NTE4LjczMDQ2ODc1LCJ5Ijo4NTB9LHsieCI6MTU1NDMuNzMwNDY4NzUsInkiOjg1MH0seyJ4IjoxNTU5NS41OTc2NTYyNSwieSI6ODUwfV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M13849.853,895.5L14127.999,909.25C14406.146,923,14962.438,950.5,15244.751,964.25C15527.064,978,15535.397,978,15547.505,978C15559.613,978,15575.496,978,15583.438,978L15591.379,978"
+                      id="my-svg-L_get_agent_load_config_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent_load_config_0"
+                      data-points="W3sieCI6MTM4NDkuODUzMTcyMzAyMjQ2LCJ5Ijo4OTUuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6OTc4fSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5Ijo5Nzh9LHsieCI6MTU1OTUuMzc4OTA2MjUsInkiOjk3OH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M12325.106,895.5L12857.377,930.583C13389.648,965.667,14454.189,1035.833,14990.626,1070.917C15527.064,1106,15535.397,1106,15543.064,1106C15550.73,1106,15557.73,1106,15561.23,1106L15564.73,1106"
+                      id="my-svg-L_get_agent_create_default_tools_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent_create_default_tools_0"
+                      data-points="W3sieCI6MTIzMjUuMTA2MTg3ODIwNDM1LCJ5Ijo4OTUuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MTEwNn0seyJ4IjoxNTU0My43MzA0Njg3NSwieSI6MTEwNn0seyJ4IjoxNTU2OC43MzA0Njg3NSwieSI6MTEwNn1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M11410.258,895.5L12095.003,951.917C12779.749,1008.333,14149.24,1121.167,14838.152,1177.583C15527.064,1234,15535.397,1234,15543.581,1234C15551.764,1234,15559.798,1234,15563.815,1234L15567.832,1234"
+                      id="my-svg-L_get_agent_build_checkpointer_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent_build_checkpointer_0"
+                      data-points="W3sieCI6MTE0MTAuMjU3OTk3MTMxMzQ4LCJ5Ijo4OTUuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MTIzNH0seyJ4IjoxNTU0My43MzA0Njg3NSwieSI6MTIzNH0seyJ4IjoxNTU3MS44MzIwMzEyNSwieSI6MTIzNH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M10800.359,895.5L11586.754,973.25C12373.15,1051,13945.94,1206.5,14736.502,1284.25C15527.064,1362,15535.397,1362,15544.689,1362C15553.98,1362,15564.23,1362,15569.355,1362L15574.48,1362"
+                      id="my-svg-L_get_agent__load_mcp_tools_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent__load_mcp_tools_0"
+                      data-points="W3sieCI6MTA4MDAuMzU5MjAzMzM4NjIzLCJ5Ijo4OTUuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MTM2Mn0seyJ4IjoxNTU0My43MzA0Njg3NSwieSI6MTM2Mn0seyJ4IjoxNTU3OC40ODA0Njg3NSwieSI6MTM2Mn1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M10364.717,895.5L11223.719,994.583C12082.722,1093.667,13800.726,1291.833,14663.895,1390.917C15527.064,1490,15535.397,1490,15547.504,1490C15559.611,1490,15575.491,1490,15583.431,1490L15591.371,1490"
+                      id="my-svg-L_get_agent_get_settings_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_get_agent_get_settings_0"
+                      data-points="W3sieCI6MTAzNjQuNzE3MjA3NzcyMzkyLCJ5Ijo4OTUuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MTQ5MH0seyJ4IjoxNTU0My43MzA0Njg3NSwieSI6MTQ5MH0seyJ4IjoxNTU5NS4zNzEwOTM3NSwieSI6MTQ5MH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M10037.986,895.5L10951.443,1015.917C11864.901,1136.333,13691.816,1377.167,14609.44,1497.583C15527.064,1618,15535.397,1618,15548.654,1618C15561.91,1618,15580.09,1618,15589.18,1618L15598.27,1618"
+                      id="my-svg-L__push_protocol_event_append_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L__push_protocol_event_append_0"
+                      data-points="W3sieCI6MTAwMzcuOTg1NzExMDk3NzE3LCJ5Ijo4OTUuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MTYxOH0seyJ4IjoxNTU0My43MzA0Njg3NSwieSI6MTYxOH0seyJ4IjoxNTYwMi4yNjk1MzEyNSwieSI6MTYxOH1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15069.651,292.5L15144.497,289.417C15219.344,286.333,15369.037,280.167,15448.051,277.083C15527.064,274,15535.397,274,15547.12,270.137C15558.844,266.274,15573.957,258.547,15581.514,254.684L15589.07,250.821"
+                      id="my-svg-L_list_capabilities_discover_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_list_capabilities_discover_0"
+                      data-points="W3sieCI6MTUwNjkuNjUwNzU5ODg3Njk2LCJ5IjoyOTIuNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6Mjc0fSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5IjoyNzR9LHsieCI6MTU1OTIuNjMxODM1OTM3NSwieSI6MjQ5fV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,392.65L15497.897,392.542C15502.064,392.433,15510.397,392.217,15518.73,392.108C15527.064,392,15535.397,392,15544.931,389.685C15554.465,387.37,15565.199,382.74,15570.566,380.425L15575.933,378.11"
+                      id="my-svg-L_invoke_capability_dispatch_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_invoke_capability_dispatch_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjM5Mi42NTAxMTQyNjUzMjYzNX0seyJ4IjoxNTUxOC43MzA0Njg3NSwieSI6MzkyfSx7IngiOjE1NTQzLjczMDQ2ODc1LCJ5IjozOTJ9LHsieCI6MTU1NzkuNjA1NDY4NzUsInkiOjM3Ni41MjUyMTIxODE3Mjc0fV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M15493.73,520.238L15497.897,520.198C15502.064,520.159,15510.397,520.079,15518.73,520.04C15527.064,520,15535.397,520,15544.747,517.764C15554.098,515.528,15564.465,511.056,15569.648,508.82L15574.832,506.584"
+                      id="my-svg-L_invoke_capability_InvocationRequest_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_invoke_capability_InvocationRequest_0"
+                      data-points="W3sieCI6MTU0OTMuNzMwNDY4NzUsInkiOjUyMC4yMzgxNjA2NzE0NTYyfSx7IngiOjE1NTE4LjczMDQ2ODc1LCJ5Ijo1MjB9LHsieCI6MTU1NDMuNzMwNDY4NzUsInkiOjUyMH0seyJ4IjoxNTU3OC41MDQ3NzQzMDU1NTUsInkiOjUwNX1d"
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+            </g>
+            <g class="edgeLabels">
+                <g class="edgeLabel">
+                    <g class="label" data-id="L__coerce_param_loads_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_render_catalog_discover_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_run_cli_ui_discover_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_run_cli_ui_dispatch_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_run_cli_ui_InvocationRequest_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_registry__build_registry_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent_create_llm_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent_build_agent_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent_load_config_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent_create_default_tools_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent_build_checkpointer_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent__load_mcp_tools_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_get_agent_get_settings_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L__push_protocol_event_append_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_list_capabilities_discover_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_invoke_capability_dispatch_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_invoke_capability_InvocationRequest_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+            <g class="nodes">
+                <g class="root" transform="translate(0, 284.5)">
+                    <g class="clusters">
+                        <g class="cluster" id="my-svg-Internal_Structures" data-look="classic">
+                            <rect style="" x="8" y="8" width="15485.73046875" height="603"/>
+                            <g class="cluster-label" transform="translate(7654.794921875, 8)">
+                                <foreignObject width="192.140625" height="24">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5;">
+                                        <span class="nodeLabel">
+                                            <p>code_agent.ui components</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                    </g>
+                    <g class="edgePaths">
+                        <path d="M361.375,240.5L361.375,248.75C361.375,257,361.375,273.5,361.375,303.333C361.375,333.167,361.375,376.333,361.375,397.917L361.375,419.5"
+                              id="my-svg-L__prompt_params__coerce_param_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L__prompt_params__coerce_param_0"
+                              data-points="W3sieCI6MzYxLjM3NSwieSI6MjQwLjV9LHsieCI6MzYxLjM3NSwieSI6MjkwfSx7IngiOjM2MS4zNzUsInkiOjQyMy41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M641.094,240.5L641.094,248.75C641.094,257,641.094,273.5,641.094,303.333C641.094,333.167,641.094,376.333,641.094,397.917L641.094,419.5"
+                              id="my-svg-L_render_catalog__risk_style_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_render_catalog__risk_style_0"
+                              data-points="W3sieCI6NjQxLjA5Mzc1LCJ5IjoyNDAuNX0seyJ4Ijo2NDEuMDkzNzUsInkiOjI5MH0seyJ4Ijo2NDEuMDkzNzUsInkiOjQyMy41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1100.086,94.981L1069.909,101.985C1039.732,108.988,979.378,122.994,949.201,137.58C919.023,152.167,919.023,167.333,919.023,174.917L919.023,182.5"
+                              id="my-svg-L_run_cli_ui_render_response_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui_render_response_0"
+                              data-points="W3sieCI6MTEwMC4wODU5Mzc1LCJ5Ijo5NC45ODE0NDgxNjczMDM4fSx7IngiOjkxOS4wMjM0Mzc1LCJ5IjoxMzd9LHsieCI6OTE5LjAyMzQzNzUsInkiOjE4Ni41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1100.086,79.978L976.967,89.482C853.849,98.985,607.612,117.993,484.493,135.08C361.375,152.167,361.375,167.333,361.375,174.917L361.375,182.5"
+                              id="my-svg-L_run_cli_ui__prompt_params_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui__prompt_params_0"
+                              data-points="W3sieCI6MTEwMC4wODU5Mzc1LCJ5Ijo3OS45Nzc5MTEyNzEwOTUzMn0seyJ4IjozNjEuMzc1LCJ5IjoxMzd9LHsieCI6MzYxLjM3NSwieSI6MTg2LjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1196.961,99.5L1196.961,105.75C1196.961,112,1196.961,124.5,1196.961,138.333C1196.961,152.167,1196.961,167.333,1196.961,174.917L1196.961,182.5"
+                              id="my-svg-L_run_cli_ui_render_request_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui_render_request_0"
+                              data-points="W3sieCI6MTE5Ni45NjA5Mzc1LCJ5Ijo5OS41fSx7IngiOjExOTYuOTYwOTM3NSwieSI6MTM3fSx7IngiOjExOTYuOTYwOTM3NSwieSI6MTg2LjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1100.086,83.741L1023.587,92.617C947.089,101.494,794.091,119.247,717.592,135.707C641.094,152.167,641.094,167.333,641.094,174.917L641.094,182.5"
+                              id="my-svg-L_run_cli_ui_render_catalog_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui_render_catalog_0"
+                              data-points="W3sieCI6MTEwMC4wODU5Mzc1LCJ5Ijo4My43NDA4ODIwNjc3MTUxNX0seyJ4Ijo2NDEuMDkzNzUsInkiOjEzN30seyJ4Ijo2NDEuMDkzNzUsInkiOjE4Ni41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1293.836,95.054L1323.865,102.045C1353.893,109.036,1413.951,123.018,1443.979,137.592C1474.008,152.167,1474.008,167.333,1474.008,174.917L1474.008,182.5"
+                              id="my-svg-L_run_cli_ui_render_progress_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui_render_progress_0"
+                              data-points="W3sieCI6MTI5My44MzU5Mzc1LCJ5Ijo5NS4wNTM3MTk0NzQzNjY5M30seyJ4IjoxNDc0LjAwNzgxMjUsInkiOjEzN30seyJ4IjoxNDc0LjAwNzgxMjUsInkiOjE4Ni41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1293.836,83.804L1369.815,92.67C1445.794,101.536,1597.753,119.268,1673.732,135.717C1749.711,152.167,1749.711,167.333,1749.711,174.917L1749.711,182.5"
+                              id="my-svg-L_run_cli_ui_render_receipt_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui_render_receipt_0"
+                              data-points="W3sieCI6MTI5My44MzU5Mzc1LCJ5Ijo4My44MDQyNzQwODQxMjQ4M30seyJ4IjoxNzQ5LjcxMDkzNzUsInkiOjEzN30seyJ4IjoxNzQ5LjcxMDkzNzUsInkiOjE4Ni41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1293.836,79.986L1416.802,89.488C1539.768,98.991,1785.701,117.995,1908.667,135.081C2031.633,152.167,2031.633,167.333,2031.633,174.917L2031.633,182.5"
+                              id="my-svg-L_run_cli_ui__select_capability_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_run_cli_ui__select_capability_0"
+                              data-points="W3sieCI6MTI5My44MzU5Mzc1LCJ5Ijo3OS45ODYxMDA0NTExNTAzNH0seyJ4IjoyMDMxLjYzMjgxMjUsInkiOjEzN30seyJ4IjoyMDMxLjYzMjgxMjUsInkiOjE4Ni41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2298.461,240.5L2298.461,248.75C2298.461,257,2298.461,273.5,2298.461,289.333C2298.461,305.167,2298.461,320.333,2298.461,327.917L2298.461,335.5"
+                              id="my-svg-L_get_agent_AgentState_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_get_agent_AgentState_0"
+                              data-points="W3sieCI6MjI5OC40NjA5Mzc1LCJ5IjoyNDAuNX0seyJ4IjoyMjk4LjQ2MDkzNzUsInkiOjI5MH0seyJ4IjoyMjk4LjQ2MDkzNzUsInkiOjMzOS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2674.676,252.5L2662.012,258.75C2649.349,265,2624.022,277.5,2611.359,303.333C2598.695,329.167,2598.695,368.333,2598.695,387.917L2598.695,407.5"
+                              id="my-svg-L__push_protocol_event__get_or_create_notifier_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L__push_protocol_event__get_or_create_notifier_0"
+                              data-points="W3sieCI6MjY3NC42NzU3MDQ2NTY4NjI4LCJ5IjoyNTIuNX0seyJ4IjoyNTk4LjY5NTMxMjUsInkiOjI5MH0seyJ4IjoyNTk4LjY5NTMxMjUsInkiOjQxMS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2832.715,252.5L2845.378,258.75C2858.042,265,2883.369,277.5,2896.032,303.333C2908.695,329.167,2908.695,368.333,2908.695,387.917L2908.695,407.5"
+                              id="my-svg-L__push_protocol_event__get_or_create_queue_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L__push_protocol_event__get_or_create_queue_0"
+                              data-points="W3sieCI6MjgzMi43MTQ5MjAzNDMxMzcyLCJ5IjoyNTIuNX0seyJ4IjoyOTA4LjY5NTMxMjUsInkiOjI5MH0seyJ4IjoyOTA4LjY5NTMxMjUsInkiOjQxMS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M3196.898,240.5L3196.898,248.75C3196.898,257,3196.898,273.5,3216.245,303.502C3235.592,333.504,3274.286,377.007,3293.632,398.759L3312.979,420.511"
+                              id="my-svg-L_list_capabilities_get_registry_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_list_capabilities_get_registry_0"
+                              data-points="W3sieCI6MzE5Ni44OTg0Mzc1LCJ5IjoyNDAuNX0seyJ4IjozMTk2Ljg5ODQzNzUsInkiOjI5MH0seyJ4IjozMzE1LjYzNzY2NzkzMjI0MywieSI6NDIzLjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M9338.539,240.5L9338.539,248.75C9338.539,257,9338.539,273.5,8356.425,308.026C7374.311,342.553,5410.082,395.106,4427.968,421.382L3445.854,447.659"
+                              id="my-svg-L_invoke_capability_get_registry_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_invoke_capability_get_registry_0"
+                              data-points="W3sieCI6OTMzOC41MzkwNjI1LCJ5IjoyNDAuNX0seyJ4Ijo5MzM4LjUzOTA2MjUsInkiOjI5MH0seyJ4IjozNDQxLjg1NTQ2ODc1LCJ5Ijo0NDcuNzY1NTU5MDM5Mjc0OX1d"
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                    </g>
+                    <g class="edgeLabels">
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L__prompt_params__coerce_param_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_render_catalog__risk_style_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui_render_response_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui__prompt_params_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui_render_request_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui_render_catalog_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui_render_progress_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui_render_receipt_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_run_cli_ui__select_capability_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_get_agent_AgentState_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L__push_protocol_event__get_or_create_notifier_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L__push_protocol_event__get_or_create_queue_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_list_capabilities_get_registry_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_invoke_capability_get_registry_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                    </g>
+                    <g class="nodes">
+                        <g class="node default internalNode" id="my-svg-flowchart-_sse-0" data-look="classic"
+                           transform="translate(120.765625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-77.765625" y="-27" width="155.53125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-47.765625, -12)">
+                                <rect/>
+                                <foreignObject width="95.53125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _sse()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_prompt_params-13" data-look="classic"
+                           transform="translate(361.375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-118.203125" y="-27" width="236.40625" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-88.203125, -12)">
+                                <rect/>
+                                <foreignObject width="176.40625" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _prompt_params()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_coerce_param-12" data-look="classic"
+                           transform="translate(361.375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-112.84375" y="-27" width="225.6875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-82.84375, -12)">
+                                <rect/>
+                                <foreignObject width="165.6875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _coerce_param()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-render_catalog-15" data-look="classic"
+                           transform="translate(641.09375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-111.515625" y="-27" width="223.03125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-81.515625, -12)">
+                                <rect/>
+                                <foreignObject width="163.03125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function render_catalog()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_risk_style-11" data-look="classic"
+                           transform="translate(641.09375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-99.1015625" y="-27" width="198.203125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-69.1015625, -12)">
+                                <rect/>
+                                <foreignObject width="138.203125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _risk_style()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-run_cli_ui-20" data-look="classic"
+                           transform="translate(1196.9609375, 72.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-96.875" y="-27" width="193.75" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-66.875, -12)">
+                                <rect/>
+                                <foreignObject width="133.75" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function run_cli_ui()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-render_response-18"
+                           data-look="classic" transform="translate(919.0234375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-116.4140625" y="-27" width="232.828125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-86.4140625, -12)">
+                                <rect/>
+                                <foreignObject width="172.828125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function render_response()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-render_request-16" data-look="classic"
+                           transform="translate(1196.9609375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-111.5234375" y="-27" width="223.046875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-81.5234375, -12)">
+                                <rect/>
+                                <foreignObject width="163.046875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function render_request()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-render_progress-17"
+                           data-look="classic" transform="translate(1474.0078125, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-115.5234375" y="-27" width="231.046875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-85.5234375, -12)">
+                                <rect/>
+                                <foreignObject width="171.046875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function render_progress()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-render_receipt-19" data-look="classic"
+                           transform="translate(1749.7109375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-110.1796875" y="-27" width="220.359375" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-80.1796875, -12)">
+                                <rect/>
+                                <foreignObject width="160.359375" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function render_receipt()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_select_capability-14"
+                           data-look="classic" transform="translate(2031.6328125, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-121.7421875" y="-27" width="243.484375" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-91.7421875, -12)">
+                                <rect/>
+                                <foreignObject width="183.484375" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _select_capability()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-get_agent-27" data-look="classic"
+                           transform="translate(2298.4609375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-95.0859375" y="-27" width="190.171875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-65.0859375, -12)">
+                                <rect/>
+                                <foreignObject width="130.171875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function get_agent()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-AgentState-21" data-look="classic"
+                           transform="translate(2298.4609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-120.234375" y="-111" width="240.46875" height="222"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-90.234375, -96)">
+                                <rect/>
+                                <foreignObject width="180.46875" height="192">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class AgentState<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - agent
+                                                <br/>
+                                                - thread_id
+                                                <br/>
+                                                - checkpointer
+                                                <br/>
+                                                - provider
+                                                <br/>
+                                                - model
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_push_protocol_event-52"
+                           data-look="classic" transform="translate(2753.6953125, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _push_protocol_event()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_get_or_create_notifier-51"
+                           data-look="classic" transform="translate(2598.6953125, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _get_or_create_notifier()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_get_or_create_queue-50"
+                           data-look="classic" transform="translate(2908.6953125, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _get_or_create_queue()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-list_capabilities-56"
+                           data-look="classic" transform="translate(3196.8984375, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-114.203125" y="-27" width="228.40625" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-84.203125, -12)">
+                                <rect/>
+                                <foreignObject width="168.40625" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function list_capabilities()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-get_registry-26" data-look="classic"
+                           transform="translate(3339.65234375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-102.203125" y="-27" width="204.40625" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-72.203125, -12)">
+                                <rect/>
+                                <foreignObject width="144.40625" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function get_registry()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-invoke_capability-57"
+                           data-look="classic" transform="translate(9338.5390625, 213.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-121.3046875" y="-27" width="242.609375" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-91.3046875, -12)">
+                                <rect/>
+                                <foreignObject width="182.609375" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function invoke_capability()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_chat_model_stream-1"
+                           data-look="classic" transform="translate(3636.92578125, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-145.0703125" y="-39" width="290.140625" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-115.0703125, -24)">
+                                <rect/>
+                                <foreignObject width="230.140625" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_chat_model_stream()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_llm_start-2"
+                           data-look="classic" transform="translate(3961.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_llm_start()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_llm_end-3"
+                           data-look="classic" transform="translate(4271.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_llm_end()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_tool_start-4"
+                           data-look="classic" transform="translate(4581.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_tool_start()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_tool_end-5"
+                           data-look="classic" transform="translate(4891.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_tool_end()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_tool_error-6"
+                           data-look="classic" transform="translate(5201.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_tool_error()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_chain_start-7"
+                           data-look="classic" transform="translate(5511.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_chain_start()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_on_chain_end-8"
+                           data-look="classic" transform="translate(5821.99609375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_on_chain_end()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_interrupt-9"
+                           data-look="classic" transform="translate(6128.62890625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-126.6328125" y="-27" width="253.265625" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-96.6328125, -12)">
+                                <rect/>
+                                <foreignObject width="193.265625" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_interrupt()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_translate_values-10"
+                           data-look="classic" transform="translate(6424.78515625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-119.5234375" y="-27" width="239.046875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-89.5234375, -12)">
+                                <rect/>
+                                <foreignObject width="179.046875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _translate_values()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ProviderConfig-22" data-look="classic"
+                           transform="translate(6724.30859375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ProviderConfig (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - name
+                                                <br/>
+                                                - model
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ProviderListResponse-23"
+                           data-look="classic" transform="translate(7034.30859375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-75" width="260" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -60)">
+                                <rect/>
+                                <foreignObject width="200" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ProviderListResponse (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - providers
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ActiveProviderResponse-24"
+                           data-look="classic" transform="translate(7344.30859375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ActiveProviderResponse (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - provider
+                                                <br/>
+                                                - model
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ActiveProviderRequest-25"
+                           data-look="classic" transform="translate(7654.30859375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ActiveProviderRequest (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - provider
+                                                <br/>
+                                                - model
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-AuthMiddleware-28" data-look="classic"
+                           transform="translate(7954.54296875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-120.234375" y="-63" width="240.46875" height="126"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-90.234375, -48)">
+                                <rect/>
+                                <foreignObject width="180.46875" height="96">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class AuthMiddleware<br/>====================<br/>Methods:
+                                                <br/>
+                                                + __init__()
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ChatMessage-29" data-look="classic"
+                           transform="translate(8254.77734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ChatMessage (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - role
+                                                <br/>
+                                                - content
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ChatRequest-30" data-look="classic"
+                           transform="translate(8564.77734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ChatRequest (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - message
+                                                <br/>
+                                                - thread_id
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ChatResponse-31" data-look="classic"
+                           transform="translate(8874.77734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ChatResponse (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - response
+                                                <br/>
+                                                - thread_id
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-TokenEvent-32" data-look="classic"
+                           transform="translate(9184.48828125, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-129.7109375" y="-75" width="259.421875" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-99.7109375, -60)">
+                                <rect/>
+                                <foreignObject width="199.421875" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class TokenEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - content
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ToolStartEvent-33" data-look="classic"
+                           transform="translate(9494.19921875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-99" width="260" height="198"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -84)">
+                                <rect/>
+                                <foreignObject width="200" height="168">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ToolStartEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - tool
+                                                <br/>
+                                                - input
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ToolEndEvent-34" data-look="classic"
+                           transform="translate(9804.19921875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-111" width="260" height="222"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -96)">
+                                <rect/>
+                                <foreignObject width="200" height="192">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ToolEndEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - tool
+                                                <br/>
+                                                - output
+                                                <br/>
+                                                - elapsed_s
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-DoneEvent-35" data-look="classic"
+                           transform="translate(10111.50390625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-127.3046875" y="-63" width="254.609375" height="126"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-97.3046875, -48)">
+                                <rect/>
+                                <foreignObject width="194.609375" height="96">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class DoneEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-HitlPendingEvent-36"
+                           data-look="classic" transform="translate(10418.80859375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-111" width="260" height="222"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -96)">
+                                <rect/>
+                                <foreignObject width="200" height="192">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class HitlPendingEvent (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - tool
+                                                <br/>
+                                                - input
+                                                <br/>
+                                                - thread_id
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ErrorEvent-37" data-look="classic"
+                           transform="translate(10725.66796875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-126.859375" y="-75" width="253.71875" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-96.859375, -60)">
+                                <rect/>
+                                <foreignObject width="193.71875" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ErrorEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - reason
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ResumeRequest-38" data-look="classic"
+                           transform="translate(11032.52734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ResumeRequest (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - thread_id
+                                                <br/>
+                                                - decision
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-CancelRequest-39" data-look="classic"
+                           transform="translate(11342.52734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-75" width="260" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -60)">
+                                <rect/>
+                                <foreignObject width="200" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class CancelRequest (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - thread_id
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-HistoryRequest-40" data-look="classic"
+                           transform="translate(11652.52734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class HistoryRequest (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - thread_id
+                                                <br/>
+                                                - limit
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-HistoryResponse-41"
+                           data-look="classic" transform="translate(11962.52734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-75" width="260" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -60)">
+                                <rect/>
+                                <foreignObject width="200" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class HistoryResponse (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - messages
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-AuditEntry-42" data-look="classic"
+                           transform="translate(12269.40234375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-126.875" y="-99" width="253.75" height="198"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-96.875, -84)">
+                                <rect/>
+                                <foreignObject width="193.75" height="168">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class AuditEntry (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - action
+                                                <br/>
+                                                - details
+                                                <br/>
+                                                - timestamp
+                                                <br/>
+                                                - user
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-AuditRequest-43" data-look="classic"
+                           transform="translate(12576.27734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-123" width="260" height="246"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -108)">
+                                <rect/>
+                                <foreignObject width="200" height="216">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class AuditRequest (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - thread_id
+                                                <br/>
+                                                - action
+                                                <br/>
+                                                - details
+                                                <br/>
+                                                - timestamp
+                                                <br/>
+                                                - user
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-AuditResponse-44" data-look="classic"
+                           transform="translate(12886.27734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-75" width="260" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -60)">
+                                <rect/>
+                                <foreignObject width="200" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class AuditResponse (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - status
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-AuditListResponse-45"
+                           data-look="classic" transform="translate(13196.27734375, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-75" width="260" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -60)">
+                                <rect/>
+                                <foreignObject width="200" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class AuditListResponse (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - entries
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-TodoEvent-46" data-look="classic"
+                           transform="translate(13502.44140625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-126.1640625" y="-75" width="252.328125" height="150"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-96.1640625, -60)">
+                                <rect/>
+                                <foreignObject width="192.328125" height="120">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class TodoEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - todos
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-SubagentStartEvent-47"
+                           data-look="classic" transform="translate(13808.60546875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-99" width="260" height="198"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -84)">
+                                <rect/>
+                                <foreignObject width="200" height="168">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class SubagentStartEvent (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - id
+                                                <br/>
+                                                - name
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-SubagentEndEvent-48"
+                           data-look="classic" transform="translate(14118.60546875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-111" width="260" height="222"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -96)">
+                                <rect/>
+                                <foreignObject width="200" height="192">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class SubagentEndEvent (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - type
+                                                <br/>
+                                                - id
+                                                <br/>
+                                                - name
+                                                <br/>
+                                                - status
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-PingEvent-49" data-look="classic"
+                           transform="translate(14423.25390625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-124.6484375" y="-63" width="249.296875" height="126"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-94.6484375, -48)">
+                                <rect/>
+                                <foreignObject width="189.296875" height="96">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class PingEvent (BaseModel)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - type
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_extract_decision-53"
+                           data-look="classic" transform="translate(14718.31640625, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-120.4140625" y="-27" width="240.828125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-90.4140625, -12)">
+                                <rect/>
+                                <foreignObject width="180.828125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _extract_decision()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ProtocolCommand-54"
+                           data-look="classic" transform="translate(15018.73046875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ProtocolCommand (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - method
+                                                <br/>
+                                                - params
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-ProtocolStreamRequest-55"
+                           data-look="classic" transform="translate(15328.73046875, 450.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-111" width="260" height="222"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -96)">
+                                <rect/>
+                                <foreignObject width="200" height="192">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class ProtocolStreamRequest (BaseModel)<br/>====================
+                                                <br/>
+                                                Attributes:
+                                                <br/>
+                                                - channels
+                                                <br/>
+                                                - namespaces
+                                                <br/>
+                                                - depth
+                                                <br/>
+                                                - since
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-loads-59" data-look="classic"
+                   transform="translate(15668.91796875, 82)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-73.3203125" y="-39" width="146.640625" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-43.3203125, -24)">
+                        <rect/>
+                        <foreignObject width="86.640625" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>loads()
+                                        <br/>
+                                        (from config)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-discover-65" data-look="classic"
+                   transform="translate(15668.91796875, 210)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-89.3125" y="-39" width="178.625" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-59.3125, -24)">
+                        <rect/>
+                        <foreignObject width="118.625" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>discover()
+                                        <br/>
+                                        (from capabilities)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-dispatch-79" data-look="classic"
+                   transform="translate(15668.91796875, 338)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-89.3125" y="-39" width="178.625" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-59.3125, -24)">
+                        <rect/>
+                        <foreignObject width="118.625" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>dispatch()
+                                        <br/>
+                                        (from capabilities)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-InvocationRequest-81" data-look="classic"
+                   transform="translate(15668.91796875, 466)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-95.3125" y="-39" width="190.625" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-65.3125, -24)">
+                        <rect/>
+                        <foreignObject width="130.625" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>InvocationRequest()
+                                        <br/>
+                                        (from capabilities)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-_build_registry-87" data-look="classic"
+                   transform="translate(15668.91796875, 594)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-84.2109375" y="-39" width="168.421875" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-54.2109375, -24)">
+                        <rect/>
+                        <foreignObject width="108.421875" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>_build_registry()
+                                        <br/>
+                                        (from core)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-create_llm-89" data-look="classic"
+                   transform="translate(15668.91796875, 722)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-69.0859375" y="-39" width="138.171875" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-39.0859375, -24)">
+                        <rect/>
+                        <foreignObject width="78.171875" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>create_llm()
+                                        <br/>
+                                        (from core)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-build_agent-91" data-look="classic"
+                   transform="translate(15668.91796875, 850)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-73.3203125" y="-39" width="146.640625" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-43.3203125, -24)">
+                        <rect/>
+                        <foreignObject width="86.640625" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>build_agent()
+                                        <br/>
+                                        (from agents)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-load_config-93" data-look="classic"
+                   transform="translate(15668.91796875, 978)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-73.5390625" y="-39" width="147.078125" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-43.5390625, -24)">
+                        <rect/>
+                        <foreignObject width="87.078125" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>load_config()
+                                        <br/>
+                                        (from core)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-create_default_tools-95" data-look="classic"
+                   transform="translate(15668.91796875, 1106)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-100.1875" y="-39" width="200.375" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-70.1875, -24)">
+                        <rect/>
+                        <foreignObject width="140.375" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>create_default_tools()
+                                        <br/>
+                                        (from agents)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-build_checkpointer-97" data-look="classic"
+                   transform="translate(15668.91796875, 1234)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-97.0859375" y="-39" width="194.171875" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-67.0859375, -24)">
+                        <rect/>
+                        <foreignObject width="134.171875" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>build_checkpointer()
+                                        <br/>
+                                        (from utils)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-_load_mcp_tools-101" data-look="classic"
+                   transform="translate(15668.91796875, 1362)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-90.4375" y="-39" width="180.875" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-60.4375, -24)">
+                        <rect/>
+                        <foreignObject width="120.875" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>_load_mcp_tools()
+                                        <br/>
+                                        (from core)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-get_settings-103" data-look="classic"
+                   transform="translate(15668.91796875, 1490)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-73.546875" y="-39" width="147.09375" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-43.546875, -24)">
+                        <rect/>
+                        <foreignObject width="87.09375" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>get_settings()
+                                        <br/>
+                                        (from config)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-append-105" data-look="classic"
+                   transform="translate(15668.91796875, 1618)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-66.6484375" y="-39" width="133.296875" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-36.6484375, -24)">
+                        <rect/>
+                        <foreignObject width="73.296875" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>append()
+                                        <br/>
+                                        (from core)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <marker id="my-svg_flowchart-v2-pointEnd__936cd4" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5"
+                refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"
+                  stroke="#936cd4" fill="#936cd4"/>
+        </marker>
+    </g>
+    <defs>
+        <filter id="my-svg-drop-shadow" height="130%" width="130%">
+            <feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+    <defs>
+        <filter id="my-svg-drop-shadow-small" height="150%" width="150%">
+            <feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+    <linearGradient id="my-svg-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"/>
+        <stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"/>
+    </linearGradient>
+</svg>

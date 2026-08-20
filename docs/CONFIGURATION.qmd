@@ -113,10 +113,10 @@ The effective value is `0.5` (environment variable wins).
 ## Configuration classes diagrams
 
 
-![Settings diagram](../docs/visualizations/svg/code_agent.config.settings.Settings.svg)
+![Configuration diagram](../docs/visualizations/svg/packages_code_agent.config.svg)
 
 
-![Jsonc Config Settings Source diagram](../docs/visualizations/svg/code_agent.config.settings.JsoncConfigSettingsSource.svg)
+![Profile diagram](../docs/visualizations/svg/packages_code_agent.profiles.svg)
 
 
-![EnvExpandingYamlConfigSettingsSource diagram](../docs/visualizations/svg/code_agent.config.settings.EnvExpandingYamlConfigSettingsSource.svg)
+![Utils diagram](../docs/visualizations/svg/packages_code_agent.utils.svg)

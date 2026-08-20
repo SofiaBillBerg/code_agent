@@ -55,6 +55,7 @@ from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.config.settings import get_settings
 from code_agent.main import create_llm, load_config
+from code_agent.ui.protocol import _sse, translate_stream
 from code_agent.utils.checkpointer import build_checkpointer
 
 
@@ -1231,6 +1232,305 @@ async def chat_audit_list(thread_id: str) -> AuditListResponse:
     """
     entries = [e for e in _audit_store if e.get("thread_id") == thread_id]
     return AuditListResponse(entries=entries)
+
+
+#: -------------------------------------------------------------------
+#: LangGraph Protocol v2 endpoints (for useStream frontend SDK)
+#: -------------------------------------------------------------------
+
+#: Per-thread event queues for protocol v2 SSE streaming.
+#: Maps thread_id → list of (seq, event_dict) tuples.
+_protocol_event_queues: dict[str, list[tuple[int, dict[str, Any]]]] = {}
+#: Maps thread_id → asyncio.Event for notifying the stream that new events are available.
+_protocol_stream_notifiers: dict[str, asyncio.Event] = {}
+#: Maps thread_id → set of active stream tasks (for cleanup).
+_protocol_stream_tasks: dict[str, set[asyncio.Task]] = {}
+#: Maps thread_id → interrupt_id for the currently pending HITL interrupt.
+_pending_interrupt_ids: dict[str, str] = {}
+
+
+def _get_or_create_queue(thread_id: str) -> list[tuple[int, dict[str, Any]]]:
+    """Get or create the event queue for a thread."""
+    if thread_id not in _protocol_event_queues:
+        _protocol_event_queues[thread_id] = []
+    return _protocol_event_queues[thread_id]
+
+
+def _get_or_create_notifier(thread_id: str) -> asyncio.Event:
+    """Get or create the notifier event for a thread."""
+    if thread_id not in _protocol_stream_notifiers:
+        _protocol_stream_notifiers[thread_id] = asyncio.Event()
+    return _protocol_stream_notifiers[thread_id]
+
+
+def _push_protocol_event(thread_id: str, event: dict[str, Any]) -> None:
+    """Push a protocol event to the thread's queue and notify listeners."""
+    queue = _get_or_create_queue(thread_id)
+    notifier = _get_or_create_notifier(thread_id)
+    seq = len(queue) + 1
+    queue.append((seq, event))
+
+    # Track interrupt IDs so we can match input.respond calls
+    if event.get("method") == "input":
+        params = event.get("params", {})
+        data = params.get("data", {})
+        if data.get("event") == "input-requested":
+            interrupt_id = data.get("id")
+            if interrupt_id:
+                _pending_interrupt_ids[thread_id] = interrupt_id
+
+    notifier.set()
+
+
+def _extract_decision(response: Any) -> str:
+    """Extract approve/reject decision from a protocol v2 input.respond response.
+
+    Handles both the standard protocol format (plain value or object with
+    ``type``/``decisions``) and the legacy custom format.
+    """
+    if isinstance(response, dict):
+        # Standard protocol: {type: "approve"} or {decisions: [{type: "approve"}]}
+        decisions = response.get("decisions")
+        if isinstance(decisions, list) and decisions:
+            first = decisions[0]
+            if isinstance(first, dict):
+                return "approve" if first.get("type") == "approve" else "reject"
+        # Single decision object
+        if "type" in response:
+            return "approve" if response.get("type") == "approve" else "reject"
+        # DeepAgents-style: {approved: true}
+        if "approved" in response:
+            return "approve" if response.get("approved") else "reject"
+    # Plain truthy/falsy value
+    return "approve" if response else "reject"
+
+
+class ProtocolCommand(BaseModel):
+    """A LangGraph protocol v2 command.
+
+    Attributes:
+        method: Command method name (e.g. "run.start", "input.respond", "run.stop").
+        params: Command-specific parameters.
+    """
+
+    method: str
+    params: dict[str, Any] = {}
+
+
+class ProtocolStreamRequest(BaseModel):
+    """Request body for POST /threads/{thread_id}/stream/events.
+
+    Attributes:
+        channels: List of channels to subscribe to.
+        namespaces: Optional list of namespace prefixes to filter.
+        depth: Optional max depth for namespace matching.
+        since: Optional sequence number to replay from.
+    """
+
+    channels: list[str]
+    namespaces: list[list[str]] | None = None
+    depth: int | None = None
+    since: int | None = None
+
+
+@app.post("/threads/{thread_id}/commands")
+async def thread_commands(
+    thread_id: str, command: ProtocolCommand
+) -> dict[str, Any]:
+    """Handle a LangGraph protocol v2 command.
+
+    Supported commands:
+    * ``run.start`` — start a new run with the given input
+    * ``input.respond`` — respond to a pending HITL interrupt
+    * ``run.stop`` — cancel a running run
+
+    :param thread_id: The thread to execute the command on.
+    :param command: The protocol command to execute.
+    :return: Command result dict.
+    """
+    method = command.method
+    params = command.params or {}
+
+    if method == "run.start":
+        # Extract input from params
+        input_data = params.get("input", {})
+        messages = input_data.get("messages", [])
+        human_msg = next(
+            (m for m in messages if m.get("type") in ("human", "user")), None
+        )
+        text = human_msg.get("content", "") if human_msg else ""
+
+        if not text:
+            return {"status": "ok"}
+
+        state = await get_agent_async()
+        effective_thread = thread_id or state.thread_id
+
+        async def _run():
+            try:
+                async for event in translate_stream(
+                    state.agent, text, effective_thread
+                ):
+                    _push_protocol_event(effective_thread, event)
+            except asyncio.CancelledError:
+                pass
+            except Exception as exc:
+                _push_protocol_event(
+                    effective_thread,
+                    {
+                        "seq": 0,
+                        "method": "lifecycle",
+                        "params": {
+                            "namespace": [],
+                            "data": {"event": "failed", "error": str(exc)},
+                        },
+                    },
+                )
+
+        task = asyncio.create_task(_run())
+        _thread_tasks[effective_thread] = task
+        return {"status": "ok", "run_id": str(uuid.uuid4())}
+
+    elif method == "input.respond":
+        # Standard protocol v2 format:
+        # params: { namespace, interrupt_id, response, update?, goto?, config?, metadata? }
+        response = params.get("response", {})
+        interrupt_id = params.get("interrupt_id")
+
+        # Validate interrupt_id if provided
+        if interrupt_id:
+            expected_id = _pending_interrupt_ids.get(thread_id)
+            if expected_id and expected_id != interrupt_id:
+                return {"status": "error", "error": "interrupt_id mismatch"}
+
+        ev = _pending_hitl.get(thread_id)
+        if ev is None:
+            state = await get_agent_async()
+            checkpointer = getattr(state.agent, "checkpointer", None)
+            if checkpointer:
+                try:
+                    config = {"configurable": {"thread_id": thread_id}}
+                    state_data = await checkpointer.aget(config)
+                    if state_data and "__interrupt__" in state_data:
+                        ev = asyncio.Event()
+                        _pending_hitl[thread_id] = ev
+                        _hitl_decisions[thread_id] = _extract_decision(response)
+                        ev.set()
+                        return {"status": "ok"}
+                except Exception:
+                    pass
+            return {"status": "ok"}
+
+        _hitl_decisions[thread_id] = _extract_decision(response)
+        ev.set()
+        return {"status": "ok"}
+
+    elif method == "run.stop":
+        task = _thread_tasks.get(thread_id)
+        if task and not task.done():
+            task.cancel()
+        return {"status": "ok"}
+
+    return {"status": "ok"}
+
+
+@app.post("/threads/{thread_id}/stream/events")
+async def thread_stream_events(
+    thread_id: str,
+    request: ProtocolStreamRequest,
+) -> StreamingResponse:
+    """Open a LangGraph protocol v2 SSE event stream.
+
+    This endpoint accepts a subscription request with channels and
+    namespace filters, then streams protocol v2 events for the thread.
+
+    :param thread_id: The thread to stream events for.
+    :param request: Stream subscription parameters.
+    :return: StreamingResponse with protocol v2 SSE events.
+    """
+    channels = request.channels or [
+        "values",
+        "messages",
+        "tools",
+        "lifecycle",
+        "input",
+    ]
+    since = request.since or 0
+
+    effective_thread = thread_id
+    queue = _get_or_create_queue(effective_thread)
+    notifier = _get_or_create_notifier(effective_thread)
+
+    async def _event_stream():
+        nonlocal since
+        try:
+            # Replay events since the given since value
+            for seq, event in queue:
+                if seq > since:
+                    yield _sse(event)
+                else:
+                    # Skip events already seen
+                    pass
+
+            # Stream new events as they arrive
+            while True:
+                await notifier.wait()
+                notifier.clear()
+
+                # Drain any new events
+                for seq, event in queue:
+                    if seq > since:
+                        since = seq
+                        yield _sse(event)
+
+                # Small sleep to avoid busy-looping
+                await asyncio.sleep(0.01)
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            pass
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+        },
+    )
+
+
+@app.get("/threads/{thread_id}/state")
+async def thread_state(thread_id: str) -> dict[str, Any]:
+    """Get the current state of a thread.
+
+    :param thread_id: The thread to get state for.
+    :return: Current thread state dict.
+    """
+    state = await get_agent_async()
+    checkpointer = getattr(state.agent, "checkpointer", None)
+    if checkpointer is None:
+        return {"values": {}, "next": [], "tasks": []}
+
+    try:
+        config = {"configurable": {"thread_id": thread_id}}
+        state_data = await checkpointer.aget(config)
+        if not state_data:
+            return {"values": {}, "next": [], "tasks": []}
+
+        messages = state_data.get("messages", [])
+        values = {k: v for k, v in state_data.items() if k != "messages"}
+
+        return {
+            "values": values,
+            "messages": [
+                msg.to_dict() if hasattr(msg, "to_dict") else str(msg)
+                for msg in messages
+            ],
+            "next": [],
+            "tasks": [],
+        }
+    except Exception:
+        return {"values": {}, "next": [], "tasks": []}
 
 
 @app.get("/capabilities")

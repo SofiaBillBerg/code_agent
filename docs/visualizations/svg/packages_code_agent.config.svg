@@ -1,0 +1,1096 @@
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     class="flowchart" style="max-width: 2990.63px; background-color: rgb(255, 255, 255);"
+     viewBox="0 0 2990.629638671875 1423" role="graphics-document document" aria-roledescription="flowchart-v2">
+    <style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}@keyframes
+        edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg
+        .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear
+        infinite;stroke-linecap:round;}#my-svg
+        .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear
+        infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg
+        .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg
+        .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg
+        .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg
+        .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#666;stroke:#666;}#my-svg
+        .marker.cross{stroke:#666;}#my-svg svg{font-family:"trebuchet
+        ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet
+        ms",verdana,arial,sans-serif;color:#000000;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label
+        span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg
+        span{fill:#000000;color:#000000;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node
+        polygon,#my-svg .node path{fill:#eee;stroke:#999;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node
+        .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex
+        path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg
+        .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg
+        .node.clickable{cursor:pointer;}#my-svg .root .anchor
+        path{fill:#666!important;stroke-width:0;stroke:#666;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath
+        .path{stroke:#666;stroke-width:1px;}#my-svg .flowchart-link{stroke:#666;fill:none;}#my-svg
+        .edgeLabel{background-color:white;text-align:center;}#my-svg .edgeLabel p{background-color:white;}#my-svg
+        .edgeLabel rect{opacity:0.5;background-color:white;fill:white;}#my-svg .labelBkg{background-color:rgba(255, 255,
+        255, 0.5);}#my-svg .cluster rect{fill:hsl(0, 0%, 98.9215686275%);stroke:#707070;stroke-width:1px;}#my-svg
+        .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg
+        div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet
+        ms",verdana,arial,sans-serif;font-size:12px;background:hsl(-160, 0%, 93.3333333333%);border:1px solid
+        #707070;border-radius:2px;pointer-events:none;z-index:100;}#my-svg
+        .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#000000;}#my-svg
+        rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg
+        .image-shape{background-color:white;text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape
+        p{background-color:white;padding:2px;}#my-svg .icon-shape .label rect,#my-svg .image-shape .label
+        rect{opacity:0.5;background-color:white;fill:white;}#my-svg
+        .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon
+        path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg .node .neo-node{stroke:#999;}#my-svg
+        [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node
+        polygon{stroke:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg
+        [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node
+        path{stroke:url(#my-svg-gradient);stroke-width:1px;}#my-svg [data-look="neo"].node
+        .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg [data-look="neo"].node .neo-line
+        path{stroke:#999;filter:none;}#my-svg [data-look="neo"].node
+        circle{stroke:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg
+        [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape
+        .icon{fill:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#my-svg
+        [data-look="neo"].icon-shape .icon-neo path{stroke:url(#my-svg-gradient);filter:drop-shadow( 1px 2px 2px
+        rgba(185,185,185,1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#my-svg
+        .internalNode&gt;*{fill:rgb(232, 218, 255)!important;stroke:rgb(181, 148,
+        240)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .internalNode span{fill:rgb(232, 218, 255)!important;stroke:rgb(181, 148,
+        240)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .internalNode tspan{fill:rgb(74, 38, 133)!important;}#my-svg .externalNode&gt;*{fill:rgb(255,
+        214, 245)!important;stroke:rgb(147, 108, 212)!important;stroke-width:2px!important;color:rgb(74, 38,
+        133)!important;font-family:"Segoe UI"!important;}#my-svg .externalNode span{fill:rgb(255, 214,
+        245)!important;stroke:rgb(147, 108, 212)!important;stroke-width:2px!important;color:rgb(74, 38,
+        133)!important;font-family:"Segoe UI"!important;}#my-svg .externalNode tspan{fill:rgb(74, 38,
+        133)!important;}#my-svg .moduleNode&gt;*{fill:rgb(214, 240, 255)!important;stroke:rgb(147, 108,
+        212)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .moduleNode span{fill:rgb(214, 240, 255)!important;stroke:rgb(147, 108,
+        212)!important;stroke-width:2px!important;color:rgb(74, 38, 133)!important;font-family:"Segoe
+        UI"!important;}#my-svg .moduleNode tspan{fill:rgb(74, 38, 133)!important;}
+    </style>
+    <g>
+        <marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5"
+                refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto">
+            <path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1"
+                refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto">
+            <polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath"
+                     style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5"
+                refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2"
+                refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto">
+            <circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12"
+                refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath"
+                  style="stroke-width: 2; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1"
+                refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto">
+            <path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath"
+                  style="stroke-width: 2; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15"
+                refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/>
+        </marker>
+        <marker id="my-svg_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15"
+                refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath"
+                  style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/>
+        </marker>
+        <g class="root">
+            <g class="clusters">
+                <g class="cluster" id="my-svg-External_Connections" data-look="classic">
+                    <rect style="" x="2770.957763671875" y="634.5" width="211.671875" height="151"/>
+                    <g class="cluster-label" transform="translate(2774.957763671875, 634.5)">
+                        <foreignObject width="203.671875" height="24">
+                            <div xmlns="http://www.w3.org/1999/xhtml"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5;">
+                                <span class="nodeLabel">
+                                    <p>External Components Called</p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+            <g class="edgePaths">
+                <path d="M2735.145,682.04L2739.312,681.95C2743.479,681.86,2751.812,681.68,2760.145,681.59C2768.479,681.5,2776.812,681.5,2784.512,682.657C2792.211,683.813,2799.278,686.126,2802.811,687.283L2806.344,688.439"
+                      id="my-svg-L__expand_env_vars_append_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L__expand_env_vars_append_0"
+                      data-points="W3sieCI6MjczNS4xNDUyNjM2NzE4NzUsInkiOjY4Mi4wNDAxMjI5ODg3NDc0fSx7IngiOjI3NjAuMTQ1MjYzNjcxODc1LCJ5Ijo2ODEuNX0seyJ4IjoyNzg1LjE0NTI2MzY3MTg3NSwieSI6NjgxLjV9LHsieCI6MjgxMC4xNDUyNjM2NzE4NzUsInkiOjY4OS42ODM0NDU1NzE1NjI1fV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M2735.145,701.68L2739.312,701.65C2743.479,701.62,2751.812,701.56,2760.145,701.53C2768.479,701.5,2776.812,701.5,2784.483,701.882C2792.153,702.265,2799.161,703.029,2802.665,703.412L2806.169,703.794"
+                      id="my-svg-L_strip_comments_append_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_strip_comments_append_0"
+                      data-points="W3sieCI6MjczNS4xNDUyNjM2NzE4NzUsInkiOjcwMS42ODAwNDA5OTYyNDkxfSx7IngiOjI3NjAuMTQ1MjYzNjcxODc1LCJ5Ijo3MDEuNX0seyJ4IjoyNzg1LjE0NTI2MzY3MTg3NSwieSI6NzAxLjV9LHsieCI6MjgxMC4xNDUyNjM2NzE4NzUsInkiOjcwNC4yMjc4MTUxOTA1MjA4fV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M2735.145,728.194L2739.312,728.245C2743.479,728.296,2751.812,728.398,2760.145,728.449C2768.479,728.5,2776.812,728.5,2784.49,727.849C2792.168,727.197,2799.19,725.895,2802.701,725.244L2806.212,724.592"
+                      id="my-svg-L_sensitive_mcp_tool_names_append_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_sensitive_mcp_tool_names_append_0"
+                      data-points="W3sieCI6MjczNS4xNDUyNjM2NzE4NzUsInkiOjcyOC4xOTM5MzAzMDYzNzY1fSx7IngiOjI3NjAuMTQ1MjYzNjcxODc1LCJ5Ijo3MjguNX0seyJ4IjoyNzg1LjE0NTI2MzY3MTg3NSwieSI6NzI4LjV9LHsieCI6MjgxMC4xNDUyNjM2NzE4NzUsInkiOjcyMy44NjI3MTQxNzYxMTQ1fV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                <path d="M2735.145,747.834L2739.312,747.945C2743.479,748.056,2751.812,748.278,2760.145,748.389C2768.479,748.5,2776.812,748.5,2784.527,747.067C2792.242,745.635,2799.339,742.77,2802.888,741.337L2806.436,739.905"
+                      id="my-svg-L_readonly_mcp_tool_names_append_0"
+                      class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                      style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                      data-et="edge" data-id="L_readonly_mcp_tool_names_append_0"
+                      data-points="W3sieCI6MjczNS4xNDUyNjM2NzE4NzUsInkiOjc0Ny44MzM4NDgzMTM4NzgzfSx7IngiOjI3NjAuMTQ1MjYzNjcxODc1LCJ5Ijo3NDguNX0seyJ4IjoyNzg1LjE0NTI2MzY3MTg3NSwieSI6NzQ4LjV9LHsieCI6MjgxMC4xNDUyNjM2NzE4NzUsInkiOjczOC40MDcwODM3OTUwNzI5fV0="
+                      data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+            </g>
+            <g class="edgeLabels">
+                <g class="edgeLabel">
+                    <g class="label" data-id="L__expand_env_vars_append_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_strip_comments_append_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_sensitive_mcp_tool_names_append_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+                <g class="edgeLabel">
+                    <g class="label" data-id="L_readonly_mcp_tool_names_append_0" transform="translate(0, 0)">
+                        <foreignObject width="0" height="0">
+                            <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                 style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                <span class="edgeLabel"></span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+            <g class="nodes">
+                <g class="root" transform="translate(0, 0)">
+                    <g class="clusters">
+                        <g class="cluster" id="my-svg-Internal_Structures" data-look="classic">
+                            <rect style="" x="8" y="8" width="2727.1453125029802" height="1407"/>
+                            <g class="cluster-label" transform="translate(1260.3773437514901, 8)">
+                                <foreignObject width="222.390625" height="24">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5;">
+                                        <span class="nodeLabel">
+                                            <p>code_agent.config components</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                    </g>
+                    <g class="edgePaths">
+                        <path d="M485.903,916.604L495.933,923.17C505.963,929.736,526.023,942.868,549.607,955.415C573.191,967.962,600.299,979.923,613.853,985.904L627.407,991.885"
+                              id="my-svg-L_JsoncConfigSettingsSource__load_substitution_env_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_JsoncConfigSettingsSource__load_substitution_env_0"
+                              data-points="W3sieCI6NDg1LjkwMzEyNTAwMTExNzYsInkiOjkxNi42MDM3MjU5MTcxMDE0fSx7IngiOjU0Ni4wODI4MTI1MDExMTc2LCJ5Ijo5NTZ9LHsieCI6NjMxLjA2NjcyNzk0MjI5NCwieSI6OTkzLjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M233.514,918.5L224.721,924.75C215.929,931,198.344,943.5,206.756,957.72C215.169,971.94,249.578,987.879,266.783,995.849L283.988,1003.819"
+                              id="my-svg-L_JsoncConfigSettingsSource__expand_env_vars_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_JsoncConfigSettingsSource__expand_env_vars_0"
+                              data-points="W3sieCI6MjMzLjUxMzUxNjU2Njg2MiwieSI6OTE4LjV9LHsieCI6MTgwLjc1OTM3NTAwMDM3MjUzLCJ5Ijo5NTZ9LHsieCI6Mjg3LjYxNzA5NTU4OTA4OTksInkiOjEwMDUuNX1d"
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M574.501,918.5L565.296,924.75C556.091,931,537.681,943.5,510.389,957.731C483.097,971.962,446.924,987.923,428.838,995.904L410.751,1003.885"
+                              id="my-svg-L_EnvExpandingYamlConfigSettingsSource__expand_env_vars_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_EnvExpandingYamlConfigSettingsSource__expand_env_vars_0"
+                              data-points="W3sieCI6NTc0LjUwMTM5MzA3MzQwNjcsInkiOjkxOC41fSx7IngiOjUxOS4yNzAzMTI1MDExMTc2LCJ5Ijo5NTZ9LHsieCI6NDA3LjA5MTU0NDExODc2NDY2LCJ5IjoxMDA1LjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M798.547,918.5L805.437,924.75C812.327,931,826.107,943.5,823.721,955.643C821.334,967.785,802.78,979.57,793.503,985.463L784.226,991.355"
+                              id="my-svg-L_EnvExpandingYamlConfigSettingsSource__load_substitution_env_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_EnvExpandingYamlConfigSettingsSource__load_substitution_env_0"
+                              data-points="W3sieCI6Nzk4LjU0NzEzODU1NTMzNDQsInkiOjkxOC41fSx7IngiOjgzOS44ODc1MDAwMDExMTc2LCJ5Ijo5NTZ9LHsieCI6NzgwLjg0OTUwOTgwNTAzOTEsInkiOjk5My41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M661.028,654.078L667.963,662.899C674.898,671.719,688.768,689.359,695.703,703.763C702.638,718.167,702.638,729.333,702.638,734.917L702.638,740.5"
+                              id="my-svg-L_Settings_EnvExpandingYamlConfigSettingsSource_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_Settings_EnvExpandingYamlConfigSettingsSource_0"
+                              data-points="W3sieCI6NjYxLjAyODEyNTAwMTExNzYsInkiOjY1NC4wNzg0MTAxNjYyODM3fSx7IngiOjcwMi42Mzc1MDAwMDExMTc2LCJ5Ijo3MDd9LHsieCI6NzAyLjYzNzUwMDAwMTExNzYsInkiOjc0NC41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M397.513,654.078L390.578,662.899C383.643,671.719,369.773,689.359,362.838,703.763C355.903,718.167,355.903,729.333,355.903,734.917L355.903,740.5"
+                              id="my-svg-L_Settings_JsoncConfigSettingsSource_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_Settings_JsoncConfigSettingsSource_0"
+                              data-points="W3sieCI6Mzk3LjUxMjUwMDAwMTExNzYsInkiOjY1NC4wNzg0MTAxNjYyODM3fSx7IngiOjM1NS45MDMxMjUwMDExMTc2LCJ5Ijo3MDd9LHsieCI6MzU1LjkwMzEyNTAwMTExNzYsInkiOjc0NC41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M529.27,228.5L529.27,234.75C529.27,241,529.27,253.5,529.27,265.333C529.27,277.167,529.27,288.333,529.27,293.917L529.27,299.5"
+                              id="my-svg-L_get_settings_Settings_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_get_settings_Settings_0"
+                              data-points="W3sieCI6NTI5LjI3MDMxMjUwMTExNzYsInkiOjIyOC41fSx7IngiOjUyOS4yNzAzMTI1MDExMTc2LCJ5IjoyNjZ9LHsieCI6NTI5LjI3MDMxMjUwMTExNzYsInkiOjMwMy41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M529.27,99.5L529.27,105.75C529.27,112,529.27,124.5,529.27,136.333C529.27,148.167,529.27,159.333,529.27,164.917L529.27,170.5"
+                              id="my-svg-L_as_config_dict_get_settings_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_as_config_dict_get_settings_0"
+                              data-points="W3sieCI6NTI5LjI3MDMxMjUwMTExNzYsInkiOjk5LjV9LHsieCI6NTI5LjI3MDMxMjUwMTExNzYsInkiOjEzN30seyJ4Ijo1MjkuMjcwMzEyNTAxMTE3NiwieSI6MTc0LjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M916.263,1044.918L846.702,1055.598C777.142,1066.278,638.022,1087.639,568.462,1105.903C498.902,1124.167,498.902,1139.333,498.902,1146.917L498.902,1154.5"
+                              id="my-svg-L_loads_strip_comments_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_loads_strip_comments_0"
+                              data-points="W3sieCI6OTE2LjI2MjUwMDAwMTExNzYsInkiOjEwNDQuOTE3Njg2MTQ4OTM1fSx7IngiOjQ5OC45MDE1NjI1MDA3NDUwNiwieSI6MTEwOX0seyJ4Ijo0OTguOTAxNTYyNTAwNzQ1MDYsInkiOjExNTguNX1d"
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M997.138,858.5L997.138,874.75C997.138,891,997.138,923.5,997.138,947.333C997.138,971.167,997.138,986.333,997.138,993.917L997.138,1001.5"
+                              id="my-svg-L_load_loads_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_load_loads_0"
+                              data-points="W3sieCI6OTk3LjEzNzUwMDAwMTExNzYsInkiOjg1OC41fSx7IngiOjk5Ny4xMzc1MDAwMDExMTc2LCJ5Ijo5NTZ9LHsieCI6OTk3LjEzNzUwMDAwMTExNzYsInkiOjEwMDUuNX1d"
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1200.142,1224.5L1200.142,1230.75C1200.142,1237,1200.142,1249.5,1200.142,1263.333C1200.142,1277.167,1200.142,1292.333,1200.142,1299.917L1200.142,1307.5"
+                              id="my-svg-L_apply_mcp_tool_prefixes_prefix_tool_name_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_apply_mcp_tool_prefixes_prefix_tool_name_0"
+                              data-points="W3sieCI6MTIwMC4xNDIxODc1MDIyMzUyLCJ5IjoxMjI0LjV9LHsieCI6MTIwMC4xNDIxODc1MDIyMzUyLCJ5IjoxMjYyfSx7IngiOjEyMDAuMTQyMTg3NTAyMjM1MiwieSI6MTMxMS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1603.052,1212.531L1563.401,1220.776C1523.749,1229.021,1444.446,1245.51,1415.681,1259.686C1386.917,1273.862,1408.693,1285.724,1419.58,1291.655L1430.468,1297.586"
+                              id="my-svg-L_sensitive_mcp_tool_names_server_from_prefixed_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_sensitive_mcp_tool_names_server_from_prefixed_0"
+                              data-points="W3sieCI6MTYwMy4wNTIzNDM3NTIyMzUyLCJ5IjoxMjEyLjUzMTA1NTkwMDYyMTF9LHsieCI6MTM2NS4xNDIxODc1MDIyMzUyLCJ5IjoxMjYyfSx7IngiOjE0MzMuOTgwMjY5NjEwMDc4MywieSI6MTI5OS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M1848.965,1224.5L1867.541,1230.75C1886.117,1237,1923.268,1249.5,1941.844,1263.333C1960.42,1277.167,1960.42,1292.333,1960.42,1299.917L1960.42,1307.5"
+                              id="my-svg-L_sensitive_mcp_tool_names_is_sensitive_server_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_sensitive_mcp_tool_names_is_sensitive_server_0"
+                              data-points="W3sieCI6MTg0OC45NjUwMjc1NzU3NjQ3LCJ5IjoxMjI0LjV9LHsieCI6MTk2MC40MTk1MzEyNTIyMzUyLCJ5IjoxMjYyfSx7IngiOjE5NjAuNDE5NTMxMjUyMjM1MiwieSI6MTMxMS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2187.88,1204.629L2122.898,1214.191C2057.916,1223.753,1927.951,1242.876,1836.544,1259.351C1745.138,1275.826,1692.29,1289.652,1665.866,1296.565L1639.442,1303.478"
+                              id="my-svg-L_readonly_mcp_tool_names_server_from_prefixed_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_readonly_mcp_tool_names_server_from_prefixed_0"
+                              data-points="W3sieCI6MjE4Ny44ODA0Njg3NTIyMzUsInkiOjEyMDQuNjI4ODc5ODA1ODUwMX0seyJ4IjoxNzk3Ljk4NTkzNzUwMjIzNTIsInkiOjEyNjJ9LHsieCI6MTYzNS41NzE4NzUwMDIyMzUyLCJ5IjoxMzA0LjQ5MDAwNzc0ODAwMjl9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2361.12,1224.5L2368.05,1230.75C2374.979,1237,2388.838,1249.5,2395.767,1263.333C2402.697,1277.167,2402.697,1292.333,2402.697,1299.917L2402.697,1307.5"
+                              id="my-svg-L_readonly_mcp_tool_names_is_readonly_server_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_readonly_mcp_tool_names_is_readonly_server_0"
+                              data-points="W3sieCI6MjM2MS4xMjAyMDUyNzE4NDMsInkiOjEyMjQuNX0seyJ4IjoyNDAyLjY5Njg3NTAwMjIzNSwieSI6MTI2Mn0seyJ4IjoyNDAyLjY5Njg3NTAwMjIzNSwieSI6MTMxMS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2460.208,1049.045L2387.751,1059.037C2315.294,1069.03,2170.38,1089.015,2097.923,1106.591C2025.466,1124.167,2025.466,1139.333,2025.466,1146.917L2025.466,1154.5"
+                              id="my-svg-L_expand_env_vars__expand_value_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_expand_env_vars__expand_value_0"
+                              data-points="W3sieCI6MjQ2MC4yMDc4MTI1MDI5ODAyLCJ5IjoxMDQ5LjA0NDg3MzUxOTIyODN9LHsieCI6MjAyNS40NjY0MDYyNTIyMzUyLCJ5IjoxMTA5fSx7IngiOjIwMjUuNDY2NDA2MjUyMjM1MiwieSI6MTE1OC41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M323.067,1059.5L319.641,1063.55C316.216,1067.6,309.365,1075.7,320.403,1079.75C331.44,1083.8,360.366,1083.8,371.834,1080.259C383.302,1076.718,377.312,1069.636,374.318,1066.095L371.323,1062.554"
+                              id="my-svg-L__expand_env_vars__expand_env_vars_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L__expand_env_vars__expand_env_vars_0"
+                              data-points="W3sieCI6MzIzLjA2Njc3NjMxNjkwNywieSI6MTA1OS41fSx7IngiOjMwMi41MTQwNjI1MDExMTc1NiwieSI6MTA4My44fSx7IngiOjM4OS4yOTIxODc1MDExMTc2LCJ5IjoxMDgzLjh9LHsieCI6MzY4LjczOTQ3MzY4NTMyODE2LCJ5IjoxMDU5LjV9XQ=="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M982.239,1059.5L980.005,1063.55C977.77,1067.6,973.301,1075.7,980.501,1079.75C987.702,1083.8,1006.573,1083.8,1014.096,1080.334C1021.618,1076.867,1017.793,1069.935,1015.881,1066.469L1013.968,1063.002"
+                              id="my-svg-L_loads_loads_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_loads_loads_0"
+                              data-points="W3sieCI6OTgyLjIzOTQ3MzY4NTMyODEsInkiOjEwNTkuNX0seyJ4Ijo5NjguODMxMjUwMDAxMTE3NiwieSI6MTA4My44fSx7IngiOjEwMjUuNDQzNzUwMDAxMTE3NywieSI6MTA4My44fSx7IngiOjEwMTIuMDM1NTI2MzE2OTA3MSwieSI6MTA1OS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                        <path d="M2558.077,1059.5L2554.762,1063.55C2551.447,1067.6,2544.817,1075.7,2555.499,1079.75C2566.18,1083.8,2594.173,1083.8,2605.277,1080.266C2616.38,1076.732,2610.595,1069.664,2607.702,1066.129L2604.81,1062.595"
+                              id="my-svg-L_expand_env_vars_expand_env_vars_0"
+                              class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link"
+                              style="stroke:#936cd4;stroke-width:2px;;;stroke:#936cd4;stroke-width:2px" data-edge="true"
+                              data-et="edge" data-id="L_expand_env_vars_expand_env_vars_0"
+                              data-points="W3sieCI6MjU1OC4wNzcwNTU5MjQwMzI3LCJ5IjoxMDU5LjV9LHsieCI6MjUzOC4xODc1MDAwMDI5ODA0LCJ5IjoxMDgzLjh9LHsieCI6MjYyMi4xNjU2MjUwMDI5OCwieSI6MTA4My44fSx7IngiOjI2MDIuMjc2MDY5MDgxOTI3NywieSI6MTA1OS41fV0="
+                              data-look="classic" marker-end="url(#my-svg_flowchart-v2-pointEnd__936cd4)"/>
+                    </g>
+                    <g class="edgeLabels">
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L__expand_env_vars__expand_env_vars_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_JsoncConfigSettingsSource__load_substitution_env_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_JsoncConfigSettingsSource__expand_env_vars_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_EnvExpandingYamlConfigSettingsSource__expand_env_vars_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_EnvExpandingYamlConfigSettingsSource__load_substitution_env_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_Settings_EnvExpandingYamlConfigSettingsSource_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_Settings_JsoncConfigSettingsSource_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_get_settings_Settings_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_as_config_dict_get_settings_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_loads_strip_comments_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_loads_loads_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_load_loads_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_apply_mcp_tool_prefixes_prefix_tool_name_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_sensitive_mcp_tool_names_server_from_prefixed_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_sensitive_mcp_tool_names_is_sensitive_server_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_readonly_mcp_tool_names_server_from_prefixed_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_readonly_mcp_tool_names_is_readonly_server_0"
+                               transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_expand_env_vars_expand_env_vars_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="edgeLabel">
+                            <g class="label" data-id="L_expand_env_vars__expand_value_0" transform="translate(0, 0)">
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+                                        <span class="edgeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                    </g>
+                    <g class="nodes">
+                        <g class="node default internalNode" id="my-svg-flowchart-_EnvUnset-0" data-look="classic"
+                           transform="translate(163.234375, 1338.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-120.234375" y="-39" width="240.46875" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-90.234375, -24)">
+                                <rect/>
+                                <foreignObject width="180.46875" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class _EnvUnset<br/>====================
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_expand_env_vars-2"
+                           data-look="classic" transform="translate(345.9031250011176, 1032.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-123.96875" y="-27" width="247.9375" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-93.96875, -12)">
+                                <rect/>
+                                <foreignObject width="187.9375" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _expand_env_vars()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="label edgeLabel" id="_expand_env_vars---_expand_env_vars---1"
+                           transform="translate(188.28437500074506, 1185.5)">
+                            <rect width="0.1" height="0.1"/>
+                            <g class="label" style="" transform="translate(0, 0)">
+                                <rect/>
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 10px; text-align: center;">
+                                        <span class="nodeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="label edgeLabel" id="_expand_env_vars---_expand_env_vars---2"
+                           transform="translate(345.9031250011176, 1338.5)">
+                            <rect width="0.1" height="0.1"/>
+                            <g class="label" style="" transform="translate(0, 0)">
+                                <rect/>
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 10px; text-align: center;">
+                                        <span class="nodeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-JsoncConfigSettingsSource-3"
+                           data-look="classic" transform="translate(355.9031250011176, 831.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-87" width="260" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -72)">
+                                <rect/>
+                                <foreignObject width="200" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class JsoncConfigSettingsSource (JsonConfigSettingsSource)
+                                                <br/>
+                                                ====================<br/>Methods:
+                                                <br/>
+                                                + _read_file()
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_load_substitution_env-1"
+                           data-look="classic" transform="translate(719.4500000011176, 1032.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _load_substitution_env()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode"
+                           id="my-svg-flowchart-EnvExpandingYamlConfigSettingsSource-4" data-look="classic"
+                           transform="translate(702.6375000011176, 831.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-166.734375" y="-87" width="333.46875" height="174"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-136.734375, -72)">
+                                <rect/>
+                                <foreignObject width="273.46875" height="144">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class EnvExpandingYamlConfigSettingsSource (YamlConfigSettingsSource)
+                                                <br/>====================<br/>Methods:
+                                                <br/>
+                                                + _read_file()
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-Settings-5" data-look="classic"
+                           transform="translate(529.2703125011176, 486.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-131.7578125" y="-183" width="263.515625" height="366"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-101.7578125, -168)">
+                                <rect/>
+                                <foreignObject width="203.515625" height="336">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>class Settings (BaseSettings)<br/>====================<br/>Attributes:
+                                                <br/>
+                                                - model_config
+                                                <br/>
+                                                - provider
+                                                <br/>
+                                                - ollama_host
+                                                <br/>
+                                                - ollama_model
+                                                <br/>
+                                                - ollama_port<br/>Methods:
+                                                <br/>
+                                                + settings_customise_sources()
+                                                <br/>
+                                                + _split_combined_ollama_host()
+                                                <br/>
+                                                + _validate_checkpoint_dir()
+                                            </p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-get_settings-6" data-look="classic"
+                           transform="translate(529.2703125011176, 201.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-102.2109375" y="-27" width="204.421875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-72.2109375, -12)">
+                                <rect/>
+                                <foreignObject width="144.421875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function get_settings()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-as_config_dict-7" data-look="classic"
+                           transform="translate(529.2703125011176, 72.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-111.0859375" y="-27" width="222.171875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-81.0859375, -12)">
+                                <rect/>
+                                <foreignObject width="162.171875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function as_config_dict()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-loads-9" data-look="classic"
+                           transform="translate(997.1375000011176, 1032.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-80.875" y="-27" width="161.75" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-50.875, -12)">
+                                <rect/>
+                                <foreignObject width="101.75" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function loads()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-strip_comments-8" data-look="classic"
+                           transform="translate(498.90156250074506, 1185.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-115.09375" y="-27" width="230.1875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-85.09375, -12)">
+                                <rect/>
+                                <foreignObject width="170.1875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function strip_comments()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="label edgeLabel" id="loads---loads---1"
+                           transform="translate(997.1375000011176, 1185.5)">
+                            <rect width="0.1" height="0.1"/>
+                            <g class="label" style="" transform="translate(0, 0)">
+                                <rect/>
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 10px; text-align: center;">
+                                        <span class="nodeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="label edgeLabel" id="loads---loads---2"
+                           transform="translate(1021.1375000011176, 1338.5)">
+                            <rect width="0.1" height="0.1"/>
+                            <g class="label" style="" transform="translate(0, 0)">
+                                <rect/>
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 10px; text-align: center;">
+                                        <span class="nodeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-load-10" data-look="classic"
+                           transform="translate(997.1375000011176, 831.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-77.765625" y="-27" width="155.53125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-47.765625, -12)">
+                                <rect/>
+                                <foreignObject width="95.53125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function load()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-apply_mcp_tool_prefixes-15"
+                           data-look="classic" transform="translate(1200.1421875022352, 1185.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function apply_mcp_tool_prefixes()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-prefix_tool_name-11"
+                           data-look="classic" transform="translate(1200.1421875022352, 1338.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-120.859375" y="-27" width="241.71875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-90.859375, -12)">
+                                <rect/>
+                                <foreignObject width="181.71875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function prefix_tool_name()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-sensitive_mcp_tool_names-16"
+                           data-look="classic" transform="translate(1733.0523437522352, 1185.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function sensitive_mcp_tool_names()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-server_from_prefixed-12"
+                           data-look="classic" transform="translate(1505.5718750022352, 1338.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function server_from_prefixed()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-is_sensitive_server-13"
+                           data-look="classic" transform="translate(1960.4195312522352, 1338.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-124.8671875" y="-27" width="249.734375" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-94.8671875, -12)">
+                                <rect/>
+                                <foreignObject width="189.734375" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function is_sensitive_server()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-readonly_mcp_tool_names-17"
+                           data-look="classic" transform="translate(2317.880468752235, 1185.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-130" y="-39" width="260" height="78"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-100, -24)">
+                                <rect/>
+                                <foreignObject width="200" height="48">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function readonly_mcp_tool_names()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-is_readonly_server-14"
+                           data-look="classic" transform="translate(2402.696875002235, 1338.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-124.859375" y="-27" width="249.71875" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-94.859375, -12)">
+                                <rect/>
+                                <foreignObject width="189.71875" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function is_readonly_server()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-expand_env_vars-19"
+                           data-look="classic" transform="translate(2580.1765625029802, 1032.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-119.96875" y="-27" width="239.9375" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-89.96875, -12)">
+                                <rect/>
+                                <foreignObject width="179.9375" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function expand_env_vars()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="label edgeLabel" id="expand_env_vars---expand_env_vars---1"
+                           transform="translate(2580.1765625029802, 1185.5)">
+                            <rect width="0.1" height="0.1"/>
+                            <g class="label" style="" transform="translate(0, 0)">
+                                <rect/>
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 10px; text-align: center;">
+                                        <span class="nodeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="label edgeLabel" id="expand_env_vars---expand_env_vars---2"
+                           transform="translate(2597.7015625033528, 1338.5)">
+                            <rect width="0.1" height="0.1"/>
+                            <g class="label" style="" transform="translate(0, 0)">
+                                <rect/>
+                                <foreignObject width="0" height="0">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 10px; text-align: center;">
+                                        <span class="nodeLabel"></span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                        <g class="node default internalNode" id="my-svg-flowchart-_expand_value-18" data-look="classic"
+                           transform="translate(2025.4664062522352, 1185.5)">
+                            <rect class="basic label-container"
+                                  style="fill:#e8daff !important;stroke:#b594f0 !important;stroke-width:2px !important;sans-serif: !important"
+                                  x="-112.4140625" y="-27" width="224.828125" height="54"/>
+                            <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                               transform="translate(-82.4140625, -12)">
+                                <rect/>
+                                <foreignObject width="164.828125" height="24">
+                                    <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                         xmlns="http://www.w3.org/1999/xhtml">
+                                        <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                              class="nodeLabel">
+                                            <p>function _expand_value()</p>
+                                        </span>
+                                    </div>
+                                </foreignObject>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <g class="node default externalNode" id="my-svg-flowchart-append-21" data-look="classic"
+                   transform="translate(2876.793701171875, 711.5)">
+                    <rect class="basic label-container"
+                          style="fill:#ffd6f5 !important;stroke:#936cd4 !important;stroke-width:2px !important;sans-serif: !important"
+                          x="-66.6484375" y="-39" width="133.296875" height="78"/>
+                    <g class="label" style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                       transform="translate(-36.6484375, -24)">
+                        <rect/>
+                        <foreignObject width="73.296875" height="48">
+                            <div style="color: rgb(74, 38, 133) !important; font-family: &quot;Segoe UI&quot; !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"
+                                 xmlns="http://www.w3.org/1999/xhtml">
+                                <span style="color:#4a2685 !important;font-family:'Segoe UI' !important"
+                                      class="nodeLabel">
+                                    <p>append()
+                                        <br/>
+                                        (from core)
+                                    </p>
+                                </span>
+                            </div>
+                        </foreignObject>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <marker id="my-svg_flowchart-v2-pointEnd__936cd4" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5"
+                refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"
+                  stroke="#936cd4" fill="#936cd4"/>
+        </marker>
+    </g>
+    <defs>
+        <filter id="my-svg-drop-shadow" height="130%" width="130%">
+            <feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+    <defs>
+        <filter id="my-svg-drop-shadow-small" height="150%" width="150%">
+            <feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/>
+        </filter>
+    </defs>
+    <linearGradient id="my-svg-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="hsl(0, 0%, 83.3333333333%)" stop-opacity="1"/>
+        <stop offset="100%" stop-color="hsl(0, 0%, 88.9215686275%)" stop-opacity="1"/>
+    </linearGradient>
+</svg>

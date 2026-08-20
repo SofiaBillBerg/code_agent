@@ -10,8 +10,13 @@ export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
-            "/capabilities": "http://localhost:8000",
-            "/invoke": "http://localhost:8000",
+            // Proxy all API endpoints to the FastAPI backend.
+            // Override with VITE_API_BASE_URL or by editing this file.
+            "/providers": "http://localhost:8001",
+            "/chat": "http://localhost:8001",
+            "/capabilities": "http://localhost:8001",
+            "/invoke": "http://localhost:8001",
+            "/threads": "http://localhost:8001",
         },
     },
     build: {

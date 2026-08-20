@@ -5,15 +5,18 @@ import React, {useEffect, useState} from "react";
  * Shows tool execution progress: spinner on start, elapsed time + output on end
  * Collapsible display for tool output
  * Renders all three states: running, finished, error
+ * Compatible with @langchain/react AssembledToolCall shape
  */
 function ToolCallRow({toolCall}) {
-    const [expanded, setExpanded] = useState(false);
-    const [elapsed, setElapsed] = useState(0);
+    const [expanded, setExpanded] = React.useState(false);
+    const [elapsed, setElapsed] = React.useState(0);
+
+    // Map useStream status to legacy labels
+    const status = toolCall.status === "finished" ? "done" : toolCall.status === "error" ? "error" : toolCall.status;
 
     // Track elapsed time from tool_start
-    useEffect(() => {
-        if (toolCall.status === "pending") {
-            // Start timer when tool starts
+    React.useEffect(() => {
+        if (status === "pending" || status === "running") {
             setElapsed(0);
             const startTime = Date.now();
             const interval = setInterval(() => {
@@ -21,24 +24,22 @@ function ToolCallRow({toolCall}) {
             }, 100);
             return () => clearInterval(interval);
         }
-    }, [toolCall.status]);
+    }, [status, toolCall.callId]);
 
     // Update elapsed time when tool ends with specific duration
-    useEffect(() => {
-        if (toolCall.status === "done" && toolCall.elapsedS !== undefined) {
+    React.useEffect(() => {
+        if ((status === "done" || status === "finished") && toolCall.elapsedS !== undefined) {
             setElapsed(toolCall.elapsedS);
         }
-    }, [toolCall.status, toolCall.elapsedS]);
+    }, [status, toolCall.elapsedS, toolCall.callId]);
 
-    // Generic fallback for unknown tools
-    const toolName = toolCall.tool || toolCall.name || "Unknown tool";
-    const toolInput = toolCall.input || toolCall.arguments || {};
-    const toolOutput = toolCall.output || toolCall.result || "";
-    const toolError = toolCall.error || "";
+    const toolName = toolCall.name || toolCall.tool || "Unknown tool";
+    const toolInput = toolCall.input ?? toolCall.args ?? {};
+    const toolOutput = toolCall.output ?? toolCall.result ?? "";
+    const toolError = toolCall.error ?? "";
 
-    // Truncate output to 200 chars with ellipsis
     const truncatedOutput =
-        toolOutput && toolOutput.length > 200
+        toolOutput && typeof toolOutput === "string" && toolOutput.length > 200
             ? toolOutput.substring(0, 200) + "…"
             : toolOutput;
 
@@ -49,7 +50,7 @@ function ToolCallRow({toolCall}) {
                 className="tool-call-header"
             >
                 <span className="tool-call-name">
-                    {toolCall.status === "pending" && (
+                    {(status === "pending" || status === "running") && (
                         <span className="spinner" style={{marginRight: "0.5rem"}}>
                             ⟳
                         </span>
@@ -57,14 +58,14 @@ function ToolCallRow({toolCall}) {
                     {toolName}
                 </span>
                 <span className="tool-call-meta">
-                    {toolCall.status === "done"
+                    {status === "done" || status === "finished"
                         ? `${elapsed.toFixed(1)}s`
-                        : toolCall.status === "pending"
+                        : (status === "pending" || status === "running")
                             ? `${elapsed.toFixed(1)}s...`
                             : ""}
                 </span>
             </button>
-            {expanded && toolCall.status === "done" && (
+            {expanded && (status === "done" || status === "finished") && (
                 <div className="tool-call-body">
                     <div className="tool-call-input">
                         {JSON.stringify(toolInput, null, 2)}
@@ -72,7 +73,7 @@ function ToolCallRow({toolCall}) {
                     <div className="tool-call-output">
                         Output: {truncatedOutput}
                     </div>
-                    {toolOutput && toolOutput.length > 200 && (
+                    {toolOutput && typeof toolOutput === "string" && toolOutput.length > 200 && (
                         <details>
                             <summary className="tool-call-summary">
                                 Show full output
@@ -84,7 +85,7 @@ function ToolCallRow({toolCall}) {
                     )}
                 </div>
             )}
-            {expanded && toolCall.status === "error" && (
+            {expanded && status === "error" && (
                 <div className="tool-call-error">
                     Error: {toolError || "Unknown error"}
                 </div>

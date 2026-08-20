@@ -8,6 +8,8 @@ format: html
 
 This page shows how to use `code_agent` from the CLI, Python API, and web UI.
 
+![Core components](../docs/visualizations/svg/packages_code_agent.core.svg)
+
 ## CLI Commands
 
 ### Interactive Chat
@@ -88,6 +90,9 @@ Invoke a specific capability:
 code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
 ```
 
+![Capabilities diagram](../docs/visualizations/svg/packages_code_agent.capabilities.svg)
+
+
 ## Python API
 
 ### Complete Workflow Example
@@ -116,6 +121,8 @@ response = agent.invoke({
 By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the
 working directory at `/workspace/`.
 
+![Agents diagram](../docs/visualizations/svg/packages_code_agent.agents.svg)
+
 ### Stream Responses
 
 ```python
@@ -141,6 +148,9 @@ for event in agent.stream({"messages": [HumanMessage(content="Hello")]}):
 
 When using the DeepAgents harness (the default), the following built-in filesystem tools are also available:
 
+![Profiles diagram](../docs/visualizations/svg/packages_code_agent.profiles.svg)
+
+
 | Tool         | Purpose                                    |
 |--------------|--------------------------------------------|
 | `ls`         | List files in a directory                  |
@@ -151,6 +161,9 @@ When using the DeepAgents harness (the default), the following built-in filesyst
 | `execute`    | Run shell commands (sandbox backends only) |
 | `task`       | Delegate to a subagent                     |
 
+![Tools diagram](../docs/visualizations/svg/packages_code_agent.tools.svg)
+
+
 ## Web UI
 
 The web UI is a React single-page app served by FastAPI. Start it with:
@@ -158,6 +171,8 @@ The web UI is a React single-page app served by FastAPI. Start it with:
 ```bash
 code-agent serve --web
 ```
+
+![UI diagram](../docs/visualizations/svg/packages_code_agent.ui.svg)
 
 ### API Endpoints
 
@@ -207,6 +222,9 @@ CODE_AGENT_MCP_SERVERS=mcp.json
 ```
 
 MCP tools are prefixed with `mcp_<server>__<tool>` to avoid name collisions.
+
+![Configuration diagram](../docs/visualizations/svg/packages_code_agent.config.svg)
+
 
 ## Human-in-the-Loop
 

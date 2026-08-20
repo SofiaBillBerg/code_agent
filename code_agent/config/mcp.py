@@ -4,7 +4,7 @@ This module is the single source of truth for how external MCP server tools
 are named, classified, and (de)privileged inside the agent.
 
 Why tool-name prefixing?
------------------------
+-------------------------
 LangChain's :class:`~langchain.agents.middleware.HumanInTheLoopMiddleware`
 matches tool calls by their **exact** name (see its ``after_model`` method).
 Prompt instructions alone cannot reliably prevent a tool from being called,

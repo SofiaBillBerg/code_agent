@@ -19,9 +19,9 @@ repos:
         entry: project_management/run_formatters.sh
         language: script
         stages: [ manual ]
-      - id: run-vis
-        name: run-vis
-        entry: project_management/run_vis.sh
+      - id: run-diagrams
+        name: run-diagrams
+        entry: project_management/run_diagrams.sh
         language: script
         stages: [ manual ]
       - id: run-analyzers

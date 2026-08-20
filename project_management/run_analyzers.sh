@@ -45,7 +45,6 @@ run_step "pyrefly stubgen" uv run pyrefly stubgen --output-dir ./stubs --include
 run_step "pyanalyze" uv run pyanalyze --config-file pyproject.toml --find-unused --find-unused-attributes --markdown-output="$CODE_QUALITY_DIR"/pyanalyze_reports_0.md --verbose --enable-all
 run_step "pytype" uv run pytype code_agent --config pyproject.toml -v 2 --use-fiddle-overlay --precise-return --protocols --overriding-renamed-parameter-count-checks --unresolved
 run_step "flake8" uv run flake8 code_agent --show-source --verbose --extend-exclude "_build, .venv, *cache*, node_modules, dist, build, .ipynb_checkpoints, *support-libs" --enable-extensions pycodestyle --format=pylint --max-line-length 80 --output-file "$CODE_QUALITY_DIR"/flake_report.txt --max-doc-length 100 --statistics --tee --color always --count --doctests
-run_step "pydoctor" uv run pydoctor -c pydoctor.ini
 echo ""
 run_step "pip install -e ." uv pip install -e .
 echo ""

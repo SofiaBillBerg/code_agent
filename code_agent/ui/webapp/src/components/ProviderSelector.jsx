@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import {apiFetch} from "../api";
 
 /**
  * ProviderSelector component
@@ -21,7 +22,7 @@ function ProviderSelector({activeProvider, providers, onSwitch}) {
             return; // No-op if already selected
         }
         try {
-            const res = await fetch("/providers/active", {
+            const res = await apiFetch("/providers/active", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({provider, model}),

@@ -1,18 +1,8 @@
 ---
 title: "Code Agent"
 author: "Sofia Billger Bergström"
+format: html
 ---
-
-<!-- README.md is generated from this source. Edit the .qmd file directly -->
-
-```{r include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SofiaBillBerg/code_agent.git/HEAD)
 
 > A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
 
@@ -37,24 +27,66 @@ code-agent chat
 - **Web UI**: FastAPI + React interface for browser-based interaction
 - **Provider-agnostic**: OpenAI-compatible pattern; supports Ollama, OpenAI, Anthropic, and more
 
+
+See [docs/USAGE.qmd](../docs/USAGE.qmd) for CLI and Python API examples.
+
+## Configuration
+
+The agent uses a three-layer configuration system:
+
+1. **Config file**: `config/codeagent.jsonc` or `config/codeagent.yaml`
+2. **Profile file**: `config/profiles.yaml` for multiple profiles, referenced in the config file with
+   `${profile:PROFILE_NAME}`
+3. **MCP config file**: `.mcp.json` for configuring MCP servers, may use `${env:VAR_NAME}` references
+4. **`.env` file**: Values referenced from the config file with `${env:VAR_NAME}`
+5. **Environment variables**: `CODE_AGENT_*` variables override config and `.env`
+
+See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
+
+
+## Note: Current instructions - 2026-08-20
+# Production (FastAPI serves both API + static UI on same origin):
+
+`python -m code_agent serve --web --web-port 8001
+`
+# → Open http://127.0.0.1:8001
+
+# Development (Vite dev server with proxy + hot reload):
+
+`npm run dev
+`
+# → Open http://localhost:5173 — proxies API to 8001
+
+# Preview built assets with separate backend:
+
+`VITE_API_BASE_URL=http://localhost:8001 npm run preview
+`
+# → Open http://localhost:4173 — connects to backend on 8001
+
+
+
 ## Class & Package Diagrams
 
-![Class diagram](../docs/visualizations/svg/classes.svg)
+![Diagram for code_agent](../docs/visualizations/svg/packages_code_agent.svg)
 
 
-![Package diagram](../docs/visualizations/svg/packages.svg)
+![Core components](../docs/visualizations/svg/packages_code_agent.core.svg)
 
 ## Documentation
 
-| Page                                       | Description                                       |
-|--------------------------------------------|---------------------------------------------------|
-| [QUICKSTART](../docs/QUICKSTART.qmd)       | Step-by-step installation and configuration guide |
-| [USAGE](../docs/USAGE.qmd)                 | Example workflows for CLI and Python API usage    |
-| [TOOLS](../docs/TOOLS.qmd)                 | Built-in filesystem and MCP tools                 |
-| [CONFIGURATION](../docs/CONFIGURATION.qmd) | Config file, `.env`, and environment variables    |
-| [CONTRIBUTING](../docs/CONTRIBUTING.qmd)   | Guidelines for contributing                       |
-| [CHANGELOG](../CHANGELOG.qmd)              | Version history                                   |
-| [FAQ](../docs/FAQ.qmd)                     | Common questions and troubleshooting              |
+| Page                                                                                        | Description                                                          |
+|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| [QUICKSTART](../docs/QUICKSTART.qmd)                                                        | Step-by-step installation and configuration guide                    |
+| [USAGE](../docs/USAGE.qmd)                                                                  | Example workflows for CLI and Python API usage                       |
+| [TOOLS](../docs/TOOLS.qmd)                                                                  | Built-in filesystem and MCP tools                                    |
+| [CONFIGURATION](../docs/CONFIGURATION.qmd)                                                  | Config and profile files (`codeagent.jsonc` or `codeagent.yaml`, and |
+| `profiles.yaml`), `.env`, and env vars. Optional mcp config in `.mcp.json` for MCP servers. |                                                                      |
+| [CONTRIBUTING](../docs/CONTRIBUTING.qmd)                                                    | Guidelines for contributing                                          |
+| [CHANGELOG](../CHANGELOG.qmd)                                                               | Version history                                                      |
+| [FAQ](../docs/FAQ.qmd)                                                                      | Common questions and troubleshooting                                 |
+
+
+
 
 ## Getting Help
 
