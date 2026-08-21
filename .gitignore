@@ -1,28 +1,26 @@
 # User-specific stuff
 .idea/
+.vscode/
 *.iml
 *.ipr
-docs/docs_web/
-.repowise
-apidocs
+**/.quarto/
+.repowise/
+apidocs/
 stubs/
 th*
-docs/visualizations/*.mmd
-.tmp
-**/pdf_docs
+/docs/visualizations/*.mmd
+.tmp/
 mermaid-magic.json
+
+!.pre-commit*
 
 # CMake
 cmake-build-*/
 _extensions
 # File-based project format
 *.iws
-!.pre-commit*
 # IntelliJ
 out/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
@@ -30,35 +28,37 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-### Python template
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
 # C extensions
 *.so
 
+### Python template
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+*.py[cod]
+*$py.class
+.Python
+**/wheels/
+**/share/python-wheels/
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
 # Distribution / packaging
 **/node_modules/
-.Python
-build/
-develop-eggs/
-dist/
-node_modules/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
+**/build/
+**/*develop-eggs/
+**/*dist/
+**/downloads/
+**/*eggs/
+**/.eggs/
+**/lib/
+**/lib64/
+**/parts/
+**/sdist/
 var/
-wheels/
-share/python-wheels/
-*.egg-info/
+**/*.egg-info/
 .installed.cfg
-*.egg
+**/*.egg
 MANIFEST
 
 # PyInstaller
@@ -67,21 +67,19 @@ MANIFEST
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
+**/htmlcov/
+**/.tox/
+**/.nox/
+**/.coverage
+**/.coverage.*
+**/.cache
+**/nosetests.xml
 coverage.xml
-.pytest_cache/
-cover/
+**/.pytest_cache/
+**/cover/
+**/coverage.lcov
 
 # Translations
 *.mo
@@ -93,149 +91,96 @@ db.sqlite3-journal
 
 # Flask stuff:
 instance/
-.webassets-cache
+.webassets-cache/
 
 # Scrapy stuff:
-.scrapy
+.scrapy/
 
 # Sphinx documentation
-docs/_build/
+**/docs/_build/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+**/.ipynb_checkpoints/
 
 # IPython
 profile_default/
-# ipython_config.py # temp disabled during this work
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
 .pdm.toml
 .pdm-python
 .pdm-build/
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
+# Python virtual env
+.venv/
 venv/
+
+venv.bak/
+# Byte-compiled / cache
+*.pyc
+# Environments
+**/.env
+**/env/
 ENV/
 env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
 
 # Rope project settings
 .ropeproject
 
 # mkdocs documentation
-/site
+**/*site/
 
 # mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+**/.mypy_cache/
+**/.dmypy.json
+**/dmypy.json
 
 # Pyre type checker
-.pyre/
+**/.pyre/
 
 # pytype static type analyzer
-.pytype/
+**/.pytype/
 
 # Cython debug symbols
 cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-/revised_pipeline/backup/
 
 
 # R project
 .RData
 .Rproj
-
-/.quarto/
-**/*.quarto_ipynb
 packrat/lib*/
-
+**/renv/.gitignore
+**/renv/activate.R
 # Quarto-generated markdown for MkDocs
-/docs/md_docs/
+**/md_docs/
+**/_site/
+**/*.quarto_ipynb
 
-# Generated docs
-docs/md_docs/
-docs/site/
-_site/
-# Python virtual env
-.venv/
-
-# Byte-compiled / cache
-*.pyc
 
 # Build artifacts
 
 # Project exclude paths
-/revised_pipeline/archive/cleanup_20251105_120217/
-/revised_pipeline/archive/flow_pipeline_backup_20251104_145354/
-/revised_pipeline/archive/flow_pipeline_backup_20251104_152801/
-/revised_pipeline/archive/output_backup_20251104_1530/
-/_site/
-*.backup
-/renv/.gitignore
-/renv/activate.R
+**/*.backup
+**/bk_*/
+**/bak*/
+**/config/.mcp.jsonc
+**/.mcp.json
+**/.xml
+**/whitelist.txt
+**/pdf_docs/
+**/temp/
+
+
+
+# Private user notes
+**/notes/
+
+# Ignore hidden directories or only-local related files
+.*/
+/.*/
+**/*tmp/
+
+
 
 # MemPalace per-project files (issue #185)
 mempalace.yaml
 entities.json
-/.tmp/
-notes/
-# Private user notes
-.*/
-/.*/
-# Ignore hidden directories or only-local related files
-
-pdf_docs/
-/config/.mcp.jsonc
-/.mcp.json
-/.xml
-/whitelist.txt
-/notes/
-/coverage.lcov

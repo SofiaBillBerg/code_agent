@@ -29,13 +29,23 @@ Security notes:
 from __future__ import annotations
 
 import asyncio
-import uuid
-
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 from typing import Any, Literal
+import uuid
 
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
+from code_agent.capabilities.envelope import (
+    InvocationRequest,
+    InvocationResponse,
+    InvokeBody,
+)
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.config.settings import get_settings
+from code_agent.main import create_llm, load_config
+from code_agent.ui.protocol import _sse, translate_stream
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -45,19 +55,12 @@ from langchain.messages import HumanMessage
 from langchain.tools import BaseTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pydantic import BaseModel
 
-from code_agent.agents.deepagents_agent import (
-    build_agent,
-    create_default_tools,
-)
-from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.config.settings import get_settings
-from code_agent.main import create_llm, load_config
-from code_agent.ui.protocol import _sse, translate_stream
+#: Module logger — used for protocol stream error reporting.
+logger = logging.getLogger(__name__)
 from code_agent.utils.checkpointer import build_checkpointer
-
 
 #: Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
@@ -209,7 +212,7 @@ def get_registry() -> CapabilityRegistry:
 
 
 async def _reinit_agent(provider: str, model: str) -> None:
-    """Reinitialise the global agent with a new provider/model.
+    """Reinitialize the global agent with a new provider/model.
 
     This function is called by the POST /providers/active endpoint to switch
     the active LLM provider and model at runtime without restarting the server.
@@ -254,7 +257,7 @@ async def _reinit_agent(provider: str, model: str) -> None:
                 )
             #: If we're switching from sqlite to memory (or vice versa), we need to recreate the checkpointer to match the new backend
             if (
-                isinstance(checkpointer, SqliteSaver)
+                isinstance(checkpointer, (SqliteSaver, AsyncSqliteSaver))
                 and cfg.get("checkpoint_dir") is None
             ):
                 checkpointer = InMemorySaver()
@@ -263,8 +266,8 @@ async def _reinit_agent(provider: str, model: str) -> None:
             ):
                 #: Rebuild a persistent (sqlite) checkpointer from the config
                 #: path via ``build_checkpointer`` so the connection is opened
-                #: correctly (``SqliteSaver`` expects a ``sqlite3.Connection``,
-                #: not a path string).
+                #: correctly. The async web runtime requires ``AsyncSqliteSaver``
+                #: (an ``aiosqlite.Connection``), not a sync ``SqliteSaver``.
                 checkpointer = build_checkpointer(
                     checkpoint_dir=cfg["checkpoint_dir"]
                 )
@@ -307,8 +310,10 @@ def get_agent() -> AgentState:
             root_dir=str(Path.cwd()), llm=llm
         )
         tools.extend(_load_mcp_tools(cfg))
-        checkpointer: InMemorySaver | SqliteSaver = build_checkpointer(
-            checkpoint_dir=get_settings().checkpoint_dir or None
+        checkpointer: InMemorySaver | SqliteSaver | AsyncSqliteSaver = (
+            build_checkpointer(
+                checkpoint_dir=get_settings().checkpoint_dir or None
+            )
         )
         agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
         _STATE = AgentState(
@@ -341,8 +346,10 @@ async def get_agent_async() -> AgentState:
             root_dir=str(Path.cwd()), llm=llm
         )
         tools.extend(await _load_mcp_tools_async(cfg))
-        checkpointer: InMemorySaver | SqliteSaver = build_checkpointer(
-            checkpoint_dir=get_settings().checkpoint_dir or None
+        checkpointer: InMemorySaver | SqliteSaver | AsyncSqliteSaver = (
+            build_checkpointer(
+                checkpoint_dir=get_settings().checkpoint_dir or None
+            )
         )
         agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
         _STATE = AgentState(
@@ -425,7 +432,7 @@ if get_settings().auth_token is not None:
     app.add_middleware(AuthMiddleware)
 
 #: CORS for local Vite dev and preview origins so the SPA can call the API.
-app.add_middleware(
+app.add_middleware(  # type: ignore[arg-type]
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
@@ -437,6 +444,26 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "X-CodeAgent-Auth-Token"],
 )
+
+
+class RequestLoggingMiddleware:
+    """Log all incoming requests for debugging."""
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] == "http":
+            method = scope.get("method", "?")
+            path = scope.get("path", "?")
+            query = scope.get("query_string", b"").decode(
+                "utf-8", errors="replace"
+            )
+            print(f"[REQ] {method} {path}?{query}")
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(RequestLoggingMiddleware)
 
 
 @app.get("/providers")
@@ -489,7 +516,7 @@ async def get_active_provider() -> ActiveProviderResponse:
 
 @app.post("/providers/active")
 async def set_active_provider(request: ActiveProviderRequest) -> dict[str, str]:
-    """Switch the active provider and model, reinitialising the agent.
+    """Switch the active provider and model, reinitializing the agent.
 
     This endpoint allows runtime switching of the LLM provider and model
     without restarting the server. It performs the following steps:
@@ -689,7 +716,7 @@ class CancelRequest(BaseModel):
     """Body for POST /chat/cancel.
 
     Attributes:
-        thread_id: The thread whose running agent should be cancelled.
+        thread_id: The thread whose running agent should be canceled.
     """
 
     thread_id: str
@@ -1004,8 +1031,8 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
         return f"data: {json.dumps(payload)}\n\n"
 
     #: Try astream_events first, fall back to invoke if not available
-    stream_fn = getattr(agent, "astream_events", None)
-    if stream_fn is None:
+    stream_fn: Any = getattr(agent, "astream_events", None)
+    if not callable(stream_fn):
         #: Fallback to blocking invoke when astream_events is not available
         #: Emit error event and return
         yield _sse({"type": "error", "reason": "Streaming not supported"})
@@ -1019,7 +1046,7 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
         #: Emit initial ping to confirm connection
         yield _sse({"type": "ping"})
 
-        async for event in stream_fn(
+        async for event in stream_fn(  # type: ignore[operator]
             {"messages": [HumanMessage(content=message)]},
             config={"configurable": {"thread_id": thread_id}},
             version="v2",
@@ -1153,7 +1180,7 @@ async def chat_cancel(request: CancelRequest) -> dict[str, str]:
     the thread, returns HTTP 409.
 
     :param request: CancelRequest containing the thread_id to cancel.
-    :return: {"status": "cancelled"} on success.
+    :return: {"status": "canceled"} on success.
     :raises HTTPException: 409 if no running task for thread_id.
     """
     task = _thread_tasks.get(request.thread_id)
@@ -1197,7 +1224,8 @@ async def chat_history(thread_id: str, limit: int = 20) -> HistoryResponse:
             else:
                 result.append({"role": "user", "content": str(msg)})
         return HistoryResponse(messages=result)
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Error occurred while fetching chat history: {e}")
         return HistoryResponse(messages=[])
 
 
@@ -1309,10 +1337,12 @@ class ProtocolCommand(BaseModel):
     """A LangGraph protocol v2 command.
 
     Attributes:
+        id: Client-generated command ID that must be echoed in the response.
         method: Command method name (e.g. "run.start", "input.respond", "run.stop").
         params: Command-specific parameters.
     """
 
+    id: int | None = None
     method: str
     params: dict[str, Any] = {}
 
@@ -1342,7 +1372,7 @@ async def thread_commands(
     Supported commands:
     * ``run.start`` — start a new run with the given input
     * ``input.respond`` — respond to a pending HITL interrupt
-    * ``run.stop`` — cancel a running run
+    * ``run.stop`` — cancel a running
 
     :param thread_id: The thread to execute the command on.
     :param command: The protocol command to execute.
@@ -1350,6 +1380,14 @@ async def thread_commands(
     """
     method = command.method
     params = command.params or {}
+
+    def _ok(result: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Build a protocol v2 CommandResponse echoing the command id."""
+        return {
+            "type": "success",
+            "id": command.id if command.id is not None else 0,
+            "result": result or {},
+        }
 
     if method == "run.start":
         # Extract input from params
@@ -1361,24 +1399,43 @@ async def thread_commands(
         text = human_msg.get("content", "") if human_msg else ""
 
         if not text:
-            return {"status": "ok"}
+            return _ok()
 
         state = await get_agent_async()
         effective_thread = thread_id or state.thread_id
 
         async def _run():
             try:
+                print(
+                    f"[DEBUG] Starting stream for thread {effective_thread}, text: {text[:50]}"
+                )
                 async for event in translate_stream(
                     state.agent, text, effective_thread
                 ):
+                    _evt_data = event.get("params", {}).get("data", {})
+                    print(
+                        f"[DEBUG] Pushing event: {event.get('method')} "
+                        f"{_evt_data.get('event', '')}"
+                        + (
+                            f" | error: {_evt_data.get('error')}"
+                            if _evt_data.get("error")
+                            else ""
+                        )
+                    )
                     _push_protocol_event(effective_thread, event)
+                print(f"[DEBUG] Stream completed for thread {effective_thread}")
             except asyncio.CancelledError:
-                pass
+                print(f"[DEBUG] Stream cancelled for thread {effective_thread}")
             except Exception as exc:
+                print(
+                    f"[DEBUG] Stream error for thread {effective_thread}: {exc}"
+                )
+                #: No "seq" here on purpose — _push_protocol_event assigns the
+                #: authoritative per-thread seq, and the SSE endpoint overrides
+                #: the payload seq with it before writing the frame.
                 _push_protocol_event(
                     effective_thread,
                     {
-                        "seq": 0,
                         "method": "lifecycle",
                         "params": {
                             "namespace": [],
@@ -1389,7 +1446,7 @@ async def thread_commands(
 
         task = asyncio.create_task(_run())
         _thread_tasks[effective_thread] = task
-        return {"status": "ok", "run_id": str(uuid.uuid4())}
+        return _ok({"run_id": str(uuid.uuid4())})
 
     elif method == "input.respond":
         # Standard protocol v2 format:
@@ -1416,22 +1473,24 @@ async def thread_commands(
                         _pending_hitl[thread_id] = ev
                         _hitl_decisions[thread_id] = _extract_decision(response)
                         ev.set()
-                        return {"status": "ok"}
-                except Exception:
-                    pass
-            return {"status": "ok"}
+                        return _ok()
+                except Exception as e:
+                    logger.exception(
+                        f"Error occurred while fetching interrupt decision: {e}"
+                    )
+            return _ok()
 
         _hitl_decisions[thread_id] = _extract_decision(response)
         ev.set()
-        return {"status": "ok"}
+        return _ok()
 
     elif method == "run.stop":
         task = _thread_tasks.get(thread_id)
         if task and not task.done():
             task.cancel()
-        return {"status": "ok"}
+        return _ok()
 
-    return {"status": "ok"}
+    return _ok()
 
 
 @app.post("/threads/{thread_id}/stream/events")
@@ -1441,8 +1500,8 @@ async def thread_stream_events(
 ) -> StreamingResponse:
     """Open a LangGraph protocol v2 SSE event stream.
 
-    This endpoint accepts a subscription request with channels and
-    namespace filters, then streams protocol v2 events for the thread.
+    Uses POST with fetch streaming (not EventSource) — compatible with
+    the @langchain/react built-in SSE transport.
 
     :param thread_id: The thread to stream events for.
     :param request: Stream subscription parameters.
@@ -1464,9 +1523,17 @@ async def thread_stream_events(
     async def _event_stream():
         nonlocal since
         try:
-            # Replay events since the given since value
+            # Replay events since the given since value.
+            # NOTE: `since` MUST advance here too — otherwise the first
+            # live-drain below re-yields everything we just replayed,
+            # producing duplicate frames with regressing seq numbers
+            # (which stalls the @langchain/protocol client).
             for seq, event in queue:
                 if seq > since:
+                    since = seq
+                    #: Override the payload seq with the authoritative
+                    #: per-thread queue seq so the wire sequence stays
+                    #: strictly monotonic across multiple runs.
                     yield _sse(event)
                 else:
                     # Skip events already seen
@@ -1487,8 +1554,10 @@ async def thread_stream_events(
                 await asyncio.sleep(0.01)
         except asyncio.CancelledError:
             pass
-        except Exception:
-            pass
+        except Exception as e:
+            #: Never swallow stream errors silently — a NameError here
+            #: previously killed every SSE connection with no trace.
+            logger.exception(f"protocol v2 event stream failed: {e}")
 
     return StreamingResponse(
         _event_stream(),
@@ -1529,7 +1598,8 @@ async def thread_state(thread_id: str) -> dict[str, Any]:
             "next": [],
             "tasks": [],
         }
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Error occurred while fetching thread state: {e}")
         return {"values": {}, "next": [], "tasks": []}
 
 
@@ -1574,6 +1644,23 @@ def invoke_capability(body: InvokeBody) -> dict[str, Any]:
 #: Serve the built React app at the root when it exists. API routes registered
 #: above take precedence, so the SPA only handles paths that are not API calls.
 if _DIST_DIR.is_dir():
+    from starlette.responses import FileResponse, Response
+
+    class NoCacheStaticFiles(StaticFiles):
+        async def get_response(
+            self, path: str, scope: Any
+        ) -> FileResponse | Response:
+            response = await super().get_response(path, scope)
+            if isinstance(response, FileResponse):
+                response.headers["Cache-Control"] = (
+                    "no-cache, no-store, must-revalidate"
+                )
+                response.headers["Pragma"] = "no-cache"
+                response.headers["Expires"] = "0"
+            return response
+
     app.mount(
-        "/", StaticFiles(directory=str(_DIST_DIR), html=True), name="webapp"
+        "/",
+        NoCacheStaticFiles(directory=str(_DIST_DIR), html=True),
+        name="webapp",
     )

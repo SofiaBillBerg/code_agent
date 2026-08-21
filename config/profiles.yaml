@@ -1,4 +1,4 @@
-# DeepAgents harness profiles (user-editable).
+# Code Agent harness profiles (user-editable).
 #
 # Each top-level key is either a bare provider name (e.g. "ollama") for
 # provider-wide defaults, or "provider:model" for a per-model override.

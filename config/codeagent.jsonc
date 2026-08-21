@@ -1,4 +1,5 @@
 {
+  //# DeepAgents configuration file (JSONC format, comments allowed).
   "COHERE_API_KEY": "${env:COHERE_API_KEY}",
   "COHERE_BASE_URL": "${env:COHERE_BASE_URL}",
   "COHERE_MODEL": "${env:COHERE_MODEL}",

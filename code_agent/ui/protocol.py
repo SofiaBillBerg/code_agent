@@ -17,16 +17,35 @@ non-empty namespace and are forwarded unchanged so selector hooks such as
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 import json
+from typing import Any
 import uuid
 
-from collections.abc import AsyncGenerator
-from typing import Any
+
+def _sse(payload: dict[str, Any], seq: int | None = None) -> str:
+    """Format a single SSE frame with id and event fields."""
+    lines = []
+    if seq is not None:
+        lines.append(f"id: {seq}")
+    lines.append("event: message")
+    lines.append(f"data: {json.dumps(payload, default=_json_default)}")
+    lines.append("")  # blank line terminates the frame
+    return "\n".join(lines) + "\n"
 
 
-def _sse(payload: dict[str, Any]) -> str:
-    """Format a single SSE frame."""
-    return f"data: {json.dumps(payload)}\n\n"
+def _json_default(obj: Any) -> Any:
+    """Handle non-serializable objects in protocol events."""
+    # LangChain message types
+    if hasattr(obj, "model_dump"):
+        return obj.model_dump()
+    if hasattr(obj, "dict") and callable(obj.dict):
+        return obj.dict()
+    if hasattr(obj, "__dict__") and not isinstance(obj, type):
+        return obj.__dict__
+    raise TypeError(
+        f"Object of type {type(obj).__name__} is not JSON serializable"
+    )
 
 
 # ---------------------------------------------------------------------------

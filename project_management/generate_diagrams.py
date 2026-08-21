@@ -1,11 +1,14 @@
+"""This script generates Mermaid diagrams for the code_agent package, providing a visual representation of its structure and relationships.
+
+It parses Python files to extract classes, functions, and their calls, then creates flowcharts that illustrate the internal and external dependencies of each submodule, as well as a high-level overview of the entire package. The diagrams are saved in the docs/visualizations directory for easy access and review.
+"""
+
 import ast
-import os
-
 from collections import defaultdict
+import os
 from pathlib import Path
+from typing import Any
 
-
-# --- ENGLISH DEFINITIONS FOR PLASMA PASTEL FLOWCHART THEMING ---
 MERMAID_THEME_FLOWCHART = """
     %% Plasma Pastel Theme Configuration %%
     classDef internalNode fill:#e8daff,stroke:#b594f0,stroke-width:2px,color:#4a2685,font-family:'Segoe UI',sans-serif;
@@ -16,8 +19,17 @@ MERMAID_THEME_FLOWCHART = """
 """
 
 
-def parse_python_components(file_path, source_dir):
-    with open(file_path, encoding="utf-8") as f:
+def parse_python_components(
+    file_path: Path, source_dir: Path
+) -> list[dict[str, Any]]:  # ruff: ignore[complex-structure]
+    """Parse a Python file and extract classes, functions, and their relationships.
+
+    :param file_path: Path to the Python file to parse.
+    :param source_dir: Directory containing the Python files.
+    :return: List of parsed components.
+    :rtype: list[dict[str, Any]]
+    """
+    with Path(file_path).open(encoding="utf-8") as f:
         try:
             node = ast.parse(f.read(), filename=file_path)
         except SyntaxError:
@@ -28,7 +40,13 @@ def parse_python_components(file_path, source_dir):
 
     components = []
 
-    def find_calls(code_node):
+    def find_calls(code_node: ast.AST) -> list[str]:
+        """A helper function to find all function calls within a given AST node.
+
+        :param code_node: The AST node to analyze for function calls.
+        :return: A list of function names called within the node.
+        :rtype: list[str]
+        """
         calls = []
         for child in ast.walk(code_node):
             if isinstance(child, ast.Call):
@@ -86,7 +104,13 @@ def parse_python_components(file_path, source_dir):
     return components
 
 
-def generate_mermaid():
+def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
+    """Generate Mermaid diagrams for the code_agent package, including detailed submodule maps and a high-level architectural overview.
+
+    The diagrams are saved in the docs/visualizations directory.
+
+    :return: None
+    """
     output_dir = Path("./docs/visualizations")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -216,7 +240,7 @@ def generate_mermaid():
 
     global_file = output_dir / "packages_code_agent.mmd"
     global_file.write_text("\n".join(global_lines), encoding="utf-8")
-    print(f"✓ Created global architectural overview map!")
+    print("✓ Created global architectural overview map!")
 
 
 if __name__ == "__main__":

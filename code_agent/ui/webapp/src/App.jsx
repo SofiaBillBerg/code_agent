@@ -1,74 +1,37 @@
 import React, {useEffect, useState, useRef, useCallback} from "react";
-import {useStream, useMessages, useToolCalls} from "@langchain/react";
-import {AIMessage, HumanMessage} from "@langchain/core/messages";
-import "./styles.css";
+import {useCustomStream} from "./useCustomStream";
 import ToolCallRow from "./components/ToolCallRow";
-import ProviderSelector from "./components/ProviderSelector";
-import HitlSurface from "./components/HitlSurface";
-import InputBar from "./components/InputBar";
-import SubagentCard from "./components/SubagentCard";
-import TodoList from "./components/TodoList";
-import MarkdownRenderer from "./components/MarkdownRenderer";
-import {apiFetch} from "./api";
 
 const AGENT_URL =
     import.meta.env.VITE_API_BASE_URL ||
     (typeof window !== "undefined" ? window.location.origin : "http://localhost:8001");
 
 function AppContent() {
-    const stream = useStream({
-        assistantId: "code_agent",
-        apiUrl: AGENT_URL,
-    });
-
-    const messages = useMessages(stream);
-    const toolCalls = useToolCalls(stream);
-    const subagents = [...stream.subagents.values()];
-    const todos = Array.isArray(stream.values?.todos) ? stream.values.todos : [];
-    const interrupt = stream.interrupt;
-    const isLoading = stream.isLoading;
-    const threadId = stream.threadId;
-    const error = stream.error;
+    const {
+        threadId,
+        messages,
+        toolCalls,
+        isLoading,
+        error,
+        interrupt,
+        submit,
+        respond,
+    } = useCustomStream(AGENT_URL, "code_agent");
 
     const [input, setInput] = useState("");
-    const [theme, setTheme] = useState("light");
-    const [providers, setProviders] = useState(null);
-    const [activeProvider, setActiveProvider] = useState(null);
     const messagesEndRef = useRef(null);
-    const messagesContainerRef = useRef(null);
 
-    // Detect system color scheme preference
     useEffect(() => {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        setTheme(prefersDark ? "dark" : "light");
-    }, []);
+        console.log("[DEBUG] Stream state changed:", {
+            isLoading,
+            threadId,
+            error,
+            messageCount: messages.length,
+            toolCallCount: toolCalls.length,
+            interrupt,
+        });
+    }, [isLoading, threadId, error, messages, toolCalls, interrupt]);
 
-    // Apply theme to root element
-    useEffect(() => {
-        const root = document.documentElement;
-        root.setAttribute("data-theme", theme);
-        localStorage.setItem("theme", theme);
-    }, [theme]);
-
-    // Load providers on mount
-    useEffect(() => {
-        apiFetch("/providers")
-            .then((res) => (res.ok ? res.json() : []))
-            .then((data) => setProviders(data || []))
-            .catch(() => setProviders([]));
-    }, []);
-
-    // Load active provider on mount
-    useEffect(() => {
-        apiFetch("/providers/active")
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data) => {
-                if (data) setActiveProvider(data);
-            })
-            .catch(() => setActiveProvider(null));
-    }, []);
-
-    // Auto-scroll messages on new content
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({behavior: "smooth"});
@@ -77,24 +40,32 @@ function AppContent() {
 
     const handleSend = useCallback(async () => {
         const message = input.trim();
-        if (!message || isLoading) return;
+        console.log("[DEBUG] handleSend called:", {message, isLoading, threadId});
+        if (!message || isLoading) {
+            console.log("[DEBUG] handleSend aborted");
+            return;
+        }
         setInput("");
-        await stream.submit({
-            messages: [{type: "human", content: message}],
-        });
-    }, [input, isLoading, stream]);
+        try {
+            console.log("[DEBUG] Calling submit...");
+            await submit({
+                messages: [{type: "human", content: message}],
+            });
+            console.log("[DEBUG] submit completed");
+        } catch (err) {
+            console.error("[DEBUG] submit error:", err);
+        }
+    }, [input, isLoading, submit, threadId]);
 
     const handleApprove = useCallback(async () => {
-        await stream.respond({approved: true});
-    }, [stream]);
+        console.log("[DEBUG] handleApprove called");
+        await respond({approved: true});
+    }, [respond]);
 
     const handleReject = useCallback(async () => {
-        await stream.respond({approved: false});
-    }, [stream]);
-
-    const handleCancel = useCallback(async () => {
-        await stream.stop();
-    }, [stream]);
+        console.log("[DEBUG] handleReject called");
+        await respond({approved: false});
+    }, [respond]);
 
     const onKeyDown = useCallback(
         (event) => {
@@ -106,104 +77,36 @@ function AppContent() {
         [handleSend],
     );
 
-    // Build a lookup of assembled tool calls by call id
-    const toolCallsByCallId = useCallback(
-        (calls) => {
-            const map = new Map();
-            calls.forEach((tc) => map.set(tc.callId, tc));
-            return map;
-        },
-        [],
-    );
+    const toolCallMap = useCallback((calls) => {
+        const map = new Map();
+        calls.forEach((tc) => map.set(tc.callId, tc));
+        return map;
+    }, []);
 
-    const toolCallMap = toolCallsByCallId(toolCalls);
+    const assembledToolCalls = toolCallMap(toolCalls);
 
     return (
-        <div className="app-container">
-            <header className="app-header">
-                <div style={{display: "flex", justifyContent: "space-between", alignItems: "flex-start"}}>
-                    <div>
-                        <h1 style={{margin: 0}}>Code Agent Chat</h1>
-                        <p className="app-header-subtitle">
-                            Chat with the agent. It can read, edit, and create files for you.
-                        </p>
-                        {threadId && (
-                            <p className="thread-id">
-                                Thread: {threadId}
-                            </p>
-                        )}
-                    </div>
-                    <div className="header-actions">
-                        <button
-                            onClick={() => {
-                                window.dispatchEvent(new CustomEvent("new-thread"));
-                            }}
-                            className="btn-secondary"
-                        >
-                            New Thread
-                        </button>
-                        <button
-                            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                            className="btn-secondary"
-                            aria-label="Toggle dark mode"
-                        >
-                            {theme === "light" ? "🌙" : "☀️"}
-                        </button>
-                    </div>
-                </div>
-            </header>
+        <div style={{padding: "1rem", maxWidth: "800px", margin: "0 auto"}}>
+            <h1>Code Agent Chat</h1>
+            {threadId && <p>Thread: {threadId}</p>}
+            {error && <p style={{color: "red"}}>Error: {typeof error === "string" ? error : JSON.stringify(error)}</p>}
 
-            {/* Provider Selector */}
-            {providers && activeProvider && (
-                <ProviderSelector
-                    providers={providers}
-                    activeProvider={activeProvider}
-                    onSwitch={(provider, model) => setActiveProvider({provider, model})}
-                />
-            )}
-
-            {/* HITL Surface */}
-            <HitlSurface
-                pending={interrupt}
-                onApprove={handleApprove}
-                onReject={handleReject}
-            />
-
-            {/* Todo List */}
-            {todos.length > 0 && (
-                <TodoList todos={todos}/>
-            )}
-
-            {/* Subagent Cards */}
-            {subagents.length > 0 && (
-                <div style={{marginBottom: "0.75rem"}}>
-                    {subagents.map((subagent) => (
-                        <SubagentCard key={subagent.id} subagent={subagent}/>
-                    ))}
-                </div>
-            )}
-
-            {/* Messages Area */}
-            <section
-                ref={messagesContainerRef}
+            <div
                 style={{
-                    flex: 1,
-                    overflowY: "auto",
-                    border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                    border: "1px solid #ccc",
                     borderRadius: "8px",
                     padding: "1rem",
-                    backgroundColor: theme === "light" ? "#fafafa" : "#2a2a2a",
+                    minHeight: "300px",
+                    maxHeight: "500px",
+                    overflowY: "auto",
+                    marginBottom: "1rem",
                 }}
             >
-                {messages.length === 0 && (
-                    <p style={{color: theme === "light" ? "#777" : "#aaa"}}>
-                        No messages yet. Try: "Create a Python module with a factorial function."
-                    </p>
-                )}
+                {messages.length === 0 && <p>No messages yet.</p>}
                 {messages.map((msg, index) => {
-                    const isHuman = HumanMessage.isInstance(msg);
-                    const isAi = AIMessage.isInstance(msg);
-                    const msgToolCalls = isAi ? (msg.tool_calls || []) : [];
+                    const isHuman = msg.role === "human";
+                    const isAi = msg.role === "ai";
+                    const msgToolCalls = isAi && msg.tool_calls ? msg.tool_calls : [];
 
                     return (
                         <div
@@ -216,116 +119,102 @@ function AppContent() {
                         >
                             <div
                                 style={{
-                                    background: isHuman ? "#e5f0ff" : "#2a4a6a",
-                                    border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                                    background: isHuman ? "#e5f0ff" : "#f0f0f0",
                                     borderRadius: "8px",
                                     padding: "0.6rem 0.8rem",
                                     maxWidth: "75%",
-                                    whiteSpace: "pre-wrap",
-                                    wordBreak: "break-word",
                                 }}
                             >
-                                <div
-                                    style={{
-                                        fontSize: "0.75rem",
-                                        color: theme === "light" ? "#888" : "#aaa",
-                                        marginBottom: "0.2rem",
-                                    }}
-                                >
+                                <div style={{fontSize: "0.75rem", color: "#888", marginBottom: "0.2rem"}}>
                                     {isHuman ? "You" : "Agent"}
                                 </div>
-                                <div>
-                                    <MarkdownRenderer
-                                        content={typeof msg.text === "string" ? msg.text : ""}
-                                    />
-                                    {msgToolCalls.length > 0 && (
-                                        <div style={{marginTop: "0.5rem"}}>
-                                            {msgToolCalls.map((tc, toolIdx) => {
-                                                const assembled = toolCallMap.get(tc.id);
-                                                return (
-                                                    <ToolCallRow
-                                                        key={toolIdx}
-                                                        toolCall={
-                                                            assembled || {
-                                                                name: tc.name,
-                                                                input: tc.args,
-                                                                status: "running",
-                                                                callId: tc.id,
-                                                            }
+                                <div>{typeof msg.text === "string" ? msg.text : JSON.stringify(msg.text)}</div>
+                                {msgToolCalls.length > 0 && (
+                                    <div style={{marginTop: "0.5rem"}}>
+                                        {msgToolCalls.map((tc, toolIdx) => {
+                                            const assembled = assembledToolCalls.get(tc.id);
+                                            return (
+                                                <ToolCallRow
+                                                    key={toolIdx}
+                                                    toolCall={
+                                                        assembled || {
+                                                            name: tc.name,
+                                                            input: tc.args,
+                                                            status: "running",
+                                                            callId: tc.id,
                                                         }
-                                                    />
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
+                                                    }
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );
                 })}
                 {isLoading && !interrupt && (
-                    <div
-                        style={{
-                            marginBottom: "0.75rem",
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            gap: "0.5rem",
-                        }}
-                    >
+                    <div style={{marginBottom: "0.75rem", display: "flex", justifyContent: "flex-start"}}>
                         <div
                             style={{
                                 background: "#ffffff",
-                                border: `1px solid ${theme === "light" ? "#e5e5e5" : "#444"}`,
+                                border: "1px solid #ccc",
                                 borderRadius: "8px",
                                 padding: "0.6rem 0.8rem",
-                                color: theme === "light" ? "#777" : "#aaa",
+                                color: "#777",
                             }}
                         >
-                            <span
-                                style={{
-                                    animation: "spin 1s linear infinite",
-                                    marginRight: "0.5rem",
-                                }}
-                            >
+                            <span style={{animation: "spin 1s linear infinite", marginRight: "0.5rem"}}>
                                 ⟳
                             </span>
                             Thinking...
                         </div>
-                        <button
-                            onClick={handleCancel}
-                            style={{
-                                padding: "0.4rem 0.75rem",
-                                borderRadius: "4px",
-                                border: "1px solid #b00020",
-                                background: "rgba(176, 0, 32, 0.1)",
-                                color: "#b00020",
-                                fontSize: "0.8rem",
-                                cursor: "pointer",
-                            }}
-                        >
-                            Cancel
-                        </button>
                     </div>
                 )}
                 <div ref={messagesEndRef}/>
-            </section>
+            </div>
 
-            {error && (
-                <p className="error-text">{typeof error === "string" ? error : String(error)}</p>
+            {interrupt && (
+                <div
+                    style={{
+                        border: "2px solid #ff9800",
+                        borderRadius: "8px",
+                        padding: "1rem",
+                        marginBottom: "1rem",
+                        background: "#fff3e0",
+                    }}
+                >
+                    <h3>Approval Required</h3>
+                    <p>{typeof interrupt === "string" ? interrupt : JSON.stringify(interrupt)}</p>
+                    <button onClick={handleApprove} style={{marginRight: "0.5rem"}}>Approve</button>
+                    <button onClick={handleReject}>Reject</button>
+                </div>
             )}
 
-            {/* Input Bar */}
-            <div className="input-bar">
-                <InputBar
-                    input={input}
-                    setInput={setInput}
-                    onSend={handleSend}
-                    disabled={isLoading || !!interrupt}
+            <div style={{display: "flex", gap: "0.5rem"}}>
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
                     onKeyDown={onKeyDown}
+                    placeholder="Type a message..."
+                    disabled={isLoading || !!interrupt}
+                    style={{flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc"}}
                 />
-                {isLoading && (
-                    <p className="streaming-status">Streaming response...</p>
-                )}
+                <button
+                    onClick={handleSend}
+                    disabled={isLoading || !!interrupt || !input.trim()}
+                    style={{
+                        padding: "0.5rem 1rem",
+                        borderRadius: "4px",
+                        border: "none",
+                        background: "#1976d2",
+                        color: "white",
+                        cursor: "pointer"
+                    }}
+                >
+                    Send
+                </button>
             </div>
         </div>
     );
