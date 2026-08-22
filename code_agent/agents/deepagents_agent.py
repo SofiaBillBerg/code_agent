@@ -47,12 +47,17 @@ backend/permissions, so they win), avoiding duplicate-tool errors.
 
 from __future__ import annotations
 
-import logging
-
 from collections.abc import Iterable, Mapping, Sequence
+import logging
 from pathlib import Path
 from typing import Any, cast
 
+from code_agent.config.settings import get_settings
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
+    register_profiles_from_config_file,
+    register_profiles_from_settings,
+)
 from deepagents import (
     FilesystemPermission,
     HarnessProfile,
@@ -64,10 +69,7 @@ from deepagents.backends.filesystem import FilesystemBackend
 from deepagents.middleware import SummarizationMiddleware
 from langchain.agents.middleware import TodoListMiddleware
 from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
-from langchain.agents.middleware.summarization import (
-    ContextSize,
-    TriggerClause,
-)
+from langchain.agents.middleware.summarization import ContextSize, TriggerClause
 from langchain.chat_models import BaseChatModel
 from langchain.messages import SystemMessage
 from langchain.tools import BaseTool
@@ -76,14 +78,6 @@ from langchain_core.tools import StructuredTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
-
-from code_agent.config.settings import get_settings
-from code_agent.profiles.router import (
-    DEFAULT_PROFILES_CONFIG,
-    register_profiles_from_config_file,
-    register_profiles_from_settings,
-)
-
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +115,19 @@ DEFAULT_INTERRUPT_ON: dict[str, bool] = {
 
 #: Route prefix under which the real working directory is mounted.
 DEFAULT_WORKSPACE_PREFIX = "/workspace/"
+
+#: Default base system prompt used when no explicit ``system_prompt`` is passed
+#: and no harness profile (which would supply a ``system_prompt_suffix``) is in
+#: effect.  It explicitly tells the model that project files live under the
+#: ``/workspace`` virtual mount so it stops probing unreachable host-relative
+#: paths and reporting "no files accessible".
+DEFAULT_BASE_SYSTEM_PROMPT = (
+    "You are a helpful assistant. "
+    "Workspace files are mounted at /workspace (maps to the project working "
+    "directory). Always use the /workspace prefix with filesystem tools, e.g. "
+    'ls(path="/workspace"), read_file(path="/workspace/README.md"), '
+    'glob(pattern="**/*.py", path="/workspace").'
+)
 
 
 def make_backend(
@@ -596,10 +603,20 @@ def build_deep_agent(
     if middleware:
         kwargs["middleware"] = middleware
 
+    # Fall back to a project-aware base prompt when none is supplied and no
+    # harness profile (which would append a system_prompt_suffix) is in effect,
+    # so the model learns where the project files live instead of probing
+    # host-relative paths that the sandbox blocks.
+    effective_system_prompt = (
+        system_prompt
+        if system_prompt is not None
+        else DEFAULT_BASE_SYSTEM_PROMPT
+    )
+
     return create_deep_agent(
         model=llm,
         tools=tool_list or None,
-        system_prompt=system_prompt,
+        system_prompt=effective_system_prompt,
         backend=backend,
         permissions=(
             list(permissions)

@@ -35,29 +35,16 @@ import asyncio
 import itertools
 import json
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
 import threading
 import time
+from typing import Any, cast
 import uuid
 
-from pathlib import Path
-from typing import Any, cast
-
-import typer
-
-from langchain.chat_models import BaseChatModel
-from langchain.messages import AIMessage
-from langchain.tools import BaseTool
-from langchain_core.messages import BaseMessage
-from langchain_mcp_adapters.sessions import Connection
-from langgraph.types import Command
-
-from code_agent.agents.deepagents_agent import (
-    build_agent,
-    create_default_tools,
-)
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
 from code_agent.capabilities.audit import Receipt
 from code_agent.capabilities.envelope import (
     InvocationRequest,
@@ -70,7 +57,13 @@ from code_agent.config.settings import PROJECT_ROOT
 from code_agent.exceptions import CodeAgentError
 from code_agent.main import create_llm, load_config
 from code_agent.tools._io import _atomic_write
-
+from langchain.chat_models import BaseChatModel
+from langchain.messages import AIMessage
+from langchain.tools import BaseTool
+from langchain_core.messages import BaseMessage
+from langchain_mcp_adapters.sessions import Connection
+from langgraph.types import Command
+import typer
 
 # Module-level Typer argument/option definitions to avoid
 # "function-call-in-default-argument" lint warnings.
@@ -111,7 +104,7 @@ def _stream_agent_response(  # ruff: ignore[complex-structure]
     :return: The final assistant text, or ``"(no text response)"`` when no
         assistant message is produced.
     """
-    config = {"configurable": {"thread_id": thread_id}}
+    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 150}
     run_input: Any = {"messages": messages}
     final_text_parts: list[str] = []
     final_messages: list[Any] = []
@@ -911,7 +904,10 @@ def serve(  # ruff: ignore [complex-structure]
             response = asyncio.run(
                 agent.ainvoke(
                     {"messages": messages},
-                    config={"configurable": {"thread_id": thread_id}},
+                    config={
+                        "configurable": {"thread_id": thread_id},
+                        "recursion_limit": 150,
+                    },
                 )
             )
 

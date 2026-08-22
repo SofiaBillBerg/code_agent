@@ -1,14 +1,18 @@
 import React, {useEffect, useState, useRef, useCallback} from "react";
-import {useCustomStream} from "./useCustomStream";
+import {useCustomStream} from "./useCustomStream.js";
 import ToolCallRow from "./components/ToolCallRow";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 
 const AGENT_URL =
     import.meta.env.VITE_API_BASE_URL ||
     (typeof window !== "undefined" ? window.location.origin : "http://localhost:8001");
 
 function AppContent() {
+    const stream = useCustomStream(AGENT_URL, "code-agent");
+
     const {
-        threadId,
         messages,
         toolCalls,
         isLoading,
@@ -16,7 +20,7 @@ function AppContent() {
         interrupt,
         submit,
         respond,
-    } = useCustomStream(AGENT_URL, "code_agent");
+    } = stream;
 
     const [input, setInput] = useState("");
     const messagesEndRef = useRef(null);
@@ -24,13 +28,13 @@ function AppContent() {
     useEffect(() => {
         console.log("[DEBUG] Stream state changed:", {
             isLoading,
-            threadId,
+            threadId: stream.threadId,
             error,
             messageCount: messages.length,
             toolCallCount: toolCalls.length,
             interrupt,
         });
-    }, [isLoading, threadId, error, messages, toolCalls, interrupt]);
+    }, [isLoading, stream.threadId, error, messages, toolCalls, interrupt]);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -40,7 +44,7 @@ function AppContent() {
 
     const handleSend = useCallback(async () => {
         const message = input.trim();
-        console.log("[DEBUG] handleSend called:", {message, isLoading, threadId});
+        console.log("[DEBUG] handleSend called:", {message, isLoading, threadId: stream.threadId});
         if (!message || isLoading) {
             console.log("[DEBUG] handleSend aborted");
             return;
@@ -55,7 +59,7 @@ function AppContent() {
         } catch (err) {
             console.error("[DEBUG] submit error:", err);
         }
-    }, [input, isLoading, submit, threadId]);
+    }, [input, isLoading, submit, stream.threadId]);
 
     const handleApprove = useCallback(async () => {
         console.log("[DEBUG] handleApprove called");
@@ -79,7 +83,7 @@ function AppContent() {
 
     const toolCallMap = useCallback((calls) => {
         const map = new Map();
-        calls.forEach((tc) => map.set(tc.callId, tc));
+        calls.forEach((tc) => map.set(tc.callId || tc.id, tc));
         return map;
     }, []);
 
@@ -88,7 +92,7 @@ function AppContent() {
     return (
         <div style={{padding: "1rem", maxWidth: "800px", margin: "0 auto"}}>
             <h1>Code Agent Chat</h1>
-            {threadId && <p>Thread: {threadId}</p>}
+            {stream.threadId && <p>Thread: {stream.threadId}</p>}
             {error && <p style={{color: "red"}}>Error: {typeof error === "string" ? error : JSON.stringify(error)}</p>}
 
             <div
@@ -103,10 +107,19 @@ function AppContent() {
                 }}
             >
                 {messages.length === 0 && <p>No messages yet.</p>}
-                {messages.map((msg, index) => {
-                    const isHuman = msg.role === "human";
-                    const isAi = msg.role === "ai";
-                    const msgToolCalls = isAi && msg.tool_calls ? msg.tool_calls : [];
+                {messages.filter(m => {
+                    if (!m) return false;
+                    const c = m.text ?? (typeof m.content === "string" ? m.content : "");
+                    const hasText = typeof c === "string" ? c.trim().length > 0 : !!c;
+                    const hasTools = (m.tool_calls || m.toolCalls || []).length > 0;
+                    return hasText || hasTools;
+                }).map((msg, index) => {
+                    // useCustomStream returns plain objects {id, role, text}; also handle LangChain BaseMessage fallback
+                    const role = msg.role || msg.getType?.() || "unknown";
+                    const isHuman = role === "human" || role === "user";
+                    const isAi = role === "ai" || role === "assistant";
+                    const content = msg.text ?? (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content ?? ""));
+                    const msgToolCalls = isAi ? (msg.tool_calls || msg.toolCalls || []) : [];
 
                     return (
                         <div
@@ -128,20 +141,27 @@ function AppContent() {
                                 <div style={{fontSize: "0.75rem", color: "#888", marginBottom: "0.2rem"}}>
                                     {isHuman ? "You" : "Agent"}
                                 </div>
-                                <div>{typeof msg.text === "string" ? msg.text : JSON.stringify(msg.text)}</div>
+                                <div style={{lineHeight: "1.5"}}>
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeHighlight]}
+                                    >
+                                        {content}
+                                    </ReactMarkdown>
+                                </div>
                                 {msgToolCalls.length > 0 && (
                                     <div style={{marginTop: "0.5rem"}}>
                                         {msgToolCalls.map((tc, toolIdx) => {
-                                            const assembled = assembledToolCalls.get(tc.id);
+                                            const assembled = assembledToolCalls.get(tc.id || tc.callId);
                                             return (
                                                 <ToolCallRow
                                                     key={toolIdx}
                                                     toolCall={
                                                         assembled || {
                                                             name: tc.name,
-                                                            input: tc.args,
+                                                            input: tc.args || tc.input,
                                                             status: "running",
-                                                            callId: tc.id,
+                                                            callId: tc.id || tc.callId,
                                                         }
                                                     }
                                                 />

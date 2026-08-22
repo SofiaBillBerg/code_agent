@@ -21,7 +21,8 @@ from collections.abc import AsyncGenerator
 import json
 from typing import Any
 import uuid
-
+from datetime import datetime, date
+from pathlib import Path
 
 def _sse(payload: dict[str, Any], seq: int | None = None) -> str:
     """Format a single SSE frame with id and event fields."""
@@ -36,6 +37,20 @@ def _sse(payload: dict[str, Any], seq: int | None = None) -> str:
 
 def _json_default(obj: Any) -> Any:
     """Handle non-serializable objects in protocol events."""
+    # Common standard-library types that are not JSON-native
+    if isinstance(obj, Path):
+        return str(obj)
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    if isinstance(obj, uuid.UUID):
+        return str(obj)
+    if isinstance(obj, bytes):
+        try:
+            return obj.decode()
+        except Exception:
+            return str(obj)
+    if isinstance(obj, set):
+        return list(obj)
     # LangChain message types
     if hasattr(obj, "model_dump"):
         return obj.model_dump()
@@ -43,9 +58,11 @@ def _json_default(obj: Any) -> Any:
         return obj.dict()
     if hasattr(obj, "__dict__") and not isinstance(obj, type):
         return obj.__dict__
-    raise TypeError(
-        f"Object of type {type(obj).__name__} is not JSON serializable"
-    )
+    # Final safe fallback: never raise, just stringify
+    try:
+        return str(obj)
+    except Exception:
+        return f"<{type(obj).__name__} object>"
 
 
 # ---------------------------------------------------------------------------
@@ -386,7 +403,10 @@ async def translate_stream(
 
         async for event in stream_fn(
             {"messages": [{"role": "user", "content": message}]},
-            config={"configurable": {"thread_id": thread_id}},
+            config={
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": 150,
+            },
             version="v2",
         ):
             etype = event.get("event", "")

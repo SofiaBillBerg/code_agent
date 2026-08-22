@@ -14,7 +14,7 @@ from pathlib import Path
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
-from code_agent.tools._io import _atomic_write
+from code_agent.tools._io import _atomic_write, _normalize_target
 
 from ._io import FileObject
 
@@ -81,7 +81,11 @@ def make_new_file_tool(root_dir: Path) -> BaseTool:
                 FileObject(path=Path(), contents="", status="error"),
             )
 
-        full_path = root / file_path
+        # The model is told to use the "/workspace" mount, which maps to the
+        # project root. Rebase absolute/virtual paths under *root* so writes
+        # stay inside the project instead of escaping to the host filesystem
+        # (this previously caused PermissionError on "/workspace").
+        full_path = _normalize_target(root / file_path, root)
 
         try:  # ruff: ignore[too-many-statements-in-try-clause]
             # Create a backup before overwriting if the file already exists.

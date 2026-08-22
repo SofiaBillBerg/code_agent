@@ -2,19 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import sys
 
-from pathlib import Path
-
-from langchain.messages import AIMessage, HumanMessage
-
-from code_agent.agents.deepagents_agent import (
-    build_agent,
-    create_default_tools,
-)
+from code_agent.agents.deepagents_agent import build_agent, create_default_tools
 from code_agent.main import create_llm, load_config
-
+from langchain.messages import AIMessage, HumanMessage
 
 THREAD_ID = "ci-run"
 
@@ -71,7 +65,10 @@ Provide a comprehensive review."""
     # Run review
     response = agent.invoke(
         {"messages": [HumanMessage(content=prompt)]},
-        config={"configurable": {"thread_id": THREAD_ID}},
+        config={
+            "configurable": {"thread_id": THREAD_ID},
+            "recursion_limit": 150,
+        },
     )
 
     # Save review

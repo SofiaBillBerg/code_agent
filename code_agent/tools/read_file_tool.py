@@ -7,6 +7,7 @@ from pathlib import Path
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
+from ._io import _normalize_target
 
 class ReadFileArgs(BaseModel):
     """Arguments for reading a file.
@@ -58,7 +59,7 @@ def read_file(
     if not file_path:
         return "❌ Error: 'file_path' cannot be empty."
 
-    full_path = (root_dir / file_path).resolve()
+    full_path = _normalize_target(file_path, root_dir)
 
     if not full_path.exists():
         return f"❌ Error: File not found at {full_path}"

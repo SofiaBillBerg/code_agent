@@ -9,8 +9,7 @@ from pathlib import Path
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 
-from code_agent.tools._io import _atomic_write
-
+from code_agent.tools._io import _atomic_write, _normalize_target
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +58,7 @@ def edit_file(
     if root_dir is None:
         root_dir = Path.cwd()
 
-    full_path = (root_dir / file_path).resolve()
+    full_path = _normalize_target(file_path, root_dir)
 
     if not full_path.exists():
         return f"❌ File not found: {full_path}"

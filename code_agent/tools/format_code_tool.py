@@ -10,8 +10,7 @@ from pathlib import Path
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
-from ._io import FileObject
-
+from ._io import FileObject, _normalize_target
 
 class FormatCodeArgs(BaseModel):
     """Args for the format-code tool.
@@ -59,7 +58,7 @@ def make_format_code_tool(root_dir: Path) -> BaseTool:
         :param mode: Mode: auto|python|r
         :return: Tuple of (message, FileObject).
         """
-        p = root / file_path
+        p = _normalize_target(file_path, root)
         if not p.exists():
             return (
                 f"❌ File not found: {p}",

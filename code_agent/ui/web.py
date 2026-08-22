@@ -37,16 +37,12 @@ from typing import Any, Literal
 import uuid
 
 from code_agent.agents.deepagents_agent import build_agent, create_default_tools
-from code_agent.capabilities.envelope import (
-    InvocationRequest,
-    InvocationResponse,
-    InvokeBody,
-)
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
 from code_agent.capabilities.registry import CapabilityRegistry
 from code_agent.config.settings import get_settings
 from code_agent.main import create_llm, load_config
 from code_agent.ui.protocol import _sse, translate_stream
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -906,7 +902,10 @@ async def chat(request: ChatRequest) -> ChatResponse:
     # Invoke the agent synchronously with the message and thread config
     result = state.agent.invoke(
         {"messages": [HumanMessage(content=request.message)]},
-        config={"configurable": {"thread_id": effective_thread}},
+        config={
+            "configurable": {"thread_id": effective_thread},
+            "recursion_limit": 150,
+        },
     )
 
     # Extract the response from the result
@@ -1018,16 +1017,21 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
     import json
     import time
 
-    def _sse(payload: dict[str, Any]) -> str:
-        r"""Format a single SSE frame with the given payload.
+    def _sse(payload: dict[str, Any], seq: int | None = None) -> str:
+        """Format a single SSE frame with the given payload.
 
         Each SSE frame consists of a "data:" prefix followed by JSON content,
         ending with two newlines. The event type is embedded inside the JSON
         payload as the "type" field for easy client-side parsing.
 
         :param payload: Dictionary to serialize as JSON.
+        :param seq: Optional authoritative per-thread sequence number. When
+            provided it is embedded in the payload as ``"seq"`` so the wire
+            sequence stays strictly monotonic across reconnects.
         :return: SSE-formatted string ready to send to the client.
         """
+        if seq is not None:
+            payload = {**payload, "seq": seq}
         return f"data: {json.dumps(payload)}\n\n"
 
     #: Try astream_events first, fall back to invoke if not available
@@ -1048,7 +1052,10 @@ async def _stream_agent_events(  # ruff: ignore[complex-structure]
 
         async for event in stream_fn(  # type: ignore[operator]
             {"messages": [HumanMessage(content=message)]},
-            config={"configurable": {"thread_id": thread_id}},
+            config={
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": 150,
+            },
             version="v2",
         ):
             etype = event.get("event", "")
@@ -1363,6 +1370,45 @@ class ProtocolStreamRequest(BaseModel):
     since: int | None = None
 
 
+class ThreadCreatePayload(BaseModel):
+    """Payload for creating a new thread.
+
+    Attributes:
+        metadata: Optional metadata to attach to the thread.
+        thread_id: Optional client-generated thread ID.
+        if_exists: Behavior when thread_id already exists ('raise' or 'do_nothing').
+    """
+
+    metadata: dict[str, Any] | None = None
+    thread_id: str | None = None
+    if_exists: str | None = None
+
+
+@app.post("/threads")
+async def create_thread(payload: ThreadCreatePayload) -> dict[str, Any]:
+    """Create a new thread.
+
+    The SDK calls ``client.threads.create()`` before streaming.  We accept an
+    optional client-generated ``thread_id`` (UUIDv7) and return the canonical
+    thread representation the SDK expects.
+
+    :param payload: Thread creation payload.
+    :return: Created thread dict with thread_id, created_at, metadata, values, updated_at.
+    """
+    import datetime
+
+    thread_id = payload.thread_id or uuid.uuid4().hex
+    now = datetime.datetime.now(datetime.UTC).isoformat()
+
+    return {
+        "thread_id": thread_id,
+        "created_at": now,
+        "updated_at": now,
+        "metadata": payload.metadata or {},
+        "values": {},
+    }
+
+
 @app.post("/threads/{thread_id}/commands")
 async def thread_commands(
     thread_id: str, command: ProtocolCommand
@@ -1493,35 +1539,41 @@ async def thread_commands(
     return _ok()
 
 
-@app.post("/threads/{thread_id}/stream/events")
+@app.get("/threads/{thread_id}/stream/events")
 async def thread_stream_events(
     thread_id: str,
-    request: ProtocolStreamRequest,
+    channels: str | None = None,
+    since: int | None = None,
 ) -> StreamingResponse:
     """Open a LangGraph protocol v2 SSE event stream.
 
-    Uses POST with fetch streaming (not EventSource) — compatible with
-    the @langchain/react built-in SSE transport.
+    Uses GET with query params — compatible with the @langchain/react
+    built-in SSE transport which uses EventSource (GET-only).
 
     :param thread_id: The thread to stream events for.
-    :param request: Stream subscription parameters.
+    :param channels: Comma-separated list of channels to subscribe to.
+    :param since: Sequence number to resume from.
     :return: StreamingResponse with protocol v2 SSE events.
     """
-    channels = request.channels or [
-        "values",
-        "messages",
-        "tools",
-        "lifecycle",
-        "input",
-    ]
-    since = request.since or 0
+    _channels = (
+        channels.split(",")
+        if channels
+        else [
+            "values",
+            "messages",
+            "tools",
+            "lifecycle",
+            "input",
+        ]
+    )
+    _since: int = since or 0
 
     effective_thread = thread_id
     queue = _get_or_create_queue(effective_thread)
     notifier = _get_or_create_notifier(effective_thread)
 
     async def _event_stream():
-        nonlocal since
+        nonlocal _since
         try:
             # Replay events since the given since value.
             # NOTE: `since` MUST advance here too — otherwise the first
@@ -1529,12 +1581,12 @@ async def thread_stream_events(
             # producing duplicate frames with regressing seq numbers
             # (which stalls the @langchain/protocol client).
             for seq, event in queue:
-                if seq > since:
-                    since = seq
+                if seq > _since:
+                    _since = seq
                     #: Override the payload seq with the authoritative
                     #: per-thread queue seq so the wire sequence stays
                     #: strictly monotonic across multiple runs.
-                    yield _sse(event)
+                    yield _sse(event, seq=seq)
                 else:
                     # Skip events already seen
                     pass
@@ -1546,9 +1598,9 @@ async def thread_stream_events(
 
                 # Drain any new events
                 for seq, event in queue:
-                    if seq > since:
-                        since = seq
-                        yield _sse(event)
+                    if seq > _since:
+                        _since = seq
+                        yield _sse(event, seq=seq)
 
                 # Small sleep to avoid busy-looping
                 await asyncio.sleep(0.01)
@@ -1566,6 +1618,295 @@ async def thread_stream_events(
             "Cache-Control": "no-cache",
         },
     )
+
+
+@app.post("/threads/{thread_id}/stream/events")
+async def thread_stream_events_post(
+    thread_id: str, request: ProtocolStreamRequest
+) -> StreamingResponse:
+    """Open a LangGraph protocol v2 SSE event stream via POST.
+
+    The @langchain/langgraph-sdk SSE transport (``openEventStream``)
+    issues a POST with a JSON body (``channels``, ``namespaces``,
+    ``depth``, ``since``) rather than query params. This handler mirrors
+    :func:`thread_stream_events` (GET) but parses the request body so the
+    SDK's built-in transport works without a custom fetch override.
+
+    :param thread_id: The thread to stream events for.
+    :param request: Parsed :class:`ProtocolStreamRequest` body.
+    :return: StreamingResponse with protocol v2 SSE events.
+    """
+    _channels = request.channels or [
+        "values",
+        "messages",
+        "tools",
+        "lifecycle",
+        "input",
+    ]
+    _since: int = request.since or 0
+
+    effective_thread = thread_id
+    queue = _get_or_create_queue(effective_thread)
+    notifier = _get_or_create_notifier(effective_thread)
+
+    async def _event_stream():
+        nonlocal _since
+        try:
+            # Replay events since the given since value.
+            for seq, event in queue:
+                if seq > _since:
+                    _since = seq
+                    yield _sse(event, seq=seq)
+
+            # Stream new events as they arrive
+            while True:
+                await notifier.wait()
+                notifier.clear()
+
+                for seq, event in queue:
+                    if seq > _since:
+                        _since = seq
+                        yield _sse(event, seq=seq)
+
+                await asyncio.sleep(0.01)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.exception(f"protocol v2 event stream failed: {e}")
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+        },
+    )
+
+
+@app.post("/threads/{thread_id}/runs/stream")
+async def thread_runs_stream(
+    thread_id: str,
+    request: dict[str, Any],
+) -> StreamingResponse:
+    """Start a run and stream SSE events.
+
+    This endpoint is called by the SDK's ``client.runs.stream()`` method.
+    It accepts the SDK's stream payload, starts the agent run, and returns
+    an SSE stream with a ``Content-Location`` header that the SDK uses to
+    extract the run ID.
+
+    :param thread_id: The thread to start the run for.
+    :param request: SDK stream payload (input, config, stream_mode, etc.).
+    :return: StreamingResponse with SSE events and Content-Location header.
+    """
+    run_id = str(uuid.uuid4())
+
+    input_data = request.get("input", {})
+    messages = input_data.get("messages", [])
+    human_msg = next(
+        (m for m in messages if m.get("type") in ("human", "user")), None
+    )
+    text = human_msg.get("content", "") if human_msg else ""
+
+    async def _event_stream():
+        if not text:
+            yield _sse(
+                {
+                    "method": "lifecycle",
+                    "params": {
+                        "namespace": [],
+                        "data": {
+                            "event": "failed",
+                            "error": "No message content",
+                        },
+                    },
+                }
+            )
+            return
+
+        state = await get_agent_async()
+        effective_thread = thread_id
+
+        async def _run():
+            try:
+                async for event in translate_stream(
+                    state.agent, text, effective_thread
+                ):
+                    _push_protocol_event(effective_thread, event)
+            except asyncio.CancelledError:
+                pass
+            except Exception as exc:
+                _push_protocol_event(
+                    effective_thread,
+                    {
+                        "method": "lifecycle",
+                        "params": {
+                            "namespace": [],
+                            "data": {"event": "failed", "error": str(exc)},
+                        },
+                    },
+                )
+
+        task = asyncio.create_task(_run())
+        _thread_tasks[effective_thread] = task
+
+        # Stream events from the queue
+        queue = _get_or_create_queue(effective_thread)
+        notifier = _get_or_create_notifier(effective_thread)
+        seq = 0
+
+        try:
+            while True:
+                await notifier.wait()
+                notifier.clear()
+
+                for qseq, event in queue:
+                    if qseq > seq:
+                        seq = qseq
+                        yield _sse(event, seq=qseq)
+
+                if task.done():
+                    # Drain remaining events
+                    for qseq, event in queue:
+                        if qseq > seq:
+                            seq = qseq
+                            yield _sse(event, seq=qseq)
+                    break
+
+                await asyncio.sleep(0.01)
+        except asyncio.CancelledError:
+            pass
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Content-Location": f"/threads/{thread_id}/runs/{run_id}",
+        },
+    )
+
+
+@app.get("/threads/{thread_id}/runs/{run_id}/stream")
+async def thread_runs_join_stream(
+    thread_id: str,
+    run_id: str,
+    last_event_id: str | None = Header(None),
+) -> StreamingResponse:
+    """Reconnect to an existing run's SSE event stream.
+
+    This endpoint is called by the SDK's ``client.runs.joinStream()`` method
+    for idle-reconnect. It replays events from the thread's event queue
+    starting after ``last_event_id``.
+
+    :param thread_id: The thread to stream events for.
+    :param run_id: The run ID (unused, but part of the URL).
+    :param last_event_id: The last event ID the client received (from Last-Event-ID header).
+    :return: StreamingResponse with SSE events.
+    """
+    _since = (
+        int(last_event_id) if last_event_id and last_event_id != "-1" else 0
+    )
+
+    queue = _get_or_create_queue(thread_id)
+    notifier = _get_or_create_notifier(thread_id)
+
+    async def _event_stream():
+        nonlocal _since
+        try:
+            # Replay events since the given since value.
+            for seq, event in queue:
+                if seq > _since:
+                    _since = seq
+                    yield _sse(event, seq=seq)
+
+            # Stream new events as they arrive
+            while True:
+                await notifier.wait()
+                notifier.clear()
+
+                for seq, event in queue:
+                    if seq > _since:
+                        _since = seq
+                        yield _sse(event, seq=seq)
+
+                await asyncio.sleep(0.01)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.exception(f"join stream failed: {e}")
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+        },
+    )
+
+
+@app.post("/threads/{thread_id}/runs/{run_id}/cancel")
+async def thread_runs_cancel(
+    thread_id: str,
+    run_id: str,
+) -> dict[str, Any]:
+    """Cancel a running task.
+
+    This endpoint is called by the SDK's ``client.runs.cancel()`` method.
+
+    :param thread_id: The thread to cancel the run for.
+    :param run_id: The run ID (unused, but part of the URL).
+    :return: Empty success response.
+    """
+    task = _thread_tasks.get(thread_id)
+    if task and not task.done():
+        task.cancel()
+    return {}
+
+
+@app.post("/threads/{thread_id}/history")
+async def thread_history(
+    thread_id: str,
+    request: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Get past states for a thread.
+
+    This endpoint is called by the SDK's client.threads.getHistory()
+    method. It returns a list of past thread states (checkpoints) that the
+    SDK uses for history navigation and message reconstruction.
+
+    :param thread_id: The thread to get history for.
+    :param request: History request payload (limit, before, metadata, checkpoint).
+    :return: List of thread state dicts.
+    """
+    state = await get_agent_async()
+    checkpointer = getattr(state.agent, "checkpointer", None)
+    if checkpointer is None:
+        return []
+
+    try:
+        config = {"configurable": {"thread_id": thread_id}}
+        state_data = await checkpointer.aget(config)
+        if not state_data:
+            return []
+
+        messages = state_data.get("messages", [])
+        values = {k: v for k, v in state_data.items() if k != "messages"}
+
+        return [
+            {
+                "values": values,
+                "messages": [
+                    msg.to_dict() if hasattr(msg, "to_dict") else str(msg)
+                    for msg in messages
+                ],
+                "next": [],
+                "tasks": [],
+            }
+        ]
+    except Exception as e:
+        logger.exception(f"Error occurred while fetching thread history: {e}")
+        return []
 
 
 @app.get("/threads/{thread_id}/state")
