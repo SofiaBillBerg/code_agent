@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
 
-from code_agent.agents.deepagents_agent import build_agent, create_default_tools
-from code_agent.main import create_llm, load_config
+from pathlib import Path
+
 from langchain.messages import AIMessage, HumanMessage
+
+from code_agent.agents.deepagents_agent import (
+    build_agent,
+    create_default_tools,
+)
+from code_agent.main import create_llm, load_config
+
 
 THREAD_ID = "ci-run"
 

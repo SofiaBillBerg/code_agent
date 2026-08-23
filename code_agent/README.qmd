@@ -48,7 +48,7 @@ npm run build
 python -m code_agent chat
 
 # Start web UI
-python -m code_agent serve --web --web-port 8000
+python -m code_agent serve --web --web-port 8001
 ```
 
 ## Configuration

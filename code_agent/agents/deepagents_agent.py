@@ -47,17 +47,12 @@ backend/permissions, so they win), avoiding duplicate-tool errors.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
 import logging
+
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
 
-from code_agent.config.settings import get_settings
-from code_agent.profiles.router import (
-    DEFAULT_PROFILES_CONFIG,
-    register_profiles_from_config_file,
-    register_profiles_from_settings,
-)
 from deepagents import (
     FilesystemPermission,
     HarnessProfile,
@@ -69,7 +64,10 @@ from deepagents.backends.filesystem import FilesystemBackend
 from deepagents.middleware import SummarizationMiddleware
 from langchain.agents.middleware import TodoListMiddleware
 from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
-from langchain.agents.middleware.summarization import ContextSize, TriggerClause
+from langchain.agents.middleware.summarization import (
+    ContextSize,
+    TriggerClause,
+)
 from langchain.chat_models import BaseChatModel
 from langchain.messages import SystemMessage
 from langchain.tools import BaseTool
@@ -78,6 +76,14 @@ from langchain_core.tools import StructuredTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
+
+from code_agent.config.settings import get_settings
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
+    register_profiles_from_config_file,
+    register_profiles_from_settings,
+)
+
 
 log = logging.getLogger(__name__)
 

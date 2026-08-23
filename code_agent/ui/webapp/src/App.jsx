@@ -1,6 +1,9 @@
 import React, {useEffect, useState, useRef, useCallback} from "react";
 import {useCustomStream} from "./useCustomStream.js";
 import ToolCallRow from "./components/ToolCallRow";
+import TodoList from "./components/TodoList";
+import SubagentCard from "./components/SubagentCard";
+import SubagentProgress from "./components/SubagentProgress";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -20,6 +23,8 @@ function AppContent() {
         interrupt,
         submit,
         respond,
+        subagents,
+        todos,
     } = stream;
 
     const [input, setInput] = useState("");
@@ -88,12 +93,15 @@ function AppContent() {
     }, []);
 
     const assembledToolCalls = toolCallMap(toolCalls);
+    const subagentArray = Array.from((stream.subagents || []).values());
 
     return (
         <div style={{padding: "1rem", maxWidth: "800px", margin: "0 auto"}}>
             <h1>Code Agent Chat</h1>
             {stream.threadId && <p>Thread: {stream.threadId}</p>}
             {error && <p style={{color: "red"}}>Error: {typeof error === "string" ? error : JSON.stringify(error)}</p>}
+
+            <SubagentProgress subagents={subagentArray}/>
 
             <div
                 style={{
@@ -173,6 +181,13 @@ function AppContent() {
                         </div>
                     );
                 })}
+                {subagents && subagents.length > 0 && (
+                    <div style={{marginTop: "1rem"}}>
+                        {subagents.map((sa) => (
+                            <SubagentCard key={sa.id} subagent={sa}/>
+                        ))}
+                    </div>
+                )}
                 {isLoading && !interrupt && (
                     <div style={{marginBottom: "0.75rem", display: "flex", justifyContent: "flex-start"}}>
                         <div
@@ -193,6 +208,9 @@ function AppContent() {
                 )}
                 <div ref={messagesEndRef}/>
             </div>
+
+            <TodoList todos={stream.todos || []} onTodoUpdate={() => {
+            }}/>
 
             {interrupt && (
                 <div

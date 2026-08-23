@@ -35,7 +35,8 @@ echo "Creating output directories..."
 CODE_QUALITY_DIR=".code_quality_outputs"
 mkdir -p "$CODE_QUALITY_DIR" stubs
 echo "Output directories created: $CODE_QUALITY_DIR"
-run_step "pytest" uv run pytest --color=yes --tb=short --junitxml="$CODE_QUALITY_DIR/pytest_report.xml"
+#run_step "pytest" uv run pytest --cov=code_agent tests/ --cov-report lcov --cov-report=term-missing  --cov-report markdown:"$CODE_QUALITY_DIR/cov.md"  --color=yes --tb=short --junitxml="$CODE_QUALITY_DIR/pytest_report.xml"
+run_step "coverage run" coverage run --context=test --source=code_agent -m pytest tests/ --cov-report lcov --cov-report=term-missing  --cov-report markdown:"$CODE_QUALITY_DIR/cov.md"  --color=yes --tb=short --junitxml="$CODE_QUALITY_DIR/pytest_report.xml"
 echo ""
 echo "============================================"
 if [ ${#FAILURES[@]} -eq 0 ]; then
@@ -47,7 +48,7 @@ else
 		echo "   ✗ $f"
 	done
 	echo ""
-	echo "You can review errors above and decide which to fix, saved to $CODE_QUALITY_DIR/pytest_report.xml."
+	echo "You can review errors above and decide which to fix, saved to $CODE_QUALITY_DIR/pytest_report.xml and $CODE_QUALITY_DIR/cov.md"
 	echo "============================================"
 	exit 0
 fi

@@ -11,6 +11,8 @@ export function useCustomStream(apiUrl, assistantId) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [interrupt, setInterrupt] = useState(null);
+    const [subagents, setSubagents] = useState(new Map());
+    const [todos, setTodos] = useState([]);
     const eventSourceRef = useRef(null);
     const currentMessageRef = useRef(null);
     const localThreadIdRef = useRef(null);
@@ -29,6 +31,19 @@ export function useCustomStream(apiUrl, assistantId) {
         setThreadId(tid);
         return tid;
     }, [generateUUID]);
+
+    const updateSubagent = useCallback((ns, updater) => {
+        const id = Array.isArray(ns) && ns.length ? ns[ns.length - 1] : (ns || 'unknown');
+        const name = (Array.isArray(ns) && ns.length)
+            ? (String(ns[ns.length - 1]).split(':')[0] || ns[ns.length - 1])
+            : 'Subagent';
+        setSubagents(prev => {
+            const next = new Map(prev);
+            const existing = next.get(id) || {id, name, status: 'running', namespace: ns, messages: [], toolCalls: []};
+            next.set(id, updater(existing));
+            return next;
+        });
+    }, []);
 
     const submit = useCallback(async (input) => {
         let tid = localThreadIdRef.current;
@@ -72,10 +87,49 @@ export function useCustomStream(apiUrl, assistantId) {
                 const isRootMessage = !nsMsg || nsMsg.length === 0;
                 if (method === 'messages') {
                     const eventType = eventData.event;
-                    // Ignore sub-agent messages on the root stream to avoid empty bubbles;
-                    // they are surfaced separately via lifecycle/tools with namespace.
                     if (!isRootMessage) {
-                        console.log('[SSE] ignoring subagent message', nsMsg, eventType);
+                        // Track subagent messages via updateSubagent
+                        if (eventType === 'message-start') {
+                            const msgId = eventData.id || eventData.message?.id || `sa-${Date.now()}`;
+                            const role = eventData.role || eventData.message?.role || 'ai';
+                            updateSubagent(nsMsg, (sa) => ({
+                                ...sa,
+                                messages: [...(sa.messages || []), {id: msgId, role, text: '', status: 'streaming'}],
+                            }));
+                        } else if (eventType === 'content-block-delta') {
+                            const delta = eventData.delta?.text || eventData.delta?.content || '';
+                            updateSubagent(nsMsg, (sa) => {
+                                const msgs = sa.messages || [];
+                                const lastMsg = msgs[msgs.length - 1];
+                                if (lastMsg && lastMsg.status === 'streaming') {
+                                    const updated = {...lastMsg, text: (lastMsg.text || '') + delta};
+                                    return {...sa, messages: [...msgs.slice(0, -1), updated]};
+                                }
+                                return {
+                                    ...sa,
+                                    messages: [...msgs, {
+                                        id: `sa-${Date.now()}`,
+                                        role: 'ai',
+                                        text: delta,
+                                        status: 'streaming'
+                                    }]
+                                };
+                            });
+                        } else if (eventType === 'message-finish') {
+                            updateSubagent(nsMsg, (sa) => {
+                                const msgs = sa.messages || [];
+                                const lastMsg = msgs[msgs.length - 1];
+                                if (lastMsg && lastMsg.status === 'streaming') {
+                                    const updated = {
+                                        ...lastMsg,
+                                        status: 'complete',
+                                        text: eventData.message?.content || eventData.content || lastMsg.text
+                                    };
+                                    return {...sa, messages: [...msgs.slice(0, -1), updated]};
+                                }
+                                return sa;
+                            });
+                        }
                     } else if (eventType === 'message-start') {
                         const msgId = eventData.id || eventData.message?.id || `ai-${Date.now()}`;
                         const role = eventData.role || eventData.message?.role || 'ai';
@@ -133,27 +187,63 @@ export function useCustomStream(apiUrl, assistantId) {
                 } else if (method === 'tools') {
                     const eventType = eventData.event;
                     console.log('[SSE] tools', eventType, eventData);
+                    const subNs = nsMsg && nsMsg.length ? nsMsg : null;
                     if (eventType === 'tool-started') {
                         const callId = eventData.toolCallId || eventData.tool_call_id || eventData.id || `call-${Date.now()}`;
                         const name = eventData.name || eventData.tool_name || 'unknown';
                         const inputVal = eventData.input || eventData.args || {};
-                        setToolCalls(prev => [...prev, {callId, name, input: inputVal, status: 'running'}]);
+                        if (subNs) {
+                            updateSubagent(subNs, (sa) => ({
+                                ...sa,
+                                status: 'running',
+                                toolCalls: [...(sa.toolCalls || []), {
+                                    callId,
+                                    name,
+                                    input: inputVal,
+                                    status: 'running'
+                                }],
+                            }));
+                        } else {
+                            setToolCalls(prev => [...prev, {callId, name, input: inputVal, status: 'running'}]);
+                        }
                     } else if (eventType === 'tool-finished' || eventType === 'tool_finished' || eventType === 'tool-end') {
                         const callId = eventData.toolCallId || eventData.tool_call_id || eventData.id;
                         const output = eventData.output || eventData.result || '';
-                        setToolCalls(prev => prev.map(tc => tc.callId === callId ? {
-                            ...tc,
-                            status: 'complete',
-                            output
-                        } : tc));
+                        if (subNs) {
+                            updateSubagent(subNs, (sa) => ({
+                                ...sa,
+                                toolCalls: (sa.toolCalls || []).map(tc => tc.callId === callId ? {
+                                    ...tc,
+                                    status: 'complete',
+                                    output
+                                } : tc),
+                            }));
+                        } else {
+                            setToolCalls(prev => prev.map(tc => tc.callId === callId ? {
+                                ...tc,
+                                status: 'complete',
+                                output
+                            } : tc));
+                        }
                     } else if (eventType === 'tool-error') {
                         const callId = eventData.toolCallId || eventData.tool_call_id || eventData.id;
                         const errMsg = eventData.error || eventData.message || 'tool error';
-                        setToolCalls(prev => prev.map(tc => tc.callId === callId ? {
-                            ...tc,
-                            status: 'error',
-                            error: errMsg
-                        } : tc));
+                        if (subNs) {
+                            updateSubagent(subNs, (sa) => ({
+                                ...sa,
+                                toolCalls: (sa.toolCalls || []).map(tc => tc.callId === callId ? {
+                                    ...tc,
+                                    status: 'error',
+                                    error: errMsg
+                                } : tc),
+                            }));
+                        } else {
+                            setToolCalls(prev => prev.map(tc => tc.callId === callId ? {
+                                ...tc,
+                                status: 'error',
+                                error: errMsg
+                            } : tc));
+                        }
                     }
                 } else if (method === 'lifecycle') {
                     const eventType = eventData.event;
@@ -161,7 +251,17 @@ export function useCustomStream(apiUrl, assistantId) {
                     const ns = data.params?.namespace;
                     const isTerminal = !node && Array.isArray(ns) && ns.length === 0;
                     console.log('[SSE] lifecycle', eventType, 'node:', node, 'ns:', ns, 'terminal:', isTerminal);
-                    if (eventType === 'completed' || eventType === 'finished' || eventType === 'done' || eventType === 'complete') {
+                    if (Array.isArray(ns) && ns.length > 0) {
+                        // Subagent lifecycle events
+                        if (eventType === 'started' || eventType === 'running') {
+                            updateSubagent(ns, (sa) => ({...sa, status: 'running'}));
+                        } else if (eventType === 'completed' || eventType === 'finished' || eventType === 'done') {
+                            updateSubagent(ns, (sa) => ({...sa, status: 'complete'}));
+                        } else if (eventType === 'failed' || eventType === 'error') {
+                            const errMsg = eventData.error || eventData.message || 'subagent failed';
+                            updateSubagent(ns, (sa) => ({...sa, status: 'failed', error: errMsg}));
+                        }
+                    } else if (eventType === 'completed' || eventType === 'finished' || eventType === 'done' || eventType === 'complete') {
                         if (!isTerminal) {
                             console.log('[SSE] ignoring intermediate lifecycle completed for node', node);
                             // do not close - wait for terminal lifecycle completed
@@ -203,6 +303,10 @@ export function useCustomStream(apiUrl, assistantId) {
                     if (eventData.event === 'input-requested') setInterrupt(eventData.value || eventData.message || 'Input required');
                 } else if (method === 'values') {
                     console.log('[SSE] values', eventData);
+                } else if (method === 'todos') {
+                    // Handle todos events - update state for UI display
+                    const todoItems = eventData?.todos || [];
+                    setTodos(todoItems);
                 }
             } catch (err) {
                 console.error('[SSE] Failed to parse event:', err, event.data);
@@ -235,5 +339,5 @@ export function useCustomStream(apiUrl, assistantId) {
         }
     }, [apiUrl]);
 
-    return {threadId, messages, toolCalls, isLoading, error, interrupt, submit, respond};
+    return {threadId, messages, toolCalls, subagents, isLoading, todos, error, interrupt, submit, respond};
 }

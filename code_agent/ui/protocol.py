@@ -17,12 +17,19 @@ non-empty namespace and are forwarded unchanged so selector hooks such as
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
 import json
-from typing import Any
 import uuid
-from datetime import datetime, date
+
+from collections.abc import AsyncGenerator
+from datetime import date, datetime
 from pathlib import Path
+from typing import Any
+
+
+# --- SUBAGENT STATE TRACKING ---
+# Track subagents that have started to emit start/end events
+_seen_subagents: set[str] = set()
+
 
 def _sse(payload: dict[str, Any], seq: int | None = None) -> str:
     """Format a single SSE frame with id and event fields."""
@@ -370,6 +377,7 @@ async def translate_stream(
     :yields: Protocol v2 event dicts.
     """
     seq = 0
+    active_namespaces: dict[str, set[str]] = {}
 
     def next_seq() -> int:
         nonlocal seq
@@ -485,6 +493,40 @@ async def translate_stream(
                 )
                 frame["seq"] = next_seq()
                 yield frame
+
+                # Emit subagent lifecycle events based on namespace
+                if namespace:
+                    active_namespaces.setdefault(run_id, set()).add(
+                        ":".join(namespace)
+                    )
+                    # Check if any subgraph namespace just completed
+                    finished = active_namespaces.get(run_id, set())
+                    for ns in finished:
+                        yield {
+                            "seq": next_seq(),
+                            "method": "lifecycle",
+                            "params": {
+                                "namespace": ns.split(":") if ":" in ns else [],
+                                "data": {
+                                    "event": "subagent_end",
+                                    "name": ns[-1] if ns else "unknown",
+                                },
+                            },
+                        }
+                    # Emit subagent_start for any new subgraph that just started
+                    # (this would have been emitted on on_agent_step_start if needed)
+
+                # Extract and emit todos from chain end output
+                if isinstance(output, dict) and output.get("todos"):
+                    todos = output["todos"]
+                    yield {
+                        "seq": next_seq(),
+                        "method": "todos",
+                        "params": {
+                            "namespace": namespace,
+                            "data": {"todos": todos},
+                        },
+                    }
 
                 if isinstance(output, dict) and output.get("__interrupt__"):
                     frame = _translate_interrupt(event, namespace, node)

@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from ._io import FileObject, _normalize_target
 
+
 class FormatCodeArgs(BaseModel):
     """Args for the format-code tool.
 

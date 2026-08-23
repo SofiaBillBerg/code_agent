@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from ._io import _normalize_target
 
+
 class ReadFileArgs(BaseModel):
     """Arguments for reading a file.
 

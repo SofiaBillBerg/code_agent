@@ -29,19 +29,14 @@ Security notes:
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator
-from dataclasses import dataclass
 import logging
-from pathlib import Path
-from typing import Any, Literal
 import uuid
 
-from code_agent.agents.deepagents_agent import build_agent, create_default_tools
-from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.config.settings import get_settings
-from code_agent.main import create_llm, load_config
-from code_agent.ui.protocol import _sse, translate_stream
+from collections.abc import AsyncGenerator
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Literal
+
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -54,9 +49,20 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pydantic import BaseModel
 
+from code_agent.agents.deepagents_agent import (
+    build_agent,
+    create_default_tools,
+)
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.config.settings import get_settings
+from code_agent.main import create_llm, load_config
+from code_agent.ui.protocol import _sse, translate_stream
+from code_agent.utils.checkpointer import build_checkpointer
+
+
 #: Module logger — used for protocol stream error reporting.
 logger = logging.getLogger(__name__)
-from code_agent.utils.checkpointer import build_checkpointer
 
 #: Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
@@ -1710,18 +1716,16 @@ async def thread_runs_stream(
 
     async def _event_stream():
         if not text:
-            yield _sse(
-                {
-                    "method": "lifecycle",
-                    "params": {
-                        "namespace": [],
-                        "data": {
-                            "event": "failed",
-                            "error": "No message content",
-                        },
+            yield _sse({
+                "method": "lifecycle",
+                "params": {
+                    "namespace": [],
+                    "data": {
+                        "event": "failed",
+                        "error": "No message content",
                     },
-                }
-            )
+                },
+            })
             return
 
         state = await get_agent_async()

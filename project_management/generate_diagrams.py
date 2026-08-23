@@ -4,10 +4,12 @@ It parses Python files to extract classes, functions, and their calls, then crea
 """
 
 import ast
-from collections import defaultdict
 import os
+
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
+
 
 MERMAID_THEME_FLOWCHART = """
     %% Plasma Pastel Theme Configuration %%
