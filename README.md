@@ -4,7 +4,7 @@ author: "Sofia Billger Bergström"
 format: html
 ---
 
-> A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
+> CodeAgent A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
 
 ## Quick Start
 

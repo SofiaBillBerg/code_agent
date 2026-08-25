@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import shutil
 import subprocess
 
-from pathlib import Path
+from ._io import FileObject, _normalize_target
 
 from langchain.tools import BaseTool, tool
 from pydantic import BaseModel, Field
-
-from ._io import FileObject, _normalize_target
-
 
 class FormatCodeArgs(BaseModel):
     """Args for the format-code tool.

@@ -12,10 +12,7 @@ from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 
-from code_agent.agents.deepagents_agent import (
-    build_agent,
-    create_default_tools,
-)
+from code_agent.agents.codeagent import build_agent, create_default_tools
 from code_agent.tools import notebook_tool
 from code_agent.tools._io import (
     create_from_template,  # ruff: ignore[import-private-name]; ruff: ignore[import-private-name]; ruff: ignore[import-private-name]

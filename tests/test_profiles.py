@@ -1,4 +1,4 @@
-"""Tests for the DeepAgents profile router."""
+"""Tests for the CodeAgents (DeepAgents) profile router."""
 
 from __future__ import annotations
 
@@ -9,17 +9,17 @@ from typing import Any
 
 import pytest
 
-from deepagents import HarnessProfile
+from deepagents import HarnessProfile, create_deep_agent
 
 from code_agent.config.settings import Settings
 from code_agent.profiles import register_profiles_from_settings
 from code_agent.profiles.router import (
-    _registered,  # ruff: ignore[import-private-name] - testing private registry
+    register_profiles_from_config_file,  # ruff: ignore[import-private-name] - testing private registry
 )
 from code_agent.profiles.router import (
     DEFAULT_PROFILES_CONFIG,
+    _registered,
     load_profiles_from_config_file,
-    register_profiles_from_config_file,
     resolve_profile,
 )
 
@@ -289,10 +289,10 @@ def test_register_profiles_from_config_file(
     assert captured["openai:gpt-4o"].system_prompt_suffix == "hi"
 
 
-def test_build_deep_agent_registers_profiles_flag(
+def test_build_code_agent_registers_profiles_flag(
     monkeypatch: Any,
 ) -> None:
-    """build_deep_agent registers config profiles by default, opt-out works.
+    """build_code_agent registers config profiles by default, opt-out works.
 
     :param monkeypatch: The pytest-mock monkeypatch fixture.
     :raises AssertionError: If the registration behavior is wrong.
@@ -301,7 +301,7 @@ def test_build_deep_agent_registers_profiles_flag(
 
     from langchain.chat_models import BaseChatModel
 
-    from code_agent.agents import deepagents_agent
+    from code_agent.agents import codeagent
 
     calls = {"register": 0, "create": None}
     fake_llm = MagicMock(spec=BaseChatModel)
@@ -323,19 +323,19 @@ def test_build_deep_agent_registers_profiles_flag(
         return "GRAPH"
 
     monkeypatch.setattr(
-        deepagents_agent, "register_profiles_from_config_file", fake_register
+        codeagent, "register_profiles_from_config_file", fake_register
     )
-    monkeypatch.setattr(deepagents_agent, "create_deep_agent", fake_create)
+    monkeypatch.setattr(codeagent, "create_deep_agent", fake_create)
 
     # Default: profiles are registered.
-    deepagents_agent.build_deep_agent(fake_llm)
+    codeagent.build_code_agent(fake_llm)
     assert calls["register"] == 1
     assert calls["create"] is not None
 
     # Opt-out: no registration, but the agent is still built.
     calls["register"] = 0
     calls["create"] = None
-    deepagents_agent.build_deep_agent(fake_llm, register_profiles=False)
+    codeagent.build_code_agent(fake_llm, register_profiles=False)
     assert calls["register"] == 0
     assert calls["create"] is not None
 

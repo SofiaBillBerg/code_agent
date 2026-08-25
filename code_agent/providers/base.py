@@ -4,14 +4,13 @@ Defines ``LLMProvider`` (the structural protocol every concrete provider -
 ollama, openai, ... - must satisfy) and ``ProviderBase`` (a convenient ABC
 that implements the protocol's ``bind_capabilities`` default). No concrete
 model backend is referenced here; providers are selected by config via
-``providers/factory.py``.
+``providers/registry.py``.
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import Any, Protocol, runtime_checkable
-
 
 @runtime_checkable
 class LLMProvider(Protocol):
@@ -45,14 +44,14 @@ class LLMProvider(Protocol):
 
 
 class ProviderBase(ABC):
-    """Base class for LLM providers (ollama, openai, ...).
+    """Base class for LLM providers (ollama, openai, openrouter ...).
 
     Subclasses must set ``name`` and implement ``complete``. ``bind_capabilities``
     defaults to a no-op that returns ``self``; providers that require tool-binding
     override it.
 
     :ivar name: Stable provider identifier, e.g. ``"ollama"`` or ``"openai"``.
-    :ivar model: The model name, e.g. ``"llama3"`` or ``"gpt-4o"``.
+    :ivar model: The model name, e.g. ``"qwen3.5"`` or ``"gpt-4o"``.
     :ivar temperature: Sampling temperature, ``0.0`` to ``1.0``.
     :ivar max_tokens: Maximum number of tokens to generate.
     :ivar stream: Whether to stream the response.

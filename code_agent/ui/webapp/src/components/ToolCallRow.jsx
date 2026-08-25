@@ -1,4 +1,35 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
+
+// Input keys checked (in order) when deriving a chip's human-readable target.
+const TARGET_KEYS = [
+    "file_path",
+    "path",
+    "pattern",
+    "query",
+    "command",
+    "directory",
+    "url",
+];
+
+/**
+ * Extract a short human-readable "target" from a tool input payload - e.g.
+ * the file_path of read_file or the pattern of glob - so chips and the live
+ * activity line show WHAT the agent is touching, not just the tool name.
+ *
+ * @param {object} input Raw tool input/args object.
+ * @returns {string} Display target string, or "" when none is found.
+ */
+export function toolTarget(input) {
+    if (!input || typeof input !== "object") return "";
+    for (const key of TARGET_KEYS) {
+        const value = input[key];
+        if (typeof value === "string" && value.trim()) {
+            // Strip the virtual-workspace prefix for readability.
+            return value.trim().replace(/^\/workspace\/?/, "");
+        }
+    }
+    return "";
+}
 
 /**
  * ToolCallRow component
@@ -56,6 +87,12 @@ function ToolCallRow({toolCall}) {
                         </span>
                     )}
                     {toolName}
+                    {/* Show WHAT is being acted on (file path / pattern). */}
+                    {toolTarget(toolInput) && (
+                        <span style={{color: "#888", fontWeight: 400, marginLeft: "0.5rem"}}>
+                            {toolTarget(toolInput)}
+                        </span>
+                    )}
                 </span>
                 <span className="tool-call-meta">
                     {status === "done" || status === "finished"

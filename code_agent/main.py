@@ -9,22 +9,15 @@ so ``python -m code_agent`` routes there through :mod:`code_agent.__main__`.
 from __future__ import annotations
 
 import json
-
-from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-import yaml
-
-from langchain.chat_models import BaseChatModel
-from langchain.messages import AIMessage
-from langchain_core.messages import BaseMessage
-from langchain_core.outputs import ChatGeneration, ChatResult
-from pydantic_settings import BaseSettings
-
 from code_agent.config.jsonc import loads as jsonc_loads
 from code_agent.config.settings import Settings, get_settings
-
+from code_agent.providers.registry import build_llm, resolve_model
+from langchain.chat_models import BaseChatModel
+from pydantic_settings import BaseSettings
+import yaml
 
 __all__ = ["create_llm", "load_config"]
 
@@ -97,11 +90,13 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
 
 
 def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
-    """Create an LLM instance from config, with graceful fallback.
+    """Create an LLM instance from config.
 
-    The function supports an Ollama-style backend and falls back to a
-    lightweight dummy model that returns an error message when the real
-    LLM cannot be initialized.
+    Resolves the default model through the config-driven provider registry
+    (:mod:`code_agent.providers.registry`) and builds a concrete
+    ``BaseChatModel``. The provider is derived from the model id declared in
+    the ``providers`` block of ``config/codeagent.jsonc``; legacy flat-key
+    configs are synthesized into a registry on the fly.
 
     :param cfg: Either a :class:`~code_agent.config.settings.Settings` instance or
         a plain configuration dictionary (e.g. from :func:`load_config`).
@@ -112,93 +107,5 @@ def create_llm(cfg: Settings | dict[str, Any]) -> BaseChatModel:
     if isinstance(cfg, BaseSettings):
         cfg = cfg.model_dump()
 
-    # ``ChatOllama`` is constructed lazily and never contacts the server, so
-    # an invalid port would otherwise slip through and fail only at request
-    # time.  Validate eagerly so bad configs route to the graceful
-    # ``_FallbackLLM`` instead of hanging on a connection.
-    try:
-        from code_agent.providers.ollama import _chat_ollama_from_config
-
-        return _chat_ollama_from_config(cfg)
-    except Exception as exc:  # pragma: no cover - fallback path
-        port = cfg.get("ollama_port", 11434)
-        base_url = (
-            f"{cfg.get('ollama_scheme', 'http')}://"
-            f"{cfg.get('ollama_host', 'localhost')}:{port}"
-        )
-
-        class _FallbackLLM(BaseChatModel):
-            """Graceful fallback when Ollama is unreachable."""
-
-            _err: Exception
-            _base_url: str
-
-            def __init__(
-                self,
-                err: Exception,
-                base_url: str,
-                **kwargs: Any,
-            ) -> None:
-                """Initialize the fallback LLM.
-
-                :param err: The exception that caused the fallback.
-                :param base_url: The base URL of the Ollama server.
-                :param kwargs: Additional keyword arguments.
-                :return: None
-                """
-                super().__init__(**kwargs)
-                self._err = err
-                self._base_url = base_url
-
-            def _generate(
-                self,
-                messages: list[BaseMessage],
-                stop: list[str] | None = None,
-                run_manager: Any = None,
-                **kwargs: Any,
-            ) -> ChatResult:
-                """Generate a response to the given messages.
-
-                :param messages: The messages to generate a response to.
-                :param stop: A list of strings to stop generation on.
-                :param run_manager: The run manager.
-                :param kwargs: Additional keyword arguments.
-                :return: A :class:`~langchain_core.outputs.ChatResult`
-                    instance.
-                """
-                content = json.dumps({
-                    "error": "LLM unavailable",
-                    "details": (
-                        f"Failed to initialise ChatOllama. "
-                        f"Error: {self._err}. "
-                        f"Base URL: {self._base_url}."
-                    ),
-                })
-                return ChatResult(
-                    generations=[
-                        ChatGeneration(message=AIMessage(content=content))
-                    ]
-                )
-
-            @property
-            def _llm_type(self) -> str:
-                """Access the type of llm.
-
-                :return: Returns "fallback"
-                """
-                return "fallback"
-
-            def bind_tools(
-                self,
-                tools: Sequence[Any],
-                **kwargs: Any,
-            ) -> Any:
-                """Bind tools to the LLM.
-
-                :param tools: The tools to bind.
-                :param kwargs: Additional keyword arguments.
-                :return: The LLM with the tools bound.
-                """
-                return self
-
-        return _FallbackLLM(exc, base_url)
+    resolved = resolve_model(cfg.get("default_model") or None, cfg)
+    return build_llm(resolved)

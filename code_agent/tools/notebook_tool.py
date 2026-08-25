@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
-
-import nbformat
 
 from code_agent.exceptions import CodeAgentError
-
+import nbformat
 
 def py_to_ipynb(  # ruff: ignore[complex-structure]
     py_file: Path,
@@ -63,10 +60,7 @@ def py_to_ipynb(  # ruff: ignore[complex-structure]
             f"Cannot create notebook {py_file.with_suffix('.ipynb')!s} because it already exists"
         )
     if mode == "append":
-        nb = cast(
-            nbformat.NotebookNode,
-            nbformat.read(str(py_file.with_suffix(".ipynb")), as_version=4),
-        )
+        nb = nbformat.read(str(py_file.with_suffix(".ipynb")), as_version=4)
     else:
         nb = nbformat.v4.new_notebook()
         current_cell_lines: list[str] = []

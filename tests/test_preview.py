@@ -21,10 +21,7 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 
 # Import the helpers from the public API
-from code_agent.agents.deepagents_agent import (
-    build_agent,
-    create_default_tools,
-)
+from code_agent.agents.codeagent import build_agent, create_default_tools
 from code_agent.main import create_llm
 
 
@@ -126,7 +123,7 @@ def test_build_agent_returns_runnable(
 def test_build_agent_with_invalid_config(tmp_path: Path) -> None:
     """Test that agent creation handles invalid configurations gracefully.
 
-    With the current implementation, ``create_llm`` returns a ``ChatOllama``
+    With the current implementation, ``create_llm`` returns a ``ChatOllama``# TODO remove, use langchain directly and init_chat_model
     instance even for invalid configs (construction is lazy). The agent can
     still be built and invoked; any backend errors surface at invocation time.
 
@@ -135,9 +132,13 @@ def test_build_agent_with_invalid_config(tmp_path: Path) -> None:
     :raises AssertionError: If the agent is not a Runnable.
     :raises Exception: If the agent creation fails unexpectedly.
     """
-    # Use a config with an invalid port - ChatOllama construction is lazy
+    # Use a config with an invalid port - ChatOllama construction is lazy # TODO remove, use langchain directly and init_chat_model
     # so this succeeds, but invocation will fail.
-    invalid_cfg = {"ollama_model": "nonexistent", "ollama_port": 11434}
+    invalid_cfg = {
+        "provider": "ollama",
+        "model": "nonexistent",
+        "ollama_port": 11434,
+    }
 
     llm = create_llm(invalid_cfg)
 

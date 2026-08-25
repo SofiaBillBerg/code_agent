@@ -24,8 +24,8 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.utils.uuid import uuid7
 from typing_extensions import override
 
-from code_agent.agents.deepagents_agent import (
-    build_deep_agent,
+from code_agent.agents.codeagent import (
+    build_code_agent,
     make_backend,
     make_default_permissions,
 )
@@ -205,27 +205,27 @@ def test_readonly_mcp_tools_are_not_gated(mock_llm: MagicMock) -> None:
 
 
 # ---------------------------------------------------------------------------
-# DeepAgents harness tests
+# CodeAgents (DeepAgents) harness tests
 # ---------------------------------------------------------------------------
 
 
-def test_build_deep_agent_returns_compiled_graph(mock_llm: MagicMock) -> None:
-    """``build_deep_agent`` should return a compiled LangGraph state graph.
+def test_build_code_agent_returns_compiled_graph(mock_llm: MagicMock) -> None:
+    """``build_code_agent`` should return a compiled LangGraph state graph.
 
     :param mock_llm: The mock LLM.
     :return: None
     """
     fake_graph = MagicMock()
     with patch(
-        "code_agent.agents.deepagents_agent.create_deep_agent",
+        "code_agent.agents.codeagent.create_deep_agent",
         return_value=fake_graph,
     ):
-        graph = build_deep_agent(llm=mock_llm, tools=[])
+        graph = build_code_agent(llm=mock_llm, tools=[])
     assert graph is fake_graph
 
 
-def test_build_deep_agent_drops_builtin_collisions(mock_llm: MagicMock) -> None:
-    """Custom tools that shadow DeepAgents built-ins should be dropped.
+def test_build_code_agent_drops_builtin_collisions(mock_llm: MagicMock) -> None:
+    """Custom tools that shadow CodeAgents (DeepAgents) built-ins should be dropped.
 
     :param mock_llm: The mock LLM.
     :return: None
@@ -255,14 +255,14 @@ def test_build_deep_agent_drops_builtin_collisions(mock_llm: MagicMock) -> None:
 
     fake_graph = MagicMock()
     with patch(
-        "code_agent.agents.deepagents_agent.create_deep_agent",
+        "code_agent.agents.codeagent.create_deep_agent",
         return_value=fake_graph,
     ):
-        graph = build_deep_agent(llm=mock_llm, tools=[CollisionTool()])
+        graph = build_code_agent(llm=mock_llm, tools=[CollisionTool()])
     assert graph is fake_graph
 
 
-def test_build_deep_agent_requires_profile_key_for_profile(
+def test_build_code_agent_requires_profile_key_for_profile(
     mock_llm: MagicMock,
 ) -> None:
     """Providing a profile without a profile key should raise ``ValueError``.
@@ -273,7 +273,7 @@ def test_build_deep_agent_requires_profile_key_for_profile(
     from deepagents import HarnessProfile
 
     with pytest.raises(ValueError, match="profile_key"):
-        build_deep_agent(
+        build_code_agent(
             llm=mock_llm,
             tools=[],
             profile=HarnessProfile(base_system_prompt="test"),

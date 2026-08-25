@@ -22,7 +22,7 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 
 from code_agent import build_agent, create_llm
-from code_agent.agents.deepagents_agent import create_default_tools
+from code_agent.agents.codeagent import create_default_tools
 from code_agent.main import load_config
 from code_agent.tools._io import _atomic_write, create_from_template
 

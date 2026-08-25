@@ -3,9 +3,9 @@ title: "code_agent"
 format: html
 ---
 
-# code_agent
+# CodeAgent
 
-A local, LLM-driven code assistant built on **LangChain** + **DeepAgents** with a **local Ollama** or OpenAI-compatible
+A local, LLM-driven code assistant built on **LangChain** + **DeepAgents** with a OpenAI-compatible
 backend. The agent has full filesystem access through its tools and can read, create, edit, and append files directly.
 
 ## Features
@@ -80,10 +80,10 @@ Supported types: `stdio` (with `command`, `args`, `env`) and `http` (with `url`)
 ```
 code_agent/
 ├── agents/                # Agent factories
-│   ├── deepagents_agent.py  # Primary: DeepAgents harness (build_agent, build_deep_agent, create_default_tools)
+│   ├── codeagent.py  # Primary: DeepAgents harness (build_agent, build_code_agent, create_default_tools)
 │   └── __init__.py          # Public API exports
 ├── utils/
-│   └── graph.py             # Alternative harness dispatcher (create_agent or deepagents)
+│   └── graph.py             # Alternative harness dispatcher (create_agent or codeagents (create_deep_agent))
 ├── capabilities/           # OAP-inspired capability/audit layer
 │   ├── audit.py            # Hash-chained audit receipts
 │   ├── base.py             # CapabilityBase, RiskClass
@@ -92,12 +92,12 @@ code_agent/
 │   └── tool_adapter.py     # Tool → Capability adapter
 ├── main.py                 # Library: load_config(), create_llm()
 ├── providers/              # LLM backend abstraction
-│   ├── ollama.py           # Ollama provider
-│   ├── openai.py           # OpenAI provider
+│   ├── provider.py           # Model provider
+│   ├── base.py           # Base provider
 │   └── factory.py          # Provider factory
 ├── config/                 # Configuration files
 │   ├── codeagent.jsonc     # Main config
-│   └── profiles.yaml       # DeepAgents harness profiles
+│   └── profiles.yaml       # CodeAgents harness profiles through DeepAgent
 ├── tools/                  # LangChain BaseTool implementations
 │   ├── _io.py              # Atomic file I/O
 │   ├── edit_file_tool.py
@@ -119,7 +119,7 @@ code_agent/
 
 Two agent harnesses are supported:
 
-1. **DeepAgents** (default) — `code_agent.agents.deepagents_agent.build_agent`
+1. **CodeAgent** (default) — `code_agent.agents.codeagent.build_agent`
     - Built on `deepagents.create_deep_agent`
     - Virtual filesystem mounted at `/workspace/`
     - Built-in filesystem tools (`ls`, `read_file`, `write_file`, `edit_file`, `glob`, `grep`, `delete`, `execute`,

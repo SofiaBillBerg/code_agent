@@ -17,14 +17,14 @@ non-empty namespace and are forwarded unchanged so selector hooks such as
 
 from __future__ import annotations
 
-import json
-import uuid
-
 from collections.abc import AsyncGenerator
 from datetime import date, datetime
+import json
 from pathlib import Path
 from typing import Any
+import uuid
 
+from langgraph.types import Command
 
 # --- SUBAGENT STATE TRACKING ---
 # Track subagents that have started to emit start/end events
@@ -360,24 +360,29 @@ def _translate_values(
 # ---------------------------------------------------------------------------
 
 
-async def translate_stream(
+async def _iter_protocol_events(
     agent: Any,
-    message: str,
+    invoke_input: Any,
     thread_id: str,
 ) -> AsyncGenerator[dict[str, Any]]:
-    """Drive ``agent.astream_events`` and yield protocol v2 event dicts.
+    """Core translation loop shared by first turns and HITL resumes.
 
-    This is the core translation layer.  It consumes LangGraph v2 events,
-    maps them to protocol v2 ``method/params`` envelopes, and yields the
-    event dicts.  The caller is responsible for SSE framing.
+    Drives ``agent.astream_events`` (v2) for *invoke_input* — either an
+    initial ``{"messages": [...]}`` dict or a ``langgraph.types.Command``
+    resuming a paused run — and translates each raw event into a protocol
+    v2 envelope.  When this pass emitted an ``input-requested`` frame the
+    terminal frame becomes ``lifecycle/interrupted`` so callers can tell a
+    paused run from a finished one.
 
     :param agent: Compiled LangGraph agent (from ``build_agent()``).
-    :param message: User message text.
+    :param invoke_input: Input passed straight to ``astream_events``.
     :param thread_id: Conversation thread identifier.
     :yields: Protocol v2 event dicts.
     """
     seq = 0
     active_namespaces: dict[str, set[str]] = {}
+    #: True once this pass yielded an ``input-requested`` frame.
+    saw_interrupt = False
 
     def next_seq() -> int:
         nonlocal seq
@@ -410,7 +415,7 @@ async def translate_stream(
         }
 
         async for event in stream_fn(
-            {"messages": [{"role": "user", "content": message}]},
+            invoke_input,
             config={
                 "configurable": {"thread_id": thread_id},
                 "recursion_limit": 150,
@@ -529,6 +534,7 @@ async def translate_stream(
                     }
 
                 if isinstance(output, dict) and output.get("__interrupt__"):
+                    saw_interrupt = True
                     frame = _translate_interrupt(event, namespace, node)
                     frame["seq"] = next_seq()
                     yield frame
@@ -551,12 +557,23 @@ async def translate_stream(
                     frame["seq"] = next_seq()
                     yield frame
 
+        #: Decide paused-vs-finished authoritatively: an HITL pause ends the
+        #: astream_events loop just like a real completion, so ask the
+        #: checkpointer whether a resume point is pending.
+        paused = await _run_paused_at_hitl(agent, thread_id)
         yield {
             "seq": next_seq(),
             "method": "lifecycle",
             "params": {
                 "namespace": [],
-                "data": {"event": "completed"},
+                "data": {
+                    # A paused run is NOT a completed run: surface the
+                    # distinction so callers (and the UI) can keep a
+                    # pending-interrupt badge alive across reconnects.
+                    "event": "interrupted"
+                    if paused or saw_interrupt
+                    else "completed"
+                },
             },
         }
 
@@ -572,3 +589,88 @@ async def translate_stream(
                 },
             },
         }
+
+
+async def _run_paused_at_hitl(agent: Any, thread_id: str) -> bool:
+    """Return True when the run is paused awaiting human input.
+
+    Authoritative check: LangGraph reports the pending resume point via
+    ``aget_state().next``. Event-shape sniffing (``__interrupt__`` in
+    outputs) proved unreliable across middleware versions — a HITL pause
+    previously got mislabeled as ``completed``, making the web UI flip to
+    Idle and drop the approval card while the run was merely suspended.
+
+    :param agent: Compiled LangGraph agent.
+    :param thread_id: Conversation thread identifier.
+    :return: True if the graph is paused at an interrupt.
+    """
+    try:
+        snapshot = await agent.aget_state({
+            "configurable": {"thread_id": thread_id}
+        })
+        return bool(getattr(snapshot, "next", None))
+    except Exception:  # ruff: ignore[blind-except] - never break the stream on state probing
+        return False
+
+
+async def translate_stream(
+    agent: Any,
+    message: str,
+    thread_id: str,
+) -> AsyncGenerator[dict[str, Any]]:
+    """Translate a first-turn user *message* into protocol v2 events.
+
+    Thin wrapper around :func:`_iter_protocol_events` preserving the
+    historical API used by ``web.py``'s ``run.start`` handler.
+
+    :param agent: Compiled LangGraph agent.
+    :param message: User message text.
+    :param thread_id: Conversation thread identifier.
+    :yields: Protocol v2 event dicts.
+    """
+    async for frame in _iter_protocol_events(
+        agent,
+        {"messages": [{"role": "user", "content": message}]},
+        thread_id,
+    ):
+        yield frame
+
+
+async def translate_resume(
+    agent: Any,
+    resume_value: Any,
+    thread_id: str,
+) -> AsyncGenerator[dict[str, Any]]:
+    """Continue a paused run after a human-in-the-loop decision.
+
+    Wraps *resume_value* in ``langgraph.types.Command(resume=...)`` and
+    streams the continuation through the same translation pipeline.  The
+    payload follows the LangChain HITL response schema::
+
+        {
+            "decisions": [
+                {"type": "approve"}
+                | {
+                    "type": "edit",
+                    "edited_action": {"name": ..., "args": {...}},
+                }
+                | {"type": "reject", "message": "..."}  # message optional
+                | {"type": "respond", "message": "..."}
+            ]
+        }
+
+    Provide one decision per pending interrupt, ordered to match the
+    interrupted tool calls.
+
+    :param agent: Compiled LangGraph agent.
+    :param resume_value: Full HITL decisions payload (see above).
+    :param thread_id: Same thread that paused — required so the
+        checkpointer can locate the paused state.
+    :yields: Protocol v2 event dicts for the continuation.
+    """
+    async for frame in _iter_protocol_events(
+        agent,
+        Command(resume=resume_value),
+        thread_id,
+    ):
+        yield frame

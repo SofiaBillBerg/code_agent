@@ -20,7 +20,6 @@ from types import ModuleType
 
 from code_agent.exceptions import CodeAgentError
 
-
 #: Optional Jupyter notebook dependency; ``None`` when unavailable.
 nbformat: ModuleType | None
 try:  # Optional dependency - used only for the notebook path.
@@ -48,7 +47,7 @@ class FileObject:
 
 
 def _normalize_target(
-    target: str | Path, root: "str | Path | None" = None
+    target: str | Path, root: str | Path | None = None
 ) -> Path:
     """Rebase a write target so it stays safely inside the project root.
 

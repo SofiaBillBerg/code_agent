@@ -5,7 +5,7 @@ Two agent harnesses are supported:
 * ``create_agent`` (default) - LangChain's ``create_agent`` with an
   :class:`langgraph.checkpoint.memory.InMemorySaver` checkpointer and a
   :class:`langgraph.middleware.human_in_the_loop.HumanInTheLoopMiddleware` that pauses sensitive tools for approval,
-* ``deepagents`` - :func:`code_agent.agents.deepagents_agent.build_deep_agent`,
+* ``deepagents`` - :func:`code_agent.agents.codeagent.build_code_agent`,
   a DeepAgents (LangGraph) agent with the real working directory mounted at
   ``/workspace/``, built-in filesystem tools and permission-based
   human-in-the-loop review.
@@ -18,6 +18,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
+from code_agent.config.mcp import (
+    readonly_mcp_tool_names,
+    sensitive_mcp_tool_names,
+)
+from code_agent.config.settings import DEFAULT_SYSTEM_PROMPT
 from langchain.agents import create_agent
 from langchain.agents.middleware.human_in_the_loop import (
     HumanInTheLoopMiddleware,
@@ -28,14 +33,7 @@ from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
 from langgraph.checkpoint.memory import InMemorySaver
 
-from code_agent.config.mcp import (
-    readonly_mcp_tool_names,
-    sensitive_mcp_tool_names,
-)
-from code_agent.config.settings import DEFAULT_SYSTEM_PROMPT
-
-
-Harness = Literal["create_agent", "deepagents"]
+Harness = Literal["create_agent", "codeagents"]
 
 
 def build_graph(
@@ -55,7 +53,7 @@ def build_graph(
       :class:`langgraph.checkpoint.memory.InMemorySaver` checkpointer and a
       :class:`langgraph.middleware.human_in_the_loop.HumanInTheLoopMiddleware` that pauses
       write/edit/format/notebook/r-script tools for approval.
-    * ``"deepagents"`` - :func:`code_agent.agents.deepagents_agent.build_deep_agent`
+    * ``"codeagents"`` - :func:`code_agent.agents.codeagent.build_code_agent`
       with the real working directory mounted at ``/workspace/``, built-in
       filesystem tools and permission-based HITL.  Custom tools whose names
       collide with the built-ins are dropped (the built-ins win).
@@ -64,18 +62,18 @@ def build_graph(
     :param tools: A list of tools that the agent can invoke.
     :param harness: Which agent harness to build.
     :param root_dir: Working directory mounted at ``/workspace/`` when
-        *harness* is ``"deepagents"``.
-    :param system_prompt: Optional system prompt override (deepagents only;
+        *harness* is ``"codeagents"``.
+    :param system_prompt: Optional system prompt override (codeagents only;
         the ``create_agent`` harness always uses its built-in prompt).
     :param kwargs: Extra keyword arguments forwarded to the harness builder
         (e.g. ``permissions``, ``interrupt_on``, ``profile``).  Only the
-        ``deepagents`` harness consumes them.
+        ``codeagents`` harness consumes them.
     :returns: A compiled agent runnable ready for execution.
     """
-    if harness == "deepagents":
-        from code_agent.agents.deepagents_agent import build_deep_agent
+    if harness == "codeagents":
+        from code_agent.agents.codeagent import build_code_agent
 
-        return build_deep_agent(
+        return build_code_agent(
             llm=llm,
             tools=tools,
             root_dir=root_dir,

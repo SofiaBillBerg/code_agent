@@ -1,322 +1,69 @@
 """Tests for the provider-agnostic LLM layer.
 
 Covers the ``LLMProvider`` protocol and ``ProviderBase``
-(:mod:`code_agent.providers.base`), the provider factory
-(:mod:`code_agent.providers.factory`) and the ``OllamaProvider`` /
-``OpenAIProvider`` adapters (:mod:`code_agent.providers.ollama`,
-:mod:`code_agent.providers.openai`).
+(:mod:`code_agent.providers.base`), the config-driven model registry
+(:mod:`code_agent.providers.registry`) and the ``ModelProvider``
+adapter (:mod:`code_agent.providers.provider`).
 
-The adapters import ``langchain_ollama`` / ``langchain_openai`` at module
-level, and ``code_agent/__init__.py`` eagerly imports the whole agent stack.
-When those optional dependencies are missing (as in a minimal test
-environment) the real provider source files are loaded directly from disk
-with stand-in langchain modules whose ``ChatOllama`` / ``ChatOpenAI`` are
-``unittest.mock.MagicMock`` classes.  This keeps every test runnable without
-the real dependency and guarantees no network calls: provider construction is
-lazy and ``complete()`` is always exercised against a mocked client.
+The adapter is built directly on ``langchain.init_chat_model``; provider
+construction is lazy and ``complete()`` is exercised against a mocked
+client, so no network calls are made during the tests.
 """
 
 from __future__ import annotations
 
-import importlib.util
-import sys
-import types
-
-from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import MagicMock
 
+from code_agent.providers.base import LLMProvider, ProviderBase
+from code_agent.providers.provider import ModelProvider
+from code_agent.providers.registry import (
+    build_llm,
+    list_models,
+    load_providers,
+    resolve_model,
+)
 import pytest
 
-
 # ---------------------------------------------------------------------------
-# Fallback: load the real provider modules without optional langchain deps
+# Dummy providers used by the protocol tests (no network)
 # ---------------------------------------------------------------------------
-
-
-def _is_importable(module_name: str) -> bool:
-    """Return True when *module_name* can be imported from this environment."""
-    try:
-        return importlib.util.find_spec(module_name) is not None
-    except (ImportError, ValueError):
-        return False
-
-
-def _load_source_module(name: str, path: Path) -> types.ModuleType:
-    """Load a Python source file as a module without executing parents.
-
-    Used only when the ``code_agent`` package cannot be imported because
-    optional dependencies are missing. The provider modules use absolute
-    imports (``from code_agent.providers.base import ...``), so minimal
-    parent packages are registered in ``sys.modules`` while the real source
-    files execute; the entries are removed once loading completes.
-    """
-    spec = importlib.util.spec_from_file_location(name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Cannot create an import spec for {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    try:
-        spec.loader.exec_module(module)
-    except Exception:
-        sys.modules.pop(name, None)
-        raise
-    return module
-
-
-def _stub_langchain_module(module_name: str, class_name: str) -> None:
-    """Register a stand-in langchain module when the real one is missing."""
-    if _is_importable(module_name) or module_name in sys.modules:
-        return
-    stub = types.ModuleType(module_name)
-    setattr(stub, class_name, MagicMock)
-    sys.modules[module_name] = stub
-
-
-def _load_provider_modules() -> tuple[
-    types.ModuleType, types.ModuleType, types.ModuleType, types.ModuleType
-]:
-    """Load the real provider modules without optional langchain packages.
-
-    Returns the ``base``, ``factory``, ``ollama`` and ``openai`` modules in
-    that order.  Temporary ``sys.modules`` entries are removed afterwards so
-    the fallback does not leak into other tests.
-    """
-    providers_dir = (
-        Path(__file__).resolve().parent.parent / "code_agent" / "providers"
-    )
-
-    _stub_langchain_module("langchain_ollama", "ChatOllama")
-    _stub_langchain_module("langchain_openai", "ChatOpenAI")
-
-    installed: list[str] = []
-    try:
-        # Minimal parent packages so the absolute imports inside the provider
-        # modules resolve without executing ``code_agent/__init__.py``.
-        for pkg_name in ("code_agent", "code_agent.providers"):
-            pkg = types.ModuleType(pkg_name)
-            pkg.__path__ = []  # type: ignore[attr-defined]
-            sys.modules[pkg_name] = pkg
-            installed.append(pkg_name)
-
-        modules: dict[str, types.ModuleType] = {}
-        for mod_name, file_name in (
-            ("code_agent.providers.base", "base.py"),
-            ("code_agent.providers.ollama", "ollama.py"),
-            ("code_agent.providers.openai", "openai.py"),
-            ("code_agent.providers.factory", "factory.py"),
-        ):
-            module = _load_source_module(mod_name, providers_dir / file_name)
-            installed.append(mod_name)
-            modules[mod_name] = module
-        return (
-            modules["code_agent.providers.base"],
-            modules["code_agent.providers.factory"],
-            modules["code_agent.providers.ollama"],
-            modules["code_agent.providers.openai"],
-        )
-    finally:
-        for name in installed:
-            sys.modules.pop(name, None)
-
-
-# ---------------------------------------------------------------------------
-# Import the real provider modules (full env) or fall back to file loading
-# ---------------------------------------------------------------------------
-
-# The class names below are bound either from the real ``code_agent``
-# package (full environment) or from the file-based fallback.  They are
-# declared as ``Any`` so static analysis accepts both binding paths and so
-# tests can reach adapter-specific attributes.
-LLMProvider: Any
-ProviderBase: Any
-OllamaProvider: Any
-OpenAIProvider: Any
-
-try:  # ruff: ignore [module-import-not-at-top-of-file]  (imports follow the fallback helpers by design)
-    import code_agent.providers.factory as _factory_mod  # ruff: ignore [module-import-not-at-top-of-file]
-    import code_agent.providers.ollama as _ollama_mod  # ruff: ignore [module-import-not-at-top-of-file]
-    import code_agent.providers.openai as _openai_mod  # ruff: ignore [module-import-not-at-top-of-file]
-
-    from code_agent.providers.base import (  # ruff: ignore [module-import-not-at-top-of-file]
-        LLMProvider,
-        ProviderBase,
-    )
-except ImportError:
-    # Minimal environment: load the real provider source files directly.
-    # noinspection PyGlobalVariableRedeclarationInNotebook
-    _base_mod, _factory_mod, _ollama_mod, _openai_mod = _load_provider_modules()  # ty: ignore[invalid-assignment]
-    # noinspection PyGlobalVariableRedeclarationInNotebook
-    LLMProvider = _base_mod.LLMProvider  # ty: ignore[conflicting-declarations]
-    # noinspection PyGlobalVariableRedeclarationInNotebook
-    ProviderBase = _base_mod.ProviderBase  # ty: ignore[conflicting-declarations]
-
-# noinspection PyGlobalVariableRedeclarationInNotebook
-OllamaProvider = _ollama_mod.OllamaProvider
-# noinspection PyGlobalVariableRedeclarationInNotebook
-OpenAIProvider = _openai_mod.OpenAIProvider
-
-
-# ---------------------------------------------------------------------------
-# Dummy providers used by the protocol / factory tests (no network)
-# ---------------------------------------------------------------------------
-
 
 class DummyProvider:
-    """Minimal structural match for the ``LLMProvider`` protocol.
-
-    Used in place of a real provider in protocol conformity tests.
-    The ``name`` and ``complete`` attributes are required by the protocol.
-    ``bind_capabilities`` is not tested here, but required; the dummy
-    implementation just returns self to avoid having to construct a tool
-    calling convention.
-    The ``complete`` method is not called during testing, so the body is
-    empty.  The ``bind_capabilities`` method is called, but the tool calling
-    convention is not tested here; it just returns self.
-
-    Attributes:
-        name: The provider name (required by the protocol).
-        complete: A method that takes a message list and returns a string.
-        bind_capabilities: A method that takes a list of tools and returns
-            a provider with those tools bound into its completion interface.
-    """
+    """Minimal structural match for the ``LLMProvider`` protocol."""
 
     name: str = "dummy"
 
     # ruff: ignore[no-self-use]
     def complete(self, messages: list[dict[str, Any]]) -> str:
-        """Return a canned completion.
-
-        :param messages: A list of message dicts.
-        :return: A canned response string.
-        :raises RuntimeError: Always.
-        """
+        """Return a canned completion."""
         return "dummy response"
 
     def bind_capabilities(self, caps: list[Any]) -> DummyProvider:
-        """Return self (no tool-binding needed).
-
-        :param caps: A list of tool specifications (ignored).
-        :return: Self.
-        """
+        """Return self (no tool-binding needed)."""
         return self
 
 
 class IncompleteProvider:
-    """Provider missing ``complete``; must not satisfy the protocol.
-
-    Used to verify that partial implementations do not accidentally
-    satisfy the protocol.
-
-    Attributes:
-        name: The provider name (required by the protocol).
-        bind_capabilities: A method that takes a list of tools and returns
-            a provider with those tools bound into its completion interface.
-    """
+    """Provider missing ``complete``; must not satisfy the protocol."""
 
     name: str = "incomplete"
 
     def bind_capabilities(self, caps: list[Any]) -> IncompleteProvider:
-        """Return self (no tool-binding needed).
-
-        :param caps: A list of tool specifications (ignored).
-        :return: Self.
-        """
+        """Return self (no tool-binding needed)."""
         return self
 
 
 class EchoProvider(ProviderBase):
-    """Concrete ``ProviderBase`` subclass that only implements ``complete``.
-
-    Used to verify that ``ProviderBase`` concrete subclasses only need to
-    implement ``complete`` to satisfy the abstract base class.
-    The ``name`` attribute is required by the protocol; ``complete`` is
-    abstract and must be implemented; ``bind_capabilities`` is optional and
-    gets a no-op default implementation.
-    The ``name`` attribute is required by the protocol;
-    ``bind_capabilities`` gets the default no-op implementation from
-    ``ProviderBase``; ``complete`` is abstract and must be implemented.
-
-    Attributes:
-        name: The provider name (required by the protocol).
-        complete: A method that takes a message list and returns a string.
-        bind_capabilities: Inherited no-op implementation from ``ProviderBase``.
-        ``complete`` is abstract and must be implemented.
-    """
+    """Concrete ``ProviderBase`` subclass that only implements ``complete``."""
 
     name: str = "echo"
 
     # ruff: ignore[no-self-use]
     def complete(self, messages: list[dict[str, Any]]) -> str:
-        """Return a canned completion.
-
-        :param messages: A list of message dicts.
-        :return: A canned response string.
-        """
+        """Return a canned completion."""
         return "echo"
-
-
-class FakeProvider:
-    """Stand-in provider registered into the factory for dispatch tests.
-
-        The ``name``, ``complete`` and ``bind_capabilities`` attributes are
-        required by the protocol.  The ``__init__`` method stores the config
-        keys so usage can be verified; the ``name`` attribute can be overridden
-        to simulate a provider with a non-default name.  The ``complete`` method
-        is not called during testing, so the body is a simple canned response
-    ```python
-    e ``bind_capabilities`` method just returns self to avoid having to construct
-     a tool calling convention.
-     The ``name`` attribute is required by the protocol;
-     the ``complete`` method is not called during testing, so the body is a simple canned response.
-     The ``bind_capabilities`` method is not called during testing, so the body is a simple canned response.
-
-        Attributes:
-            name: The provider name (required by the protocol).
-            complete: A method that takes a message list and returns a string.
-            bind_capabilities: A method that takes a list of tools and returns
-                a provider with those tools bound into its completion interface.
-            ``complete`` is not called during testing, so the body is a simple canned response.
-    """
-
-    name: str = "fake"
-
-    def __init__(self, **kwargs: Any) -> None:
-        """Store config keys and adopt an optional ``name`` override.
-
-        :param kwargs: Config keyword arguments.
-        :return: None
-        """
-        self.kwargs = kwargs
-        if "name" in kwargs:
-            self.name = kwargs["name"]
-
-    def complete(self, messages: list[dict[str, Any]]) -> str:  # ruff: ignore[no-self-use]
-        """Return a canned completion.
-
-        :param messages: A list of message dicts.
-        :return: A canned response string.
-        """
-        return "fake"
-
-    def bind_capabilities(self, caps: list[Any]) -> FakeProvider:
-        """Return self (no tool-binding needed).
-
-        :param caps: A list of tool specifications (ignored).
-        :return: Self.
-        """
-        return self
-
-
-def _fake_provider_factory(config: dict[str, Any]) -> FakeProvider:
-    """Factory callable used when monkeypatching the provider registry.
-
-
-    :param config: A provider configuration dictionary.
-    :return: A new ``FakeProvider`` instance.
-    """
-    return FakeProvider(name=config.get("name", "fake"))
 
 
 # ---------------------------------------------------------------------------
@@ -325,40 +72,18 @@ def _fake_provider_factory(config: dict[str, Any]) -> FakeProvider:
 
 
 def test_dummy_provider_satisfies_llm_provider_protocol() -> None:
-    """A class with name/complete/bind_capabilities must match the protocol.
-
-    The ``DummyProvider`` implements all required protocol attributes.
-    The ``DummyProvider`` implements all required protocol attributes:
-    ``name``, ``complete`` and ``bind_capabilities``.  The protocol
-    is ``@runtime_checkable``, so ``isinstance`` can be used to verify
-    structural conformity at runtime.
-
-    :return: None
-    """
+    """A class with name/complete/bind_capabilities must match the protocol."""
     assert isinstance(DummyProvider(), LLMProvider)
 
 
 def test_incomplete_provider_does_not_satisfy_protocol() -> None:
-    """A provider missing ``complete`` must not match the protocol.
-
-    The ``IncompleteProvider`` is missing the ``complete`` method, so it
-    must not satisfy the protocol.  ``isinstance`` must return ``False``.
-
-    :return: None
-    """
+    """A provider missing ``complete`` must not match the protocol."""
     assert not isinstance(IncompleteProvider(), LLMProvider)
 
 
 def test_concrete_adapters_satisfy_llm_provider_protocol() -> None:
-    """Both shipped adapters must structurally satisfy the protocol.
-
-    Both ``OllamaProvider`` and ``OpenAIProvider`` are concrete subclasses
-    of ``ProviderBase`` and therefore must satisfy the ``LLMProvider`` protocol.
-
-    :return: None
-    """
-    assert isinstance(OllamaProvider(model="m"), LLMProvider)
-    assert isinstance(OpenAIProvider(model="m", api_key="k"), LLMProvider)
+    """The shipped adapter must structurally satisfy the protocol."""
+    assert isinstance(ModelProvider(model="m", api_key="k"), LLMProvider)
 
 
 # ---------------------------------------------------------------------------
@@ -367,285 +92,173 @@ def test_concrete_adapters_satisfy_llm_provider_protocol() -> None:
 
 
 def test_provider_base_bind_capabilities_returns_self() -> None:
-    """The default bind_capabilities must be a no-op returning self.
-
-    :return: None
-    """
+    """The default bind_capabilities must be a no-op returning self."""
     provider = EchoProvider()
     assert provider.bind_capabilities([object()]) is provider
 
 
 def test_provider_base_requires_complete_implementation() -> None:
-    """``complete`` is abstract; a subclass without it must not instantiate.
-
-    :raise: TypeError if instantiation is attempted.
-    """
+    """``complete`` is abstract; a subclass without it must not instantiate."""
 
     class MissingComplete(ProviderBase):
-        """Subclass that forgets to implement ``complete``.
-
-        The ``name`` attribute is required by the protocol.
-        ``bind_capabilities`` gets the default no-op implementation from
-        ``ProviderBase``.
-        ``complete`` is abstract and must be implemented.
-
-        Attributes:
-            name: The provider name (required by the protocol).
-            bind_capabilities: Inherited no-op implementation from ``ProviderBase``.
-            complete: Abstract method (missing).
-        """
+        """Subclass that forgets to implement ``complete``."""
 
         name: str = "broken"
 
     with pytest.raises(TypeError):
-        MissingComplete()
+        MissingComplete()  # type: ignore[abstract]
 
 
 # ---------------------------------------------------------------------------
-# Factory: provider selection
+# Registry: load_providers
 # ---------------------------------------------------------------------------
 
-
-def test_create_provider_selects_ollama_provider() -> None:
-    """An ``ollama`` config must yield an OllamaProvider (no network).
-
-    The ``provider`` key is case- and whitespace-insensitive.
-
-    :return: None
-    """
-    provider = cast(
-        Any,
-        _factory_mod.create_provider({
-            "provider": "ollama",
-            "model": "gpt-oss:20b-cloud",
-        }),
-    )
-    assert isinstance(provider, OllamaProvider)
-    assert provider.name == "ollama"
-    assert provider.model == "gpt-oss:20b-cloud"
-
-
-def test_create_provider_defaults_to_ollama_when_key_missing() -> None:
-    """A config without a provider key must fall back to the default.
-
-    The ``provider`` key is optional; if absent, the default provider is used.
-    The default provider is ``ollama``.
-
-    :return: None
-    """
-    provider = _factory_mod.create_provider({"model": "gpt-oss:20b-cloud"})
-    assert isinstance(provider, OllamaProvider)
+#: Two arbitrary OpenAI-compatible providers — proves there is no hardcoding.
+SAMPLE_PROVIDERS: dict[str, Any] = {
+    "ollama": {
+        "name": "ollama(Local)",
+        "options": {"baseURL": "http://localhost:11435/v1"},
+        "models": {
+            "qwen3.5:9b": {},
+            "mistral:latest": {
+                "options": {"baseURL": "http://localhost:11436/v1"}
+            },
+        },
+    },
+    "omniroute": {
+        "name": "omniroute",
+        "options": {
+            "baseURL": "http://localhost:20128/v1",
+            "apiKey": "{env:OMNIROUTE_API_KEY}",
+        },
+        "models": {"auto": {}, "best-free": {}},
+    },
+}
 
 
-def test_create_provider_defaults_to_ollama_when_key_is_none() -> None:
-    """A None provider key must also fall back to the default.
-
-    :return: None
-
-    """
-    provider = _factory_mod.create_provider({
-        "provider": None,
-        "model": "gpt-oss:20b-cloud",
-    })
-    assert isinstance(provider, OllamaProvider)
+def test_load_providers_returns_configured_block() -> None:
+    """The raw ``providers`` block from config must pass through untouched."""
+    assert load_providers({"providers": SAMPLE_PROVIDERS}) == SAMPLE_PROVIDERS
 
 
-def test_create_provider_selects_openai_provider() -> None:
-    """An ``openai`` config must yield an OpenAIProvider (no network).
-
-    The ``provider`` key is case- and whitespace-insensitive.
-
-    :return: None
-    """
-    provider = cast(
-        Any,
-        _factory_mod.create_provider({
-            "provider": "openai",
-            "model": "gpt-4o",
-            "api_key": "test-key",
-        }),
-    )
-    assert isinstance(provider, OpenAIProvider)
-    assert provider.name == "openai"
-    assert provider.model == "gpt-4o"
-    assert provider.api_key.get_secret_value() == "test-key"
+def test_load_providers_synthesizes_from_legacy_flat_keys() -> None:
+    """Legacy ollama_*/openai_* configs must synthesize a registry."""
+    cfg = {
+        "ollama_scheme": "http",
+        "ollama_host": "localhost",
+        "ollama_port": 11434,
+        "ollama_model": "gpt-oss:20b",
+        "openai_model": "gpt-4o",
+        "openai_base_url": "https://api.openai.com/v1",
+        "openai_api_key": "k",
+    }
+    providers = load_providers(cfg)
+    assert "ollama" in providers and "omniroute" in providers
+    assert "gpt-oss:20b" in providers["ollama"]["models"]
 
 
-def test_create_provider_openai_forwards_config_options() -> None:
-    """Known config keys must be forwarded to the OpenAI adapter.
-
-    The OpenAI adapter must forward known config keys to the underlying
-    ``openai.OpenAI`` client.
-
-    :return: None
-    """
-    provider = cast(
-        Any,
-        _factory_mod.create_provider({
-            "provider": "openai",
-            "model": "gpt-4o",
-            "api_key": "k",
-            "base_url": "https://example.test/v1",
-            "temperature": 0.5,
-        }),
-    )
-    assert provider.model == "gpt-4o"
-    assert provider.api_key.get_secret_value() == "k"
-    assert provider.base_url == "https://example.test/v1"
-
-
-def test_create_provider_normalizes_provider_name() -> None:
-    """Provider names must be case- and whitespace-insensitive.
-
-    :return: None
-
-    """
-    provider = _factory_mod.create_provider({
-        "provider": "  OLLAMA  ",
-        "model": "m",
-    })
-    assert isinstance(provider, OllamaProvider)
+def test_load_providers_empty_config_yields_empty_registry() -> None:
+    """A config with neither block nor legacy keys yields no providers."""
+    assert load_providers({}) == {}
 
 
 # ---------------------------------------------------------------------------
-# Factory: dispatch against the internal provider registry (monkeypatched)
+# Registry: resolve_model (provider derived FROM the model)
 # ---------------------------------------------------------------------------
 
 
-def test_create_provider_dispatches_to_registered_factory(
+def test_resolve_model_uses_own_provider_options() -> None:
+    """An Ollama model must resolve to its own baseURL — never another's."""
+    resolved = resolve_model("qwen3.5:9b", {"providers": SAMPLE_PROVIDERS})
+    assert resolved["model"] == "qwen3.5:9b"
+    assert resolved["_provider"] == "ollama"
+    assert resolved["base_url"] == "http://localhost:11435/v1"
+    # api_key always present and empty by default (Ollama ignores keys).
+    assert not resolved["api_key"]
+
+
+def test_resolve_model_omniroute_gets_its_url_and_env_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """create_provider must call the registered factory with the config.
+    """A different provider's model resolves to that provider's options."""
+    monkeypatch.setenv("OMNIROUTE_API_KEY", "secret-123")
+    resolved = resolve_model("best-free", {"providers": SAMPLE_PROVIDERS})
+    assert resolved["_provider"] == "omniroute"
+    assert resolved["base_url"] == "http://localhost:20128/v1"
+    assert resolved["api_key"] == "secret-123"
 
 
-    :param monkeypatch: The pytest monkeypatch fixture.
-    :return: None
-    """
-    monkeypatch.setattr(
-        _factory_mod, "_PROVIDER_FACTORIES", {"fake": _fake_provider_factory}
-    )
-    provider = _factory_mod.create_provider({
-        "provider": "fake",
-        "name": "stub",
-    })
-    assert isinstance(provider, FakeProvider)
-    assert provider.name == "stub"
-
-
-def test_create_provider_unknown_lists_registered_providers(
+def test_resolve_model_missing_env_placeholder_becomes_empty_string(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The error must list the providers currently registered.
-
-    :param monkeypatch: The pytest monkeypatch fixture.
-    :return: None
-
-    """
-    monkeypatch.setattr(
-        _factory_mod, "_PROVIDER_FACTORIES", {"fake": _fake_provider_factory}
-    )
-    with pytest.raises(ValueError) as excinfo:
-        _factory_mod.create_provider({"provider": "nope"})
-    assert "fake" in str(excinfo.value)
+    r"""An unset {env:VAR} placeholder expands to an empty string."""
+    monkeypatch.delenv("OMNIROUTE_API_KEY", raising=False)
+    resolved = resolve_model("auto", {"providers": SAMPLE_PROVIDERS})
+    assert not resolved["api_key"]
 
 
-# ---------------------------------------------------------------------------
-# Factory: unknown provider error (real registry)
-# ---------------------------------------------------------------------------
+def test_resolve_model_per_model_options_override_provider() -> None:
+    """Per-model options must win over the provider-level defaults."""
+    resolved = resolve_model("mistral:latest", {"providers": SAMPLE_PROVIDERS})
+    assert resolved["base_url"] == "http://localhost:11436/v1"
 
 
-def test_create_provider_unknown_provider_raises_value_error() -> None:
-    """An unknown provider must raise a ValueError naming the supported set.
+def test_resolve_model_none_returns_first_declared_default() -> None:
+    """Without an explicit id the first declared model is the default."""
+    resolved = resolve_model(None, {"providers": SAMPLE_PROVIDERS})
+    assert resolved["model"] == "qwen3.5:9b"
 
-    :return: None
 
-    """
-    with pytest.raises(ValueError, match="Unknown LLM provider 'unknown'"):
-        _factory_mod.create_provider({"provider": "unknown"})
-    with pytest.raises(ValueError) as excinfo:
-        _factory_mod.create_provider({"provider": "unknown"})
+def test_resolve_model_unknown_id_raises_keyerror_listing_known() -> None:
+    """Unknown ids must raise KeyError naming every known model."""
+    with pytest.raises(KeyError) as excinfo:
+        resolve_model("nope", {"providers": SAMPLE_PROVIDERS})
     message = str(excinfo.value)
-    assert "ollama" in message
-    assert "openai" in message
+    assert "qwen3.5:9b" in message
+    assert "best-free" in message
 
 
 # ---------------------------------------------------------------------------
-# Ollama adapter (mocked client, no network)
+# Registry: build_llm / list_models
 # ---------------------------------------------------------------------------
 
 
-def test_ollama_provider_complete_returns_content() -> None:
-    """``complete`` must return the client response content.
-
-    :return: The response content string.
-
-    """
-    provider = OllamaProvider(model="gpt-oss:20b-cloud")
-    client = MagicMock()
-    client.invoke.return_value = SimpleNamespace(content="hello")
-    provider._client = client
-    messages = [{"role": "user", "content": "hi"}]
-    assert provider.complete(messages) == "hello"
-    client.invoke.assert_called_once_with(messages)
+def test_build_llm_creates_concrete_chat_openai_client() -> None:
+    """build_llm must produce a concrete client at the right base_url."""
+    resolved = resolve_model("qwen3.5:9b", {"providers": SAMPLE_PROVIDERS})
+    llm = build_llm(resolved)
+    # Every OpenAI-compatible backend resolves to ChatOpenAI.
+    assert type(llm).__name__ == "ChatOpenAI"
+    assert str(
+        getattr(llm, "openai_api_base", getattr(llm, "base_url", ""))
+    ).endswith("11435/v1")
 
 
-def test_ollama_provider_complete_wraps_backend_errors() -> None:
-    """Backend failures must surface as a RuntimeError from ``complete``.
-
-    :return: None
-
-    """
-    provider = OllamaProvider(model="gpt-oss:20b-cloud")
-    client = MagicMock()
-    client.invoke.side_effect = RuntimeError("backend down")
-    provider._client = client
-    with pytest.raises(RuntimeError, match="Ollama completion failed"):
-        provider.complete([{"role": "user", "content": "hi"}])
+def test_build_llm_has_no_configurable_fields_proxy() -> None:
+    """build_llm must return a real BaseChatModel, not the lazy proxy."""
+    resolved = resolve_model("auto", {"providers": SAMPLE_PROVIDERS})
+    llm = build_llm(resolved)
+    assert type(llm).__name__ != "_ConfigurableModel"
 
 
-def test_ollama_provider_bind_capabilities_returns_self() -> None:
-    """The Ollama adapter must not rebind capabilities.
-
-    The Ollama adapter is not-capability-aware, so ``bind_capabilities``
-    must be a no-op returning self.
-
-    :return: None
-    """
-    provider = OllamaProvider(model="m")
-    assert provider.bind_capabilities([object()]) is provider
-
-
-def test_ollama_provider_from_config_builds_connection_details() -> None:
-    """from_config must read the ollama_* keys and build the base URL.
-
-    The ``ollama_*`` keys must be read from the config and used to build the
-    base URL for the Ollama client.
-
-
-    :return: None
-    """
-    provider = OllamaProvider.from_config({
-        "model": "m",
-        "ollama_scheme": "https",
-        "ollama_host": "server",
-        "ollama_port": 8080,
-    })
-    assert provider.model == "m"
-    assert provider.base_url == "https://server:8080"
+def test_list_models_lists_every_declared_model() -> None:
+    """list_models must return one entry per declared model."""
+    models = list_models({"providers": SAMPLE_PROVIDERS})
+    ids = {m["model"] for m in models}
+    assert ids == {"qwen3.5:9b", "mistral:latest", "auto", "best-free"}
+    by_model = {m["model"]: m for m in models}
+    assert by_model["qwen3.5:9b"]["provider"] == "ollama"
+    assert by_model["best-free"]["provider"] == "omniroute"
 
 
 # ---------------------------------------------------------------------------
-# OpenAI adapter (mocked client, no network)
+# ModelProvider adapter (mocked client, no network)
 # ---------------------------------------------------------------------------
 
 
-def test_openai_provider_complete_returns_content() -> None:
-    """``complete`` must return the client response content.
-
-    :return: The response content string.
-
-    """
-    provider = OpenAIProvider(model="gpt-4o", api_key="k")
+def test_model_provider_complete_returns_content() -> None:
+    """``complete`` must return the client response content."""
+    provider = ModelProvider(model="gpt-4o", api_key="k")
     client = MagicMock()
     client.invoke.return_value = SimpleNamespace(content="hi there")
     provider._client = client
@@ -654,56 +267,29 @@ def test_openai_provider_complete_returns_content() -> None:
     client.invoke.assert_called_once_with(messages)
 
 
-def test_openai_provider_complete_wraps_backend_errors() -> None:
-    """Backend failures must surface as a RuntimeError from ``complete``.
-
-    :return: None
-
-    """
-    provider = OpenAIProvider(model="gpt-4o", api_key="k")
+def test_model_provider_complete_wraps_backend_errors() -> None:
+    """Backend failures must surface as a RuntimeError from ``complete``."""
+    provider = ModelProvider(model="gpt-4o", api_key="k")
     client = MagicMock()
     client.invoke.side_effect = RuntimeError("backend down")
     provider._client = client
-    with pytest.raises(RuntimeError, match="OpenAI completion failed"):
+    with pytest.raises(RuntimeError, match="Completion failed"):
         provider.complete([{"role": "user", "content": "hi"}])
 
 
-def test_openai_provider_bind_capabilities_returns_self() -> None:
-    """The OpenAI adapter must not rebind capabilities.
-
-    The OpenAI adapter is not-capability-aware, so ``bind_capabilities``
-    must be a no-op returning self.
-
-
-    :return: None
-    """
-    provider = OpenAIProvider(model="m", api_key="k")
+def test_model_provider_bind_capabilities_returns_self() -> None:
+    """The adapter must not rebind capabilities."""
+    provider = ModelProvider(model="m", api_key="k")
     assert provider.bind_capabilities([object()]) is provider
 
 
-def test_openai_provider_explicit_api_key_wins_over_environment(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """An explicit api_key must take precedence over the environment.
-
-    :param monkeypatch: The pytest monkeypatch fixture.
-    :return: None
-
-    """
-    monkeypatch.setenv("OPENAI_API_KEY", "env-key")
-    provider = OpenAIProvider(model="gpt-4o", api_key="explicit")
-    assert provider.api_key.get_secret_value() == "explicit"
+def test_model_provider_defaults_to_empty_api_key() -> None:
+    r"""Missing api_key must default to an empty secret so keyless backends work."""
+    provider = ModelProvider(model="gpt-4o")
+    assert not cast(Any, provider.api_key).get_secret_value()
 
 
-def test_openai_provider_reads_api_key_from_environment(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Without an api_key, OPENAI_API_KEY must be read from the environment.
-
-    :param monkeypatch: The pytest monkeypatch fixture.
-    :return: None
-
-    """
-    monkeypatch.setenv("OPENAI_API_KEY", "env-key")
-    provider = OpenAIProvider(model="gpt-4o")
-    assert provider.api_key.get_secret_value() == "env-key"
+def test_model_provider_explicit_api_key_is_kept() -> None:
+    """An explicitly provided api_key must be stored as-is."""
+    provider = ModelProvider(model="gpt-4o", api_key="explicit")
+    assert cast(Any, provider.api_key).get_secret_value() == "explicit"

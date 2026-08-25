@@ -1,4 +1,4 @@
-"""DeepAgents (LangGraph) based agent construction.
+"""CodeAgents (DeepAgents) (LangGraph) based agent construction.
 
 This module builds on :func:`deepagents.create_deep_agent` and centralizes
 the project-specific wiring that a plain ``create_agent`` call does not
@@ -22,7 +22,7 @@ cover:
   attached automatically (mandatory for HITL pauses to work),
 * optional *harness profiles* (registered under ``provider:model`` keys) tune
   the system prompt, tool descriptions and excluded tools per model.  By
-  default, :func:`build_deep_agent` loads them from the user-editable config
+  default, :func:`build_code_agent` loads them from the user-editable config
   file ``/home/nvidia/code_agent/config/profiles.yaml`` (see
   :data:`~code_agent.profiles.router.DEFAULT_PROFILES_CONFIG`); pass
   ``register_profiles=False`` to launch without them.
@@ -47,12 +47,17 @@ backend/permissions, so they win), avoiding duplicate-tool errors.
 
 from __future__ import annotations
 
-import logging
-
 from collections.abc import Iterable, Mapping, Sequence
+import logging
 from pathlib import Path
 from typing import Any, cast
 
+from code_agent.config.settings import get_settings
+from code_agent.profiles.router import (
+    DEFAULT_PROFILES_CONFIG,
+    register_profiles_from_config_file,
+    register_profiles_from_settings,
+)
 from deepagents import (
     FilesystemPermission,
     HarnessProfile,
@@ -64,26 +69,15 @@ from deepagents.backends.filesystem import FilesystemBackend
 from deepagents.middleware import SummarizationMiddleware
 from langchain.agents.middleware import TodoListMiddleware
 from langchain.agents.middleware.human_in_the_loop import InterruptOnConfig
-from langchain.agents.middleware.summarization import (
-    ContextSize,
-    TriggerClause,
-)
+from langchain.agents.middleware.summarization import ContextSize, TriggerClause
 from langchain.chat_models import BaseChatModel
 from langchain.messages import SystemMessage
 from langchain.tools import BaseTool
 from langchain_core.runnables import Runnable
-from langchain_core.tools import StructuredTool
+from langchain_core.tools import BaseTool, StructuredTool
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
-
-from code_agent.config.settings import get_settings
-from code_agent.profiles.router import (
-    DEFAULT_PROFILES_CONFIG,
-    register_profiles_from_config_file,
-    register_profiles_from_settings,
-)
-
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +85,7 @@ __all__ = [
     "FS_BUILTIN_TOOLS",
     "_resolve_workspace_paths",
     "build_agent",
-    "build_deep_agent",
+    "build_code_agent",
     "create_default_tools",
     "make_backend",
     "make_default_permissions",
@@ -409,7 +403,7 @@ def _resolve_agent_options(
     )
 
 
-def build_deep_agent(
+def build_code_agent(
     llm: BaseChatModel,
     tools: Sequence[BaseTool] | None = None,
     *,
@@ -619,6 +613,14 @@ def build_deep_agent(
         else DEFAULT_BASE_SYSTEM_PROMPT
     )
 
+    # Materialize langchain's lazy _ConfigurableModel proxy (produced when
+    # init_chat_model is called with configurable_fields="any") into a real
+    # BaseChatModel. deepagents' resolve_model does `isinstance(model, BaseChatModel)`
+    # which fails on the proxy, causing a 500 at agent build time. CLI and direct
+    # consumers keep the proxy; only the deepagents path needs the concrete model.
+    if not isinstance(llm, BaseChatModel):
+        llm = llm._model()
+
     return create_deep_agent(
         model=llm,
         tools=tool_list or None,
@@ -649,10 +651,10 @@ def build_agent(
     checkpointer: Any | None = None,
     **kwargs: Any,
 ) -> Runnable:
-    """Build a DeepAgents agent with the given LLM and tools.
+    """Build a CodeAgents agent with the given LLM and tools.
 
     This is the primary agent factory for the project. It wraps
-    :func:`build_deep_agent` with the project's default backend, permissions,
+    :func:`build_code_agent` with the project's default backend, permissions,
     and profile configuration.
 
     :param llm: The language model to use.
@@ -660,10 +662,10 @@ def build_agent(
     :param root_dir: Working directory mounted at ``/workspace/``.
     :param checkpointer: Optional LangGraph checkpointer. When omitted, an
         :class:`InMemorySaver` is created automatically.
-    :param kwargs: Extra keyword arguments forwarded to :func:`build_deep_agent`.
+    :param kwargs: Extra keyword arguments forwarded to :func:`build_code_agent`.
     :return: A compiled LangGraph state graph ready for execution.
     """
-    return build_deep_agent(
+    return build_code_agent(
         llm=llm,
         tools=list(tools),
         root_dir=root_dir,

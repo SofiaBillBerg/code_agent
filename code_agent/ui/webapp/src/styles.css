@@ -631,3 +631,17 @@ button {
     display: inline-block;
     animation: spin 1s linear infinite;
 }
+
+/* Pulsing dot used by the working-status indicator in App.jsx */
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.45;
+        transform: scale(0.85);
+    }
+}
+

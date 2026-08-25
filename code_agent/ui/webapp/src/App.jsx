@@ -1,9 +1,10 @@
-import React, {useEffect, useState, useRef, useCallback} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useCustomStream} from "./useCustomStream.js";
-import ToolCallRow from "./components/ToolCallRow";
+import ToolCallRow, {toolTarget} from "./components/ToolCallRow";
 import TodoList from "./components/TodoList";
 import SubagentCard from "./components/SubagentCard";
 import SubagentProgress from "./components/SubagentProgress";
+import HitlSurface from "./components/HitlSurface";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -25,10 +26,109 @@ function AppContent() {
         respond,
         subagents,
         todos,
+        stopRun,
+        threadId,
+        newChat,
     } = stream;
 
     const [input, setInput] = useState("");
+    const [models, setModels] = useState([]);
+    const [activeModel, setActiveModel] = useState(null);
+    const [switchingModel, setSwitchingModel] = useState(false);
+    const pendingSwitchRef = useRef(null);
     const messagesEndRef = useRef(null);
+
+    // Fetch available models on mount
+    useEffect(() => {
+        async function loadModels() {
+            try {
+                const resp = await fetch(`${AGENT_URL}/models`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    setModels(data.models || []);
+                    // Find currently active model
+                    const active = (data.models || []).find((m) => m.is_active);
+                    if (active) setActiveModel(active);
+                }
+            } catch (e) {
+                console.warn("Failed to load models:", e);
+            }
+        }
+
+        loadModels();
+    }, []);
+
+    // Switch model handler
+    const handleModelChange = useCallback(async (newModel) => {
+        if (!newModel || switchingModel) return;
+        // Optimistically reflect the choice even before a thread exists;
+        // the actual server-side switch happens once a thread is created.
+        setActiveModel(newModel);
+        setModels((prev) =>
+            prev.map((m) => ({...m, is_active: m.model === newModel.model && m.provider === newModel.provider}))
+        );
+        if (!threadId) {
+            console.log("No thread yet; model switch deferred to first message:", newModel.model);
+            pendingSwitchRef.current = newModel;
+            return;
+        }
+        await switchThreadModel(threadId, newModel);
+    }, [threadId, switchingModel, AGENT_URL]);
+
+    // POST the model switch for an existing thread.
+    const switchThreadModel = useCallback(async (tid, newModel) => {
+        if (switchingModel) return;
+        setSwitchingModel(true);
+        try {
+            const resp = await fetch(`${AGENT_URL}/threads/${tid}/model`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    provider: newModel.provider,
+                    model: newModel.model,
+                    base_url: newModel.base_url,
+                }),
+            });
+            if (resp.ok) {
+                const result = await resp.json();
+                console.log("Model switched:", result);
+                pendingSwitchRef.current = null;
+                // The agent rebuilds server-side; client stream continues with new model
+            } else {
+                console.error("Model switch failed:", await resp.text());
+            }
+        } catch (e) {
+            console.error("Model switch error:", e);
+        } finally {
+            setSwitchingModel(false);
+        }
+    }, [switchingModel, AGENT_URL]);
+
+    // A model chosen before/at message time is switched as soon as the thread
+    // exists AND no run is executing — the backend rejects mid-run switches
+    // (409), so wait for idle and retry then.
+    useEffect(() => {
+        if (threadId && !isLoading && pendingSwitchRef.current && !switchingModel) {
+            switchThreadModel(threadId, pendingSwitchRef.current);
+        }
+    }, [threadId, isLoading, switchingModel, switchThreadModel]);
+
+    /**
+     * Run recap card state: shown once when a run transitions from active to
+     * finished so the user gets a one-glance summary of what happened instead
+     * of having to scroll through every individual tool chip.
+     */
+    const [recap, setRecap] = useState(null);
+    const prevLoadingRef = useRef(false);
+    useEffect(() => {
+        if (prevLoadingRef.current && !isLoading && toolCalls.length > 0) {
+            const targets = [
+                ...new Set(toolCalls.map((tc) => toolTarget(tc.input)).filter(Boolean)),
+            ];
+            setRecap({steps: toolCalls.length, files: targets});
+        }
+        prevLoadingRef.current = isLoading;
+    }, [isLoading, toolCalls]);
 
     useEffect(() => {
         console.log("[DEBUG] Stream state changed:", {
@@ -66,14 +166,14 @@ function AppContent() {
         }
     }, [input, isLoading, submit, stream.threadId]);
 
-    const handleApprove = useCallback(async () => {
-        console.log("[DEBUG] handleApprove called");
-        await respond({approved: true});
-    }, [respond]);
-
-    const handleReject = useCallback(async () => {
-        console.log("[DEBUG] handleReject called");
-        await respond({approved: false});
+    /**
+     * Forward a HITL decision from HitlSurface to the backend.
+     * `decision` is either a single decision object ({type: approve|edit|reject})
+     * or an array of decisions (one per parallel action).
+     */
+    const handleDecision = useCallback(async (decision) => {
+        console.log("[DEBUG] HITL decision:", decision);
+        await respond(decision);
     }, [respond]);
 
     const onKeyDown = useCallback(
@@ -95,10 +195,127 @@ function AppContent() {
     const assembledToolCalls = toolCallMap(toolCalls);
     const subagentArray = Array.from((stream.subagents || []).values());
 
+    // Status-indicator state (M2/S2.2): one explicit badge for whether the
+    // model is working, paused for approval, or idle. While working, the
+    // badge names the CURRENT tool + target + step count so the user always
+    // knows what the agent is doing right now.
+    const runningTool = [...toolCalls]
+        .reverse()
+        .find((tc) => tc.status === "running" || tc.status === "pending");
+    let workLabel = "Working\u2026";
+    if (runningTool) {
+        const targetText = toolTarget(runningTool.input);
+        workLabel =
+            `${runningTool.name}` +
+            (targetText ? ` \u2192 ${targetText}` : "") +
+            ` \u00b7 step ${toolCalls.length}`;
+    }
+    const status = interrupt
+        ? {label: "Awaiting your approval", color: "#ff9800", pulse: false}
+        : isLoading
+            ? {label: workLabel, color: "#1976d2", pulse: true}
+            : {label: "Idle", color: "#9e9e9e", pulse: false};
+
     return (
         <div style={{padding: "1rem", maxWidth: "800px", margin: "0 auto"}}>
-            <h1>Code Agent Chat</h1>
-            {stream.threadId && <p>Thread: {stream.threadId}</p>}
+            <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem"}}>
+                <h1 style={{margin: 0}}>Code Agent Chat</h1>
+                <div style={{display: "flex", gap: "1rem", alignItems: "center"}}>
+                    {/* New chat: reset the conversation (fresh thread, empty
+                        history) so degraded context from a previous task never
+                        bleeds into the next one. */}
+                    <button
+                        onClick={() => {
+                            pendingSwitchRef.current = null;
+                            setActiveModel(null);
+                            setRecap(null);
+                            newChat();
+                        }}
+                        disabled={isLoading}
+                        style={{
+                            padding: "0.4rem 0.8rem",
+                            borderRadius: "6px",
+                            border: "1px solid #1976d2",
+                            background: "#e3f2fd",
+                            color: "#1976d2",
+                            cursor: isLoading ? "not-allowed" : "pointer",
+                            fontSize: "0.85rem",
+                        }}
+                    >
+                        + New chat
+                    </button>
+                    {/* Export the current thread as a Markdown transcript. */}
+                    {threadId && (
+                        <a
+                            href={`${AGENT_URL}/threads/${threadId}/export`}
+                            style={{
+                                padding: "0.4rem 0.8rem",
+                                borderRadius: "6px",
+                                border: "1px solid #ccc",
+                                background: "white",
+                                color: "#444",
+                                textDecoration: "none",
+                                fontSize: "0.85rem",
+                            }}
+                        >
+                            ⬇ Export
+                        </a>
+                    )}
+                    {threadId &&
+                        <p style={{margin: 0, fontSize: "0.85rem", color: "#666"}}><code>Thread: {threadId}</code></p>}
+                    {models.length > 0 && (
+                        <select
+                            value={activeModel ? `${activeModel.provider}:${activeModel.model}` : ""}
+                            onChange={(e) => {
+                                // NOTE: model ids may contain ":" (e.g. "qwen3.5:9b"),
+                                // so match on the full composite value, never split(":").
+                                const selected = models.find(
+                                    (m) => `${m.provider}:${m.model}` === e.target.value
+                                );
+                                if (selected) handleModelChange(selected);
+                            }}
+                            disabled={switchingModel || isLoading}
+                            style={{
+                                padding: "0.4rem 0.6rem",
+                                borderRadius: "6px",
+                                border: "1px solid #ccc",
+                                background: "white",
+                                fontSize: "0.85rem",
+                                minWidth: "200px",
+                            }}
+                        >
+                            <option value="">Select model...</option>
+                            {models.map((m) => (
+                                <option key={`${m.provider}:${m.model}`} value={`${m.provider}:${m.model}`}>
+                                    {m.display_name} {m.is_active && "✓"}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    {switchingModel && (
+                        <span style={{fontSize: "0.8rem", color: "#1976d2"}}>
+                            ⟳ Switching...
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Working-status indicator (M2/S2.2) */}
+            <div style={{display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem"}}>
+                <span
+                    style={{
+                        width: "10px",
+                        height: "10px",
+                        borderRadius: "50%",
+                        background: status.color,
+                        animation: status.pulse ? "pulse 1.2s ease-in-out infinite" : "none",
+                    }}
+                />
+                <span style={{fontSize: "0.85rem", color: status.color, fontWeight: 500}}>
+                    {status.label}
+                </span>
+            </div>
+
             {error && <p style={{color: "red"}}>Error: {typeof error === "string" ? error : JSON.stringify(error)}</p>}
 
             <SubagentProgress subagents={subagentArray}/>
@@ -126,7 +343,26 @@ function AppContent() {
                     const role = msg.role || msg.getType?.() || "unknown";
                     const isHuman = role === "human" || role === "user";
                     const isAi = role === "ai" || role === "assistant";
-                    const content = msg.text ?? (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content ?? ""));
+                    let content = msg.text ?? (typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content ?? ""));
+
+                    // Split leaked <think>...</think> reasoning blocks out of the
+                    // visible answer and render them as a collapsed section.
+                    let thinking = "";
+                    if (isAi && content.includes("<think>")) {
+                        const parts = [];
+                        content = content.replace(/<think>([\s\S]*?)<\/think>/g, (_, t) => {
+                            thinking += (thinking ? "\n\n" : "") + t.trim();
+                            return "";
+                        });
+                        // An unterminated <think> (stream cut mid-reasoning).
+                        const openIdx = content.indexOf("<think>");
+                        if (openIdx >= 0) {
+                            thinking += (thinking ? "\n\n" : "") + content.slice(openIdx + 7).trim();
+                            content = content.slice(0, openIdx);
+                        }
+                        parts.push(content);
+                        content = parts.join("").trim();
+                    }
                     const msgToolCalls = isAi ? (msg.tool_calls || msg.toolCalls || []) : [];
 
                     return (
@@ -149,6 +385,18 @@ function AppContent() {
                                 <div style={{fontSize: "0.75rem", color: "#888", marginBottom: "0.2rem"}}>
                                     {isHuman ? "You" : "Agent"}
                                 </div>
+                                {thinking && (
+                                    <details style={{marginBottom: "0.4rem", fontSize: "0.85rem"}}>
+                                        <summary style={{cursor: "pointer", color: "#7b61a8"}}>
+                                            💭 Reasoning
+                                        </summary>
+                                        <pre style={{
+                                            whiteSpace: "pre-wrap",
+                                            color: "#666",
+                                            margin: "0.3rem 0 0"
+                                        }}>{thinking}</pre>
+                                    </details>
+                                )}
                                 <div style={{lineHeight: "1.5"}}>
                                     <ReactMarkdown
                                         remarkPlugins={[remarkGfm]}
@@ -181,6 +429,29 @@ function AppContent() {
                         </div>
                     );
                 })}
+                {/* Root-level tool activity (S2 regression fix): the hook stores
+                    every non-subagent tool execution in `toolCalls`, but until now
+                    only message-attached calls were rendered - so runs that only
+                    called tools looked completely dead in the UI. */}
+                {/* Root-level tool activity, collapsed into a details block so
+                    long runs (50+ steps) don't bury the conversation. Stays
+                    open while the run is active for live visibility. */}
+                {toolCalls.length > 0 && (
+                    <details
+                        open={isLoading}
+                        style={{marginTop: "0.75rem"}}
+                    >
+                        <summary style={{cursor: "pointer", fontSize: "0.85rem", color: "#555"}}>
+                            🔧 Tool activity ({toolCalls.length} step{toolCalls.length === 1 ? "" : "s"})
+                            {isLoading && " ⟳ running…"}
+                        </summary>
+                        <div style={{marginTop: "0.4rem"}}>
+                            {toolCalls.map((tc) => (
+                                <ToolCallRow key={tc.callId} toolCall={tc}/>
+                            ))}
+                        </div>
+                    </details>
+                )}
                 {subagents && subagents.length > 0 && (
                     <div style={{marginTop: "1rem"}}>
                         {subagents.map((sa) => (
@@ -209,25 +480,41 @@ function AppContent() {
                 <div ref={messagesEndRef}/>
             </div>
 
+            {/* Run recap card (Round-4 P3c): one-glance summary of a finished run. */}
+            {recap && (
+                <div
+                    style={{
+                        border: "1px solid #c8e6c9",
+                        background: "#f1f8e9",
+                        borderRadius: "8px",
+                        padding: "0.6rem 0.8rem",
+                        marginBottom: "0.75rem",
+                        fontSize: "0.85rem",
+                    }}
+                >
+                    <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                        <strong>Run finished &mdash; {recap.steps} tool steps</strong>
+                        <button
+                            onClick={() => setRecap(null)}
+                            style={{border: "none", background: "none", cursor: "pointer", fontSize: "1rem"}}
+                            aria-label="Dismiss run summary"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                    {recap.files.length > 0 && (
+                        <div style={{color: "#555", marginTop: "0.25rem"}}>
+                            Files touched: {recap.files.slice(0, 8).join(", ")}
+                            {recap.files.length > 8 ? ` … (+${recap.files.length - 8} more)` : ""}
+                        </div>
+                    )}
+                </div>
+            )}
+
             <TodoList todos={stream.todos || []} onTodoUpdate={() => {
             }}/>
 
-            {interrupt && (
-                <div
-                    style={{
-                        border: "2px solid #ff9800",
-                        borderRadius: "8px",
-                        padding: "1rem",
-                        marginBottom: "1rem",
-                        background: "#fff3e0",
-                    }}
-                >
-                    <h3>Approval Required</h3>
-                    <p>{typeof interrupt === "string" ? interrupt : JSON.stringify(interrupt)}</p>
-                    <button onClick={handleApprove} style={{marginRight: "0.5rem"}}>Approve</button>
-                    <button onClick={handleReject}>Reject</button>
-                </div>
-            )}
+            {interrupt && <HitlSurface pending={interrupt} onDecision={handleDecision}/>}
 
             <div style={{display: "flex", gap: "0.5rem"}}>
                 <input
@@ -253,6 +540,22 @@ function AppContent() {
                 >
                     Send
                 </button>
+                {/* Emergency brake (Round-4 P2): cancels the running agent task. */}
+                {isLoading && !interrupt && (
+                    <button
+                        onClick={stopRun}
+                        style={{
+                            padding: "0.5rem 1rem",
+                            borderRadius: "4px",
+                            border: "none",
+                            background: "#d32f2f",
+                            color: "white",
+                            cursor: "pointer"
+                        }}
+                    >
+                        Stop
+                    </button>
+                )}
             </div>
         </div>
     );

@@ -15,13 +15,17 @@
 #   excluded_middleware:  list[str]    - middleware classes to disable
 #
 # JSON files are also accepted (JSON is a YAML subset).  This file is read by
-# code_agent.agents.deepagents_agent.build_deep_agent by default; pass
+# code_agent.agents.codeagent.build_code_agent by default; pass
 # register_profiles=False to launch without these profiles.
 
 # Example: tune every Ollama model (covers "gpt-oss:20b" whose id has a ":").
 "ollama":
   system_prompt_suffix: "Be concise and prefer minimal, focused diffs. Workspace files are mounted at /workspace (maps to project cwd). Always use /workspace prefix with filesystem tools, e.g., ls(path=\"/workspace\"), read_file(path=\"/workspace/README.md\"), glob(pattern=\"**/*.py\", path=\"/workspace\")."
-  excluded_tools: [ ]
+  # Tool trimming: hide tools from small/local models to save context.
+  # Exact names or glob patterns; matches built-ins AND MCP tools
+  # (MCP tools are named mcp_<server>__<tool>, e.g. "mcp_memory__*").
+  excluded_tools:
+    - "mcp_*"
   tool_description_overrides:
     read_file: "Read a file from the workspace (read-only)."
     edit_file: "Edit a file in the workspace (read-write)."

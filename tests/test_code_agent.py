@@ -28,7 +28,7 @@ from langchain_core.runnables import Runnable
 from langchain_core.utils.uuid import uuid7
 from typer.testing import CliRunner
 
-from code_agent.agents.deepagents_agent import build_agent
+from code_agent.agents.codeagent import build_agent
 from code_agent.cli import app as cli_app
 from code_agent.main import load_config
 
@@ -165,8 +165,3 @@ def test_load_config(tmp_path: Path) -> None:
     # Convert Path to string before passing to load_config
     cfg = load_config(str(cfg_file))
     assert cfg["model"] == "gpt-oss:20b"
-
-
-# ---------------------------------------------------------------------------
-# Tests for persistent agent streaming behavior
-# ---------------------------------------------------------------------------

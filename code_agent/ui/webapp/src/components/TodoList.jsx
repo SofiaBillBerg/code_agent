@@ -71,7 +71,10 @@ function TodoList({todos, onTodoUpdate}) {
                                     }}
                                 >
                   <span style={{fontSize: "0.85rem", color: "#333"}}>
-                    {todo.description || todo.title || `Task ${idx + 1}`}
+                    {/* DeepAgents write_todos items use `content` (not
+                        description/title) - without this check every task
+                        rendered as a generic "Task N" placeholder. */}
+                      {todo.content || todo.description || todo.title || `Task ${idx + 1}`}
                   </span>
                                     <span
                                         style={{

@@ -12,7 +12,7 @@ sources:
 * :func:`register_profiles_from_config_file` - profiles declared in the
   user-editable config file :data:`DEFAULT_PROFILES_CONFIG`
   (``/home/nvidia/code_agent/config/profiles.yaml``), which
-  :func:`code_agent.agents.deepagents_agent.build_deep_agent` calls by default.
+  :func:`code_agent.agents.codeagent.build_code_agent` calls by default.
 
 The router is additive: it only registers profiles that are explicitly
 declared, so it never surprises existing behavior with unexpected defaults.
@@ -27,16 +27,12 @@ profile, matching DeepAgents' own resolution order).
 from __future__ import annotations
 
 import logging
-
 from pathlib import Path
 from typing import Any
 
-import yaml
-
-from deepagents import HarnessProfile, register_harness_profile
-
 from code_agent.config.settings import get_settings
-
+from deepagents import HarnessProfile, register_harness_profile
+import yaml
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +68,34 @@ def _get_effective_profile(key: str) -> HarnessProfile | None:
         )
 
         return _HARNESS_PROFILES.get(key)
+
+
+def _register_with_alias(profile_key: str, profile: HarnessProfile) -> None:
+    """Register a harness profile under its key *and* its wire-provider alias.
+
+    All providers are OpenAI-compatible on the wire, so DeepAgents resolves
+    profiles against ``openai:<model>`` / bare ``openai`` keys — never the
+    logical provider name from ``config/codeagent.jsonc``.  To keep
+    user-facing keys working (e.g. ``ollama`` or ``ollama:mistral:latest``),
+    each registration additionally registers an ``openai``-prefixed alias.
+
+    :param profile_key: User-facing profile key (``provider`` or ``provider:model``).
+    :param profile: The profile to register.
+    """
+    register_harness_profile(profile_key, profile)
+
+    if profile_key.startswith("openai"):
+        return  # already a wire-provider key
+
+    #: Bare logical provider ("ollama") -> bare wire provider ("openai").
+    #: Per-model key ("ollama:mistral:latest") -> "openai:mistral:latest".
+    if ":" in profile_key:
+        model_part = profile_key.split(":", 1)[1]
+        alias = f"openai:{model_part}"
+    else:
+        alias = "openai"
+    register_harness_profile(alias, profile)
+    _registered.setdefault(alias, "config-file")
 
 
 def resolve_profile(key: str) -> HarnessProfile | None:
@@ -135,6 +159,76 @@ def _coerce_profile_entry(raw: Any) -> HarnessProfile | None:
     )
 
 
+def excluded_tools_for_model(model_id: str) -> list[str]:
+    """Return the merged ``excluded_tools`` patterns for a model id.
+
+    Collects ``excluded_tools`` entries from every harness profile that
+    applies to *model_id* — both the bare logical-provider profile (e.g.
+    ``"ollama"``) and any exact ``provider:model`` profile — and supports
+    glob patterns so entire families can be hidden, e.g. ``"mcp_*"`` to drop
+    all MCP tools or ``"mcp_memory__*"``, for one provider only::
+
+        # profiles.yaml
+        "ollama":
+          excluded_tools:
+            - "mcp_*"            # no MCP servers for local models by default
+            - generate_test
+
+    :param model_id: Model identifier as declared in the providers block.
+    :return: List of exclusion patterns (may be empty).
+    """
+    import fnmatch
+
+    from code_agent.providers.registry import resolve_model
+
+    try:
+        provider = resolve_model(model_id).get("_provider", "")
+    except KeyError:
+        return []
+
+    patterns: list[str] = []
+    #: Candidate profile keys: logical provider, exact pairs, wire aliases.
+    candidates = [
+        provider,
+        f"{provider}:{model_id}",
+        "openai",
+        f"openai:{model_id}",
+    ]
+    try:
+        profiles = load_profiles_from_config_file()
+    except Exception:  # ruff: ignore[blind-except] - bad profile file must not kill tool assembly
+        profiles = {}
+    for key, profile in profiles.items():
+        if key in candidates:
+            for pat in getattr(profile, "excluded_tools", None) or []:
+                if pat not in patterns:
+                    patterns.append(pat)
+    _ = fnmatch  # used by callers; kept import-local for clarity
+    return patterns
+
+
+def filter_tools_by_exclusions(tools: list[Any], model_id: str) -> list[Any]:
+    """Filter a tool list by the model's ``excluded_tools`` patterns.
+
+    Matches exact names and glob patterns (``fnmatch``) against each tool's
+    name, e.g. ``mcp_*`` hides every MCP-provided tool.
+
+    :param tools: Tools to filter.
+    :param model_id: Model identifier as declared in the providers block.
+    :return: The filtered tool list (order preserved).
+    """
+    import fnmatch
+
+    patterns = excluded_tools_for_model(model_id)
+    if not patterns:
+        return tools
+
+    def excluded(name: str) -> bool:
+        return any(fnmatch.fnmatchcase(name, pat) for pat in patterns)
+
+    return [t for t in tools if not excluded(getattr(t, "name", ""))]
+
+
 def register_profiles_from_settings() -> None:
     """Register DeepAgents harness profiles declared in settings.
 
@@ -178,7 +272,7 @@ def register_profiles_from_settings() -> None:
         profile = _coerce_profile_entry(entry)
         if profile is None:
             continue
-        register_harness_profile(str(profile_key), profile)
+        _register_with_alias(str(profile_key), profile)
         _registered[str(profile_key)] = "settings"
 
 
@@ -236,5 +330,5 @@ def register_profiles_from_config_file(
     :return: None
     """
     for profile_key, profile in load_profiles_from_config_file(path).items():
-        register_harness_profile(profile_key, profile)
+        _register_with_alias(profile_key, profile)
         _registered[profile_key] = "config-file"

@@ -29,17 +29,25 @@ Security notes:
 from __future__ import annotations
 
 import asyncio
-import logging
-import uuid
-
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 from typing import Any, Literal
+import uuid
 
+from code_agent.agents.codeagent import build_agent, create_default_tools
+from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
+from code_agent.capabilities.registry import CapabilityRegistry
+from code_agent.config.settings import get_settings
+from code_agent.main import create_llm, load_config
+from code_agent.providers.registry import build_llm, resolve_model
+from code_agent.providers.registry import list_models as registry_list_models
+from code_agent.ui.protocol import _sse, translate_resume, translate_stream
+from code_agent.utils.checkpointer import build_checkpointer
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from langchain.chat_models import BaseChatModel
 from langchain.messages import HumanMessage
@@ -48,18 +56,6 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pydantic import BaseModel
-
-from code_agent.agents.deepagents_agent import (
-    build_agent,
-    create_default_tools,
-)
-from code_agent.capabilities.envelope import InvocationRequest, InvokeBody
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.config.settings import get_settings
-from code_agent.main import create_llm, load_config
-from code_agent.ui.protocol import _sse, translate_stream
-from code_agent.utils.checkpointer import build_checkpointer
-
 
 #: Module logger — used for protocol stream error reporting.
 logger = logging.getLogger(__name__)
@@ -195,6 +191,37 @@ class ActiveProviderRequest(BaseModel):
 #: Agent state singleton — None until get_agent() builds it.
 _STATE: AgentState | None = None
 
+#: Per-thread agent cache — allows each thread to use a different model.
+#: Keyed by thread_id, value is the AgentState for that thread's model.
+_THREAD_AGENTS: dict[str, AgentState] = {}
+
+
+def _build_llm_for_model(
+    provider: str,
+    model: str,
+    base_url: str | None,
+    cfg: dict[str, Any],
+) -> BaseChatModel:
+    """Build a concrete BaseChatModel for a given model id.
+
+    Resolution is fully config-driven via the provider registry
+    (:mod:`code_agent.providers.registry`): the *model id* determines its
+    provider, base_url and api_key from the ``providers`` block of
+    ``config/codeagent.jsonc``. The ``provider`` / ``base_url`` arguments
+    are only honored as explicit overrides (kept for API compatibility).
+
+    :param provider: Ignored unless the registry needs a hint; kept for
+        backwards compatibility with the switch-model endpoint.
+    :param model: Model identifier as declared in the providers block.
+    :param base_url: Optional explicit base URL override.
+    :param cfg: Full config dict (for fallback values).
+    :return: A concrete ``BaseChatModel`` instance.
+    """
+    resolved = resolve_model(model, cfg)
+    if base_url:
+        resolved["base_url"] = base_url
+    return build_llm(resolved)
+
 
 def get_registry() -> CapabilityRegistry:
     """Return the shared capability registry, building it lazily on first use.
@@ -290,8 +317,12 @@ async def _reinit_agent(provider: str, model: str) -> None:
             _switching = False
 
 
-def get_agent() -> AgentState:
-    """Return the shared agent state, building it lazily on first use.
+def get_agent(thread_id: str | None = None) -> AgentState:
+    """Return agent state, building it lazily on first use.
+
+    If ``thread_id`` is provided and a per-thread agent exists in
+    ``_THREAD_AGENTS``, that agent is returned (enabling dynamic model
+    selection per thread). Otherwise the shared global agent is built/returned.
 
     The agent is initialized from the same config path the CLI ``serve``
     command uses. The checkpointer is wired up via ``build_checkpointer()``
@@ -299,10 +330,13 @@ def get_agent() -> AgentState:
     available, falling back to InMemorySaver if the checkpoint directory
     is not accessible.
 
+    :param thread_id: Optional thread ID to look up a per-thread agent.
     :return: An :class:`AgentState` instance containing the agent, thread_id,
         and checkpointer.
     """
     global _STATE  # ruff: ignore[global-statement, undefined-export]
+    if thread_id and thread_id in _THREAD_AGENTS:
+        return _THREAD_AGENTS[thread_id]
     if _STATE is None:
         from code_agent.cli import _load_mcp_tools
 
@@ -312,6 +346,14 @@ def get_agent() -> AgentState:
             root_dir=str(Path.cwd()), llm=llm
         )
         tools.extend(_load_mcp_tools(cfg))
+        #: Trim tools per the default model's profile exclusions
+        #: (profiles.yaml ``excluded_tools``, supports globs like mcp_*).
+        from code_agent.profiles.router import filter_tools_by_exclusions
+
+        default_model = resolve_model(cfg.get("default_model") or None, cfg)[
+            "model"
+        ]
+        tools = filter_tools_by_exclusions(tools, default_model)
         checkpointer: InMemorySaver | SqliteSaver | AsyncSqliteSaver = (
             build_checkpointer(
                 checkpoint_dir=get_settings().checkpoint_dir or None
@@ -328,17 +370,20 @@ def get_agent() -> AgentState:
     return _STATE
 
 
-async def get_agent_async() -> AgentState:
+async def get_agent_async(thread_id: str | None = None) -> AgentState:
     """Async version of get_agent for use in async contexts.
 
     This function is identical to get_agent() but uses the async version
     of _load_mcp_tools to avoid "asyncio.run() cannot be called from a
     running event loop" errors in FastAPI endpoints.
 
+    :param thread_id: Optional thread ID to look up a per-thread agent.
     :return: An :class:`AgentState` instance containing the agent, thread_id,
         and checkpointer.
     """
     global _STATE  # ruff: ignore[global-statement, undefined-export]
+    if thread_id and thread_id in _THREAD_AGENTS:
+        return _THREAD_AGENTS[thread_id]
     if _STATE is None:
         from code_agent.cli import _load_mcp_tools_async
 
@@ -348,6 +393,13 @@ async def get_agent_async() -> AgentState:
             root_dir=str(Path.cwd()), llm=llm
         )
         tools.extend(await _load_mcp_tools_async(cfg))
+        #: Trim tools per the default model's profile exclusions.
+        from code_agent.profiles.router import filter_tools_by_exclusions
+
+        default_model = resolve_model(cfg.get("default_model") or None, cfg)[
+            "model"
+        ]
+        tools = filter_tools_by_exclusions(tools, default_model)
         checkpointer: InMemorySaver | SqliteSaver | AsyncSqliteSaver = (
             build_checkpointer(
                 checkpoint_dir=get_settings().checkpoint_dir or None
@@ -1288,6 +1340,10 @@ _protocol_stream_notifiers: dict[str, asyncio.Event] = {}
 _protocol_stream_tasks: dict[str, set[asyncio.Task]] = {}
 #: Maps thread_id → interrupt_id for the currently pending HITL interrupt.
 _pending_interrupt_ids: dict[str, str] = {}
+#: Maps thread_id → the raw ``value`` of the pending input-requested event
+#: (a LangChain HITLRequest or serialized Interrupt) so resume handlers can
+#: pad decision lists to the number of pending interrupts.
+_hitl_payloads: dict[str, Any] = {}
 
 
 def _get_or_create_queue(thread_id: str) -> list[tuple[int, dict[str, Any]]]:
@@ -1319,6 +1375,9 @@ def _push_protocol_event(thread_id: str, event: dict[str, Any]) -> None:
             interrupt_id = data.get("id")
             if interrupt_id:
                 _pending_interrupt_ids[thread_id] = interrupt_id
+            #: Keep the full payload (HITLRequest / Interrupt) so the resume
+            #: path knows how many interrupts need decisions.
+            _hitl_payloads[thread_id] = data.get("value")
 
     notifier.set()
 
@@ -1344,6 +1403,135 @@ def _extract_decision(response: Any) -> str:
             return "approve" if response.get("approved") else "reject"
     # Plain truthy/falsy value
     return "approve" if response else "reject"
+
+
+def _interrupt_action_count(value: Any) -> int:
+    """Best-effort count of interrupts represented by a stored payload.
+
+    LangChain's HITL middleware validates one decision per interrupted tool
+    call, so the resume path needs to know how many decisions the client
+    must supply (or have us pad).
+
+    :param value: Raw ``value`` captured from an ``input-requested`` event.
+    :return: Number of pending interrupts (minimum 1).
+    """
+    if isinstance(value, dict):
+        requests = value.get("action_requests")
+        if isinstance(requests, list) and requests:
+            return len(requests)
+        return 1
+    if isinstance(value, list | tuple) and value:
+        return len(value)
+    return 1
+
+
+def _build_resume_value(
+    response: Any, expected_count: int | None = None
+) -> dict[str, Any]:
+    """Normalise an ``input.respond`` payload into a LangChain HITL response.
+
+    Accepted client shapes:
+
+    * ``{"decisions": [{...}, ...]}`` — passed through verbatim
+    * a single decision object ``{"type": "approve"|"edit"|"reject"|"respond"}``
+    * legacy ``{"approved": bool}``
+    * any plain truthy/falsy value
+
+    When *expected_count* is known and fewer decisions are supplied, the
+    last decision is repeated so the middleware's one-decision-per-interrupt
+    validation passes.
+
+    :param response: Raw ``response`` field from the command params.
+    :param expected_count: Pending-interrupt count from the stored payload.
+    :return: ``{"decisions": [...]}`` ready for ``Command(resume=...)``.
+    """
+    decisions: list[Any] | None = None
+    if isinstance(response, dict):
+        raw = response.get("decisions")
+        if (
+            isinstance(raw, list)
+            and raw
+            and all(isinstance(d, dict) and "type" in d for d in raw)
+        ):
+            decisions = list(raw)
+        elif "type" in response:
+            decisions = [response]
+        elif "approved" in response:
+            decisions = [
+                {"type": "approve"}
+                if response["approved"]
+                else {"type": "reject"}
+            ]
+    if decisions is None:
+        decisions = [{"type": "approve" if response else "reject"}]
+    if expected_count and len(decisions) < expected_count:
+        decisions += [decisions[-1]] * (expected_count - len(decisions))
+    return {"decisions": decisions}
+
+
+async def _register_pending_hitl(thread_id: str) -> None:
+    """Mark *thread_id* as paused-on-interrupt when its latest state says so.
+
+    Probes the agent's checkpointer: a non-empty ``snapshot.next`` means a
+    run is suspended awaiting interrupt resolution.  Registration is what
+    makes ``input.respond`` willing to spawn a resume task.
+
+    :param thread_id: Thread whose latest checkpoint should be inspected.
+    :return: None
+    """
+    try:
+        state = await get_agent_async()
+        snapshot = await state.agent.aget_state({
+            "configurable": {"thread_id": thread_id}
+        })
+    except Exception as exc:  # pragma: no cover - defensive probe
+        logger.warning("HITL state probe failed for %s: %s", thread_id, exc)
+        return
+    if getattr(snapshot, "next", None) and thread_id not in _pending_hitl:
+        _pending_hitl[thread_id] = asyncio.Event()
+
+
+async def _resume_run(thread_id: str, resume_value: dict[str, Any]) -> None:
+    """Resume a paused run and stream continuation events into its queue.
+
+    Mirrors the ``run.start`` background task but feeds the human decision
+    back through :func:`translate_resume` (LangGraph ``Command(resume=...)``
+    on the same checkpointer thread).
+
+    :param thread_id: Thread whose run is paused on an interrupt.
+    :param resume_value: Normalised HITL decisions payload.
+    :return: None
+    """
+    try:
+        print(f"[DEBUG] Resuming thread {thread_id} with {resume_value}")
+        state = await get_agent_async()
+        async for event in translate_resume(
+            state.agent, resume_value, thread_id
+        ):
+            _evt_data = event.get("params", {}).get("data", {})
+            print(
+                f"[DEBUG] Resume event: {event.get('method')} "
+                f"{_evt_data.get('event', '')}"
+            )
+            _push_protocol_event(thread_id, event)
+        # The continuation may itself pause again on another interrupt —
+        # re-register so a follow-up input.respond keeps working.
+        await _register_pending_hitl(thread_id)
+        print(f"[DEBUG] Resume stream completed for thread {thread_id}")
+    except asyncio.CancelledError:
+        print(f"[DEBUG] Resume cancelled for thread {thread_id}")
+    except Exception as exc:
+        logger.exception("Resume failed for thread %s: %s", thread_id, exc)
+        _push_protocol_event(
+            thread_id,
+            {
+                "method": "lifecycle",
+                "params": {
+                    "namespace": [],
+                    "data": {"event": "failed", "error": str(exc)},
+                },
+            },
+        )
 
 
 class ProtocolCommand(BaseModel):
@@ -1453,29 +1641,77 @@ async def thread_commands(
         if not text:
             return _ok()
 
-        state = await get_agent_async()
+        state = await get_agent_async(thread_id or None)
         effective_thread = thread_id or state.thread_id
+
+        #: Concurrency guard: one run per thread at a time. Overlapping runs
+        #: interleave on the same checkpointer thread and each emits its own
+        #: terminal frame — the first one flips the UI to Idle while the
+        #: other generation keeps running orphaned in the backend.
+        existing = _thread_tasks.get(effective_thread)
+        if existing is not None and not existing.done():
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "A run is already active on this thread. Wait for it to "
+                    "finish or cancel it before sending a new message."
+                ),
+            )
 
         async def _run():
             try:
                 print(
                     f"[DEBUG] Starting stream for thread {effective_thread}, text: {text[:50]}"
                 )
+                #: Collapse per-token spam: content-block-delta frames are
+                #: counted and reported as one summary line instead of one
+                #: print each, so meaningful lifecycle/tool events stay
+                #: visible in the console.
+                delta_count = 0
                 async for event in translate_stream(
                     state.agent, text, effective_thread
                 ):
+                    evt_method = event.get("method", "")
                     _evt_data = event.get("params", {}).get("data", {})
-                    print(
-                        f"[DEBUG] Pushing event: {event.get('method')} "
-                        f"{_evt_data.get('event', '')}"
-                        + (
-                            f" | error: {_evt_data.get('error')}"
-                            if _evt_data.get("error")
-                            else ""
+                    if evt_method == "messages" and _evt_data.get("event") in (
+                        "content-block-delta",
+                        "message-start",
+                        "message-finish",
+                    ):
+                        # Always pushed to the SSE queue — only the console
+                        # print is suppressed for per-token deltas.
+                        _push_protocol_event(effective_thread, event)
+                        if _evt_data.get("event") == "content-block-delta":
+                            delta_count += 1
+                            continue  # no print per token
+                        print(
+                            f"[DEBUG] Pushing event: messages "
+                            f"{_evt_data.get('event')}"
                         )
-                    )
+                    else:
+                        print(
+                            f"[DEBUG] Pushing event: {evt_method} "
+                            f"{_evt_data.get('event', '')}"
+                            + (
+                                f" | error: {_evt_data.get('error')}"
+                                if _evt_data.get("error")
+                                else ""
+                            )
+                        )
                     _push_protocol_event(effective_thread, event)
-                print(f"[DEBUG] Stream completed for thread {effective_thread}")
+                if delta_count:
+                    print(
+                        f"[DEBUG] ({delta_count} streaming deltas suppressed)"
+                    )
+                print(
+                    f"[DEBUG] TERMINAL: stream loop ended for thread "
+                    f"{effective_thread} — if Ollama is still busy after this "
+                    f"line, something ended the graph early."
+                )
+                #: If the run paused on an HITL interrupt, register it so a
+                #: later input.respond can resume this same checkpointer
+                #: thread instead of dead-ending.
+                await _register_pending_hitl(effective_thread)
             except asyncio.CancelledError:
                 print(f"[DEBUG] Stream cancelled for thread {effective_thread}")
             except Exception as exc:
@@ -1512,28 +1748,30 @@ async def thread_commands(
             if expected_id and expected_id != interrupt_id:
                 return {"status": "error", "error": "interrupt_id mismatch"}
 
-        ev = _pending_hitl.get(thread_id)
-        if ev is None:
-            state = await get_agent_async()
-            checkpointer = getattr(state.agent, "checkpointer", None)
-            if checkpointer:
-                try:
-                    config = {"configurable": {"thread_id": thread_id}}
-                    state_data = await checkpointer.aget(config)
-                    if state_data and "__interrupt__" in state_data:
-                        ev = asyncio.Event()
-                        _pending_hitl[thread_id] = ev
-                        _hitl_decisions[thread_id] = _extract_decision(response)
-                        ev.set()
-                        return _ok()
-                except Exception as e:
-                    logger.exception(
-                        f"Error occurred while fetching interrupt decision: {e}"
-                    )
-            return _ok()
+        # Resume is only meaningful when the thread actually sits on an
+        # interrupt; fall back to probing the checkpointer when the
+        # post-stream registration was missed (e.g. restart between pause
+        # and respond).
+        if thread_id not in _pending_hitl:
+            await _register_pending_hitl(thread_id)
+        if thread_id not in _pending_hitl:
+            return {"status": "error", "error": "no pending interrupt"}
 
-        _hitl_decisions[thread_id] = _extract_decision(response)
-        ev.set()
+        # Build the LangChain HITL payload and let a background task drive
+        # Command(resume=...) through the same protocol translation used by
+        # run.start so the UI keeps receiving normal stream events.
+        payload_value = _hitl_payloads.get(thread_id)
+        resume_value = _build_resume_value(
+            response, _interrupt_action_count(payload_value)
+        )
+        task = asyncio.create_task(_resume_run(thread_id, resume_value))
+        _thread_tasks[thread_id] = task
+
+        # The decision has been consumed — clear per-thread bookkeeping so
+        # stale ids can't validate a second response.
+        _pending_hitl.pop(thread_id, None)
+        _hitl_payloads.pop(thread_id, None)
+        _pending_interrupt_ids.pop(thread_id, None)
         return _ok()
 
     elif method == "run.stop":
@@ -1948,6 +2186,205 @@ async def thread_state(thread_id: str) -> dict[str, Any]:
         return {"values": {}, "next": [], "tasks": []}
 
 
+@app.get("/models")
+def list_models_endpoint() -> dict[str, Any]:
+    """Return available models for the dynamic model selector.
+
+    Lists every model declared in the ``providers`` block of
+    ``config/codeagent.jsonc`` via the provider registry. The frontend uses
+    this to populate the model selector dropdown; each entry carries its
+    resolved provider and base_url so selection needs no extra logic.
+
+    :return: ``{"models": [{"provider", "model", "base_url", "display_name", "is_active"}]}
+    """
+    cfg = load_config()
+    models = registry_list_models(cfg)
+    #: The startup default (explicit or first declared) is marked active so
+    #: the dropdown can highlight it before any per-thread switch happens.
+    try:
+        default = resolve_model(cfg.get("default_model") or None, cfg)
+        default_id = default["model"]
+    except KeyError:
+        default_id = None
+    for entry in models:
+        entry["is_active"] = entry["model"] == default_id
+    return {"models": models}
+
+
+class SwitchModelRequest(BaseModel):
+    """Body for switching a thread's model."""
+
+    provider: str
+    model: str
+    base_url: str | None = None
+
+
+@app.get("/threads/{thread_id}/export")
+async def export_thread(thread_id: str, format: str = "md") -> Any:
+    """Export a thread's conversation as a downloadable file.
+
+    Currently supports ``format=md`` (Markdown transcript with roles,
+    tool calls summarized, and the final todo list). The frontend offers
+    this as a "Export chat" action.
+
+    :param thread_id: The thread to export.
+    :param format: Export format; only ``md`` is supported.
+    :return: Plain-text/markdown response with Content-Disposition header.
+    """
+    if format != "md":
+        raise HTTPException(status_code=400, detail="Unsupported format")
+
+    state = await get_agent_async()
+    checkpointer = getattr(state.agent, "checkpointer", None)
+    lines: list[str] = [f"# CodeAgent chat export — `{thread_id}`", ""]
+
+    if checkpointer is not None:
+        try:
+            config = {"configurable": {"thread_id": thread_id}}
+            data = await checkpointer.aget(config)
+            messages = (data or {}).get("messages", [])
+            todos = (data or {}).get("todos", [])
+
+            for msg in messages:
+                mtype = getattr(msg, "type", "")
+                content = getattr(msg, "content", "")
+                if isinstance(content, list):
+                    content = "\n".join(
+                        b.get("text", "") if isinstance(b, dict) else str(b)
+                        for b in content
+                    )
+                content = (content or "").strip()
+                if mtype == "tool":
+                    name = getattr(msg, "name", "tool")
+                    lines.append(f"**🔧 {name}**")
+                    lines.append("")
+                    lines.append("```")
+                    lines.append(content[:500])
+                    lines.append("```")
+                elif mtype == "human":
+                    lines.append(f"**You:**\n\n{content}")
+                elif mtype == "ai":
+                    # Summarize any tool calls attached to the AI turn.
+                    calls = getattr(msg, "tool_calls", None) or []
+                    for tc in calls:
+                        args = tc.get("args", {})
+                        target = (
+                            args.get("file_path")
+                            or args.get("path")
+                            or args.get("pattern")
+                            or ""
+                        )
+                        lines.append(f"*→ {tc.get('name', 'tool')} {target}*")
+                    if content:
+                        lines.append(f"**Agent:**\n\n{content}")
+                else:
+                    lines.append(f"**{mtype}:** {content}")
+                lines.append("")
+
+            if todos:
+                lines.append("## Todo list at end of run")
+                lines.append("")
+                for t in todos:
+                    mark = "x" if t.get("status") == "completed" else " "
+                    lines.append(f"- [{mark}] {t.get('content', '')}")
+        except Exception as e:
+            logger.exception("Error exporting thread %s: %s", thread_id, e)
+            lines.append("*[export error — partial transcript above]*")
+    else:
+        lines.append("*[no checkpointer — nothing to export]*")
+
+    body = "\n".join(lines)
+    return Response(
+        content=body,
+        media_type="text/markdown; charset=utf-8",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="codeagent-chat-{thread_id[:8]}.md"'
+            )
+        },
+    )
+
+
+@app.post("/threads/{thread_id}/model")
+async def switch_thread_model(
+    thread_id: str, body: SwitchModelRequest
+) -> dict[str, Any]:
+    """Switch the model for a given thread.
+
+    Rebuilds the agent with the new model while keeping the same thread_id
+    and checkpointer, so conversation memory is preserved across switches.
+
+    :param thread_id: The thread whose model to switch.
+    :param body: The new model specification.
+    :return: Success dict with the active model info.
+    :raises HTTPException: 409 if the thread has a run currently executing —
+        switching models mid-run rebuilds the agent and orphans the running
+        generation (UI goes Idle while the model keeps working).
+    """
+    from code_agent.agents.codeagent import build_agent
+
+    #: Guard: never rebuild an agent whose run is still executing.
+    if thread_id in _thread_tasks and not _thread_tasks[thread_id].done():
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Cannot switch model while a run is active on this thread. "
+                "Wait for it to finish or cancel the run first."
+            ),
+        )
+
+    cfg = load_config()
+    provider = body.provider
+    model = body.model
+    base_url = body.base_url
+
+    # Build the new LLM (concrete instance, not proxy)
+    llm = _build_llm_for_model(provider, model, base_url, cfg)
+
+    # Build tools (same as get_agent)
+    from code_agent.cli import _load_mcp_tools_async
+
+    tools = create_default_tools(root_dir=str(Path.cwd()), llm=llm)
+    tools.extend(await _load_mcp_tools_async(cfg))
+    #: Trim tools per the newly selected model's profile exclusions so a
+    #: thread switching to a small local model loses the heavy toolkit
+    #: (e.g. all MCP servers) without a server restart.
+    from code_agent.profiles.router import filter_tools_by_exclusions
+
+    tools = filter_tools_by_exclusions(tools, model)
+
+    # Reuse existing checkpointer if present, otherwise build new one
+    existing = _THREAD_AGENTS.get(thread_id)
+    if existing:
+        checkpointer = existing.checkpointer
+    elif _STATE:
+        checkpointer = _STATE.checkpointer
+    else:
+        checkpointer = build_checkpointer(
+            checkpoint_dir=get_settings().checkpoint_dir or None
+        )
+
+    # Build new agent
+    agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
+
+    # Store per-thread agent
+    _THREAD_AGENTS[thread_id] = AgentState(
+        agent=agent,
+        thread_id=thread_id,
+        checkpointer=checkpointer,
+        provider=provider,
+        model=model,
+    )
+
+    return {
+        "status": "success",
+        "thread_id": thread_id,
+        "provider": provider,
+        "model": model,
+        "message": f"Switched to {provider}:{model}",
+    }
+
+
 @app.get("/capabilities")
 def list_capabilities() -> list[dict[str, Any]]:
     """Return metadata for every registered capability.
@@ -1958,6 +2395,7 @@ def list_capabilities() -> list[dict[str, Any]]:
     return get_registry().discover()
 
 
+@app.post("/invoke")
 @app.post("/invoke")
 def invoke_capability(body: InvokeBody) -> dict[str, Any]:
     """Dispatch an invocation and return the response plus audit receipt.

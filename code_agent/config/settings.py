@@ -28,23 +28,21 @@ reads the same values from the ``model_dump()`` dict using the ``ollama_*`` /
 
 from __future__ import annotations
 
+from functools import lru_cache
+import json
 import logging
 import os
-import re
-
-from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+import re
+from typing import TYPE_CHECKING, Any, get_args, get_origin
 
+from code_agent.config.jsonc import loads as jsonc_loads
 from dotenv import dotenv_values
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
 from pydantic_settings.sources.providers.json import JsonConfigSettingsSource
 from pydantic_settings.sources.providers.yaml import YamlConfigSettingsSource
-
-from code_agent.config.jsonc import loads as jsonc_loads
-
 
 #: Matches ``${env:VAR}`` or ``${VAR}`` placeholders for env substitution.
 _ENV_PLACEHOLDER_RE = re.compile(r"\$\{(?:env:)?([A-Za-z_][A-Za-z0-9_]*)\}")
@@ -171,6 +169,26 @@ EXTERNAL MCP TOOLS (security policy):
 """
 
 
+def _annotation_is_complex(annotation: Any) -> bool:
+    """Return True when *annotation* is (or unions in) a ``list``/``dict`` type.
+
+    Used to decide whether a raw config-file string value should be
+    JSON-decoded before validation, matching how environment variables are
+    handled for complex-typed fields.
+
+    :param annotation: Typing annotation taken from a Settings model field.
+    :return: True when the annotation includes a list/dict collection type.
+    """
+    origin = get_origin(annotation)
+    if origin in (list, dict):
+        return True
+    if origin is not None:  # Union / Optional wrapper
+        return any(
+            get_origin(arg) in (list, dict) for arg in get_args(annotation)
+        )
+    return False
+
+
 class JsoncConfigSettingsSource(JsonConfigSettingsSource):
     """JSONC-aware variant of pydantic-settings ``JsonConfigSettingsSource``.
 
@@ -182,7 +200,43 @@ class JsoncConfigSettingsSource(JsonConfigSettingsSource):
     def _read_file(self, file_path: Path | Traversable) -> dict[str, Any]:
         with file_path.open(encoding=self.json_file_encoding) as jsonc_file:
             raw = jsonc_loads(jsonc_file.read())
-        return _expand_env_vars(raw, _load_substitution_env())
+        expanded = _expand_env_vars(raw, _load_substitution_env())
+        # pydantic-settings file sources only match plain field names, so
+        # ``CODE_AGENT_*``-style keys in the JSONC file would otherwise sit
+        # in ``extra`` and never populate their typed fields (unlike env
+        # vars, which honor ``env_prefix``).  Add de-prefixed, lowercased
+        # mirrors of every prefixed key that corresponds to a declared
+        # field, so config-file entries behave exactly like their env-var
+        # counterparts.  Original keys are preserved for ``extra="allow"``.
+        mirrored: dict[str, Any] = {}
+        # ``settings_cls`` is not uniformly exposed across pydantic-settings
+        # versions, so fall back to this module's Settings model.
+        settings_cls = getattr(self, "settings_cls", None)
+        model_fields = (
+            settings_cls.model_fields
+            if settings_cls is not None
+            else Settings.model_fields
+        )
+        for key, value in expanded.items():
+            if isinstance(key, str) and key.upper().startswith("CODE_AGENT_"):
+                norm_key = key[len("CODE_AGENT_") :].lower()
+                field = model_fields.get(norm_key)
+                if field is None:
+                    continue  # unknown key: stays reachable via extras only
+                if (
+                    isinstance(value, str)
+                    and value.strip()[:1] in "[{"
+                    and _annotation_is_complex(field.annotation)
+                ):
+                    # Env vars get JSON-decoded for list/dict-typed fields;
+                    # file sources hand raw strings over, so decode here to
+                    # keep config-file entries on par with env variables.
+                    try:
+                        value = json.loads(value)
+                    except ValueError:
+                        pass  # leave as-is; pydantic reports the real error
+                mirrored[norm_key] = value
+        return {**expanded, **mirrored}
 
 
 class EnvExpandingYamlConfigSettingsSource(YamlConfigSettingsSource):
@@ -329,6 +383,20 @@ class Settings(BaseSettings):
     #:   CODE_AGENT_PROVIDER_LIST='[{"name":"ollama","model":"gpt-oss:20b"}]'
     provider_list: list[dict] | None = None
 
+    #: --- Provider/model registry (preferred configuration) ------------------
+    #: Declared directly in ``config/codeagent.jsonc`` as a ``providers``
+    #: block. Each provider carries connection ``options`` (baseURL,
+    #: apiKey, ...) and a ``models`` map. The provider is derived from the
+    #: selected model id — see
+    #: :mod:`code_agent.providers.registry`. Legacy ``ollama_*`` /
+    #: ``openai_*`` fields are only used as a fallback when this block is
+    #: absent and are deprecated.
+    providers: dict[str, Any] | None = None
+
+    #: Default model id (must be declared under a provider's ``models`` map).
+    #: When empty, the first declared model is used.
+    default_model: str = ""
+
     #: --- MCP integration --------------------------------------------------
     #: JSON-encoded list of MCP server configs, or a path to a JSON file
     #: containing that list. Each entry needs at least ``type``
@@ -355,7 +423,7 @@ class Settings(BaseSettings):
     #: Skill source paths (bare paths or ``(path, label)`` tuples) loaded
     #: progressively by the harness from ``SKILL.md`` files.  Paths are
     #: translated to workspace-virtual form by
-    #: :func:`code_agent.agents.deepagents_agent._resolve_workspace_paths`;
+    #: :func:`code_agent.agents.codeagent._resolve_workspace_paths`;
     #: they must live under the mounted workspace.  Maps to
     #: ``CODE_AGENT_SKILLS`` (JSON array of strings or ``[path, label]``
     #: pairs).

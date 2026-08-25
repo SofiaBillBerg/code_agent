@@ -92,19 +92,13 @@ format:
     tbl-cap-location: top
     subtitle: "Documentation for The code_agent - an interactive, locally maintained LLM-powered assistant"
     description: "The code_agent is a local, LLM-driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
-  pdf:
-    latex-output-dir: pdf_docs
-    pdf-engine: lualatex
-    toc: true
-    number-sections: true
-    colorlinks: true
-fig-env: figure
-cache: true
-includesource: true
-wrap: auto
-touch: true
-search: false
-fig-responsive: true
+    fig-env: figure
+    cache: true
+    includesource: true
+    wrap: auto
+    touch: true
+    search: false
+    fig-responsive: true
 resources:
   - docs/
   - LICENSE
@@ -113,3 +107,19 @@ resources:
 filters:
   - include-code-files
   - inline-svg
+extensions:
+  badge:
+    - key: CodeAgent
+      colour: orchid
+      icon: chat-right-quote-fill
+    - key: experimental
+      colour: lime
+      icon: flask
+    - key: deprecated
+      colour: gray
+      icon: archive-fill
+    - key: docs
+      colour: rebeccapurple
+      href: docs/README.qmd
+      icon: icon
+      target: _self

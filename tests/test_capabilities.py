@@ -40,8 +40,14 @@ from code_agent.capabilities.tool_adapter import ToolResult, tool_to_capability
 # which need ``langchain_ollama`` and ``langchain_openai``; stand in for
 # them too when they are missing.
 for _module_name, _attr in (
-    ("langchain_ollama", "ChatOllama"),
-    ("langchain_openai", "ChatOpenAI"),
+    (
+        "langchain_ollama",
+        "ChatOllama",
+    ),  # TODO remove, use langchain directly and init_chat_model
+    (
+        "langchain_openai",
+        "ChatOpenAI",
+    ),  # TODO remove, use langchain directly and init_chat_model
 ):
     try:
         importlib.import_module(_module_name)
