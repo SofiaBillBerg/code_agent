@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ._io import _normalize_target
-
 from langchain.tools import tool
 from pydantic import BaseModel, Field
+
+from code_agent.tools._io import _normalize_target
+
 
 class ReadFileArgs(BaseModel):
     """Arguments for reading a file.

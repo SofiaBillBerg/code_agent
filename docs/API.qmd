@@ -9,7 +9,8 @@ format: html
 CodeAgent API is documented with pydoctor. The full API reference is available
 at [apidocs](../apidocs/apidocs-help.html).
 
-![Agent overview](../docs/visualizations/svg/packages_code_agent.svg)
+![CodeAgent overview](../docs/visualizations/svg/packages_code_agent.svg)
+
 
 ## Tools API
 
@@ -30,7 +31,7 @@ see [CLI API](../apidocs/code_agent.cli.html).
 
 ## Agent API
 
-The `code_agent.agent` module provides the core functionality of the code agent, including the agent's decision-making
+The `code_agent.agents` module provides the core functionality of the code agent, including the agent's decision-making
 logic, tool management, and interaction with the LLM. To read more about code_agent.agent,
 see [Agent API](../apidocs/code_agent.agents.html).
 
@@ -49,6 +50,9 @@ code_agent.providers, see [Providers API](../apidocs/code_agent.providers.html).
 The `code_agent.capabilities` module provides a set of capabilities that can be used by the code agent to perform
 various tasks. These capabilities include code generation, code editing, code analysis, and more. To read more about
 code_agent.capabilities, see [Capabilities API](../apidocs/code_agent.capabilities.html).
+
+![Capabilities diagram](../docs/visualizations/svg/packages_code_agent.capabilities.svg)
+
 
 ## Configuration API
 

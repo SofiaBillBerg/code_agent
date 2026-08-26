@@ -16,6 +16,8 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import MagicMock
 
+import pytest
+
 from code_agent.providers.base import LLMProvider, ProviderBase
 from code_agent.providers.provider import ModelProvider
 from code_agent.providers.registry import (
@@ -24,11 +26,12 @@ from code_agent.providers.registry import (
     load_providers,
     resolve_model,
 )
-import pytest
+
 
 # ---------------------------------------------------------------------------
 # Dummy providers used by the protocol tests (no network)
 # ---------------------------------------------------------------------------
+
 
 class DummyProvider:
     """Minimal structural match for the ``LLMProvider`` protocol."""
