@@ -1,10 +1,10 @@
 ---
-title: "Code Agent"
+title: "Berg Agents"
 author: "Sofia Billger Bergström"
 format: html
 ---
 
-> CodeAgent A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
+> Berg Agents A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
 
 ## Quick Start
 
@@ -47,7 +47,7 @@ See [docs/CONFIGURATION.qmd](docs/CONFIGURATION.qmd) for the full reference.
 
 # Production (FastAPI serves both API + static UI on same origin):
 
-`python -m code_agent serve --web --web-port 8001
+`python -m berg_agents serve --web --web-port 8001
 `
 
 # → Open http://127.0.0.1:8001
@@ -68,9 +68,9 @@ See [docs/CONFIGURATION.qmd](docs/CONFIGURATION.qmd) for the full reference.
 
 ## Class & Package Diagrams
 
-![Diagram for code_agent](docs/visualizations/svg/packages_code_agent.svg)
+![Diagram for berg_agents](docs/visualizations/svg/packages_berg_agents.svg)
 
-![Core components](docs/visualizations/svg/packages_code_agent.core.svg)
+![Core components](docs/visualizations/svg/packages_berg_agents.core.svg)
 
 ## Documentation
 

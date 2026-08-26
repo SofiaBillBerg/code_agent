@@ -1,5 +1,5 @@
 ---
-title: "Contributing to Code Agent"
+title: "Contributing to Berg Agents"
 author: "Sofia Billger Bergström"
 format: html
 ---
@@ -13,8 +13,8 @@ documentation, your help is appreciated. Please read the following guidelines to
 
 1. **Fork and Clone**: Fork the repository on GitHub, then clone your fork locally.
    ```bash
-   git clone https://github.com/your-username/code_agent.git
-   cd code_agent
+   git clone https://github.com/your-username/berg_agents.git
+   cd berg_agents
    ```
 
 2. **Create a Virtual Environment**: We recommend using `uv` to create and manage your virtual environment.
@@ -51,7 +51,7 @@ The project uses `pytest` for testing.
   ```
 - **Run tests with coverage**:
   ```bash
-  pytest --cov=code_agent
+  pytest --cov=berg_agents
   ```
 
 Please add tests for any new features or bug fixes to ensure that the codebase remains stable and reliable.
@@ -68,7 +68,7 @@ Please add tests for any new features or bug fixes to ensure that the codebase r
    ```bash
    git push origin my-new-feature
    ```
-5. Open a Pull Request from your fork to the main `code_agent` repository.
+5. Open a Pull Request from your fork to the main `../berg_agents` repository.
 6. In the PR description, please explain the changes you have made and reference any related issues.
 7. Ensure that all automated CI checks pass on your PR.
 

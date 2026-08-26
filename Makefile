@@ -17,17 +17,13 @@ test:
 	@echo "Running tests..."
 	$(VENV_ACTIVATE); $(PY) -m pytest -q
 
-scaffold:
-	@echo "Creating project scaffold..."
-	$(VENV_ACTIVATE); $(PY) -m code_agent.cli scaffold $(ROOT) --name=$(NAME)
-
 cli:
-	@echo "Running code_agent CLI command: $(ARGS)..."
-	$(VENV_ACTIVATE); $(PY) -m code_agent.cli $(ARGS)
+	@echo "Running berg_agents CLI command: $(ARGS)..."
+	$(VENV_ACTIVATE); $(PY) -m berg_agents.cli $(ARGS)
 
 run:
-	@echo "Starting interactive code_agent..."
-	$(VENV_ACTIVATE); $(PY) -m code_agent.cli chat
+	@echo "Starting interactive berg_agents..."
+	$(VENV_ACTIVATE); $(PY) -m berg_agents.cli chat
 
 docs:
 	@echo "Building Quarto documentation..."

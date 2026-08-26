@@ -1,11 +1,11 @@
-"""Tests for the Code Agent UI layer (``code_agent.ui``).
+"""Tests for the Berg Agents UI layer (``berg_agents.ui``).
 
-Covers the rich terminal renderer (:mod:`code_agent.ui.cli_ui`) and the
-FastAPI web UI (:mod:`code_agent.ui.web`).
+Covers the rich terminal renderer (:mod:`berg_agents.ui.cli_ui`) and the
+FastAPI web UI (:mod:`berg_agents.ui.web`).
 
 The renderer tests build a small in-memory :class:`CapabilityRegistry` with
 dummy capabilities so no network or real LLM provider is required. The web
-test monkeypatches ``get_registry`` to return the same kind of isolated
+test monkey patches ``get_registry`` to return the same kind of isolated
 registry, keeping the suite hermetic and fast.
 """
 
@@ -21,15 +21,15 @@ from fastapi.testclient import TestClient
 from pydantic import BaseModel
 from rich.console import Console
 
-from code_agent.capabilities.audit import Receipt
-from code_agent.capabilities.base import CapabilityBase, RiskClass
-from code_agent.capabilities.envelope import (
+from berg_agents.capabilities.audit import Receipt
+from berg_agents.capabilities.base import CapabilityBase, RiskClass
+from berg_agents.capabilities.envelope import (
     InvocationRequest,
     InvocationResponse,
 )
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.ui import cli_ui
-from code_agent.ui.web import app
+from berg_agents.capabilities.registry import CapabilityRegistry
+from berg_agents.ui import cli_ui
+from berg_agents.ui.web import app
 
 
 # ---------------------------------------------------------------------------
@@ -406,7 +406,7 @@ def web_client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
         If the registry cannot be patched or the client cannot be created.
     """
     monkeypatch.setattr(
-        "code_agent.ui.web.get_registry", _make_registry, raising=True
+        "berg_agents.ui.web.get_registry", _make_registry, raising=True
     )
     return TestClient(app)
 
@@ -443,12 +443,12 @@ def test_web_capabilities_proxied_through_vite_target(
 
     """
     monkeypatch.setattr(
-        "code_agent.ui.web.get_registry", _make_registry, raising=True
+        "berg_agents.ui.web.get_registry", _make_registry, raising=True
     )
 
     from fastapi.testclient import TestClient
 
-    from code_agent.ui.web import app as web_app
+    from berg_agents.ui.web import app as web_app
 
     proxy_client = TestClient(web_app, base_url="http://localhost:5173")
     response = proxy_client.get("/capabilities")

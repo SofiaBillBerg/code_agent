@@ -17,8 +17,8 @@ fi
 uv run pydoctor -c pydoctor.ini >pydoctor.txt
 echo "Deleting apidocs/index.html to avoid redirect issues..."
 rm -f apidocs/index.html
-echo "Creating redirect from apidocs/index.html to code_agent.html..."
-echo '<meta http-equiv="refresh" content="0; url=code_agent.html">' >apidocs/index.html
+echo "Creating redirect from apidocs/index.html to berg_agents.html..."
+echo '<meta http-equiv="refresh" content="0; url=berg_agents.html">' >apidocs/index.html
 echo "Deploying API docs to Quarto site output directory..."
 rm -rf docs/docs_web/apidocs
 mkdir -p docs/docs_web/apidocs

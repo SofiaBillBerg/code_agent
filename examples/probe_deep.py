@@ -1,3 +1,6 @@
+"""Quadruples the input value."""
+
+
 def quadruple(x: int) -> int:
     """
 

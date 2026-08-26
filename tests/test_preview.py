@@ -1,8 +1,8 @@
-"""Test suite for the *code_agent* agent-construction utilities.
+"""Test suite for the *berg_agents* agent-construction utilities.
 
 The focus is on the agent/LLM helpers:
-* :func:`code_agent.agents.base_agent.build_agent` - creates an agent instance.
-* :func:`code_agent.main.create_llm` - builds an LLM (with graceful fallback).
+* :func:`berg_agents.agents.codeagent.build_agent` - creates an agent instance.
+* :func:`berg_agents.main.create_llm` - builds an LLM (with graceful fallback).
 
 File-helper coverage (``write_file`` / ``py_to_ipynb``) lives in
 ``test_file_generator.py`` to avoid duplication.
@@ -21,8 +21,8 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 
 # Import the helpers from the public API
-from code_agent.agents.codeagent import build_agent, create_default_tools
-from code_agent.main import create_llm
+from berg_agents.agents.codeagent import build_agent, create_default_tools
+from berg_agents.main import create_llm
 
 
 # --------------------------------------------------------------------------- #

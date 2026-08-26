@@ -1,5 +1,5 @@
 [project]
-name = "code-agent"
+name = "berg-agents"
 version = "0.1.0"
 description = "Local LLM-driven code assistant for project scaffolding and file operations"
 readme = "README.md"
@@ -32,7 +32,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = ""
-module-name = ["code_agent"]
+module-name = ["berg_agents"]
 namespace = true
 
 
@@ -106,7 +106,7 @@ dev = [
 
 
 # [project.scripts]
-# code-agent = "code_agent.cli:main"
+# code-agent = "berg_agents.cli:main"
 
 
 
@@ -230,7 +230,7 @@ section-order = [
     "local-folder",
     "third-party",
 ]
-known-third-party = ["code_agent"]
+known-third-party = ["berg_agents"]
 split-on-trailing-comma = false
 
 [tool.isort]
@@ -253,7 +253,7 @@ skip_glob = [
     "*support-libs",
 ] # This will tell isort to skip these directories when sorting imports.
 sort_reexports = true # This will sort re-exports (e.g., `from . import module`) separately from regular imports,.
-src_paths = ["code_agent"]
+src_paths = ["berg_agents"]
 
 
 [tool.ruff.format]
@@ -268,7 +268,7 @@ skip-magic-trailing-comma = false
 
 [tool.ruff]
 src = [
-    "code_agent",
+    "berg_agents",
 ]
 extend-exclude = [
     "_build",
@@ -377,7 +377,7 @@ follow_imports = "normal"
 hide_error_codes = false
 # mypy_path = "./stubs"
 no_implicit_reexport = true
-packages = ["code_agent"]
+packages = ["berg_agents"]
 pdb = true
 #plugins = "pydantic.mypy"
 pretty = true
@@ -402,7 +402,7 @@ validate_by_name = true
 
 
 [tool.zuban]
-files = ["code_agent/**/*.py"]
+files = ["berg_agents/**/*.py"]
 disallow_any_generics = false
 disallow_untyped_defs = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
@@ -419,8 +419,8 @@ python_executable = ".venv/bin/python"
 mode = "default"
 
 [tool.pyrefly]
-project-includes = ["code_agent/"]
-search-path = ["./stubs", "code_agent/"]
+project-includes = ["berg_agents/"]
+search-path = ["./stubs", "berg_agents/"]
 python-interpreter-path = ".venv/bin/python"
 # pyrefly mis-detects Pydantic v2 models and requires `model_config` as a
 # constructor argument; this only affects FileObject (a @dataclass) here.
@@ -453,11 +453,11 @@ redundant-condition = "error"
 
 [tool.pyanalyze]
 missing_parameter_annotation = true
-paths = ["code_agent/"]
+paths = ["berg_agents/"]
 
 suggested_parameter_type = true
 suggested_return_type = true
-import_paths = ["code_agent/", "stubs/", ".venv/"]
+import_paths = ["berg_agents/", "stubs/", ".venv/"]
 #stub_path = "stubs/*.pyi"
 #find-unused = true
 #find-unused-attributes = true
@@ -535,7 +535,7 @@ base_url = "http://localhost:20128/v1"
 exclude = [
     "**/.*",
     "notes",
-    "code_agent.egg-info",
+    "berg_agents.egg-info",
     "**/*cache*",
     "build",
     "_extensions",
@@ -606,16 +606,16 @@ strict = false
 
 # pyanalyze --config-file pyproject.toml --find-unused --find-unused-attributes  --markdown-output=./.code_quality_outputs/pyanalyze_report.txt --run-fixer
 
-# flake8   code_agent --show-source --verbose --extend-exclude "_build, .venv, *cache*, node_modules, dist, build, .ipynb_checkpoints, *support-libs"  --enable-extensions pycodestyle --format=pylint --max-line-length 80   --output-file "./.code_quality_outputs/flake_report.txt" --max-doc-length 100 --statistics --tee --color always --count --doctests
+# flake8   berg_agents --show-source --verbose --extend-exclude "_build, .venv, *cache*, node_modules, dist, build, .ipynb_checkpoints, *support-libs"  --enable-extensions pycodestyle --format=pylint --max-line-length 80   --output-file "./.code_quality_outputs/flake_report.txt" --max-doc-length 100 --statistics --tee --color always --count --doctests
 
-# skylos   code_agent --model auto-free-stack --api-base http://localhost:20128/v1 --tree --output .code_quality_outputs/skylos.md --quality --trace --format rich --llm --verbose --ai-defects --config-file pyproject.toml --exclude=.*/**,.venv/,**/**/node_modules,**/data,**/*.json,**/.*
+# skylos   berg_agents --model auto-free-stack --api-base http://localhost:20128/v1 --tree --output .code_quality_outputs/skylos.md --quality --trace --format rich --llm --verbose --ai-defects --config-file pyproject.toml --exclude=.*/**,.venv/,**/**/node_modules,**/data,**/*.json,**/.*
 
 # skylos . -i --comment-out
 
-# pytype code_agent --config pyproject.toml -v 2 --use-fiddle-overlay --precise-return --protocols --overriding-renamed-parameter-count-checks  --unresolved
+# pytype berg_agents --config pyproject.toml -v 2 --use-fiddle-overlay --precise-return --protocols --overriding-renamed-parameter-count-checks  --unresolved
 
-# pyreverse  code_agent -d docs/visualizations --colorized  --color-palette [#ffe4e1,#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700] -o svg
+# pyreverse  berg_agents -d docs/visualizations --colorized  --color-palette [#ffe4e1,#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700] -o svg
 
-# pyreverse  code_agent -d docs/visualizations  -S -A  -f ALL --colorized  -a 10 --color-palette [#ffe4e1,#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700] -o svg
+# pyreverse  berg_agents -d docs/visualizations  -S -A  -f ALL --colorized  -a 10 --color-palette [#ffe4e1,#ffb6c1,#f3e5f5,#db7093,#e0b0ff,#9370db,#f8f0fe,#ba55d3,#ff7f50,#ff4500,#ffcc33,#ff9900,#fffacd,#ffcc00,#ffff99,#ffd700] -o svg
 
 # uv export --format requirements.txt --output-file requirements.txt

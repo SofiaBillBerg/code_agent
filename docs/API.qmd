@@ -9,93 +9,99 @@ format: html
 CodeAgent API is documented with pydoctor. The full API reference is available
 at [apidocs](../apidocs/apidocs-help.html).
 
-![CodeAgent overview](../docs/visualizations/svg/packages_code_agent.svg)
+![CodeAgent overview](../docs/visualizations/svg/packages_berg_agents.svg)
 
 
 ## Tools API
 
-The `code_agent.tools` module provides a set of tools for interacting with the filesystem and performing code-related
+The `berg_agents.tools` module provides a set of tools for interacting with the filesystem and performing code-related
 tasks. These tools are designed to be used by the DeepAgents harness and can be extended with custom tools. To read more
-about code_agent.tools, see [Tools API](../apidocs/code_agent.tools.html).
+about berg_agents.tools, see [Tools API](../apidocs/berg_agents.tools.html).
 
-![Tools diagram](../docs/visualizations/svg/packages_code_agent.tools.svg)
+![Tools diagram](../docs/visualizations/svg/packages_berg_agents.tools.svg)
 
 ## CLI API
 
-The `code_agent.cli` module provides a command-line interface for interacting with the code agent. The CLI allows users
-to run the agent in various modes, including chat mode, serve mode, and more. To read more about code_agent.cli,
-see [CLI API](../apidocs/code_agent.cli.html).
+The `berg_agents.cli` module provides a command-line interface for interacting with the BergAgent. The CLI allows users
+to run the agent in various modes, including chat mode, serve mode, and more. To read more about berg_agents.cli,
+see [CLI API](../apidocs/berg_agents.cli.html).
 
-![Core components](../docs/visualizations/svg/packages_code_agent.core.svg)
+## Core API
+
+There `berg_agents.core`module contains the core functionality of the BergAgent, including the orchestrator and
+bookkeeper. To read more about berg_agents.core, see [Core API](../apidocs/berg_agents.core.html).
+
+![Core components](../docs/visualizations/svg/packages_berg_agents.core.svg)
 
 
 ## Agent API
 
-The `code_agent.agents` module provides the core functionality of the code agent, including the agent's decision-making
-logic, tool management, and interaction with the LLM. To read more about code_agent.agent,
-see [Agent API](../apidocs/code_agent.agents.html).
+The `berg_agents.agents` module provides the core functionality of the BergAgent, including the agent's decision-making
+logic, tool management, and interaction with the LLM. To read more about berg_agents.agent,
+see [Agent API](../apidocs/berg_agents.agents.html).
 
-![Agents diagram](../docs/visualizations/svg/packages_code_agent.agents.svg)
+![Agents diagram](../docs/visualizations/svg/packages_berg_agents.agents.svg)
 
 ## Providers API
 
-The `code_agent.providers` module provides support for different LLM providers, including OpenAI, Anthropic, and Ollama.
-This module allows users to configure and use different LLMs with the code agent. To read more about
-code_agent.providers, see [Providers API](../apidocs/code_agent.providers.html).
+The `berg_agents.providers` module provides support for different LLM providers, including OpenAI, Anthropic, and
+Ollama.
+This module allows users to configure and use different LLMs with the BergAgent. To read more about
+berg_agents.providers, see [Providers API](../apidocs/berg_agents.providers.html).
 
-![Providers diagram](../docs/visualizations/svg/packages_code_agent.providers.svg)
+![Providers diagram](../docs/visualizations/svg/packages_berg_agents.providers.svg)
 
 ## Capabilities API
 
-The `code_agent.capabilities` module provides a set of capabilities that can be used by the code agent to perform
+The `berg_agents.capabilities` module provides a set of capabilities that can be used by the BergAgent to perform
 various tasks. These capabilities include code generation, code editing, code analysis, and more. To read more about
-code_agent.capabilities, see [Capabilities API](../apidocs/code_agent.capabilities.html).
+berg_agents.capabilities, see [Capabilities API](../apidocs/berg_agents.capabilities.html).
 
-![Capabilities diagram](../docs/visualizations/svg/packages_code_agent.capabilities.svg)
+![Capabilities diagram](../docs/visualizations/svg/packages_berg_agents.capabilities.svg)
 
 
 ## Configuration API
 
-The `code_agent.config` module provides functionality for managing the configuration of the code agent. This includes
+The `berg_agents.config` module provides functionality for managing the configuration of the BergAgent. This includes
 loading configuration files, managing profiles, and handling environment variables. To read more about
-code_agent.config, see [Configuration API](../apidocs/code_agent.config.html).
+berg_agents.config, see [Configuration API](../apidocs/berg_agents.config.html).
 
-![Configuration diagram](../docs/visualizations/svg/packages_code_agent.config.svg)
+![Configuration diagram](../docs/visualizations/svg/packages_berg_agents.config.svg)
 
 ## Profiles API
 
-The `code_agent.profiles` module provides functionality for managing user profiles, which can be used to customize the
-behavior of the code agent based on different user preferences. To read more about code_agent.profiles,
-see [Profiles API](../apidocs/code_agent.profiles.html).
+The `berg_agents.profiles` module provides functionality for managing user profiles, which can be used to customize the
+behavior of the BergAgent based on different user preferences. To read more about berg_agents.profiles,
+see [Profiles API](../apidocs/berg_agents.profiles.html).
 
-![Profiles diagram](../docs/visualizations/svg/packages_code_agent.profiles.svg)
+![Profiles diagram](../docs/visualizations/svg/packages_berg_agents.profiles.svg)
 
 ## UI API
 
-The `code_agent.ui` module provides functionality for the web-based user interface of the code agent. This includes
-serving the UI, handling user interactions, and integrating with the backend agent. To read more about code_agent.ui,
-see [UI API](../apidocs/code_agent.ui.html).
+The `berg_agents.ui` module provides functionality for the web-based user interface of the BergAgent. This includes
+serving the UI, handling user interactions, and integrating with the backend agent. To read more about berg_agents.ui,
+see [UI API](../apidocs/berg_agents.ui.html).
 
-![UI diagram](../docs/visualizations/svg/packages_code_agent.ui.svg)
+![UI diagram](../docs/visualizations/svg/packages_berg_agents.ui.svg)
 
 ## UI Web Frontend API
 
-The `code_agent.ui.web` module provides functionality for the web frontend of the code agent, including serving static
-files, handling API requests, and managing WebSocket connections. To read more about code_agent.ui.web,
-see [UI Web Frontend API](../apidocs/code_agent.ui.web.html).
+The `berg_agents.ui.web` module provides functionality for the web frontend of the BergAgent, including serving static
+files, handling API requests, and managing WebSocket connections. To read more about berg_agents.ui.web,
+see [UI Web Frontend API](../apidocs/berg_agents.ui.web.html).
 
 ## CI API
 
-The `code_agent.ci` module provides functionality for continuous integration and testing of the code agent. This
+The `berg_agents.ci` module provides functionality for continuous integration and testing of the BergAgent. This
 includes running tests, managing test environments, and integrating with CI/CD pipelines. To read more about
-code_agent.ci, see [CI API](../apidocs/code_agent.ci.html).
+berg_agents.ci, see [CI API](../apidocs/berg_agents.ci.html).
 
-![CI diagram](../docs/visualizations/svg/packages_code_agent.ci.svg)
+![CI diagram](../docs/visualizations/svg/packages_berg_agents.ci.svg)
 
 ## Utils API
 
-The `code_agent.utils` module provides utility functions and classes that are used throughout the code agent. These
-utilities include logging, file handling, and other helper functions. To read more about code_agent.utils,
-see [Utils API](../apidocs/code_agent.utils.html).
+The `berg_agents.utils` module provides utility functions and classes that are used throughout the BergAgent. These
+utilities include logging, file handling, and other helper functions. To read more about berg_agents.utils,
+see [Utils API](../apidocs/berg_agents.utils.html).
 
-![Utils diagram](../docs/visualizations/svg/packages_code_agent.utils.svg)
+![Utils diagram](../docs/visualizations/svg/packages_berg_agents.utils.svg)

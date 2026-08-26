@@ -186,3 +186,8 @@ mempalace.yaml
 entities.json
 
 /.quarto/
+/docs/README_cache/
+/docs/docs_web/
+/drafts/
+# excluded for now, will add later on
+/examples/

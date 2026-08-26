@@ -8,7 +8,7 @@ format: html
 
 This page shows how to use CodeAgent from the CLI, Python API, and web UI.
 
-![Core components](../docs/visualizations/svg/packages_code_agent.core.svg)
+![Core components](../docs/visualizations/svg/packages_berg_agents.core.svg)
 
 ## CLI Commands
 
@@ -59,7 +59,7 @@ Create a new file with supplied content:
 
 ```bash
 code-agent create ./my_web_app/src/my_web_app/app.py \
-  --content "from flask import Flask\n\napp = Flask(__name__)\n\n@app.route('/')\ndef hello_world():\n    return 'Hello, from Code Agent!'\n\nif __name__ == '__main__':\n    app.run(debug=True)"
+  --content "from flask import Flask\n\napp = Flask(__name__)\n\n@app.route('/')\ndef hello_world():\n    return 'Hello, from Berg Agents!'\n\nif __name__ == '__main__':\n    app.run(debug=True)"
 ```
 
 Use `--overwrite` to replace an existing file:
@@ -90,7 +90,7 @@ Invoke a specific capability:
 code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
 ```
 
-![Capabilities diagram](../docs/visualizations/svg/packages_code_agent.capabilities.svg)
+![Capabilities diagram](../docs/visualizations/svg/packages_berg_agents.capabilities.svg)
 
 
 ## Python API
@@ -100,8 +100,8 @@ code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
 ```python
 from pathlib import Path
 
-from code_agent.agents.codeagent import build_agent, create_default_tools
-from code_agent.main import create_llm, load_config
+from berg_agents.agents.codeagent import build_agent, create_default_tools
+from berg_agents.main import create_llm, load_config
 from langchain_core.messages import HumanMessage
 
 # 1. Load config and initialize LLM
@@ -121,7 +121,7 @@ response = agent.invoke({
 By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the
 working directory at `/workspace/`.
 
-![Agents diagram](../docs/visualizations/svg/packages_code_agent.agents.svg)
+![Agents diagram](../docs/visualizations/svg/packages_berg_agents.agents.svg)
 
 ### Stream Responses
 
@@ -148,7 +148,7 @@ for event in agent.stream({"messages": [HumanMessage(content="Hello")]}):
 
 When using the DeepAgents harness (the default), the following built-in filesystem tools are also available:
 
-![Profiles diagram](../docs/visualizations/svg/packages_code_agent.profiles.svg)
+![Profiles diagram](../docs/visualizations/svg/packages_berg_agents.profiles.svg)
 
 
 | Tool         | Purpose                                    |
@@ -161,7 +161,7 @@ When using the DeepAgents harness (the default), the following built-in filesyst
 | `execute`    | Run shell commands (sandbox backends only) |
 | `task`       | Delegate to a subagent                     |
 
-![Tools diagram](../docs/visualizations/svg/packages_code_agent.tools.svg)
+![Tools diagram](../docs/visualizations/svg/packages_berg_agents.tools.svg)
 
 
 ## Web UI
@@ -172,7 +172,7 @@ The web UI is a React single-page app served by FastAPI. Start it with:
 code-agent serve --web
 ```
 
-![UI diagram](../docs/visualizations/svg/packages_code_agent.ui.svg)
+![UI diagram](../docs/visualizations/svg/packages_berg_agents.ui.svg)
 
 ### API Endpoints
 
@@ -208,22 +208,22 @@ The `/chat/stream` endpoint emits these event types:
 
 ## MCP Integration
 
-MCP (Model Context Protocol) servers extend the agent with external tools. Configure them via `CODE_AGENT_MCP_SERVERS`
+MCP (Model Context Protocol) servers extend the agent with external tools. Configure them via `BERG_AGENT_MCP_SERVERS`
 in `.env` or the config file:
 
 ```dotenv
-CODE_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
+BERG_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
 ```
 
 Or point to a JSON file:
 
 ```dotenv
-CODE_AGENT_MCP_SERVERS=mcp.json
+BERG_AGENT_MCP_SERVERS=mcp.json
 ```
 
 MCP tools are prefixed with `mcp_<server>__<tool>` to avoid name collisions.
 
-![Configuration diagram](../docs/visualizations/svg/packages_code_agent.config.svg)
+![Configuration diagram](../docs/visualizations/svg/packages_berg_agents.config.svg)
 
 
 ## Human-in-the-Loop

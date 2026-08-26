@@ -9,7 +9,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from code_agent.ui.web import app
+from berg_agents.ui.web import app
 
 
 class TestProviderRoutingProperty:

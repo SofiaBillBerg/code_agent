@@ -62,20 +62,20 @@ echo "  ✗ $label failed (exit $code) - continuing..."
 FAILURES+=("$label (exit $code)")
 fi
 }
-run_vis_step "Package all-classes diagram" pyreverse code_agent -d "$RAW_VISUALIZATION_DIR" -A -f ALL --colorized -a 10 --color-palette "$PALETTE" -o mmd
+run_vis_step "Package all-classes diagram" pyreverse berg_agents -d "$RAW_VISUALIZATION_DIR" -A -f ALL --colorized -a 10 --color-palette "$PALETTE" -o mmd
 echo ""
 echo "▶ Per-class diagrams"
 failed_classes=()
 successful_classes=()
 while IFS= read -r -d '' file;do
-module_name=$(echo "$file"|sed -E 's|^code_agent/||;s|\.py$||;s|/|.|g')
+module_name=$(echo "$file"|sed -E 's|^berg_agents/||;s|\.py$||;s|/|.|g')
 while IFS= read -r class_name;do
 if [ -z "$class_name" ];then
 continue
 fi
-full_class_name="code_agent.$module_name.$class_name"
+full_class_name="berg_agents.$module_name.$class_name"
 echo "  ▶ $full_class_name"
-if pyreverse code_agent -S -A -f ALL -a 10 -c "$full_class_name" -d "$RAW_VISUALIZATION_DIR" --colorized --color-palette "$PALETTE" -o mmd;then
+if pyreverse berg_agents -S -A -f ALL -a 10 -c "$full_class_name" -d "$RAW_VISUALIZATION_DIR" --colorized --color-palette "$PALETTE" -o mmd;then
 successful_classes+=("$full_class_name")
 echo "    ✓ $full_class_name passed"
 else
@@ -83,7 +83,7 @@ failed_classes+=("$full_class_name")
 echo "    ✗ $full_class_name failed - continuing..."
 fi
 done < <(grep -oP '^class \K\w+' "$file"||true)
-done < <(find code_agent -name "*.py" -not -path "*/.*" -print0)
+done < <(find berg_agents -name "*.py" -not -path "*/.*" -print0)
 echo ""
 echo "  Per-class results: ${#successful_classes[@]} succeeded, ${#failed_classes[@]} failed"
 for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd;do

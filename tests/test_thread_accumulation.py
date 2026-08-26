@@ -8,7 +8,7 @@
 * callers must pass **only the new message(s)** each turn — re-passing the
   full history duplicates messages in the checkpointed state.
 
-These tests pin that behaviour so a future refactor cannot silently break it.
+These tests pin that behavior so a future refactor cannot silently break it.
 """
 
 from __future__ import annotations
@@ -21,8 +21,9 @@ import pytest
 from langchain.messages import AIMessage, HumanMessage
 from langchain.tools import BaseTool, tool
 from langchain_core.utils.uuid import uuid7
+from langgraph.checkpoint.memory import InMemorySaver
 
-from code_agent.utils.graph import build_graph
+from berg_agents.utils.graph import build_graph
 
 
 @pytest.fixture

@@ -1,10 +1,10 @@
 """Tests for the OAP-inspired capability layer.
 
-Covers the capability contract (:mod:`code_agent.capabilities.base`), the
-request/response envelopes (:mod:`code_agent.capabilities.envelope`), the
-hash-chained audit log (:mod:`code_agent.capabilities.audit`), the registry
-discovery and dispatch flow (:mod:`code_agent.capabilities.registry`) and
-the LangChain tool adapter (:mod:`code_agent.capabilities.tool_adapter`).
+Covers the capability contract (:mod:`berg_agents.capabilities.base`), the
+request/response envelopes (:mod:`berg_agents.capabilities.envelope`), the
+hash-chained audit log (:mod:`berg_agents.capabilities.audit`), the registry
+discovery and dispatch flow (:mod:`berg_agents.capabilities.registry`) and
+the LangChain tool adapter (:mod:`berg_agents.capabilities.tool_adapter`).
 
 The adapter depends on ``langchain.tools.BaseTool``; when that package is
 not importable a minimal stand-in is injected into ``sys.modules`` first so
@@ -26,17 +26,20 @@ import pytest
 
 from pydantic import BaseModel, ValidationError
 
-from code_agent.capabilities.audit import AuditLog, Receipt
-from code_agent.capabilities.base import CapabilityBase, RiskClass
-from code_agent.capabilities.envelope import (
+from berg_agents.capabilities.audit import AuditLog, Receipt
+from berg_agents.capabilities.base import CapabilityBase, RiskClass
+from berg_agents.capabilities.envelope import (
     InvocationRequest,
     InvocationResponse,
 )
-from code_agent.capabilities.registry import CapabilityRegistry
-from code_agent.capabilities.tool_adapter import ToolResult, tool_to_capability
+from berg_agents.capabilities.registry import CapabilityRegistry
+from berg_agents.capabilities.tool_adapter import (
+    ToolResult,
+    tool_to_capability,
+)
 
 
-# ``code_agent/__init__.py`` also eagerly imports the provider modules,
+# ``berg_agents/__init__.py`` also eagerly imports the provider modules,
 # which need ``langchain_ollama`` and ``langchain_openai``; stand in for
 # them too when they are missing.
 for _module_name, _attr in (
@@ -99,7 +102,7 @@ class EchoCapability(CapabilityBase):
 
 
 class UpperEchoCapability(CapabilityBase):
-    """Second capability sharing the ``echo`` id, used by the replace test.
+    """Second capability sharing the ``echo`` id, used by the replacement test.
 
     This replaces the ``echo`` capability registered in the fixture.
 
@@ -114,12 +117,10 @@ class UpperEchoCapability(CapabilityBase):
         risk_class: The risk class for the capability.
     Methods:
         _execute: The implementation of the capability.
-    Args:
-        params: The parsed and validated input parameters.
-    Returns:
-        The echo output.
-    Raises:
-        RuntimeError: Always.
+
+    :param params: The parsed and validated input parameters.
+    :return:        The echo output.
+    :raise: RuntimeError: Always.
     """
 
     id = "echo"

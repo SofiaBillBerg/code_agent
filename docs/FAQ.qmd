@@ -11,24 +11,24 @@ format: html
 The agent uses **LangGraph checkpointing** to persist conversation state across turns. When running in the CLI or web
 UI, each session gets a unique `thread_id` and the graph state (including message history) is saved to a checkpointer.
 By default, the web UI uses an in-memory checkpointer; you can configure a persistent SQLite checkpointer via
-`CODE_AGENT_CHECKPOINT_DIR`.
+`BERG_AGENT_CHECKPOINT_DIR`.
 
 Additionally, the DeepAgents harness can load **memory files** (`AGENTS.md`) that are always injected into the agent's
 context, giving it persistent instructions and preferences across conversations.
 
 ## 2. Can I use a cloud LLM instead of Ollama?
 
-Yes. The agent is provider-agnostic. Set `CODE_AGENT_PROVIDER=openai` (or `anthropic`) and provide the corresponding API
+Yes. The agent is provider-agnostic. Set `BERG_AGENT_PROVIDER=openai` (or `anthropic`) and provide the corresponding API
 key:
 
 ```dotenv
-CODE_AGENT_PROVIDER=openai
-CODE_AGENT_OPENAI_API_KEY=sk-...
-CODE_AGENT_OPENAI_MODEL=gpt-4o
+BERG_AGENT_PROVIDER=openai
+BERG_AGENT_OPENAI_API_KEY=sk-...
+BERG_AGENT_OPENAI_MODEL=gpt-4o
 ```
 
 You can also configure multiple providers and switch between them at runtime via the web UI (`POST /providers/active`)
-or by setting `CODE_AGENT_PROVIDER_LIST`.
+or by setting `BERG_AGENT_PROVIDER_LIST`.
 
 ## 3. What happens if the LLM server is not running?
 
@@ -62,7 +62,7 @@ agent = create_deep_agent(
 ## 5. How do I add a new tool to the agent?
 
 Add your tool to `create_default_tools` in [
-`../code_agent/agents/codeagent.py`](../code_agent/agents/codeagent.py):
+`../berg_agents`](../berg_agents/agents/codeagent.py):
 
 ```python
 from langchain.tools import tool
@@ -92,16 +92,16 @@ Use `--verbose` if you want more visible agent activity during execution.
 
 ## 7. How do I configure MCP servers?
 
-Set `CODE_AGENT_MCP_SERVERS` in your `.env` or config file. The value can be inline JSON or a path to a JSON file:
+Set `BERG_AGENT_MCP_SERVERS` in your `.env` or config file. The value can be inline JSON or a path to a JSON file:
 
 ```dotenv
-CODE_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
+BERG_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
 ```
 
 Or:
 
 ```dotenv
-CODE_AGENT_MCP_SERVERS=mcp.json
+BERG_AGENT_MCP_SERVERS=mcp.json
 ```
 
 Secrets in MCP server configs can reference `${env:VAR}` placeholders, which are resolved from your `.env` file at

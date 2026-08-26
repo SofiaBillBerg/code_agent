@@ -1,4 +1,4 @@
-"""This script generates Mermaid diagrams for the code_agent package, providing a visual representation of its structure and relationships.
+"""This script generates Mermaid diagrams for the berg_agents package, providing a visual representation of its structure and relationships.
 
 It parses Python files to extract classes, functions, and their calls, then creates flowcharts that illustrate the internal and external dependencies of each submodule, as well as a high-level overview of the entire package. The diagrams are saved in the docs/visualizations directory for easy access and review.
 """
@@ -6,6 +6,7 @@ It parses Python files to extract classes, functions, and their calls, then crea
 import ast
 import os
 
+from ast import AST
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -50,6 +51,7 @@ def parse_python_components(
         :rtype: list[str]
         """
         calls = []
+        child: AST
         for child in ast.walk(code_node):
             if isinstance(child, ast.Call):
                 if isinstance(child.func, ast.Name):
@@ -107,7 +109,7 @@ def parse_python_components(
 
 
 def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
-    """Generate Mermaid diagrams for the code_agent package, including detailed submodule maps and a high-level architectural overview.
+    """Generate Mermaid diagrams for the berg_agents package, including detailed submodule maps and a high-level architectural overview.
 
     The diagrams are saved in the docs/visualizations directory.
 
@@ -116,7 +118,7 @@ def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
     output_dir = Path("./docs/visualizations")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    source_dir = Path("./code_agent")
+    source_dir = Path("./berg_agents")
     all_components = []
 
     for root, _, files in os.walk(source_dir):
@@ -142,14 +144,14 @@ def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
     for mod_name, mod_comps in modules_map.items():
         mmd_lines = [
             "flowchart LR",
-            f"    %% Rich Component map focused on code_agent.{mod_name} %%",
+            f"    %% Rich Component map focused on berg_agents.{mod_name} %%",
         ]
 
         external_dependencies = set()
         internal_nodes = []
 
         mmd_lines.append(
-            f"    subgraph Internal_Structures [code_agent.{mod_name} components]"
+            f"    subgraph Internal_Structures [berg_agents.{mod_name} components]"
         )
         mmd_lines.append("        direction TB")
 
@@ -208,10 +210,10 @@ def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
         for name in external_dependencies:
             mmd_lines.append(f"    class {name} externalNode;")
 
-        out_file = output_dir / f"packages_code_agent.{mod_name}.mmd"
+        out_file = output_dir / f"packages_berg_agents.{mod_name}.mmd"
         out_file.write_text("\n".join(mmd_lines), encoding="utf-8")
         print(
-            f"✓ Created text-safe rich perspective map for: code_agent.{mod_name}"
+            f"✓ Created text-safe rich perspective map for: berg_agents.{mod_name}"
         )
 
     # ====================================================================
@@ -223,7 +225,7 @@ def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
     ]
 
     for mod_name in modules_map.keys():
-        global_lines.append(f'    mod_{mod_name}["code_agent.{mod_name}"]')
+        global_lines.append(f'    mod_{mod_name}["berg_agents.{mod_name}"]')
 
     cross_module_edges = set()
     for c in all_components:
@@ -240,7 +242,7 @@ def generate_mermaid() -> None:  # ruff: ignore[complex-structure]
     for mod_name in modules_map.keys():
         global_lines.append(f"    class mod_{mod_name} moduleNode;")
 
-    global_file = output_dir / "packages_code_agent.mmd"
+    global_file = output_dir / "packages_berg_agents.mmd"
     global_file.write_text("\n".join(global_lines), encoding="utf-8")
     print("✓ Created global architectural overview map!")
 

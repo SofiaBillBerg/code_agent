@@ -1,5 +1,5 @@
 ---
-title: "Code Agent"
+title: "Berg Agents"
 author: "Sofia Billger Bergström"
 format: html
 output_file: .README.md
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# code_agent
+# berg_agents
 
 <!-- badges: start -->
 
@@ -54,7 +54,7 @@ The agent uses a three-layer configuration system:
    `${profile:PROFILE_NAME}`
 3. **MCP config file**: `.mcp.json` for configuring MCP servers, may use `${env:VAR_NAME}` references
 4. **`.env` file**: Values referenced from the config file with `${env:VAR_NAME}`
-5. **Environment variables**: `CODE_AGENT_*` variables override config and `.env`
+5. **Environment variables**: `BERG_AGENT_*` variables override config and `.env`
 
 See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
 
@@ -62,7 +62,7 @@ See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
 ## Note: Current instructions - 2026-08-20
 # Production (FastAPI serves both API + static UI on same origin):
 
-`python -m code_agent serve --web --web-port 8001
+`python -m berg_agents serve --web --web-port 8001
 `
 # → Open http://127.0.0.1:8001
 
@@ -82,10 +82,10 @@ See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
 
 ## Class & Package Diagrams
 
-![Diagram for code_agent](../docs/visualizations/svg/packages_code_agent.svg)
+![Diagram for berg_agents](../docs/visualizations/svg/packages_berg_agents.svg)
 
 
-![Core components](../docs/visualizations/svg/packages_code_agent.core.svg)
+![Core components](../docs/visualizations/svg/packages_berg_agents.core.svg)
 
 ## Documentation
 

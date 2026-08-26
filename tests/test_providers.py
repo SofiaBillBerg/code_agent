@@ -1,9 +1,9 @@
 """Tests for the provider-agnostic LLM layer.
 
 Covers the ``LLMProvider`` protocol and ``ProviderBase``
-(:mod:`code_agent.providers.base`), the config-driven model registry
-(:mod:`code_agent.providers.registry`) and the ``ModelProvider``
-adapter (:mod:`code_agent.providers.provider`).
+(:mod:`berg_agents.providers.base`), the config-driven model registry
+(:mod:`berg_agents.providers.registry`) and the ``ModelProvider``
+adapter (:mod:`berg_agents.providers.provider`).
 
 The adapter is built directly on ``langchain.init_chat_model``; provider
 construction is lazy and ``complete()`` is exercised against a mocked
@@ -12,15 +12,16 @@ client, so no network calls are made during the tests.
 
 from __future__ import annotations
 
+from abc import ABC
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import MagicMock
 
 import pytest
 
-from code_agent.providers.base import LLMProvider, ProviderBase
-from code_agent.providers.provider import ModelProvider
-from code_agent.providers.registry import (
+from berg_agents.providers.base import LLMProvider, ProviderBase
+from berg_agents.providers.provider import ModelProvider
+from berg_agents.providers.registry import (
     build_llm,
     list_models,
     load_providers,
@@ -103,7 +104,7 @@ def test_provider_base_bind_capabilities_returns_self() -> None:
 def test_provider_base_requires_complete_implementation() -> None:
     """``complete`` is abstract; a subclass without it must not instantiate."""
 
-    class MissingComplete(ProviderBase):
+    class MissingComplete(ProviderBase, ABC):
         """Subclass that forgets to implement ``complete``."""
 
         name: str = "broken"
@@ -286,12 +287,14 @@ def test_model_provider_bind_capabilities_returns_self() -> None:
     assert provider.bind_capabilities([object()]) is provider
 
 
+# noinspection unnecessary-cast
 def test_model_provider_defaults_to_empty_api_key() -> None:
     r"""Missing api_key must default to an empty secret so keyless backends work."""
     provider = ModelProvider(model="gpt-4o")
     assert not cast(Any, provider.api_key).get_secret_value()
 
 
+# noinspection unnecessary-cast
 def test_model_provider_explicit_api_key_is_kept() -> None:
     """An explicitly provided api_key must be stored as-is."""
     provider = ModelProvider(model="gpt-4o", api_key="explicit")

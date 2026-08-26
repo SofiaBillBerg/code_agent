@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from code_agent.cli import (
+from berg_agents.cli import (
     _stream_agent_response,  # ruff: ignore[import-private-name]
 )
 
@@ -21,7 +21,7 @@ def _make_stream_agent(events: list[dict[str, object]]) -> MagicMock:
 
     ``astream_events`` is an async generator in modern LangGraph, so the mock
     yields the events through an async generator to match the ``async for``
-    iteration in :func:`code_agent.cli._run_agent_stream`.
+    iteration in :func:`berg_agents.cli._run_agent_stream`.
 
     :param events: The events to return.
     :return: The mock agent.

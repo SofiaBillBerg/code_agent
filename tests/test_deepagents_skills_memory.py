@@ -1,7 +1,7 @@
 """Tests for CodeAgents (DeepAgents) skills/memory/todos/summarization wiring.
 
 Covers the workspace-virtual path translation helper and the new
-``build_code_agent`` parameters (``skills``, ``memory``, ``todos_enabled``,
+``build_berg_agents`` parameters (``skills``, ``memory``, ``todos_enabled``,
 ``summarization_trigger``, ``summarization_keep``) including the settings
 fallback and middleware assembly.
 """
@@ -17,14 +17,14 @@ import pytest
 from deepagents.middleware import SummarizationMiddleware
 from langchain.chat_models import BaseChatModel
 
-from code_agent.agents.codeagent import (
+from berg_agents.agents.codeagent import (
     _normalize_context_size,  # ruff: ignore[import-private-name] - testing private helper
 )
-from code_agent.agents.codeagent import (
+from berg_agents.agents.codeagent import (
     _resolve_workspace_paths,  # ruff: ignore[import-private-name] - testing private helper
 )
-from code_agent.agents.codeagent import build_code_agent
-from code_agent.config.settings import Settings
+from berg_agents.agents.codeagent import build_berg_agents
+from berg_agents.config.settings import Settings
 
 
 def test_resolve_workspace_paths_translation(tmp_path: Path) -> None:
@@ -90,14 +90,14 @@ def _build_with(
     settings: Settings | None = None,
     **build_kwargs: Any,
 ) -> dict[str, Any]:
-    """Run build_code_agent with isolated registration and capture kwargs.
+    """Run build_berg_agents with isolated registration and capture kwargs.
 
     :param monkeypatch: The pytest-mock monkeypatch fixture.
     :param settings: Settings instance to return from get_settings.
-    :param build_kwargs: Keyword arguments for build_code_agent.
+    :param build_kwargs: Keyword arguments for build_berg_agents.
     :return: The kwargs captured by the fake create_deep_agent.
     """
-    from code_agent.agents import codeagent
+    from berg_agents.agents import codeagent
 
     captured: dict[str, Any] = {}
 
@@ -125,11 +125,11 @@ def _build_with(
         monkeypatch.setattr(codeagent, "get_settings", lambda: settings)
 
     fake_llm = MagicMock(spec=BaseChatModel)
-    build_code_agent(fake_llm, **build_kwargs)
+    build_berg_agents(fake_llm, **build_kwargs)
     return captured
 
 
-def test_build_code_agent_forwards_skills_memory(
+def test_build_berg_agents_forwards_skills_memory(
     monkeypatch: Any,
     tmp_path: Path,
 ) -> None:
@@ -154,7 +154,7 @@ def test_build_code_agent_forwards_skills_memory(
     assert captured["memory"] == ["/workspace/AGENTS.md"]
 
 
-def test_build_code_agent_settings_fallback(
+def test_build_berg_agents_settings_fallback(
     monkeypatch: Any,
     tmp_path: Path,
 ) -> None:
@@ -188,7 +188,7 @@ def test_build_code_agent_settings_fallback(
     assert sm._lc_helper.keep == ("messages", 20)
 
 
-def test_build_code_agent_todos_middleware(monkeypatch: Any) -> None:
+def test_build_berg_agents_todos_middleware(monkeypatch: Any) -> None:
     """todos_enabled controls TodoListMiddleware presence.
 
     :param monkeypatch: The pytest-mock monkeypatch fixture.
@@ -203,7 +203,7 @@ def test_build_code_agent_todos_middleware(monkeypatch: Any) -> None:
     )
 
 
-def test_build_code_agent_summarization_middleware(monkeypatch: Any) -> None:
+def test_build_berg_agents_summarization_middleware(monkeypatch: Any) -> None:
     """Explicit trigger adds a configured SummarizationMiddleware.
 
     :param monkeypatch: The pytest-mock monkeypatch fixture.
@@ -227,7 +227,7 @@ def test_build_code_agent_summarization_middleware(monkeypatch: Any) -> None:
     )
 
 
-def test_build_code_agent_explicit_middleware_not_duplicated(
+def test_build_berg_agents_explicit_middleware_not_duplicated(
     monkeypatch: Any,
     tmp_path: Path,
 ) -> None:

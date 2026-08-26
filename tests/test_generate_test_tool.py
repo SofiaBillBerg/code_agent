@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from code_agent.tools.generate_test_tool import generate_test
+from berg_agents.tools.generate_test_tool import generate_test
 
 
 @pytest.fixture

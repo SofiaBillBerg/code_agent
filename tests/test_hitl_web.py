@@ -17,13 +17,13 @@ from fastapi.testclient import TestClient
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from code_agent.ui.web import (
+from berg_agents.ui.web import (
     _hitl_decisions,  # ruff: ignore[import-private-name]
 )
-from code_agent.ui.web import (
+from berg_agents.ui.web import (
     _pending_hitl,  # ruff: ignore[import-private-name]
 )
-from code_agent.ui.web import app  # ruff: ignore[import-private-name]
+from berg_agents.ui.web import app  # ruff: ignore[import-private-name]
 
 
 # Tag: Feature: agent-core-enhancement, Property 6: HITL resume signals the pending event

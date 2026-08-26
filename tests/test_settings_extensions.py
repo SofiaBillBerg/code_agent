@@ -18,16 +18,16 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from code_agent.config.settings import (
+from berg_agents.config.settings import (
     _ENV_UNSET,  # ruff: ignore[import-private-name]
 )
-from code_agent.config.settings import (
+from berg_agents.config.settings import (
     _expand_env_vars,  # ruff: ignore[import-private-name]
 )
-from code_agent.config.settings import (
+from berg_agents.config.settings import (
     _load_substitution_env,  # ruff: ignore[import-private-name]
 )
-from code_agent.config.settings import Settings, get_settings
+from berg_agents.config.settings import Settings, get_settings
 
 
 # Tag: Feature: agent-core-enhancement, Property 11: Settings checkpoint_dir validation never raises
@@ -134,7 +134,7 @@ class TestSettingsExampleTests:
         """Example test: checkpoint_dir has the expected default value."""
         settings = Settings()
 
-        assert settings.checkpoint_dir == "~/.code_agent/checkpoints/"
+        assert settings.checkpoint_dir == "~/.berg_agents/checkpoints/"
 
         settings2 = Settings(checkpoint_dir="/tmp/test_checkpoints")
 
@@ -173,7 +173,7 @@ class TestSettingsExampleTests:
 
     def test_checkpoint_dir_expands_tilde(self) -> None:  # ruff: ignore[no-self-use]
         """Example test: checkpoint_dir preserves tilde in string form."""
-        settings = Settings(checkpoint_dir="~/.code_agent/checkpoints")
+        settings = Settings(checkpoint_dir="~/.berg_agents/checkpoints")
 
         assert settings.checkpoint_dir.startswith("~")
 
@@ -191,26 +191,26 @@ class TestEnvSubstitution:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """A value that is exactly one placeholder expands to the env value."""
-        monkeypatch.setenv("CODE_AGENT_SUBST_TEST", "secret-value")
+        monkeypatch.setenv("BERG_AGENT_SUBST_TEST", "secret-value")
         env = _load_substitution_env()
 
         assert (
-            _expand_env_vars("${env:CODE_AGENT_SUBST_TEST}", env)
+            _expand_env_vars("${env:BERG_AGENT_SUBST_TEST}", env)
             == "secret-value"
         )
         assert (
-            _expand_env_vars("${CODE_AGENT_SUBST_TEST}", env) == "secret-value"
+            _expand_env_vars("${BERG_AGENT_SUBST_TEST}", env) == "secret-value"
         )
 
     def test_embedded_placeholder_expands(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Placeholders embedded in a larger string expand in place."""
-        monkeypatch.setenv("CODE_AGENT_SUBST_TEST", "secret-value")
+        monkeypatch.setenv("BERG_AGENT_SUBST_TEST", "secret-value")
         env = _load_substitution_env()
 
         assert (
-            _expand_env_vars("prefix-${CODE_AGENT_SUBST_TEST}-suffix", env)
+            _expand_env_vars("prefix-${BERG_AGENT_SUBST_TEST}-suffix", env)
             == "prefix-secret-value-suffix"
         )
 
@@ -218,25 +218,25 @@ class TestEnvSubstitution:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """An exact placeholder for an unset var returns the drop sentinel."""
-        monkeypatch.delenv("CODE_AGENT_SUBST_TEST", raising=False)
+        monkeypatch.delenv("BERG_AGENT_SUBST_TEST", raising=False)
         env = _load_substitution_env()
 
         assert (
-            _expand_env_vars("${env:CODE_AGENT_SUBST_TEST}", env) is _ENV_UNSET
+            _expand_env_vars("${env:BERG_AGENT_SUBST_TEST}", env) is _ENV_UNSET
         )
 
     def test_dict_drops_unset_keys(  # ruff: ignore[no-self-use]
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Dict values referencing unset vars are dropped so defaults apply."""
-        monkeypatch.setenv("CODE_AGENT_SUBST_SET", "value")
-        monkeypatch.delenv("CODE_AGENT_SUBST_UNSET", raising=False)
+        monkeypatch.setenv("BERG_AGENT_SUBST_SET", "value")
+        monkeypatch.delenv("BERG_AGENT_SUBST_UNSET", raising=False)
         env = _load_substitution_env()
 
         result = _expand_env_vars(
             {
-                "keep": "${env:CODE_AGENT_SUBST_SET}",
-                "drop": "${env:CODE_AGENT_SUBST_UNSET}",
+                "keep": "${env:BERG_AGENT_SUBST_SET}",
+                "drop": "${env:BERG_AGENT_SUBST_UNSET}",
                 "literal": "plain",
             },
             env,
@@ -248,12 +248,12 @@ class TestEnvSubstitution:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """List items referencing unset vars are dropped."""
-        monkeypatch.setenv("CODE_AGENT_SUBST_SET", "value")
-        monkeypatch.delenv("CODE_AGENT_SUBST_UNSET", raising=False)
+        monkeypatch.setenv("BERG_AGENT_SUBST_SET", "value")
+        monkeypatch.delenv("BERG_AGENT_SUBST_UNSET", raising=False)
         env = _load_substitution_env()
 
         result = _expand_env_vars(
-            ["${env:CODE_AGENT_SUBST_SET}", "${env:CODE_AGENT_SUBST_UNSET}"],
+            ["${env:BERG_AGENT_SUBST_SET}", "${env:BERG_AGENT_SUBST_UNSET}"],
             env,
         )
 

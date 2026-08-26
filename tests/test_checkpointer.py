@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from code_agent.utils.checkpointer import build_checkpointer
+from berg_agents.utils.checkpointer import build_checkpointer
 
 
 class TestBuildCheckpointerProperty:

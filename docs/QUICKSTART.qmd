@@ -40,31 +40,31 @@ uv pip install -e .
 
 ## 3. Configuration
 
-`code_agent` supports three configuration layers, loaded in order of increasing precedence:
+`../berg_agents` supports three configuration layers, loaded in order of increasing precedence:
 
 1. **Config file**: `config/codeagent.jsonc`, `config/codeagent.yaml`, or `config/codeagent.yml`. JSONC files support
    comments and trailing commas.
 2. **`.env` file**: A `.env` file at the project root. Values can be referenced from the config file using `${env:VAR}`
    or `${VAR}`
    placeholders.
-3. **Environment variables**: Any `CODE_AGENT_*` environment variable overrides the config file and `.env` values.
+3. **Environment variables**: Any `BERG_AGENT_*` environment variable overrides the config file and `.env` values.
 
 Example `config/codeagent.jsonc`:
 
 ```jsonc
 {
-  "CODE_AGENT_OLLAMA_MODEL": "${env:CODE_AGENT_OLLAMA_MODEL}",
-  "CODE_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
-  "CODE_AGENT_TEMPERATURE": 0.7,
-  "CODE_AGENT_STREAM_ENABLED": true
+  "BERG_AGENT_OLLAMA_MODEL": "${env:BERG_AGENT_OLLAMA_MODEL}",
+  "BERG_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
+  "BERG_AGENT_TEMPERATURE": 0.7,
+  "BERG_AGENT_STREAM_ENABLED": true
 }
 ```
 
 Example `.env`:
 
 ```dotenv
-CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b
-CODE_AGENT_OLLAMA_BASE_URL=http://localhost:11434
+BERG_AGENT_OLLAMA_MODEL=gpt-oss:20b
+BERG_AGENT_OLLAMA_BASE_URL=http://localhost:11434
 ```
 
 ## 4. Basic Usage
@@ -107,9 +107,9 @@ code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
 
 ## Next Steps
 
-You have now installed `code_agent` and seen how to perform basic tasks. To learn more, check out these documents:
+You have now installed `../berg_agents` and seen how to perform basic tasks. To learn more, check out these documents:
 
 - [**Usage**](../docs/USAGE.qmd) - See a wide range of examples for both CLI and Python API usage.
 - [**Tools**](../docs/TOOLS.qmd) - Discover the full suite of tools available to the agent.
 - [**Configuration**](../docs/CONFIGURATION.qmd) - Learn how to configure
-  `code_agent` for your needs.
+  `../berg_agents` for your needs.

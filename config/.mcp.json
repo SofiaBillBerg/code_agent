@@ -23,7 +23,7 @@
         "-y",
         "@modelcontextprotocol/server-github"
       ],
-      "enabled": true,
+      "enabled": false,
       "environment": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
       },

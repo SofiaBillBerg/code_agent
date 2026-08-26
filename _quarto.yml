@@ -15,7 +15,7 @@ project:
     - "!apidocs/**/*.*"
     - "CHANGELOG.qmd"
 website:
-  title: "Code Agent"
+  title: "Berg Agents"
   llms-txt: true
   navbar:
     left:
@@ -90,8 +90,8 @@ format:
     fig-cap-location: bottom
     fig-format: svg
     tbl-cap-location: top
-    subtitle: "Documentation for The code_agent - an interactive, locally maintained LLM-powered assistant"
-    description: "The code_agent is a local, LLM-driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
+    subtitle: "Documentation for The berg_agents - an interactive, locally maintained LLM-powered assistant"
+    description: "The berg_agents is a local, LLM-driven code assistant that can scaffold projects, edit files, generate tests, and produce documentation. It is built on top of LangChain and uses a local Ollama instance as the LLM backend."
     fig-env: figure
     cache: true
     includesource: true

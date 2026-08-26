@@ -12,7 +12,7 @@ CodeAgent uses a three-layer configuration system. Values are resolved in order 
 2. **`.env` file**: A `.env` file at the project root. Values can be referenced from the config file using
    `${env:VAR_NAME}` or `${VAR_NAME}`
    placeholders.
-3. **Environment variables**: Any `CODE_AGENT_*` environment variable overrides the config file and `.env` values.
+3. **Environment variables**: Any `BERG_AGENT_*` environment variable overrides the config file and `.env` values.
 
 By default, the agent loads **all config files** including `config/profiles.yaml`
 for DeepAgents harness profiles.
@@ -25,22 +25,22 @@ Example `config/codeagent.jsonc`:
 
 ```jsonc
 {
-  "CODE_AGENT_PROVIDER": "ollama",
-  "CODE_AGENT_OLLAMA_MODEL": "${env:CODE_AGENT_OLLAMA_MODEL}",
-  "CODE_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
-  "CODE_AGENT_TEMPERATURE": 0.7,
-  "CODE_AGENT_STREAM_ENABLED": true
+  "BERG_AGENT_PROVIDER": "ollama",
+  "BERG_AGENT_OLLAMA_MODEL": "${env:BERG_AGENT_OLLAMA_MODEL}",
+  "BERG_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
+  "BERG_AGENT_TEMPERATURE": 0.7,
+  "BERG_AGENT_STREAM_ENABLED": true
 }
 ```
 
 Example `config/codeagent.yaml`:
 
 ```yaml
-CODE_AGENT_PROVIDER: ollama
-CODE_AGENT_OLLAMA_MODEL: "${env:CODE_AGENT_OLLAMA_MODEL}"
-CODE_AGENT_OLLAMA_BASE_URL: "http://localhost:11434"
-CODE_AGENT_TEMPERATURE: 0.7
-CODE_AGENT_STREAM_ENABLED: true
+BERG_AGENT_PROVIDER: ollama
+BERG_AGENT_OLLAMA_MODEL: "${env:BERG_AGENT_OLLAMA_MODEL}"
+BERG_AGENT_OLLAMA_BASE_URL: "http://localhost:11434"
+BERG_AGENT_TEMPERATURE: 0.7
+BERG_AGENT_STREAM_ENABLED: true
 ```
 
 ## `.env` File
@@ -51,26 +51,26 @@ Store secrets and defaults in a `.env` file at the project root. Values referenc
 Example `.env`:
 
 ```dotenv
-CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b
-CODE_AGENT_OLLAMA_BASE_URL=http://localhost:11434
-CODE_AGENT_TEMPERATURE=0.7
+BERG_AGENT_OLLAMA_MODEL=gpt-oss:20b
+BERG_AGENT_OLLAMA_BASE_URL=http://localhost:11434
+BERG_AGENT_TEMPERATURE=0.7
 ```
 
 ## Environment Variables
 
 Any setting can be overridden with an environment variable. The variable name matches the config key, upper-cased with
-the `CODE_AGENT_` prefix.
+the `BERG_AGENT_` prefix.
 
 Common variables:
 
-- `CODE_AGENT_PROVIDER`: LLM provider (`ollama`, `openai`, `anthropic`).
-- `CODE_AGENT_OLLAMA_MODEL`: Ollama model name.
-- `CODE_AGENT_OLLAMA_BASE_URL`: Ollama server URL.
-- `CODE_AGENT_OPENAI_API_KEY`: OpenAI API key.
-- `CODE_AGENT_OPENAI_BASE_URL`: OpenAI-compatible API base URL.
-- `CODE_AGENT_OPENAI_MODEL`: OpenAI model name.
-- `CODE_AGENT_TEMPERATURE`: Sampling temperature (default `0.7`).
-- `CODE_AGENT_STREAM_ENABLED`: Enable SSE streaming (`true`/`false`).
+- `BERG_AGENT_PROVIDER`: LLM provider (`ollama`, `openai`, `anthropic`).
+- `BERG_AGENT_OLLAMA_MODEL`: Ollama model name.
+- `BERG_AGENT_OLLAMA_BASE_URL`: Ollama server URL.
+- `BERG_AGENT_OPENAI_API_KEY`: OpenAI API key.
+- `BERG_AGENT_OPENAI_BASE_URL`: OpenAI-compatible API base URL.
+- `BERG_AGENT_OPENAI_MODEL`: OpenAI model name.
+- `BERG_AGENT_TEMPERATURE`: Sampling temperature (default `0.7`).
+- `BERG_AGENT_STREAM_ENABLED`: Enable SSE streaming (`true`/`false`).
 
 ## Profiles
 
@@ -103,9 +103,9 @@ them under the bare provider key instead.
 
 Given:
 
-- Config file: `CODE_AGENT_TEMPERATURE = 0.7`
-- `.env`: `CODE_AGENT_TEMPERATURE=0.9`
-- Environment: `CODE_AGENT_TEMPERATURE=0.5`
+- Config file: `BERG_AGENT_TEMPERATURE = 0.7`
+- `.env`: `BERG_AGENT_TEMPERATURE=0.9`
+- Environment: `BERG_AGENT_TEMPERATURE=0.5`
 
 The effective value is `0.5` (environment variable wins).
 
@@ -113,10 +113,10 @@ The effective value is `0.5` (environment variable wins).
 ## Configuration classes diagrams
 
 
-![Configuration diagram](../docs/visualizations/svg/packages_code_agent.config.svg)
+![Configuration diagram](../docs/visualizations/svg/packages_berg_agents.config.svg)
 
 
-![Profile diagram](../docs/visualizations/svg/packages_code_agent.profiles.svg)
+![Profile diagram](../docs/visualizations/svg/packages_berg_agents.profiles.svg)
 
 
-![Utils diagram](../docs/visualizations/svg/packages_code_agent.utils.svg)
+![Utils diagram](../docs/visualizations/svg/packages_berg_agents.utils.svg)

@@ -13,7 +13,7 @@ import pytest
 
 from fastapi.testclient import TestClient
 
-from code_agent.ui.web import app
+from berg_agents.ui.web import app
 
 
 # Tag: Feature: agent-core-enhancement, Property 14: SSE stream properly formatted event

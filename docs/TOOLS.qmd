@@ -6,10 +6,10 @@ format: html
 
 # Tools
 
-`code_agent` uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are
+`../berg_agents` uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are
 added on top. MCP servers can extend the agent with additional tools at runtime.
 
-![Tools diagram](../docs/visualizations/svg/packages_code_agent.tools.svg)
+![Tools diagram](../docs/visualizations/svg/packages_berg_agents.tools.svg)
 
 ## Tool Loading Order
 
@@ -63,7 +63,7 @@ agent = create_deep_agent(
 
 ## Custom Tools
 
-These tools are defined in `code_agent/tools/` and registered via `create_default_tools`:
+These tools are defined in `../berg_agents` and registered via `create_default_tools`:
 
 | Tool             | Purpose                                                                                       |
 |------------------|-----------------------------------------------------------------------------------------------|
@@ -80,7 +80,7 @@ These tools are defined in `code_agent/tools/` and registered via `create_defaul
 ### Tool Registration
 
 Add new tools to `create_default_tools` in [
-`../code_agent/agents/codeagent.py`](../code_agent/agents/codeagent.py):
+`../berg_agents`](../berg_agents/agents/codeagent.py):
 
 ```python
 from langchain.tools import tool

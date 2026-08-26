@@ -15,7 +15,7 @@ A log of the meaningful changes to the `code-agent` project.
   `@vitejs/plugin-react` with Vite 8 and enabled on-demand UI builds.
 - **Testing**: Added deepagents profile and thread accumulation tests to improve coverage.
 - **Code Quality**: Removed duplicated functions and dead code, updated docstrings, normalized imports, and enforced
-  consistent formatting across `code_agent`.
+  consistent formatting across `berg_agents`.
 - **Documentation**: Relocated changelog to project root and updated references across project context and navigation
   docs.
 - **Dependencies**: Updated project dependencies to current versions.

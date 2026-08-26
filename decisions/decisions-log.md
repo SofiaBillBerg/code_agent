@@ -290,8 +290,8 @@ Document the decision and rationale
 
 ## 📂 Codebase References
 
-**Implementation**: `code_agent/providers/` (provider implementations), `code_agent/tools/` (tool definitions),
-`code_agent/settings.py` (configuration), `code_agent/graph.py` (HITL middleware), `.mcp.json` (MCP server config),
+**Implementation**: `../berg_agents` (provider implementations), `../berg_agents` (tool definitions),
+`../berg_agents` (configuration), `../berg_agents` (HITL middleware), `.mcp.json` (MCP server config),
 `decisions/decisions-log.md` (decision documentation)
 
 **Documentation**: `docs/CHANGELOG.md` and `decisions/decisions-log.md` (decision documentation), `README.md` (project

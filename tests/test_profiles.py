@@ -11,15 +11,13 @@ import pytest
 
 from deepagents import HarnessProfile, create_deep_agent
 
-from code_agent.config.settings import Settings
-from code_agent.profiles import register_profiles_from_settings
-from code_agent.profiles.router import (
-    register_profiles_from_config_file,  # ruff: ignore[import-private-name] - testing private registry
-)
-from code_agent.profiles.router import (
+from berg_agents.config.settings import Settings
+from berg_agents.profiles import register_profiles_from_settings
+from berg_agents.profiles.router import (  # ruff: ignore[import-private-name] - testing private registry
     DEFAULT_PROFILES_CONFIG,
     _registered,
     load_profiles_from_config_file,
+    register_profiles_from_config_file,
     resolve_profile,
 )
 
@@ -36,7 +34,7 @@ def test_register_profiles_from_settings_noop_when_missing(
     """
     settings = Settings(profiles=None)
     monkeypatch.setattr(
-        "code_agent.profiles.router.get_settings",
+        "berg_agents.profiles.router.get_settings",
         lambda: settings,
     )
     register_profiles_from_settings()
@@ -58,12 +56,12 @@ def test_register_profiles_from_settings_json(monkeypatch: Any) -> None:
 
         :param key: The profile key.
         :param profile: The profile.
-
+        :return: None
         """
         captured[key] = profile
 
     monkeypatch.setattr(
-        "code_agent.profiles.router.get_settings",
+        "berg_agents.profiles.router.get_settings",
         lambda: Settings(
             profiles=json.dumps({
                 "ollama:gpt-oss:20b": {
@@ -74,7 +72,7 @@ def test_register_profiles_from_settings_json(monkeypatch: Any) -> None:
         ),
     )
     monkeypatch.setattr(
-        "code_agent.profiles.router.register_harness_profile",
+        "berg_agents.profiles.router.register_harness_profile",
         fake_register,
     )
 
@@ -107,7 +105,7 @@ def test_register_profiles_from_settings_dict(monkeypatch: Any) -> None:
         captured[key] = profile
 
     monkeypatch.setattr(
-        "code_agent.profiles.router.get_settings",
+        "berg_agents.profiles.router.get_settings",
         lambda: Settings(
             profiles={
                 "openai:gpt-4o": {
@@ -117,7 +115,7 @@ def test_register_profiles_from_settings_dict(monkeypatch: Any) -> None:
         ),
     )
     monkeypatch.setattr(
-        "code_agent.profiles.router.register_harness_profile",
+        "berg_agents.profiles.router.register_harness_profile",
         fake_register,
     )
 
@@ -138,7 +136,7 @@ def test_register_profiles_from_settings_invalid_json(monkeypatch: Any) -> None:
 
     """
     monkeypatch.setattr(
-        "code_agent.profiles.router.get_settings",
+        "berg_agents.profiles.router.get_settings",
         lambda: Settings(profiles="not-json"),
     )
 
@@ -156,7 +154,7 @@ def test_register_profiles_from_settings_invalid_type(monkeypatch: Any) -> None:
     :raises TypeError: If the profile value is not a dict or HarnessProfile.
 
     """
-    from code_agent.profiles.router import (
+    from berg_agents.profiles.router import (
         _coerce_profile_entry,  # ruff: ignore[import-private-name]
     )
 
@@ -184,7 +182,7 @@ def test_register_profiles_from_settings_none_entry(monkeypatch: Any) -> None:
         captured[key] = profile
 
     monkeypatch.setattr(
-        "code_agent.profiles.router.get_settings",
+        "berg_agents.profiles.router.get_settings",
         lambda: Settings(
             profiles=json.dumps({
                 "ollama:gpt-oss:20b": None,
@@ -193,7 +191,7 @@ def test_register_profiles_from_settings_none_entry(monkeypatch: Any) -> None:
         ),
     )
     monkeypatch.setattr(
-        "code_agent.profiles.router.register_harness_profile",
+        "berg_agents.profiles.router.register_harness_profile",
         fake_register,
     )
 
@@ -279,7 +277,7 @@ def test_register_profiles_from_config_file(
         captured[key] = profile
 
     monkeypatch.setattr(
-        "code_agent.profiles.router.register_harness_profile",
+        "berg_agents.profiles.router.register_harness_profile",
         fake_register,
     )
 
@@ -289,10 +287,10 @@ def test_register_profiles_from_config_file(
     assert captured["openai:gpt-4o"].system_prompt_suffix == "hi"
 
 
-def test_build_code_agent_registers_profiles_flag(
+def test_build_berg_agents_registers_profiles_flag(
     monkeypatch: Any,
 ) -> None:
-    """build_code_agent registers config profiles by default, opt-out works.
+    """build_berg_agents registers config profiles by default, opt-out works.
 
     :param monkeypatch: The pytest-mock monkeypatch fixture.
     :raises AssertionError: If the registration behavior is wrong.
@@ -301,7 +299,7 @@ def test_build_code_agent_registers_profiles_flag(
 
     from langchain.chat_models import BaseChatModel
 
-    from code_agent.agents import codeagent
+    from berg_agents.agents import codeagent
 
     calls = {"register": 0, "create": None}
     fake_llm = MagicMock(spec=BaseChatModel)
@@ -328,14 +326,14 @@ def test_build_code_agent_registers_profiles_flag(
     monkeypatch.setattr(codeagent, "create_deep_agent", fake_create)
 
     # Default: profiles are registered.
-    codeagent.build_code_agent(fake_llm)
+    codeagent.build_berg_agents(fake_llm)
     assert calls["register"] == 1
     assert calls["create"] is not None
 
     # Opt-out: no registration, but the agent is still built.
     calls["register"] = 0
     calls["create"] = None
-    codeagent.build_code_agent(fake_llm, register_profiles=False)
+    codeagent.build_berg_agents(fake_llm, register_profiles=False)
     assert calls["register"] == 0
     assert calls["create"] is not None
 
@@ -350,7 +348,7 @@ def test_resolve_profile_returns_effective_profile(monkeypatch: Any) -> None:
     _registered.clear()
     try:
         monkeypatch.setattr(
-            "code_agent.profiles.router.get_settings",
+            "berg_agents.profiles.router.get_settings",
             lambda: Settings(
                 profiles={
                     "ollama:gpt-oss-20b": {
@@ -398,11 +396,11 @@ def test_registered_tracks_source(monkeypatch: Any, tmp_path: Path) -> None:
             captured[key] = profile
 
         monkeypatch.setattr(
-            "code_agent.profiles.router.register_harness_profile",
+            "berg_agents.profiles.router.register_harness_profile",
             fake_register,
         )
         monkeypatch.setattr(
-            "code_agent.profiles.router.get_settings",
+            "berg_agents.profiles.router.get_settings",
             lambda: Settings(
                 profiles={"openai:gpt-4o": {"system_prompt_suffix": "hi"}}
             ),

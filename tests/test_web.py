@@ -1,4 +1,4 @@
-"""Tests for the FastAPI web UI (``code_agent.ui.web``).
+"""Tests for the FastAPI web UI (``berg_agents.ui.web``).
 
 The web UI exposes the capability catalog over HTTP and dispatches audited
 invocations. These tests exercise the API with FastAPI's ``TestClient`` and
@@ -19,9 +19,9 @@ import pytest
 from fastapi.testclient import TestClient
 from langchain.messages import AIMessage, HumanMessage
 
-from code_agent import cli
-from code_agent.ui.web import _DIST_DIR  # ruff: ignore[import-private-name]
-from code_agent.ui.web import app  # ruff: ignore[import-private-name]
+from berg_agents import cli
+from berg_agents.ui.web import _DIST_DIR  # ruff: ignore[import-private-name]
+from berg_agents.ui.web import app  # ruff: ignore[import-private-name]
 
 
 # Path to the React SPA build dir, derived from the CLI module so it stays in
@@ -105,7 +105,7 @@ def test_static_spa_served_when_dist_present(client: TestClient) -> None:
     assert "text/html" in response.headers["content-type"]
 
 
-# --- `serve --web` build-on-demand (code_agent.cli._ensure_webapp_built) ---
+# --- `serve --web` build-on-demand (berg_agents.cli._ensure_webapp_built) ---
 # The npm subprocess is mocked so the suite stays fast and does not require
 # Node/npm to be installed; we assert the *control flow* (when a build is
 # attempted, and when it is skipped gracefully).
@@ -115,7 +115,7 @@ def test_static_spa_served_when_dist_present(client: TestClient) -> None:
 def _dist_absent() -> Iterator[None]:
     """Temporarily move webapp/dist aside so the build-on-demand path runs.
 
-    :return: A Iterator that yields None.
+    :return: An Iterator that yields None.
     """
     backup = None
     if _CLI_DIST_DIR.is_dir():
@@ -141,7 +141,7 @@ def test_ensure_webapp_built_skips_when_dist_present() -> None:
     if not _CLI_DIST_DIR.is_dir():
         pytest.skip("dist/ not built; run `npm run build` in webapp/")
     with (
-        mock.patch("code_agent.cli.subprocess.run") as run,
+        mock.patch("berg_agents.cli.subprocess.run") as run,
         mock.patch("shutil.which", return_value="/usr/bin/npm"),
     ):
         cli._ensure_webapp_built()
@@ -157,7 +157,7 @@ def test_ensure_webapp_built_graceful_when_npm_missing(
     :return: None
     """
     with (
-        mock.patch("code_agent.cli.subprocess.run") as run,
+        mock.patch("berg_agents.cli.subprocess.run") as run,
         mock.patch("shutil.which", return_value=None),
     ):
         cli._ensure_webapp_built()  # must not raise
@@ -174,7 +174,7 @@ def test_ensure_webapp_built_runs_npm_when_dist_missing(
     :type _dist_absent: Iterator[None]
     """
     with (
-        mock.patch("code_agent.cli.subprocess.run") as run,
+        mock.patch("berg_agents.cli.subprocess.run") as run,
         mock.patch("shutil.which", return_value="/usr/bin/npm"),
     ):
         cli._ensure_webapp_built()
@@ -189,7 +189,7 @@ def test_chat_returns_assistant_reply(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {"messages": [AIMessage(content="hi")]}
@@ -203,7 +203,7 @@ def test_chat_returns_assistant_reply(client: TestClient) -> None:
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
@@ -218,7 +218,7 @@ def test_chat_uses_provided_thread_id(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {"messages": [AIMessage(content="ok")]}
@@ -232,7 +232,7 @@ def test_chat_uses_provided_thread_id(client: TestClient) -> None:
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.post(
             "/chat", json={"message": "hello", "thread_id": "custom-thread"}
@@ -252,7 +252,7 @@ def test_chat_falls_back_to_last_non_ai_message(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {
@@ -268,7 +268,7 @@ def test_chat_falls_back_to_last_non_ai_message(client: TestClient) -> None:
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
@@ -281,7 +281,7 @@ def test_chat_returns_no_text_response_when_empty(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {}
@@ -295,7 +295,7 @@ def test_chat_returns_no_text_response_when_empty(client: TestClient) -> None:
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
@@ -376,7 +376,7 @@ def test_post_chat_schema_compatibility(client: TestClient) -> None:
     }
 
     # Create a mock AgentState
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     mock_state = AgentState(
         agent=fake_agent,
@@ -387,7 +387,7 @@ def test_post_chat_schema_compatibility(client: TestClient) -> None:
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.post("/chat", json={"message": "hello"})
 
@@ -410,7 +410,7 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {
@@ -428,7 +428,7 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.post(
             "/chat", json={"message": "hello", "thread_id": custom_thread_id}
@@ -442,7 +442,7 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 
 # --- Auth coverage tests (Task 10.1 - Property 13) ---
 # These tests verify that all new endpoints are protected by AuthMiddleware
-# when CODE_AGENT_AUTH_TOKEN is set.
+# when BERG_AGENT_AUTH_TOKEN is set.
 #
 # NOTE: These tests require integration test setup with proper OAuth session handling.
 # They are commented out pending proper test infrastructure.
@@ -453,9 +453,9 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 # TODO: Uncomment when integration test infrastructure is complete
 #
 #
-# import code_agent.config.settings as settings
-# from code_agent.ui import web as web_module
-# from code_agent.ui.web import AuthMiddleware
+# import berg_agents.config.settings as settings
+# from berg_agents.ui import web as web_module
+# from berg_agents.ui.web import AuthMiddleware
 # from fastapi.testclient import TestClient
 # from fastapi import FastAPI
 # from fastapi.middleware import Middleware
@@ -467,16 +467,16 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 # def auth_enabled_client() -> TestClient:
 #     """Return a TestClient configured with authentication middleware.
 #
-#     Sets CODE_AGENT_AUTH_TOKEN env var to enable auth on the test client.
+#     Sets BERG_AGENT_AUTH_TOKEN env var to enable auth on the test client.
 #
 #     :return: A TestClient instance with auth enabled.
 #     """
-#     import code_agent.config.settings as settings_module
+#     import berg_agents.config.settings as settings_module
 #
 #     # Create a mock settings object with auth_token set
 #     mock_settings = MagicMock()
 #     mock_settings.auth_token = "test-secret-token"
-#     mock_settings.checkpoint_dir = "~/.code_agent/checkpoints/"
+#     mock_settings.checkpoint_dir = "~/.berg_agents/checkpoints/"
 #     mock_settings.stream_enabled = True
 #     mock_settings.provider_list = []
 #     mock_settings.provider = "ollama"
@@ -484,15 +484,15 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
 #     mock_settings.ollama_model = "gpt-oss:20b"
 #
 #     # Patch get_settings at the module level where it's used in AuthMiddleware
-#     with patch("code_agent.ui.web.get_settings", return_value=mock_settings):
+#     with patch("berg_agents.ui.web.get_settings", return_value=mock_settings):
 #         from fastapi.middleware.cors import CORSMiddleware
 #
 #         # Create a fresh FastAPI app with middleware
 #         test_app = FastAPI()
 #
 #         # Get routes from original app via function references
-#         from code_agent.ui.web import list_providers, get_active_provider
-#         from code_agent.ui.web import ProviderListResponse, ActiveProviderResponse
+#         from berg_agents.ui.web import list_providers, get_active_provider
+#         from berg_agents.ui.web import ProviderListResponse, ActiveProviderResponse
 #
 #         # Register routes manually
 #         test_app.get("/providers")(list_providers)
@@ -618,7 +618,7 @@ def test_chat_history_returns_empty_when_no_checkpointer(
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from code_agent.ui.web import AgentState
+    from berg_agents.ui.web import AgentState
 
     fake_agent = mock.Mock()
     mock_state = AgentState(
@@ -630,7 +630,7 @@ def test_chat_history_returns_empty_when_no_checkpointer(
     )
 
     with mock.patch(
-        "code_agent.ui.web.get_agent_async", return_value=mock_state
+        "berg_agents.ui.web.get_agent_async", return_value=mock_state
     ):
         response = client.get("/chat/history?thread_id=thread-1")
     assert response.status_code == 200
@@ -664,7 +664,7 @@ def test_chat_audit_list_returns_entries(client: TestClient) -> None:
     :return: None
     """
     # Clear any entries from previous tests
-    from code_agent.ui.web import (
+    from berg_agents.ui.web import (
         _audit_store,  # ruff: ignore[import-private-name]
     )
 

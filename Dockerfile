@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Code Agent
+# Multi-stage Dockerfile for Berg Agents
 # Stage 1: Build the React frontend
 FROM node:20-alpine AS frontend-builder
 
@@ -32,12 +32,12 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Copy application code
-COPY code_agent/ ./code_agent/
+COPY berg_agents/ ./berg_agents/
 COPY config/ ./config/
 COPY examples/ ./examples/
 
 # Copy built frontend from stage 1
-COPY --from=frontend-builder /app/webapp/dist ./code_agent/ui/webapp/dist/
+COPY --from=frontend-builder /app/webapp/dist ./berg_agents/ui/webapp/dist/
 
 # Create directories for checkpoints and data
 RUN mkdir -p /data/checkpoints /data/sandboxes
@@ -46,4 +46,4 @@ RUN mkdir -p /data/checkpoints /data/sandboxes
 EXPOSE 2024
 
 # Run the server
-CMD ["uv", "run", "python", "-m", "code_agent.cli", "serve", "--web", "--host", "0.0.0.0", "--port", "2024"]
+CMD ["uv", "run", "python", "-m", "berg_agents.cli", "serve", "--web", "--host", "0.0.0.0", "--port", "2024"]

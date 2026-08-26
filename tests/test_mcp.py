@@ -23,7 +23,7 @@ from langchain.tools import BaseTool
 from pydantic import Field
 from typing_extensions import override
 
-from code_agent.config.mcp import (
+from berg_agents.config.mcp import (
     MCP_TOOL_PREFIX,
     READONLY_SERVERS,
     SENSITIVE_SERVERS,

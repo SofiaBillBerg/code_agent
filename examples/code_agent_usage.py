@@ -21,10 +21,10 @@ from langchain_core.messages import BaseMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import Runnable
 
-from code_agent import build_agent, create_llm
-from code_agent.agents.codeagent import create_default_tools
-from code_agent.main import load_config
-from code_agent.tools._io import _atomic_write, create_from_template
+from berg_agents import build_agent, create_llm
+from berg_agents.agents.codeagent import create_default_tools
+from berg_agents.main import load_config
+from berg_agents.tools._io import _atomic_write, create_from_template
 
 
 # Add parent directory to path so imports work
@@ -168,7 +168,7 @@ def example_config_loading() -> None:
     print("Example 4: Configuration Loading")
     print("=" * 60)
 
-    from code_agent.main import create_llm, load_config
+    from berg_agents.main import create_llm, load_config
 
     try:
         # Load configuration

@@ -1,4 +1,4 @@
-# Code Agent harness profiles (user-editable).
+# Berg Agents harness profiles (user-editable).
 #
 # Each top-level key is either a bare provider name (e.g. "ollama") for
 # provider-wide defaults, or "provider:model" for a per-model override.
@@ -15,7 +15,7 @@
 #   excluded_middleware:  list[str]    - middleware classes to disable
 #
 # JSON files are also accepted (JSON is a YAML subset).  This file is read by
-# code_agent.agents.codeagent.build_code_agent by default; pass
+# berg_agents.agents.codeagent.build_berg_agents by default; pass
 # register_profiles=False to launch without these profiles.
 
 # Example: tune every Ollama model (covers "gpt-oss:20b" whose id has a ":").

@@ -1,24 +1,24 @@
 version: "3.8"
 
 services:
-  code-agent:
+  berg-agents:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: code-agent
+    container_name: berg-agents
     ports:
       - "2024:2024"
     volumes:
       - ./config:/app/config:ro
       - ./examples:/app/examples:ro
-      - code-agent-data:/data
+      - berg-agents-data:/data
     environment:
-      - CODE_AGENT_PROVIDER=ollama
-      - CODE_AGENT_OLLAMA_MODEL=gpt-oss:20b
-      - CODE_AGENT_OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - CODE_AGENT_CHECKPOINT_DIR=/data/checkpoints
-      - CODE_AGENT_SANDBOX_DIR=/data/sandboxes
-      - CODE_AGENT_STREAM_ENABLED=true
+      - BERG_AGENT_PROVIDER=ollama
+      - BERG_AGENT_OLLAMA_MODEL=gpt-oss:20b
+      - BERG_AGENT_OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - BERG_AGENT_CHECKPOINT_DIR=/data/checkpoints
+      - BERG_AGENT_SANDBOX_DIR=/data/sandboxes
+      - BERG_AGENT_STREAM_ENABLED=true
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:2024/health" ]
@@ -27,5 +27,5 @@ services:
       retries: 3
 
 volumes:
-  code-agent-data:
+  berg-agents-data:
     driver: local
