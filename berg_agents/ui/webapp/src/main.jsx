@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+// Theme is imported from JS so Vite resolves it as a real CSS asset
+// (the @import url(...) trick inside styles.css does not survive bundling).
+import "./theme.js";
 
 // Global error handler to catch uncaught errors
 window.addEventListener("error", (event) => {
