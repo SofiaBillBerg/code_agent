@@ -106,7 +106,7 @@ dev = [
 
 
 # [project.scripts]
-# code-agent = "berg_agents.cli:main"
+# berg_agents = "berg_agents.cli:main"
 
 
 

@@ -18,9 +18,10 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 
-> CodeAgent A lightweight, LLM-driven assistant built on LangChain + DeepAgents.
+> BergAgents A local, LLM-driven code assistant with a framework-agnostic core and provider-centric configuration.
 
 <!-- badges: end -->
+
 ## Quick Start
 
 ```bash
@@ -30,80 +31,58 @@ source .venv/bin/activate
 uv pip install -e .
 
 # Run the interactive agent
-code-agent chat
+berg_agents chat
 ```
 
 ## Features
 
+- **Provider-agnostic**: Config-driven provider registry — add any OpenAI-compatible endpoint in `config/bergagents.jsonc`, zero code changes
+- **Framework-agnostic core**: `berg_agents/core/` does not depend on LangChain/LangGraph/DeepAgents — frameworks are adapters, not the spine
 - **Agentic coding**: DeepAgents-powered agent with tools for read, write, edit, search, and more
 - **Filesystem access**: Full read/write/edit/create access through dedicated tools
 - **MCP integration**: Load tools from external MCP servers (stdio or HTTP)
 - **Human-in-the-loop**: Pause for approval on sensitive operations
 - **Web UI**: FastAPI + React interface for browser-based interaction
-- **Provider-agnostic**: OpenAI-compatible pattern; supports Ollama, OpenAI, Anthropic, and more
-
+- **Export conversations**: Export thread history as markdown
 
 See [docs/USAGE.qmd](../docs/USAGE.qmd) for CLI and Python API examples.
 
 ## Configuration
 
-The agent uses a three-layer configuration system:
+BergAgents uses a **provider-centric configuration** pattern. Each model
+belongs to a provider; provider/baseURL/apiKey resolve FROM the model —
+never from a single global `BERG_AGENT_PROVIDER` setting.
 
-1. **Config file**: `config/codeagent.jsonc` or `config/codeagent.yaml`
-2. **Profile file**: `config/profiles.yaml` for multiple profiles, referenced in the config file with
-   `${profile:PROFILE_NAME}`
-3. **MCP config file**: `.mcp.json` for configuring MCP servers, may use `${env:VAR_NAME}` references
-4. **`.env` file**: Values referenced from the config file with `${env:VAR_NAME}`
-5. **Environment variables**: `BERG_AGENT_*` variables override config and `.env`
+1. **Config file**: `config/bergagents.jsonc` — provider-centric with `providers` block
+2. **`.env` file**: Values referenced from config with `${env:VAR_NAME}`
+3. **Environment variables**: `BERG_AGENT_*` override config and `.env`
+4. **MCP config**: `.mcp.json` for MCP server configuration
 
 See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
 
+## Running the Web UI
 
-## Note: Current instructions - 2026-08-20
+```bash
 # Production (FastAPI serves both API + static UI on same origin):
-
-`python -m berg_agents serve --web --web-port 8001
-`
+python -m berg_agents serve --web --web-port 8001
 # → Open http://127.0.0.1:8001
 
 # Development (Vite dev server with proxy + hot reload):
-
-`npm run dev
-`
+npm run dev
 # → Open http://localhost:5173 — proxies API to 8001
-
-# Preview built assets with separate backend:
-
-`VITE_API_BASE_URL=http://localhost:8001 npm run preview
-`
-# → Open http://localhost:4173 — connects to backend on 8001
-
-
-
-## Class & Package Diagrams
-```markdown
-![Diagram for berg_agents](../docs/visualizations/png/packages_berg_agents.png)
-```
-
-```markdown
-![Core components](../docs/visualizations/png/packages_berg_agents.core.png)
 ```
 
 ## Documentation
 
-| Page                                                                                        | Description                                                          |
-|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| [QUICKSTART](../docs/QUICKSTART.qmd)                                                        | Step-by-step installation and configuration guide                    |
-| [USAGE](../docs/USAGE.qmd)                                                                  | Example workflows for CLI and Python API usage                       |
-| [TOOLS](../docs/TOOLS.qmd)                                                                  | Built-in filesystem and MCP tools                                    |
-| [CONFIGURATION](../docs/CONFIGURATION.qmd)                                                  | Config and profile files (`codeagent.jsonc` or `codeagent.yaml`, and |
-| `profiles.yaml`), `.env`, and env vars. Optional mcp config in `.mcp.json` for MCP servers. |                                                                      |
-| [CONTRIBUTING](../docs/CONTRIBUTING.qmd)                                                    | Guidelines for contributing                                          |
-| [CHANGELOG](../CHANGELOG.qmd)                                                               | Version history                                                      |
-| [FAQ](../docs/FAQ.qmd)                                                                      | Common questions and troubleshooting                                 |
-
-
-
+| Page | Description |
+|------|-------------|
+| [QUICKSTART](../docs/QUICKSTART.qmd) | Step-by-step installation and configuration guide |
+| [USAGE](../docs/USAGE.qmd) | Example workflows for CLI and Python API usage |
+| [TOOLS](../docs/TOOLS.qmd) | Built-in filesystem and MCP tools |
+| [CONFIGURATION](../docs/CONFIGURATION.qmd) | Provider-centric config, `.env`, and env vars |
+| [CONTRIBUTING](../docs/CONTRIBUTING.qmd) | Guidelines for contributing |
+| [CHANGELOG](../CHANGELOG.qmd) | Version history |
+| [FAQ](../docs/FAQ.qmd) | Common questions and troubleshooting |
 
 ## Getting Help
 
@@ -114,4 +93,4 @@ See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
 
 ---
 
-**Version**: 0.1.0 (Alpha) | [**License**](../LICENSE): MIT
+**Version**: 0.2.0 | **License**: MIT

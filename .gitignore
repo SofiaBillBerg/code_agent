@@ -191,3 +191,4 @@ entities.json
 /drafts/
 # excluded for now, will add later on
 /examples/
+/docs/docs_web/

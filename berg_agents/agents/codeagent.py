@@ -536,7 +536,7 @@ def build_berg_agents(
         )
         register_profiles_from_config_file(config_path)
         # Also apply any profiles declared in the main app config
-        # (bergagents.jsonc / codeagent.yaml via the ``profiles`` key, or the
+        # (bergagents.jsonc / bergagents.yaml via the ``profiles`` key, or the
         # BERG_AGENT_PROFILES env entry) so both config surfaces load by default.
         register_profiles_from_settings()
 

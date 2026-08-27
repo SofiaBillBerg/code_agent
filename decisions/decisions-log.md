@@ -339,3 +339,30 @@ By documenting decisions, the project can:
 
 The decisions log is a living document that evolves with the project, reflecting the ongoing nature of software
 development and architecture.
+
+---
+
+## 2026-08-28 — HITL approval display & export functionality fixes
+
+**Decisions:**
+
+1. **HITL approval display fix:** `HitlSurface.jsx` `extractActions()` now
+   unwraps Interrupt objects (checks for `.value` + `.id` keys) before
+   looking for `action_requests`. Falls back to showing raw interrupt data
+   in a collapsible `<details>` element when no actions parse. Handles:
+   Interrupt objects, arrays of interrupts, legacy `{tool, input}` shapes,
+   and unknown shapes (treats as single action).
+
+2. **Export functionality fix:** `web_chat_server.py` `export_thread()` now
+   handles both dict and object message formats (`getattr` + `.get()`),
+   shows raw data keys when no messages found for debugging, and uses
+   full thread_id for checkpointer lookups (not the truncated display id).
+
+**Rationale:** The HITL approval screen showed "Awaiting your approval" with
+no context about what action was being requested. The export returned empty
+for valid threads. Both caused user confusion and wasted debugging time.
+
+**Files modified:**
+- `berg_agents/ui/webapp/src/components/HitlSurface.jsx`
+- `berg_agents/ui/web_chat_server.py`
+- `.opencode/context/project-intelligence/learnings-webui-streaming-hitl.md`

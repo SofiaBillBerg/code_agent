@@ -2,8 +2,8 @@
 title: "Changelog"
 format: html
 ---
-
-A log of the meaningful changes to the `code-agent` project.
+**Last updated:**
+A log of the meaningful changes to the `berg_agents` project.
 
 ## v0.3.0 (Unreleased)
 
@@ -32,7 +32,7 @@ A log of the meaningful changes to the `code-agent` project.
   context from previous sessions.
 - **Improved CLI**: The command-line interface, built with `Typer`, now includes a `chat` command for the interactive
   agent session, in addition to utilities like `scaffold` and `py2ipynb`.
-- **Comprehensive Documentation**: Overhauled the entire documentation to be specific to `code-agent`, with detailed
+- **Comprehensive Documentation**: Overhauled the entire documentation to be specific to `berg_agents`, with detailed
   guides on features, tools, and architecture.
 
 ## v0.1.0 (2025-11-09)

@@ -4,7 +4,7 @@ import {defineConfig} from "vite";
 // Build the Berg Agents web UI single-page app into ./dist.
 //
 // `dist/` is gitignored, so it is produced by `npm run build` (and lazily by
-// `code-agent serve --web` when Node is available) rather than committed. The
+// `berg_agents serve --web` when Node is available) rather than committed. The
 // React plugin supplies the JSX transform and Fast Refresh for `npm run dev`.
 export default defineConfig({
     plugins: [react()],

@@ -4,7 +4,7 @@ async function test() {
     const client = new Client({apiUrl: "http://127.0.0.1:8001"});
     const thread = await client.threads.create({metadata: {test: true}});
     console.log("1. Created thread:", thread.thread_id);
-    const run = client.runs.stream(thread.thread_id, "code-agent", {
+    const run = client.runs.stream(thread.thread_id, "berg-agent", {
         input: {messages: [{type: "human", content: "What is 3+3?"}]},
     });
     console.log("2. Starting stream...");

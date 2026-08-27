@@ -2,6 +2,7 @@ project:
   type: website
   output-dir: docs/docs_web
   pre-render:
+    - "project_management/run_apidocs.sh"
     - "project_management/run_diagrams.sh"
   render:
     - "docs/*.qmd"

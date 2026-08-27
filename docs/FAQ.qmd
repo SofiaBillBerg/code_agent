@@ -82,7 +82,7 @@ standard_tools = [
 When using the DeepAgents harness, custom tools are additive. If a custom tool has the same name as a built-in
 filesystem tool, the built-in wins (the custom one is dropped).
 
-## 6. Why does `code-agent chat` sometimes look empty or delayed?
+## 6. Why does `berg_agents chat` sometimes look empty or delayed?
 
 The chat interface streams live output when possible. If the final model reply is empty, the CLI shows
 `(no text response)` instead of a blank line. If your backend does not support streaming, the interface falls back to a

@@ -7,7 +7,7 @@ CLI to catch all exceptions and print a user-friendly message.
 
 
 class CodeAgentError(RuntimeError):
-    """Base exception for all code-agent related errors."""
+    """Base exception for all berg_agents related errors."""
 
 
 class FileCreationError(CodeAgentError):

@@ -5,6 +5,8 @@ import TodoList from "./components/TodoList";
 import SubagentCard from "./components/SubagentCard";
 import SubagentProgress from "./components/SubagentProgress";
 import HitlSurface from "./components/HitlSurface";
+import InputBar from "./components/InputBar";
+import ThemeToggle from "./components/ThemeToggle";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -12,7 +14,7 @@ import rehypeHighlight from "rehype-highlight";
 const AGENT_URL = import.meta.env.VITE_API_BASE_URL || (typeof window !== "undefined" ? window.location.origin : "http://localhost:8001");
 
 function AppContent() {
-    const stream = useCustomStream(AGENT_URL, "code-agent");
+    const stream = useCustomStream(AGENT_URL, "berg-agent");
 
     const {
         messages, toolCalls, isLoading, error, interrupt, submit, respond, subagents, todos, stopRun, threadId, newChat,
@@ -192,11 +194,11 @@ function AppContent() {
         pulse: false
     } : isLoading ? {label: workLabel, color: "#1976d2", pulse: true} : {label: "Idle", color: "#9e9e9e", pulse: false};
 
-    return (<div className="app-container" style={{padding: "1rem", maxWidth: "800px", margin: "0 auto"}}>
+    return (<div className="app-container" style={{padding: "1rem", width: "100%", maxWidth: "95vw", margin: "0 auto"}}>
         <div className="berg-title-banner" style={{marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem"}}>
             <div style={{minWidth: 0, flex: "1 1 auto"}}>
                 <h1 style={{margin: 0, whiteSpace: "nowrap"}}>Berg Agents Chat</h1>
-                <p style={{margin: "0.25rem 0 0 0", fontSize: "0.95rem"}}>The host that learns with you.</p>
+                <p style={{margin: "0.25rem 0 0 0", fontSize: "0.95rem"}}>The agent that learns with you.</p>
             </div>
             <div className="header-actions" style={{flexWrap: "wrap"}}>
                 {/* New chat: reset the conversation (fresh thread, empty
@@ -221,7 +223,27 @@ function AppContent() {
                 >
                     ⬇ Export
                 </a>)}
-                {threadId && <p className="thread-id" style={{wordBreak: "break-all", maxWidth: "100%"}}>Thread: {threadId}</p>}
+                <ThemeToggle />
+                {/* Thread ID - hidden by default, shown on hover via CSS */}
+                {threadId && (
+                    <span
+                        className="thread-id"
+                        style={{
+                            fontSize: "var(--berg-fs-xs)",
+                            color: "var(--berg-muted)",
+                            fontFamily: "var(--berg-font-mono)",
+                            maxWidth: "15%",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            opacity: 0.6,
+                            cursor: "default",
+                        }}
+                        title={`Thread: ${threadId}`}
+                    >
+                        {threadId.slice(0, 8)}…
+                    </span>
+                )}
                 {models.length > 0 && (<select
                     className="provider-select"
                     value={activeModel ? `${activeModel.provider}:${activeModel.model}` : ""}
@@ -380,31 +402,19 @@ function AppContent() {
 
         {interrupt && <HitlSurface pending={interrupt} onDecision={handleDecision}/>}
 
-        <div className="input-bar">
-            <input
-                className="input-bar-textarea"
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder="Type a message..."
-                disabled={isLoading || !!interrupt}
-            />
-            <button
-                className="input-bar-button"
-                onClick={handleSend}
-                disabled={isLoading || !!interrupt || !input.trim()}
-            >
-                Send
-            </button>
-            {/* Emergency brake (Round-4 P2): cancels the running agent task. */}
-            {isLoading && !interrupt && (<button
-                className="stop-button"
-                onClick={stopRun}
-            >
+        <InputBar
+            input={input}
+            setInput={setInput}
+            onSend={handleSend}
+            disabled={isLoading || !!interrupt}
+            onKeyDown={onKeyDown}
+        />
+
+        {isLoading && !interrupt && (
+            <button className="stop-button" onClick={stopRun}>
                 Stop
-            </button>)}
-        </div>
+            </button>
+        )}
     </div>);
 }
 

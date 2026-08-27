@@ -9,7 +9,7 @@ async function test() {
     console.log('1. Created thread:', thread.thread_id);
 
     // 2. Stream a run
-    const run = client.runs.stream(thread.thread_id, 'code-agent', {
+    const run = client.runs.stream(thread.thread_id, 'berg-agent', {
         input: {messages: [{type: 'human', content: 'What is 3+3?'}]},
     });
 

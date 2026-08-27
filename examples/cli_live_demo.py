@@ -1,4 +1,4 @@
-"""CLI Live Demo: A small self-contained demo of the code agent."""
+"""CLI Live Demo: A small self-contained demo of the berg agents."""
 
 
 def greet(name: str) -> str:
@@ -10,7 +10,7 @@ def greet(name: str) -> str:
     Returns:
         A greeting message string.
     """
-    return f"Hello, {name}! Welcome to the code agent demo."
+    return f"Hello, {name}! Welcome to the berg agents demo."
 
 
 def main():

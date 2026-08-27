@@ -6,20 +6,16 @@ format: html
 
 # Usage Examples
 
-This page shows how to use CodeAgent from the CLI, Python API, and web UI.
-
-```markdown
-![Core components](../docs/visualizations/png/packages_berg_agents.core.png)
-```
+This page shows how to use BergAgents from the CLI, Python API, and web UI.
 
 ## CLI Commands
 
 ### Interactive Chat
 
-Start an interactive chat session with the agent :
+Start an interactive chat session with the agent:
 
 ```bash
-code-agent chat
+berg_agents chat
 ```
 
 The chat session supports these built-in commands:
@@ -32,7 +28,7 @@ The chat session supports these built-in commands:
 Use `--verbose` / `-v` to show streaming "thinking" output:
 
 ```bash
-code-agent chat --verbose
+berg_agents chat --verbose
 ```
 
 ### Serve (Console or Web)
@@ -40,19 +36,13 @@ code-agent chat --verbose
 Start the provider selected by the config and serve prompts:
 
 ```bash
-code-agent serve
+berg_agents serve
 ```
 
 Start the web UI instead:
 
 ```bash
-code-agent serve --web
-```
-
-The web UI binds to `127.0.0.1:8000` by default. Change the port with `--web-port`:
-
-```bash
-code-agent serve --web --web-port 8080
+berg_agents serve --web --web-port 8001
 ```
 
 ### Create a File
@@ -60,14 +50,14 @@ code-agent serve --web --web-port 8080
 Create a new file with supplied content:
 
 ```bash
-code-agent create ./my_web_app/src/my_web_app/app.py \
+berg_agents create ./my_web_app/src/my_web_app/app.py \
   --content "from flask import Flask\n\napp = Flask(__name__)\n\n@app.route('/')\ndef hello_world():\n    return 'Hello, from Berg Agents!'\n\nif __name__ == '__main__':\n    app.run(debug=True)"
 ```
 
 Use `--overwrite` to replace an existing file:
 
 ```bash
-code-agent create output.txt --content "New content" --overwrite
+berg_agents create output.txt --content "New content" --overwrite
 ```
 
 ### Append to a File
@@ -75,25 +65,15 @@ code-agent create output.txt --content "New content" --overwrite
 Append text to an existing file:
 
 ```bash
-code-agent append ./src/utils.py --content "\n\ndef new_function(): ..."
+berg_agents append ./src/utils.py --content "\n\ndef new_function(): ..."
 ```
 
-### Capabilities
+### Export Conversation
 
-List all registered capabilities:
+Export a thread's conversation as markdown:
 
 ```bash
-code-agent capabilities list
-```
-
-Invoke a specific capability:
-
-```bash
-code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
-```
-
-```markdown
-![Capabilities diagram](../docs/visualizations/png/packages_berg_agents.capabilities.png)
+berg_agents export <thread_id>
 ```
 
 ## Python API
@@ -121,12 +101,7 @@ response = agent.invoke({
 })
 ```
 
-By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the
-working directory at `/workspace/`.
-
-```markdown
-![Agents diagram](../docs/visualizations/png/packages_berg_agents.agents.png)
-```
+By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the working directory at `/workspace/`.
 
 ### Stream Responses
 
@@ -153,10 +128,6 @@ for event in agent.stream({"messages": [HumanMessage(content="Hello")]}):
 
 When using the DeepAgents harness (the default), the following built-in filesystem tools are also available:
 
-```markdown
-![Profiles diagram](../docs/visualizations/png/packages_berg_agents.profiles.png)
-```
-
 | Tool         | Purpose                                    |
 |--------------|--------------------------------------------|
 | `ls`         | List files in a directory                  |
@@ -167,71 +138,59 @@ When using the DeepAgents harness (the default), the following built-in filesyst
 | `execute`    | Run shell commands (sandbox backends only) |
 | `task`       | Delegate to a subagent                     |
 
-```markdown
-![Tools diagram](../docs/visualizations/png/packages_berg_agents.tools.png)
-```
 ## Web UI
 
 The web UI is a React single-page app served by FastAPI. Start it with:
 
 ```bash
-code-agent serve --web
-```
-```markdown
-![UI diagram](../docs/visualizations/png/packages_berg_agents.ui.png)
+berg_agents serve --web --web-port 8001
 ```
 
 ### API Endpoints
 
 | Method | Path                | Purpose                             |
 |--------|---------------------|-------------------------------------|
-| `GET`  | `/capabilities`     | List all registered capabilities    |
-| `POST` | `/invoke`           | Dispatch a capability invocation    |
-| `POST` | `/chat`             | Send a chat message (synchronous)   |
-| `POST` | `/chat/stream`      | Send a chat message (SSE streaming) |
-| `POST` | `/chat/resume`      | Resume a paused HITL interrupt      |
-| `POST` | `/chat/cancel`      | Cancel a running agent thread       |
-| `GET`  | `/chat/history`     | Get message history for a thread    |
-| `POST` | `/chat/audit`       | Record an audit log entry           |
-| `GET`  | `/chat/audit`       | List audit log entries for a thread |
-| `GET`  | `/providers`        | List configured providers           |
-| `GET`  | `/providers/active` | Get the currently active provider   |
-| `POST` | `/providers/active` | Switch the active provider          |
+| `GET`  | `/`                 | Web UI (React SPA)                  |
+| `GET`  | `/models`           | List available models               |
+| `POST` | `/threads/{id}/commands` | Get available commands          |
+| `GET`  | `/threads/{id}/stream/events` | SSE event stream            |
+| `POST` | `/threads/{id}/resume` | Resume a paused HITL interrupt    |
+| `GET`  | `/threads/{id}/history` | Get message history for a thread |
+| `POST` | `/threads/{id}/export` | Export thread as markdown        |
 
 ### SSE Events
 
-The `/chat/stream` endpoint emits these event types:
+The `/threads/{id}/stream/events` endpoint emits these event types:
 
-- `token` — LLM output token chunk
-- `tool_start` — tool call begins
-- `tool_end` — tool call completes
-- `hitl_pending` — graph paused for human approval
-- `subagent_start` — subagent begins
-- `subagent_end` — subagent completes
-- `todos` — todo list updated
-- `ping` — heartbeat
-- `done` — agent completed successfully
-- `error` — an error occurred
+- `lifecycle` — run started/completed
+- `messages` — message start/finish
+- `values` — state snapshots after each agent step
+- `input` — HITL pause (input-requested)
 
 ## MCP Integration
 
-MCP (Model Context Protocol) servers extend the agent with external tools. Configure them via `BERG_AGENT_MCP_SERVERS`
-in `.env` or the config file:
+MCP (Model Context Protocol) servers extend the agent with external tools. Configure them in `.mcp.json`:
 
-```dotenv
-BERG_AGENT_MCP_SERVERS=[{"type": "http", "url": "https://docs.langchain.com/mcp"}]
-```
-
-Or point to a JSON file:
-
-```dotenv
-BERG_AGENT_MCP_SERVERS=mcp.json
+```json
+[
+  {
+    "type": "http",
+    "url": "https://docs.langchain.com/mcp",
+    "name": "docs-langchain"
+  },
+  {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "name": "github",
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+    }
+  }
+]
 ```
 
 MCP tools are prefixed with `mcp_<server>__<tool>` to avoid name collisions.
-```markdown
-![Configuration diagram](../docs/visualizations/png/packages_berg_agents.config.png)
-```
 
 ## Human-in-the-Loop
 
@@ -250,11 +209,14 @@ Args:
 Decide: [a]pprove  [r]eject  [e]dit  [m]essage
 ```
 
-In the web UI, the HITL surface component shows the pending tool call and lets you approve, reject, or edit the
-arguments.
+In the web UI, the HITL surface component shows the pending tool call with:
+- Tool name and arguments
+- Approve / Reject buttons
+- Edit mode (modify JSON args before approving)
+- Raw interrupt data (collapsible, for debugging)
 
 ## See Also
 
-- [Configuration](CONFIGURATION.qmd) - Config file, `.env`, and environment variables
+- [Configuration](CONFIGURATION.qmd) - Provider-centric config, `.env`, and env vars
 - [Tools](TOOLS.qmd) - Built-in filesystem and MCP tools
 - [Quick Start](QUICKSTART.qmd) - Installation and first run

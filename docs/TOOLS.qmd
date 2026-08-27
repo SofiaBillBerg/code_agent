@@ -6,20 +6,14 @@ format: html
 
 # Tools
 
-`../berg_agents` uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are
-added on top. MCP servers can extend the agent with additional tools at runtime.
-
-```markdown
-![Tools diagram](../docs/visualizations/png/packages_berg_agents.tools.png)
-```
+BergAgents uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are added on top. MCP servers can extend the agent with additional tools at runtime.
 
 ## Tool Loading Order
 
 When the agent starts, tools are loaded in this order:
 
 1. **DeepAgents built-in filesystem tools** — always available unless excluded by a harness profile
-2. **Custom tools** from `create_default_tools` — added on top; if a custom tool has the same name as a built-in, the
-   built-in wins and the custom one is dropped
+2. **Custom tools** from `create_default_tools` — added on top; if a custom tool has the same name as a built-in, the built-in wins and the custom one is dropped
 3. **MCP tools** — loaded from configured MCP servers and prefixed with `mcp_<server>__<tool>`
 
 ## Built-in Filesystem Tools
@@ -40,8 +34,7 @@ These tools are provided by the DeepAgents harness automatically:
 
 ### Filesystem Permissions
 
-Declarative permission rules control which files and directories the agent can read or write. Rules are evaluated top to
-bottom, and the first matching rule wins. If no rule matches, the operation is allowed.
+Declarative permission rules control which files and directories the agent can read or write. Rules are evaluated top to bottom, and the first matching rule wins. If no rule matches, the operation is allowed.
 
 The default permissions:
 - Deny reads/writes to `.env` and `secrets/`
@@ -65,7 +58,7 @@ agent = create_deep_agent(
 
 ## Custom Tools
 
-These tools are defined in `../berg_agents` and registered via `create_default_tools`:
+These tools are defined in `berg_agents` and registered via `create_default_tools`:
 
 | Tool             | Purpose                                                                                       |
 |------------------|-----------------------------------------------------------------------------------------------|
@@ -81,8 +74,7 @@ These tools are defined in `../berg_agents` and registered via `create_default_t
 
 ### Tool Registration
 
-Add new tools to `create_default_tools` in [
-`../berg_agents`](../berg_agents/agents/codeagent.py):
+Add new tools to `create_default_tools` in `berg_agents/agents/codeagent.py`:
 
 ```python
 from langchain.tools import tool
@@ -99,13 +91,11 @@ standard_tools = [
 ]
 ```
 
-When using the DeepAgents harness, custom tools are additive. If a custom tool has the same name as a built-in
-filesystem tool, the built-in wins and the custom one is dropped.
+When using the DeepAgents harness, custom tools are additive. If a custom tool has the same name as a built-in filesystem tool, the built-in wins and the custom one is dropped.
 
 ## MCP Tools
 
-MCP (Model Context Protocol) servers extend the agent with external tools. Tools are prefixed with
-`mcp_<server>__<tool>` to avoid name collisions.
+MCP (Model Context Protocol) servers extend the agent with external tools. Tools are prefixed with `mcp_<server>__<tool>` to avoid name collisions.
 
 Example `.mcp.json`:
 
@@ -132,8 +122,7 @@ Values using `${env:VAR_NAME}` are resolved from the `.env` file at startup. Sec
 
 ### HITL Gating for MCP Tools
 
-Sensitive MCP servers (for example, `github`, `memory`) are intercepted for explicit human approval before tool
-execution. Read-only servers (`context7`, `docs-langchain`, `reference-langchain`) function without interruption.
+Sensitive MCP servers (for example, `github`, `memory`) are intercepted for explicit human approval before tool execution. Read-only servers (`context7`, `docs-langchain`, `reference-langchain`) function without interruption.
 
 ## Human-in-the-Loop
 
@@ -144,8 +133,7 @@ Mutating built-in tools default to human-in-the-loop review:
 - `delete`
 - `execute`
 
-When the agent invokes one of these tools, execution pauses and the user must approve, reject, edit the arguments, or
-send a message back to the agent.
+When the agent invokes one of these tools, execution pauses and the user must approve, reject, edit the arguments, or send a message back to the agent.
 
 In the CLI, the prompt looks like:
 
@@ -162,5 +150,8 @@ Args:
 Decide: [a]pprove  [r]eject  [e]dit  [m]essage
 ```
 
-In the web UI, the HITL surface component shows the pending tool call and lets you approve, reject, or edit the
-arguments.
+In the web UI, the HITL surface component shows:
+- Tool name and arguments
+- Approve / Reject buttons
+- Edit mode (modify JSON args before approving)
+- Raw interrupt data (collapsible, for debugging unknown shapes)

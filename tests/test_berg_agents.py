@@ -160,7 +160,7 @@ def test_load_config(tmp_path: Path) -> None:
     :param tmp_path: Temporary directory path from pytest.
     :return: None
     """
-    cfg_file = tmp_path / "codeagent.jsonc"
+    cfg_file = tmp_path / "bergagents.jsonc"
     cfg_file.write_text(json.dumps({"model": "gpt-oss:20b"}))
     # Convert Path to string before passing to load_config
     cfg = load_config(str(cfg_file))

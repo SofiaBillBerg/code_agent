@@ -42,7 +42,7 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
 
     :param config_path: Optional path to a JSON/YAML configuration file.  If
         the path points to a directory, the function will look for ``bergagents.jsonc``,
-        ``codeagent.json``, ``codeagent.yml``, ``codeagent.yaml``.
+        ``bergagents.json``, ``bergagents.yml``, ``bergagents.yaml``.
         inside, in that order.
 
     :returns: Parsed configuration dictionary.
@@ -54,9 +54,9 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
     if cfg_file.is_dir():
         for candidate in (
             "bergagents.jsonc",
-            "codeagent.json",
-            "codeagent.yml",
-            "codeagent.yaml",
+            "bergagents.json",
+            "bergagents.yml",
+            "bergagents.yaml",
         ):
             probe = cfg_file / candidate
             if probe.exists():

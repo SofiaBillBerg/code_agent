@@ -15,7 +15,7 @@ source .venv/bin/activate
 uv pip install -e .
 
 # Run the interactive agent
-code-agent chat
+berg_agents chat
 ```
 
 ## Features
@@ -34,7 +34,7 @@ See [docs/USAGE.qmd](docs/USAGE.qmd) for CLI and Python API examples.
 
 The agent uses a three-layer configuration system:
 
-1. **Config file**: `config/codeagent.jsonc` or `config/codeagent.yaml`
+1. **Config file**: `config/bergagents.jsonc` or `config/bergagents.yaml`
 2. **Profile file**: `config/profiles.yaml` for multiple profiles, referenced in the config file with
    `${profile:PROFILE_NAME}`
 3. **MCP config file**: `.mcp.json` for configuring MCP servers, may use `${env:VAR_NAME}` references
@@ -79,7 +79,7 @@ See [docs/CONFIGURATION.qmd](docs/CONFIGURATION.qmd) for the full reference.
 | [QUICKSTART](docs/QUICKSTART.qmd)                                                           | Step-by-step installation and configuration guide                    |
 | [USAGE](docs/USAGE.qmd)                                                                     | Example workflows for CLI and Python API usage                       |
 | [TOOLS](docs/TOOLS.qmd)                                                                     | Built-in filesystem and MCP tools                                    |
-| [CONFIGURATION](docs/CONFIGURATION.qmd)                                                     | Config and profile files (`codeagent.jsonc` or `codeagent.yaml`, and |
+| [CONFIGURATION](docs/CONFIGURATION.qmd)                                                     | Config and profile files (`bergagents.jsonc` or `bergagents.yaml`, and |
 | `profiles.yaml`), `.env`, and env vars. Optional mcp config in `.mcp.json` for MCP servers. |                                                                      |
 | [CONTRIBUTING](docs/CONTRIBUTING.qmd)                                                       | Guidelines for contributing                                          |
 | [CHANGELOG](CHANGELOG.qmd)                                                                  | Version history                                                      |

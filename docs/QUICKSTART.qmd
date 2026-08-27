@@ -3,33 +3,32 @@ title: "Quick Start"
 format: html
 ---
 
-This guide provides the essential steps to get CodeAgent installed and running on your local machine.
+This guide provides the essential steps to get BergAgents installed and running on your local machine.
 
 ## 1. Prerequisites
 
-- **Python 3.11+**: Ensure you have a modern version of Python installed.
+- **Python 3.12+**: Ensure you have a modern version of Python installed.
 
 - **`uv` or `pip`**: A Python package manager. `uv` is recommended for its speed.
 
-- **Ollama or OpenAI-compatible API**: For the agent's LLM capabilities, you need a running provider. We recommend
-  starting with Ollama and pulling a model such as `gpt-oss:20b`.
+- **Ollama or OpenAI-compatible API**: For the agent's LLM capabilities, you need a running provider. We recommend starting with Ollama and pulling a model such as `qwen3.5:9b`.
 
-  ``` bash
-  ollama pull gpt-oss:20b
+  ```bash
+  ollama pull qwen3.5:9b
   ```
 
 ## 2. Installation
 
 First, clone the repository and navigate into the project directory.
 
-``` bash
-git clone https://github.com/your-username/code_agent.git
-cd code_agent
+```bash
+git clone https://github.com/your-username/berg_agents.git
+cd berg_agents
 ```
 
 Next, create a virtual environment and install the package in editable mode.
 
-``` bash
+```bash
 # Create and activate the virtual environment
 uv venv
 source .venv/bin/activate
@@ -40,76 +39,79 @@ uv pip install -e .
 
 ## 3. Configuration
 
-`../berg_agents` supports three configuration layers, loaded in order of increasing precedence:
+BergAgents uses a **provider-centric configuration** pattern. Each model
+belongs to a provider; provider/baseURL/apiKey resolve FROM the model.
 
-1. **Config file**: `config/codeagent.jsonc`, `config/codeagent.yaml`, or `config/codeagent.yml`. JSONC files support
-   comments and trailing commas.
-2. **`.env` file**: A `.env` file at the project root. Values can be referenced from the config file using `${env:VAR}`
-   or `${VAR}`
-   placeholders.
-3. **Environment variables**: Any `BERG_AGENT_*` environment variable overrides the config file and `.env` values.
+Configuration layers (in order of increasing precedence):
 
-Example `config/codeagent.jsonc`:
+1. **Config file**: `config/bergagents.jsonc` — provider-centric with `providers` block
+2. **`.env` file**: Values referenced from config with `${env:VAR_NAME}`
+3. **Environment variables**: `BERG_AGENT_*` override config and `.env`
+4. **MCP config**: `.mcp.json` for MCP server configuration
+
+Example `config/bergagents.jsonc`:
 
 ```jsonc
 {
-  "BERG_AGENT_OLLAMA_MODEL": "${env:BERG_AGENT_OLLAMA_MODEL}",
-  "BERG_AGENT_OLLAMA_BASE_URL": "http://localhost:11434",
-  "BERG_AGENT_TEMPERATURE": 0.7,
-  "BERG_AGENT_STREAM_ENABLED": true
+  "providers": {
+    "ollama": {
+      "options": {
+        "baseURL": "http://localhost:11434",
+        "apiKey": "EMPTY"
+      },
+      "models": {
+        "qwen3.5:9b": {},
+        "gpt-oss:20b": {}
+      }
+    }
+  }
 }
 ```
 
 Example `.env`:
 
 ```dotenv
-BERG_AGENT_OLLAMA_MODEL=gpt-oss:20b
+BERG_AGENT_OLLAMA_MODEL=qwen3.5:9b
 BERG_AGENT_OLLAMA_BASE_URL=http://localhost:11434
 ```
 
 ## 4. Basic Usage
 
-You can now use CodeAgent directly from your terminal.
+You can now use BergAgents directly from your terminal.
 
 ### Interactive Chat
 
 The primary way to use the agent is through the interactive chat session.
 
-``` bash
-code-agent chat
+```bash
+berg_agents chat
 ```
 
-You can now give instructions to the agent in plain English: \> "Create a Python file named 'app.py' and add a simple
-Flask 'Hello, World!'
-application to it."
+You can now give instructions to the agent in plain English:
+> "Create a Python file named 'app.py' and add a simple Flask 'Hello, World!' application to it."
 
 ### Web UI
 
 Start the FastAPI + React web UI:
 
-``` bash
-code-agent serve --web
+```bash
+berg_agents serve --web --web-port 8001
 ```
 
-### Capabilities
+Then open http://127.0.0.1:8001 in your browser.
 
-List registered capabilities:
+### Export Conversation
 
-``` bash
-code-agent capabilities list
-```
+Export the current thread's conversation as markdown:
 
-Invoke a specific capability:
-
-``` bash
-code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
+```bash
+berg_agents export <thread_id>
 ```
 
 ## Next Steps
 
-You have now installed `../berg_agents` and seen how to perform basic tasks. To learn more, check out these documents:
+You have now installed `berg_agents` and seen how to perform basic tasks. To learn more, check out these documents:
 
 - [**Usage**](../docs/USAGE.qmd) - See a wide range of examples for both CLI and Python API usage.
 - [**Tools**](../docs/TOOLS.qmd) - Discover the full suite of tools available to the agent.
-- [**Configuration**](../docs/CONFIGURATION.qmd) - Learn how to configure
-  `../berg_agents` for your needs.
+- [**Configuration**](../docs/CONFIGURATION.qmd) - Learn how to configure `berg_agents` for your needs.

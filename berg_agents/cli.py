@@ -451,7 +451,7 @@ def _ensure_webapp_built() -> None:
 
     ``dist/`` is in gitignore, so a fresh checkout ships no built UI until the
     frontend is compiled. When Node/npm are available we build it lazily so
-    ``code-agent serve --web`` works out of the box. A missing toolchain is
+    ``berg_agents serve --web`` works out of the box. A missing toolchain is
     non-fatal: the API still serves, just without the static single-page app.
 
     :return: None

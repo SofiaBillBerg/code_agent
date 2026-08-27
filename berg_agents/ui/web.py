@@ -391,7 +391,7 @@ class AuthMiddleware:
         headers = {
             k.decode().lower(): v.decode() for k, v in scope.get("headers", [])
         }
-        token = headers.get("x-codeagent-auth-token")
+        token = headers.get("x-bergagents-auth-token")
         expected = get_settings().auth_token
 
         if expected is not None and token != expected:
@@ -776,12 +776,17 @@ async def export_thread(thread_id: str, format: str = "md") -> Any:
         body = await server.export_thread(thread_id, format)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Clean thread_id for filename (take first segment before dots, truncate)
+    clean_id = (
+        thread_id.split(".", maxsplit=1)[0][:8] if "." in thread_id else thread_id[:8]
+    )
     return Response(
         content=body,
         media_type="text/markdown; charset=utf-8",
         headers={
             "Content-Disposition": (
-                f'attachment; filename="codeagent-chat-{thread_id[:8]}.md"'
+                f'attachment; filename="bergagents-chat-{clean_id}.md"'
             )
         },
     )
