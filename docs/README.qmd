@@ -81,11 +81,13 @@ See [docs/CONFIGURATION.qmd](../docs/CONFIGURATION.qmd) for the full reference.
 
 
 ## Class & Package Diagrams
+```markdown
+![Diagram for berg_agents](../docs/visualizations/png/packages_berg_agents.png)
+```
 
-![Diagram for berg_agents](../docs/visualizations/svg/packages_berg_agents.svg)
-
-
-![Core components](../docs/visualizations/svg/packages_berg_agents.core.svg)
+```markdown
+![Core components](../docs/visualizations/png/packages_berg_agents.core.png)
+```
 
 ## Documentation
 

@@ -189,27 +189,17 @@ def test_chat_returns_assistant_reply(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from berg_agents.ui.web import AgentState
-
-    fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {"messages": [AIMessage(content="hi")]}
-
-    mock_state = AgentState(
-        agent=fake_agent,
-        thread_id="thread-1",
-        checkpointer=None,
-        provider="test",
-        model="test-model",
+    mock_server = mock.Mock()
+    mock_server.chat = mock.Mock(
+        return_value={"response": "hi", "thread_id": "thread-1"}
     )
-
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
     payload = response.json()
     assert payload["response"] == "hi"
     assert payload["thread_id"] == "thread-1"
+    mock_server.chat.assert_called_once_with("hello", None)
 
 
 def test_chat_uses_provided_thread_id(client: TestClient) -> None:
@@ -218,30 +208,17 @@ def test_chat_uses_provided_thread_id(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from berg_agents.ui.web import AgentState
-
-    fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {"messages": [AIMessage(content="ok")]}
-
-    mock_state = AgentState(
-        agent=fake_agent,
-        thread_id="thread-1",
-        checkpointer=None,
-        provider="test",
-        model="test-model",
+    mock_server = mock.Mock()
+    mock_server.chat = mock.Mock(
+        return_value={"response": "ok", "thread_id": "custom-thread"}
     )
-
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.post(
             "/chat", json={"message": "hello", "thread_id": "custom-thread"}
         )
     assert response.status_code == 200
     assert response.json()["thread_id"] == "custom-thread"
-    fake_agent.invoke.assert_called_once()
-    config = fake_agent.invoke.call_args[1]["config"]["configurable"]
-    assert config["thread_id"] == "custom-thread"
+    mock_server.chat.assert_called_once_with("hello", "custom-thread")
 
 
 def test_chat_falls_back_to_last_non_ai_message(client: TestClient) -> None:
@@ -252,24 +229,11 @@ def test_chat_falls_back_to_last_non_ai_message(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from berg_agents.ui.web import AgentState
-
-    fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {
-        "messages": [HumanMessage(content="fallback-content")]
-    }
-
-    mock_state = AgentState(
-        agent=fake_agent,
-        thread_id="thread-1",
-        checkpointer=None,
-        provider="test",
-        model="test-model",
+    mock_server = mock.Mock()
+    mock_server.chat = mock.Mock(
+        return_value={"response": "fallback-content", "thread_id": "thread-1"}
     )
-
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
     assert response.json()["response"] == "fallback-content"
@@ -281,22 +245,11 @@ def test_chat_returns_no_text_response_when_empty(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from berg_agents.ui.web import AgentState
-
-    fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {}
-
-    mock_state = AgentState(
-        agent=fake_agent,
-        thread_id="thread-1",
-        checkpointer=None,
-        provider="test",
-        model="test-model",
+    mock_server = mock.Mock()
+    mock_server.chat = mock.Mock(
+        return_value={"response": "(no text response)", "thread_id": "thread-1"}
     )
-
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.post("/chat", json={"message": "hello"})
     assert response.status_code == 200
     assert response.json()["response"] == "(no text response)"
@@ -370,25 +323,11 @@ def test_post_chat_schema_compatibility(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    fake_agent = mock.Mock()
-    fake_agent.invoke.return_value = {
-        "messages": [AIMessage(content="test response")]
-    }
-
-    # Create a mock AgentState
-    from berg_agents.ui.web import AgentState
-
-    mock_state = AgentState(
-        agent=fake_agent,
-        thread_id="thread-1",
-        checkpointer=None,
-        provider="test",
-        model="test-model",
+    mock_server = mock.Mock()
+    mock_server.chat = mock.Mock(
+        return_value={"response": "test response", "thread_id": "thread-1"}
     )
-
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.post("/chat", json={"message": "hello"})
 
     assert response.status_code == 200
@@ -410,7 +349,7 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from berg_agents.ui.web import AgentState
+    from berg_agents.ui.web_chat_server import AgentState
 
     fake_agent = mock.Mock()
     fake_agent.invoke.return_value = {
@@ -427,9 +366,12 @@ def test_post_chat_with_thread_id_schema(client: TestClient) -> None:
         model="test-model",
     )
 
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    mock_server = mock.Mock()
+    mock_server.chat.return_value = {
+        "response": "continued",
+        "thread_id": custom_thread_id,
+    }
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.post(
             "/chat", json={"message": "hello", "thread_id": custom_thread_id}
         )
@@ -618,7 +560,7 @@ def test_chat_history_returns_empty_when_no_checkpointer(
     :param client: fixture that provides a TestClient instance.
     :return: None
     """
-    from berg_agents.ui.web import AgentState
+    from berg_agents.ui.web_chat_server import AgentState
 
     fake_agent = mock.Mock()
     mock_state = AgentState(
@@ -629,9 +571,9 @@ def test_chat_history_returns_empty_when_no_checkpointer(
         model="test-model",
     )
 
-    with mock.patch(
-        "berg_agents.ui.web.get_agent_async", return_value=mock_state
-    ):
+    mock_server = mock.Mock()
+    mock_server.chat_history = mock.AsyncMock(return_value=[])
+    with mock.patch("berg_agents.ui.web.get_server", return_value=mock_server):
         response = client.get("/chat/history?thread_id=thread-1")
     assert response.status_code == 200
     assert response.json()["messages"] == []
@@ -664,11 +606,9 @@ def test_chat_audit_list_returns_entries(client: TestClient) -> None:
     :return: None
     """
     # Clear any entries from previous tests
-    from berg_agents.ui.web import (
-        _audit_store,  # ruff: ignore[import-private-name]
-    )
+    from berg_agents.ui.web_chat_server import get_server
 
-    _audit_store.clear()
+    get_server()._audit_store.clear()
 
     # First, record an entry
     client.post(

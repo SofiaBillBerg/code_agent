@@ -9,7 +9,7 @@ else
 fi
 echo "Starting code visualization script..."
 RAW_VISUALIZATION_DIR="./docs/visualizations"
-SVG_DIR="$RAW_VISUALIZATION_DIR/svg"
+SVG_DIR="$RAW_VISUALIZATION_DIR/png"  #svg"
 mkdir -p "$SVG_DIR"
 echo "▶ Running custom Python diagram extractor..."
 python project_management/generate_diagrams.py
@@ -20,7 +20,7 @@ for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
 done
 for mermaid_file in "$RAW_VISUALIZATION_DIR"/*.mmd; do
 	if [ -f "$mermaid_file" ]; then
-		svg_file="$SVG_DIR/$(basename "$mermaid_file" .mmd).svg"
+		svg_file="$SVG_DIR/$(basename "$mermaid_file" .mmd).png" #svg"
 		echo "  ▶ Converting $mermaid_file to $svg_file"
 		mmdc -i "$mermaid_file" -o "$svg_file" -t neutral -b "#ffffff"
 	fi

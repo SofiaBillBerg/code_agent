@@ -7,4 +7,6 @@
   --berg-surface-tint:   #f1f3f4;
   --berg-code-bg:        rgba(248, 237, 248, 0.76);
   --berg-code-text:      #551a8b;
+    --berg-border: #e9ecef;
+    --berg-muted: #551a8b;
 }

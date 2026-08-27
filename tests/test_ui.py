@@ -406,7 +406,9 @@ def web_client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
         If the registry cannot be patched or the client cannot be created.
     """
     monkeypatch.setattr(
-        "berg_agents.ui.web.get_registry", _make_registry, raising=True
+        "berg_agents.ui.web_chat_server.LangGraphChatServer._get_registry",
+        lambda self: _make_registry(),
+        raising=True,
     )
     return TestClient(app)
 
@@ -443,7 +445,9 @@ def test_web_capabilities_proxied_through_vite_target(
 
     """
     monkeypatch.setattr(
-        "berg_agents.ui.web.get_registry", _make_registry, raising=True
+        "berg_agents.ui.web_chat_server.LangGraphChatServer._get_registry",
+        lambda self: _make_registry(),
+        raising=True,
     )
 
     from fastapi.testclient import TestClient

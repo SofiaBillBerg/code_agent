@@ -1,18 +1,19 @@
 """FastAPI web UI for the capability layer.
 
-Exposes the registered capabilities over HTTP so a browser (or any HTTP
-client) can list and invoke them:
+This module is a **thin HTTP adapter** over the business logic that now lives
+entirely in :mod:`berg_agents.ui.web_chat_server` (the
+:class:`LangGraphChatServer` singleton).  Every route handler acquires the
+server via ``get_server()`` and delegates to a server method; the handler is
+responsible only for HTTP concerns:
 
-* ``GET /capabilities`` - lists the capability catalog. The catalog comes
-  from the same registry builder the CLI's ``capabilities list`` command
-  uses, so the web view always matches the CLI view.
-* ``POST /invoke`` - dispatches an :class:`InvocationRequest` through the
-  :class:`CapabilityRegistry` and returns the :class:`InvocationResponse`
-  plus the hash-chained audit :class:`Receipt` as JSON.
+* Unpacking Pydantic request bodies
+* Wrapping server-returned dicts into response models
+* Framing streaming generators with SSE (``data:`` prefix) via ``_sse``
+* Translating server-side errors into ``HTTPException`` status codes
 
-The built React single-page app (``webapp/dist``) is mounted statically at
-the root when present, so ``code-agent serve --web`` can host the whole UI
-from a single process.
+All mutable state, agent lifecycle, HITL event handling, audit logging, and
+protocol-v2 event queues live in ``LangGraphChatServer`` — this file has
+**zero module-level state** beyond the ``app`` object and the static mount.
 
 Security notes:
 
@@ -22,124 +23,41 @@ Security notes:
   cannot leak through the web server.
 * When ``BERG_AGENT_AUTH_TOKEN`` is set, every request must include a matching
   ``X-CodeAgent-Auth-Token`` header. Without it, the server returns HTTP 401.
-  This prevents unauthenticated remote access when the server is bound to a
-  non-loopback interface.
 """
 
 from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncGenerator
-from dataclasses import dataclass
-import logging
 from pathlib import Path
 from typing import Any, Literal
 import uuid
 
-from berg_agents.agents.codeagent import build_agent, create_default_tools
-from berg_agents.capabilities.envelope import InvocationRequest, InvokeBody
-from berg_agents.capabilities.registry import CapabilityRegistry
+from berg_agents.capabilities.envelope import InvokeBody
 from berg_agents.config.settings import get_settings
-from berg_agents.main import create_llm, load_config
-from berg_agents.providers.registry import build_llm, resolve_model
-from berg_agents.providers.registry import list_models as registry_list_models
-from berg_agents.ui.protocol import _sse, translate_resume, translate_stream
-from berg_agents.utils.checkpointer import build_checkpointer
+from berg_agents.ui.protocol import _sse
+from berg_agents.ui.web_chat_server import get_server
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from langchain.chat_models import BaseChatModel
-from langchain.messages import HumanMessage
-from langchain.tools import BaseTool
-from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.checkpoint.sqlite import SqliteSaver
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pydantic import BaseModel
 
 #: Module logger — used for protocol stream error reporting.
-logger = logging.getLogger(__name__)
+logger = __import__("logging").getLogger(__name__)
 
 #: Directory of the built React app (created by ``npm run build`` in webapp/).
 _DIST_DIR = Path(__file__).resolve().parent / "webapp" / "dist"
 
-#: Module-level state for agent and provider management
-#: -------------------------------------------------------------------
 
-#: Module-level registry singleton - None until get_registry() builds it.
-#: This is used by GET /capabilities to share the same registry across requests.
-_REGISTRY: CapabilityRegistry | None = None
-
-
-@dataclass
-class AgentState:
-    """Holds the runtime state of the LangGraph agent.
-
-    This dataclass replaces the old _AGENT / _AGENT_THREAD_ID globals with
-    a structured container that also includes checkpointer, provider, and
-    model information for runtime routing.
-
-    Attributes:
-        agent: The compiled LangGraph runnable.
-        thread_id: The current conversation thread identifier.
-        checkpointer: The LangGraph checkpointer (SqliteSaver or InMemorySaver).
-        provider: The active provider name (e.g., "ollama").
-        model: The active model string (e.g., "gpt-oss:20b").
-    """
-
-    agent: Any
-    thread_id: str
-    checkpointer: Any
-    provider: str = "ollama"
-    model: str = "gpt-oss:20b"
-
-
-#: Module-level state for HITL (Human-in-the-Loop) interrupt handling
-#: -------------------------------------------------------------------
-#: _pending_hitl maps thread_id → asyncio.Event. When a HITL interrupt occurs,
-#: the SSE stream waits on the event. The /chat/resume endpoint sets the event
-#: when the user makes a decision (approve/reject).
-_pending_hitl: dict[str, asyncio.Event] = {}
-
-#: _hitl_decisions stores the user's decision ("approve" | "reject") for each
-#: pending thread_id. The SSE stream reads this after the event fires.
-_hitl_decisions: dict[str, str] = {}
-
-#: Provider switching state
-#: -------------------------------------------------------------------
-#: _provider_switch_lock serializes concurrent provider switch requests.
-#: _switching is True when a provider switch is in progress to reject new
-#: chat requests during the reinitialization window.
-_provider_switch_lock: asyncio.Lock = asyncio.Lock()
-_switching: bool = False
-
-#: Cancel state
-#: -------------------------------------------------------------------
-#: _pending_cancel maps thread_id -> asyncio.Event. When /chat/cancel is
-#: called, the event is set so the SSE stream can stop early.
-_pending_cancel: dict[str, asyncio.Event] = {}
-
-#: _thread_tasks maps thread_id -> asyncio.Task. The /chat/stream endpoint
-#: registers the background task here so /chat/cancel can cancel it.
-_thread_tasks: dict[str, asyncio.Task] = {}
-
-#: Audit store
-#: -------------------------------------------------------------------
-#: _audit_log stores per-thread audit entries in memory, keyed by thread_id.
-#: Each entry is a dict with action, details, timestamp, user fields.
-_audit_log: dict[str, list[dict[str, Any]]] = {}
-
-#: _audit_store is a flat list of audit entries used by /chat/audit endpoints.
-_audit_store: list[dict[str, Any]] = []
-
-#: Ping interval in seconds for SSE heartbeat.
-_PING_INTERVAL_S: float = 15.0
-
-
-#: -------------------------------------------------------------------
-#: Provider Routing Models (for /providers endpoints)
-#: MUST be defined before route handlers to avoid forward reference issues
-#: -------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Pydantic request / response models
+# ---------------------------------------------------------------------------
+# These are kept in web.py because they are part of the HTTP contract.  The
+# SDK and the SPA depend on their shape.  When the canonical source moves to
+# ``chat_schema.py`` (see ``chat_server.py``'s docstring), these will become
+# thin re-imports.
+# ---------------------------------------------------------------------------
 
 
 class ProviderConfig(BaseModel):
@@ -188,463 +106,6 @@ class ActiveProviderRequest(BaseModel):
     model: str
 
 
-#: Agent state singleton — None until get_agent() builds it.
-_STATE: AgentState | None = None
-
-#: Per-thread agent cache — allows each thread to use a different model.
-#: Keyed by thread_id, value is the AgentState for that thread's model.
-_THREAD_AGENTS: dict[str, AgentState] = {}
-
-
-def _build_llm_for_model(
-    provider: str,
-    model: str,
-    base_url: str | None,
-    cfg: dict[str, Any],
-) -> BaseChatModel:
-    """Build a concrete BaseChatModel for a given model id.
-
-    Resolution is fully config-driven via the provider registry
-    (:mod:`berg_agents.providers.registry`): the *model id* determines its
-    provider, base_url and api_key from the ``providers`` block of
-    ``config/bergagents.jsonc``. The ``provider`` / ``base_url`` arguments
-    are only honored as explicit overrides (kept for API compatibility).
-
-    :param provider: Ignored unless the registry needs a hint; kept for
-        backwards compatibility with the switch-model endpoint.
-    :param model: Model identifier as declared in the providers block.
-    :param base_url: Optional explicit base URL override.
-    :param cfg: Full config dict (for fallback values).
-    :return: A concrete ``BaseChatModel`` instance.
-    """
-    resolved = resolve_model(model, cfg)
-    if base_url:
-        resolved["base_url"] = base_url
-    return build_llm(resolved)
-
-
-def get_registry() -> CapabilityRegistry:
-    """Return the shared capability registry, building it lazily on first use.
-
-    The registry is built once per process so the audit receipt chain stays
-    continuous across requests. It reuses the CLI's ``_build_registry``
-    helper, guaranteeing ``GET /capabilities`` matches ``capabilities list``.
-
-    :return: A :class:`CapabilityRegistry` populated with the default tool-adapted capabilities.
-    """
-    global _REGISTRY  # ruff: ignore[global-statement, undefined-export]
-    if _REGISTRY is None:
-        from berg_agents.cli import _build_registry
-
-        _REGISTRY = _build_registry()
-    return _REGISTRY
-
-
-async def _reinit_agent(provider: str, model: str) -> None:
-    """Reinitialize the global agent with a new provider/model.
-
-    This function is called by the POST /providers/active endpoint to switch
-    the active LLM provider and model at runtime without restarting the server.
-    It acquires _provider_switch_lock to ensure only one switch happens at a
-    time, and sets _switching = True during the rebuild to reject new chat
-    requests.
-
-    The function rebuilds the LLM, tools, and agent from scratch using the new
-    provider configuration, then swaps the global _STATE.agent and updates the
-    provider/model fields in _STATE.
-
-    :param provider: Provider name (e.g. "ollama", "openai") from the configured provider_list.
-    :param model: Model string (e.g. "gpt-oss:20b") to activate for the provider.
-    :return: None
-    """
-    #: Acquire the provider switch lock to ensure only one switch at a time
-    async with _provider_switch_lock:
-        #: Set switching flag to reject new chat requests during rebuild
-        # ruff: ignore[global-statement] - need to update module-level state
-        global _switching, _STATE
-        _switching = True
-        try:
-            #: Load fresh config and override provider/model
-            cfg = load_config()
-            cfg["provider"] = provider
-            cfg["model"] = model
-
-            #: Build fresh LLM and tools
-            llm = create_llm(cfg)
-            tools = create_default_tools(root_dir=str(Path.cwd()), llm=llm)
-            from berg_agents.cli import _load_mcp_tools
-
-            tools.extend(_load_mcp_tools(cfg))
-
-            #: Get existing checkpointer from current state (or build new one)
-            checkpointer = None
-            if _STATE is not None:
-                checkpointer = _STATE.checkpointer
-            if checkpointer is None:
-                checkpointer = build_checkpointer(
-                    checkpoint_dir=get_settings().checkpoint_dir
-                )
-            #: If we're switching from sqlite to memory (or vice versa), we need to recreate the checkpointer to match the new backend
-            if (
-                isinstance(checkpointer, (SqliteSaver, AsyncSqliteSaver))
-                and cfg.get("checkpoint_dir") is None
-            ):
-                checkpointer = InMemorySaver()
-            if isinstance(checkpointer, InMemorySaver) and cfg.get(
-                "checkpoint_dir"
-            ):
-                #: Rebuild a persistent (sqlite) checkpointer from the config
-                #: path via ``build_checkpointer`` so the connection is opened
-                #: correctly. The async web runtime requires ``AsyncSqliteSaver``
-                #: (an ``aiosqlite.Connection``), not a sync ``SqliteSaver``.
-                checkpointer = build_checkpointer(
-                    checkpoint_dir=cfg["checkpoint_dir"]
-                )
-
-            #: Build new agent with the new LLM and existing checkpointer
-            agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
-
-            #: Update global state with new agent and provider/model
-            _STATE = AgentState(
-                agent=agent,
-                thread_id=str(uuid.uuid4()),
-                checkpointer=checkpointer,
-                provider=provider,
-                model=model,
-            )
-        finally:
-            #: Clear switching flag to allow new chat requests again
-            _switching = False
-
-
-def get_agent(thread_id: str | None = None) -> AgentState:
-    """Return agent state, building it lazily on first use.
-
-    If ``thread_id`` is provided and a per-thread agent exists in
-    ``_THREAD_AGENTS``, that agent is returned (enabling dynamic model
-    selection per thread). Otherwise the shared global agent is built/returned.
-
-    The agent is initialized from the same config path the CLI ``serve``
-    command uses. The checkpointer is wired up via ``build_checkpointer()``
-    so thread state persists across process restarts when SqliteSaver is
-    available, falling back to InMemorySaver if the checkpoint directory
-    is not accessible.
-
-    :param thread_id: Optional thread ID to look up a per-thread agent.
-    :return: An :class:`AgentState` instance containing the agent, thread_id,
-        and checkpointer.
-    """
-    global _STATE  # ruff: ignore[global-statement, undefined-export]
-    if thread_id and thread_id in _THREAD_AGENTS:
-        return _THREAD_AGENTS[thread_id]
-    if _STATE is None:
-        from berg_agents.cli import _load_mcp_tools
-
-        cfg = load_config()
-        llm: BaseChatModel = create_llm(cfg)
-        tools: list[BaseTool] = create_default_tools(
-            root_dir=str(Path.cwd()), llm=llm
-        )
-        tools.extend(_load_mcp_tools(cfg))
-        #: Trim tools per the default model's profile exclusions
-        #: (profiles.yaml ``excluded_tools``, supports globs like mcp_*).
-        from berg_agents.profiles.router import filter_tools_by_exclusions
-
-        default_model = resolve_model(cfg.get("default_model") or None, cfg)[
-            "model"
-        ]
-        tools = filter_tools_by_exclusions(tools, default_model)
-        checkpointer: InMemorySaver | SqliteSaver | AsyncSqliteSaver = (
-            build_checkpointer(
-                checkpoint_dir=get_settings().checkpoint_dir or None
-            )
-        )
-        agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
-        _STATE = AgentState(
-            agent=agent,
-            thread_id=str(uuid.uuid4()),
-            checkpointer=checkpointer,
-            provider=cfg.get("provider", "ollama"),
-            model=cfg.get("model", "gpt-oss:20b"),
-        )
-    return _STATE
-
-
-async def get_agent_async(thread_id: str | None = None) -> AgentState:
-    """Async version of get_agent for use in async contexts.
-
-    This function is identical to get_agent() but uses the async version
-    of _load_mcp_tools to avoid "asyncio.run() cannot be called from a
-    running event loop" errors in FastAPI endpoints.
-
-    :param thread_id: Optional thread ID to look up a per-thread agent.
-    :return: An :class:`AgentState` instance containing the agent, thread_id,
-        and checkpointer.
-    """
-    global _STATE  # ruff: ignore[global-statement, undefined-export]
-    if thread_id and thread_id in _THREAD_AGENTS:
-        return _THREAD_AGENTS[thread_id]
-    if _STATE is None:
-        from berg_agents.cli import _load_mcp_tools_async
-
-        cfg = load_config()
-        llm: BaseChatModel = create_llm(cfg)
-        tools: list[BaseTool] = create_default_tools(
-            root_dir=str(Path.cwd()), llm=llm
-        )
-        tools.extend(await _load_mcp_tools_async(cfg))
-        #: Trim tools per the default model's profile exclusions.
-        from berg_agents.profiles.router import filter_tools_by_exclusions
-
-        default_model = resolve_model(cfg.get("default_model") or None, cfg)[
-            "model"
-        ]
-        tools = filter_tools_by_exclusions(tools, default_model)
-        checkpointer: InMemorySaver | SqliteSaver | AsyncSqliteSaver = (
-            build_checkpointer(
-                checkpoint_dir=get_settings().checkpoint_dir or None
-            )
-        )
-        agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
-        _STATE = AgentState(
-            agent=agent,
-            thread_id=str(uuid.uuid4()),
-            checkpointer=checkpointer,
-            provider=cfg.get("provider", "ollama"),
-            model=cfg.get("model", "gpt-oss:20b"),
-        )
-    return _STATE
-
-
-#: Optional authentication middleware. When ``BERG_AGENT_AUTH_TOKEN`` is set,
-#: every request must carry a matching ``X-CodeAgent-Auth-Token`` header.
-class AuthMiddleware:
-    """Reject requests that lack a valid auth token when one is configured.
-
-
-    The expected token is read from the ``BERG_AGENT_AUTH_TOKEN`` environment
-    variable and compared against the ``X-CodeAgent-Auth-Token`` header.
-    This provides a simple way to password-protect the web API when exposed
-    to untrusted networks.
-    When no ``BERG_AGENT_AUTH_TOKEN`` is set, the middleware allows all requests.
-
-    Attributes:
-        app: The wrapped ASGI application.
-    """
-
-    def __init__(self, app: Any) -> None:
-        """Initialize the middleware with the ASGI app.
-
-        :param app: The ASGI application to wrap.
-        :return: None
-        """
-        self.app = app
-
-    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
-        """Handle an ASGI request.
-
-        :param scope: ASGI connection scope.
-        :param receive: ASGI receive callable.
-        :param send: ASGI send callable.
-        :return: None
-        """
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        #: ASGI headers are bytes and case-insensitive - normalize to lowercase
-        headers = {
-            k.decode().lower(): v.decode() for k, v in scope.get("headers", [])
-        }
-        token = headers.get("x-codeagent-auth-token")
-        expected = get_settings().auth_token
-
-        if expected is not None and token != expected:
-            from fastapi.responses import JSONResponse
-
-            response = JSONResponse(
-                content={"detail": "Unauthorized"}, status_code=401
-            )
-            await response(scope, receive, send)
-            return
-
-        await self.app(scope, receive, send)
-
-
-# noinspection argument-equal-default
-app = FastAPI(
-    title="Berg Agents Web UI",
-    description=(
-        "Web interface for the berg_agents capability layer: list "
-        "capabilities and invoke them through the audited registry."
-    ),
-    version="0.1.0",
-)
-
-#: Attach auth middleware when an auth token is configured.
-if get_settings().auth_token is not None:
-    app.add_middleware(AuthMiddleware)
-
-#: CORS for local Vite dev and preview origins so the SPA can call the API.
-app.add_middleware(  # type: ignore[arg-type]
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:4173",
-        "http://127.0.0.1:4173",
-    ],
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "X-CodeAgent-Auth-Token"],
-)
-
-
-class RequestLoggingMiddleware:
-    """Log all incoming requests for debugging."""
-
-    def __init__(self, app: Any) -> None:
-        """Initialize the middleware with the ASGI app.
-
-        :param app:  The ASGI application to wrap.
-        :return: None
-        """
-        self.app = app
-
-    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
-        """Log the incoming request method, path, and query string.
-
-        :param scope: The ASGI scope.
-        :param receive: The ASGI receive function.
-        :param send: The ASGI send function.
-        :return: None
-        """
-        if scope["type"] == "http":
-            method = scope.get("method", "?")
-            path = scope.get("path", "?")
-            query = scope.get("query_string", b"").decode(
-                "utf-8", errors="replace"
-            )
-            print(f"[REQ] {method} {path}?{query}")
-        await self.app(scope, receive, send)
-
-
-app.add_middleware(RequestLoggingMiddleware)
-
-
-@app.get("/providers")
-async def list_providers() -> ProviderListResponse:
-    """Return all configured providers and their available models.
-
-    This endpoint reads the provider_list from Settings (configured via
-    BERG_AGENT_PROVIDER_LIST environment variable or .env file) and returns
-    it as a list of ProviderConfig objects. When no provider_list is configured,
-    returns an empty array.
-
-    :return: ProviderListResponse containing the list of configured providers.
-    """
-    settings = get_settings()
-    raw_list = settings.provider_list or []
-    providers = [
-        ProviderConfig(name=p["name"], model=p["model"]) for p in raw_list
-    ]
-    return ProviderListResponse(providers=providers)
-
-
-@app.get("/providers/active")
-async def get_active_provider() -> ActiveProviderResponse:
-    """Return the currently active provider and model.
-
-    This endpoint reads the provider and model fields from the global _STATE
-    AgentState instance. When the agent has not yet been initialized (first
-    request before any chat), it falls back to default values from config.
-
-    :return: ActiveProviderResponse with the current provider and model.
-    """
-    #: Use _STATE if available, otherwise read defaults from settings
-    if _STATE is not None:
-        return ActiveProviderResponse(
-            provider=_STATE.provider,
-            model=_STATE.model,
-        )
-
-    #: Fallback to defaults when agent not yet initialized
-    settings = get_settings()
-    return ActiveProviderResponse(
-        provider=settings.provider,
-        model=(
-            settings.ollama_model
-            if settings.provider == "ollama"
-            else settings.openai_model
-        ),
-    )
-
-
-@app.post("/providers/active")
-async def set_active_provider(request: ActiveProviderRequest) -> dict[str, str]:
-    """Switch the active provider and model, reinitializing the agent.
-
-    This endpoint allows runtime switching of the LLM provider and model
-    without restarting the server. It performs the following steps:
-
-    1. Validates that the requested provider/model combination exists in
-       the configured provider_list
-    2. Returns HTTP 200 immediately if already switching to the same target
-       (idempotent duplicate requests)
-    3. Returns HTTP 503 if another switch is already in progress
-    4. Returns HTTP 422 if provider/model is not in the configured list
-    5. Runs the rebuild asynchronously via asyncio.create_task() to avoid
-       holding the HTTP connection open during the agent reinitialization
-
-    The provider switch is serialized using _provider_switch_lock to prevent
-    race conditions, and _switching is set to True during the rebuild to
-    reject new chat requests.
-
-    :param request: ActiveProviderRequest with provider and model to switch to.
-    :return: {"status": "ok"} on success.
-    :raises HTTPException: 422 if provider/model not in configured list.
-                           503 if a switch is already in progress.
-    """
-    settings = get_settings()
-    valid_providers = {
-        (p["name"], p["model"]) for p in (settings.provider_list or [])
-    }
-
-    #: Check if the requested provider/model is valid
-    if (request.provider, request.model) not in valid_providers:
-        raise HTTPException(
-            status_code=422,
-            detail=(
-                f"Provider {request.provider!r} / model {request.model!r} "
-                f"is not in the configured provider_list. "
-                f"Valid combinations: {sorted(valid_providers)}"
-            ),
-        )
-
-    #: Idempotent: if already switching to the same target, return success immediately
-    #: This handles duplicate requests from the UI without causing errors
-    if (
-        _switching
-        and _STATE is not None
-        and _STATE.provider == request.provider
-        and _STATE.model == request.model
-    ):
-        return {"status": "ok"}
-
-    #: If another switch is in progress, reject with 503
-    if _switching:
-        raise HTTPException(
-            status_code=503, detail="provider switch in progress"
-        )
-
-    #: Run the rebuild asynchronously to avoid holding the HTTP connection open
-    #: The async function _reinit_agent acquires _provider_switch_lock internally
-    # ruff: ignore[asyncio-dangling-task] - task runs independently, no need to await
-    asyncio.create_task(_reinit_agent(request.provider, request.model))
-
-    return {"status": "ok"}
-
-
 class ChatMessage(BaseModel):
     """A single chat message with role and content.
 
@@ -681,31 +142,18 @@ class ChatResponse(BaseModel):
     thread_id: str
 
 
-#: -------------------------------------------------------------------
-#: SSE Event Models (for streaming chat endpoint)
-#: -------------------------------------------------------------------
+# -- SSE Event Models (kept for SDK / frontend contract) -------------------
 
 
 class TokenEvent(BaseModel):
-    """SSE event representing a single token chunk from the LLM.
-
-    Attributes:
-        type: Event type identifier ("token").
-        content: The partial text content of the token.
-    """
+    """SSE event representing a single token chunk from the LLM."""
 
     type: str = "token"
     content: str
 
 
 class ToolStartEvent(BaseModel):
-    """SSE event emitted when a tool call begins.
-
-    Attributes:
-        type: Event type identifier ("tool_start").
-        tool: The tool name being invoked.
-        input: The input arguments passed to the tool.
-    """
+    """SSE event emitted when a tool call begins."""
 
     type: str = "tool_start"
     tool: str
@@ -713,14 +161,7 @@ class ToolStartEvent(BaseModel):
 
 
 class ToolEndEvent(BaseModel):
-    """SSE event emitted when a tool call completes.
-
-    Attributes:
-        type: Event type identifier ("tool_end").
-        tool: The tool name that completed.
-        output: The tool's raw output (truncated to 2000 chars in handler).
-        elapsed_s: Time spent in the tool in seconds, rounded to one decimal.
-    """
+    """SSE event emitted when a tool call completes."""
 
     type: str = "tool_end"
     tool: str
@@ -729,24 +170,13 @@ class ToolEndEvent(BaseModel):
 
 
 class DoneEvent(BaseModel):
-    """SSE event emitted when the agent completes successfully.
-
-    Attributes:
-        type: Event type identifier ("done").
-    """
+    """SSE event emitted when the agent completes successfully."""
 
     type: str = "done"
 
 
 class HitlPendingEvent(BaseModel):
-    """SSE event emitted when the graph pauses for human approval (HITL).
-
-    Attributes:
-        type: Event type identifier ("hitl_pending").
-        tool: The tool name requiring approval.
-        input: The tool input that needs approval.
-        thread_id: The conversation thread identifier.
-    """
+    """SSE event emitted when the graph pauses for human approval (HITL)."""
 
     type: str = "hitl_pending"
     tool: str
@@ -755,12 +185,7 @@ class HitlPendingEvent(BaseModel):
 
 
 class ErrorEvent(BaseModel):
-    """SSE event emitted when an error occurs during streaming.
-
-    Attributes:
-        type: Event type identifier ("error").
-        reason: Human-readable error description.
-    """
+    """SSE event emitted when an error occurs during streaming."""
 
     type: str = "error"
     reason: str
@@ -811,14 +236,7 @@ class HistoryResponse(BaseModel):
 
 
 class AuditEntry(BaseModel):
-    """A single audit log entry.
-
-    Attributes:
-        action: "approve", "reject", or "edit".
-        details: Free-form dict of additional context.
-        timestamp: ISO-8601 timestamp string.
-        user: User identifier who performed the action.
-    """
+    """A single audit log entry."""
 
     action: str
     details: dict[str, Any]
@@ -845,45 +263,26 @@ class AuditRequest(BaseModel):
 
 
 class AuditResponse(BaseModel):
-    """Response from POST /chat/audit.
-
-    Attributes:
-        status: "recorded" on success.
-    """
+    """Response from POST /chat/audit."""
 
     status: str
 
 
 class AuditListResponse(BaseModel):
-    """Response from GET /chat/audit.
-
-    Attributes:
-        entries: List of audit entries for the thread.
-    """
+    """Response from GET /chat/audit."""
 
     entries: list[dict[str, Any]]
 
 
 class TodoEvent(BaseModel):
-    """SSE event emitted when the todos list changes.
-
-    Attributes:
-        type: Event type identifier ("todos").
-        todos: The current list of todo items from PlanningState.
-    """
+    """SSE event emitted when the todos list changes."""
 
     type: str = "todos"
     todos: list[dict[str, Any]]
 
 
 class SubagentStartEvent(BaseModel):
-    """SSE event emitted when a subagent starts.
-
-    Attributes:
-        type: Event type identifier ("subagent_start").
-        id: Identifier derived from the namespace or run id.
-        name: The graph/node name of the subagent.
-    """
+    """SSE event emitted when a subagent starts."""
 
     type: str = "subagent_start"
     id: str
@@ -891,14 +290,7 @@ class SubagentStartEvent(BaseModel):
 
 
 class SubagentEndEvent(BaseModel):
-    """SSE event emitted when a subagent ends.
-
-    Attributes:
-        type: Event type identifier ("subagent_end").
-        id: Identifier matching the subagent_start event.
-        name: The graph/node name of the subagent.
-        status: "success" or "error".
-    """
+    """SSE event emitted when a subagent ends."""
 
     type: str = "subagent_end"
     id: str
@@ -907,658 +299,9 @@ class SubagentEndEvent(BaseModel):
 
 
 class PingEvent(BaseModel):
-    """SSE heartbeat event emitted periodically to keep the connection alive.
-
-    Attributes:
-        type: Event type identifier ("ping").
-    """
+    """SSE heartbeat event emitted periodically to keep the connection alive."""
 
     type: str = "ping"
-
-
-@app.post("/chat/resume")
-async def chat_resume(request: ResumeRequest) -> dict[str, str]:
-    """Deliver an approval/reject decision for a paused HITL interrupt.
-
-    This endpoint is called by the browser when the user clicks Approve or Reject
-    on the HITL Surface component. It resolves the pending HITL interrupt by:
-
-    1. Looking up the asyncio.Event for the given thread_id in _pending_hitl
-    2. Storing the decision in _hitl_decisions for the SSE stream to read
-    3. Setting the event to unblock the waiting SSE stream
-
-    If no pending interrupt exists for the thread_id (either never registered
-    or already resolved/cleaned up), returns HTTP 409.
-
-    :param request: ResumeRequest containing thread_id and decision ("approve" | "reject").
-    :return: {"status": "ok"} on success.
-    :raises HTTPException: 409 if no pending HITL interrupt for thread_id.
-    """
-    #: Check if there is a pending HITL interrupt for this thread_id
-    ev = _pending_hitl.get(request.thread_id)
-
-    #: If no pending event exists, return 409 with detail explaining the issue
-    #: This covers two cases:
-    #: 1. The interrupt was never registered (thread_id invalid)
-    #: 2. The interrupt was already resolved and cleaned up (stream closed)
-    if ev is None:
-        raise HTTPException(
-            status_code=409,
-            detail=f"No pending HITL interrupt for thread_id={request.thread_id!r}",
-        )
-
-    #: Store the user's decision for the SSE stream to read after the event fires
-    _hitl_decisions[request.thread_id] = request.decision
-
-    #: Signal the waiting SSE stream to resume with the user's decision
-    ev.set()
-
-    return {"status": "ok"}
-
-
-@app.post("/chat")
-async def chat(request: ChatRequest) -> ChatResponse:
-    """Send a chat message to the agent and return the response.
-
-    This is the legacy synchronous chat endpoint for backward compatibility.
-    It invokes the agent synchronously and returns the final response.
-
-    :param request: Parsed chat request containing the user message and optional thread_id.
-    :return: ChatResponse with the assistant's reply and thread_id.
-    """
-    state = await get_agent_async()
-    effective_thread = request.thread_id or state.thread_id
-
-    # Invoke the agent synchronously with the message and thread config
-    result = state.agent.invoke(
-        {"messages": [HumanMessage(content=request.message)]},
-        config={
-            "configurable": {"thread_id": effective_thread},
-            "recursion_limit": 150,
-        },
-    )
-
-    # Extract the response from the result
-    messages = result.get("messages", [])
-    response_text = "(no text response)"
-
-    # Find the last AI message content
-    for msg in reversed(messages):
-        if hasattr(msg, "content") and msg.content:
-            response_text = msg.content
-            break
-
-    return ChatResponse(response=response_text, thread_id=effective_thread)
-
-
-@app.post("/chat/stream")
-async def chat_stream(request: ChatRequest) -> StreamingResponse:
-    """Send a chat message to the agent via Server-Sent Events (SSE) streaming.
-
-    This endpoint returns a text/event-stream response that emits incremental
-    events as the agent processes the request:
-
-    - "token" events for each LLM output token chunk
-    - "tool_start" events when a tool call begins
-    - "tool_end" events when a tool call completes (output truncated to 2000 chars)
-    - "hitl_pending" events when the graph pauses for human approval
-    - "done" event when the agent completes successfully
-    - "error" events when an exception occurs
-
-    The stream stays open for up to 300 seconds while waiting for HITL decisions.
-    Returns HTTP 503 if a provider switch is in progress.
-
-    :param request: Parsed chat request containing the user message and optional thread_id.
-    :return: StreamingResponse with media_type="text/event-stream".
-    :raises HTTPException: 501 if streaming is disabled, 503 if provider switch in progress.
-    """
-    # Check if streaming is enabled via settings
-    settings = get_settings()
-    if not settings.stream_enabled:
-        raise HTTPException(status_code=501, detail="Streaming is disabled.")
-
-    # Check if a provider switch is in progress and reject with 503
-    if _switching:
-        raise HTTPException(
-            status_code=503, detail="provider switch in progress"
-        )
-
-    state = await get_agent_async()
-    effective_thread = request.thread_id or state.thread_id
-
-    async def _stream_wrapper() -> AsyncGenerator[str, Any]:
-        try:
-            async for chunk in _stream_agent_events(
-                state.agent, request.message, effective_thread
-            ):
-                yield chunk
-        finally:
-            _thread_tasks.pop(effective_thread, None)
-
-    streamer = _stream_wrapper()
-    task = asyncio.create_task(streamer.__anext__())
-    _thread_tasks[effective_thread] = task
-
-    async def _consume_stream() -> AsyncGenerator[str, Any]:
-        try:
-            async for chunk in streamer:
-                yield chunk
-        except asyncio.CancelledError:
-            pass
-        finally:
-            _thread_tasks.pop(effective_thread, None)
-
-    return StreamingResponse(
-        _consume_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Thread-Id": effective_thread,  # Let client capture new thread_id
-        },
-    )
-
-
-async def _stream_agent_events(  # ruff: ignore[complex-structure]
-    agent: Any,
-    message: str,
-    thread_id: str,
-) -> AsyncGenerator[str]:
-    r"""Async generator that drives the agent and yields SSE-formatted event frames.
-
-    This function uses LangGraph's astream_events v2 API to capture all graph
-    execution events and translate them into SSE frames. It handles:
-
-    - LLM token streaming (on_chat_model_stream)
-    - Tool call start/end events (on_tool_start, on_tool_end)
-    - HITL interrupts (graph pause for human approval)
-    - Completion signals (on_chain_end with final output)
-    - Exception handling (emits error event and closes stream)
-
-    Falls back to blocking invoke() if astream_events is not available.
-
-    The generator tracks tool call timing and truncates tool output to 2000
-    characters as required by the specification.
-
-    :param agent: The compiled LangGraph runnable (agent).
-    :param message: The user message text to process.
-    :param thread_id: The conversation thread identifier.
-    :yields: SSE-formatted strings in the format "data: {json}\n\n".
-    """
-    import json
-    import time
-
-    def _sse(payload: dict[str, Any], seq: int | None = None) -> str:
-        """Format a single SSE frame with the given payload.
-
-        Each SSE frame consists of a "data:" prefix followed by JSON content,
-        ending with two newlines. The event type is embedded inside the JSON
-        payload as the "type" field for easy client-side parsing.
-
-        :param payload: Dictionary to serialize as JSON.
-        :param seq: Optional authoritative per-thread sequence number. When
-            provided it is embedded in the payload as ``"seq"`` so the wire
-            sequence stays strictly monotonic across reconnects.
-        :return: SSE-formatted string ready to send to the client.
-        """
-        if seq is not None:
-            payload = {**payload, "seq": seq}
-        return f"data: {json.dumps(payload)}\n\n"
-
-    #: Try astream_events first, fall back to invoke if not available
-    stream_fn: Any = getattr(agent, "astream_events", None)
-    if not callable(stream_fn):
-        #: Fallback to blocking invoke when astream_events is not available
-        #: Emit error event and return
-        yield _sse({"type": "error", "reason": "Streaming not supported"})
-        return
-
-    tool_start_times: dict[str, float] = {}
-    last_ping_time = time.monotonic()
-    seen_subagents: set[str] = set()
-
-    try:  # ruff: ignore[too-many-statements-in-try-clause]
-        #: Emit initial ping to confirm connection
-        yield _sse({"type": "ping"})
-
-        async for event in stream_fn(  # type: ignore[operator]
-            {"messages": [HumanMessage(content=message)]},
-            config={
-                "configurable": {"thread_id": thread_id},
-                "recursion_limit": 150,
-            },
-            version="v2",
-        ):
-            etype = event.get("event", "")
-            data = event.get("data", {})
-            event_name = event.get("name", "")
-
-            #: Periodic ping to keep connection alive
-            now = time.monotonic()
-            if now - last_ping_time >= _PING_INTERVAL_S:
-                yield _sse({"type": "ping"})
-                last_ping_time = now
-
-            if etype == "on_chat_model_stream":
-                chunk = data.get("chunk")
-                if chunk:
-                    content = getattr(chunk, "content", None) or ""
-                    if content:
-                        yield _sse({"type": "token", "content": content})
-
-            elif etype == "on_tool_start":
-                tool_start_times[event_name] = time.monotonic()
-                yield _sse({
-                    "type": "tool_start",
-                    "tool": event_name,
-                    "input": data.get("input", {}),
-                })
-
-            elif etype == "on_tool_end":
-                elapsed = round(
-                    time.monotonic()
-                    - tool_start_times.pop(event_name, time.monotonic()),
-                    1,  # Round to one decimal place
-                )
-                raw_output = str(data.get("output", ""))
-                output = raw_output[:2000]
-                yield _sse({
-                    "type": "tool_end",
-                    "tool": event_name,
-                    "output": output,
-                    "elapsed_s": elapsed,
-                })
-
-            elif etype == "on_chain_start":
-                #: Detect subagent start from lifecycle events
-                if event_name and event_name not in seen_subagents:
-                    # Heuristic: subagent nodes often have names like "agent:xxx" or "subgraph:xxx"
-                    if ":" in event_name or event_name.startswith("agent"):
-                        seen_subagents.add(event_name)
-                        yield _sse({
-                            "type": "subagent_start",
-                            "id": event_name,
-                            "name": event_name,
-                        })
-
-            elif etype == "on_chain_end":
-                output = data.get("output", {})
-                if isinstance(output, dict) and output.get("__interrupt__"):
-                    interrupt_info = output["__interrupt__"]
-                    tool_name = interrupt_info.get("tool", "")
-                    tool_input = interrupt_info.get("input", {})
-
-                    yield _sse({
-                        "type": "hitl_pending",
-                        "tool": tool_name,
-                        "input": tool_input,
-                        "thread_id": thread_id,
-                    })
-
-                    ev = _pending_hitl.get(thread_id)
-                    if ev is not None:
-                        try:
-                            await asyncio.wait_for(ev.wait(), timeout=300.0)
-                        except TimeoutError:
-                            yield _sse({
-                                "type": "error",
-                                "reason": "hitl_timeout",
-                            })
-                            return
-                        finally:
-                            _pending_hitl.pop(thread_id, None)
-                            _hitl_decisions.pop(thread_id, None)
-
-                #: Detect subagent end from lifecycle events
-                if event_name and event_name in seen_subagents:
-                    seen_subagents.discard(event_name)
-                    status = (
-                        "error"
-                        if isinstance(output, dict) and output.get("error")
-                        else "success"
-                    )
-                    yield _sse({
-                        "type": "subagent_end",
-                        "id": event_name,
-                        "name": event_name,
-                        "status": status,
-                    })
-
-                #: Emit todos update if present in state output
-                if isinstance(output, dict) and "todos" in output:
-                    yield _sse({
-                        "type": "todos",
-                        "todos": output["todos"],
-                    })
-
-        yield _sse({"type": "ping"})
-        yield _sse({"type": "done"})
-
-    except asyncio.CancelledError:
-        _pending_hitl.pop(thread_id, None)
-        _hitl_decisions.pop(thread_id, None)
-        return
-
-    except Exception as exc:
-        #: Re-raise the exception as an HTTP 500 error for the client
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    finally:
-        #: Ensure any exceptions are caught and converted to SSE error events
-        if "exc" in locals():
-            yield _sse({"type": "error", "reason": "internal_error"})
-
-
-@app.post("/chat/cancel")
-async def chat_cancel(request: CancelRequest) -> dict[str, str]:
-    """Cancel a running agent thread.
-
-    This endpoint is called by the browser when the user clicks a Cancel button.
-    It looks up the asyncio.Task for the given thread_id in ``_thread_tasks``
-    and cancels it. If the task is already done or no task is registered for
-    the thread, returns HTTP 409.
-
-    :param request: CancelRequest containing the thread_id to cancel.
-    :return: {"status": "canceled"} on success.
-    :raises HTTPException: 409 if no running task for thread_id.
-    """
-    task = _thread_tasks.get(request.thread_id)
-    if task is None or task.done():
-        raise HTTPException(
-            status_code=409,
-            detail=f"No running task for thread_id={request.thread_id!r}",
-        )
-    task.cancel()
-    return {"status": "cancelled"}
-
-
-@app.get("/chat/history")
-async def chat_history(thread_id: str, limit: int = 20) -> HistoryResponse:
-    """Return the message history for a thread.
-
-    This endpoint reads the checkpointed state for the given thread_id and
-    returns the list of messages. If the thread has no history, returns an
-    empty list.
-
-    :param thread_id: The thread whose history is requested.
-    :param limit: Maximum number of messages to return (default 20).
-    :return: HistoryResponse with a list of message dicts.
-    """
-    state = await get_agent_async()
-    checkpointer = getattr(state.agent, "checkpointer", None)
-    if checkpointer is None:
-        return HistoryResponse(messages=[])
-
-    try:
-        config = {"configurable": {"thread_id": thread_id}}
-        state_data = await checkpointer.aget(config)
-        messages = state_data.get("messages", []) if state_data else []
-        # Convert message objects to dicts, truncating to limit
-        result = []
-        for msg in messages[-limit:]:
-            if hasattr(msg, "to_dict"):
-                result.append(msg.to_dict())
-            elif hasattr(msg, "content"):
-                result.append({"role": "user", "content": msg.content})
-            else:
-                result.append({"role": "user", "content": str(msg)})
-        return HistoryResponse(messages=result)
-    except Exception as e:
-        logger.exception(f"Error occurred while fetching chat history: {e}")
-        return HistoryResponse(messages=[])
-
-
-@app.post("/chat/audit")
-async def chat_audit(request: AuditRequest) -> AuditResponse:
-    """Record an audit log entry for a thread.
-
-    This endpoint is called by the browser when the user performs an action
-    that should be audited (approve, reject, edit). It stores the entry in
-    the in-memory ``_audit_store``.
-
-    :param request: AuditRequest containing thread_id, action, details, timestamp, and user.
-    :return: AuditResponse with status "recorded".
-    """
-    entry = {
-        "thread_id": request.thread_id,
-        "action": request.action,
-        "details": request.details,
-        "timestamp": request.timestamp,
-        "user": request.user,
-    }
-    _audit_store.append(entry)
-    return AuditResponse(status="recorded")
-
-
-@app.get("/chat/audit")
-async def chat_audit_list(thread_id: str) -> AuditListResponse:
-    """List audit log entries for a thread.
-
-    :param thread_id: The thread whose audit entries are requested.
-    :return: AuditListResponse with a list of audit entries.
-    """
-    entries = [e for e in _audit_store if e.get("thread_id") == thread_id]
-    return AuditListResponse(entries=entries)
-
-
-#: -------------------------------------------------------------------
-#: LangGraph Protocol v2 endpoints (for useStream frontend SDK)
-#: -------------------------------------------------------------------
-
-#: Per-thread event queues for protocol v2 SSE streaming.
-#: Maps thread_id → list of (seq, event_dict) tuples.
-_protocol_event_queues: dict[str, list[tuple[int, dict[str, Any]]]] = {}
-#: Maps thread_id → asyncio.Event for notifying the stream that new events are available.
-_protocol_stream_notifiers: dict[str, asyncio.Event] = {}
-#: Maps thread_id → set of active stream tasks (for cleanup).
-_protocol_stream_tasks: dict[str, set[asyncio.Task]] = {}
-#: Maps thread_id → interrupt_id for the currently pending HITL interrupt.
-_pending_interrupt_ids: dict[str, str] = {}
-#: Maps thread_id → the raw ``value`` of the pending input-requested event
-#: (a LangChain HITLRequest or serialized Interrupt) so resume handlers can
-#: pad decision lists to the number of pending interrupts.
-_hitl_payloads: dict[str, Any] = {}
-
-
-def _get_or_create_queue(thread_id: str) -> list[tuple[int, dict[str, Any]]]:
-    """Get or create the event queue for a thread.
-
-    :param thread_id: The thread identifier.
-    :return: The list of (seq, event_dict) tuples for the thread.
-    """
-    if thread_id not in _protocol_event_queues:
-        _protocol_event_queues[thread_id] = []
-    return _protocol_event_queues[thread_id]
-
-
-def _get_or_create_notifier(thread_id: str) -> asyncio.Event:
-    """Get or create the notifier event for a thread.
-
-    :param thread_id: The thread identifier.
-    :return: The asyncio.Event for the thread.
-    """
-    if thread_id not in _protocol_stream_notifiers:
-        _protocol_stream_notifiers[thread_id] = asyncio.Event()
-    return _protocol_stream_notifiers[thread_id]
-
-
-def _push_protocol_event(thread_id: str, event: dict[str, Any]) -> None:
-    """Push a protocol event to the thread's queue and notify listeners.
-
-    :param thread_id: The thread identifier.
-    :param event: The event dictionary to push.
-    """
-    queue = _get_or_create_queue(thread_id)
-    notifier = _get_or_create_notifier(thread_id)
-    seq = len(queue) + 1
-    queue.append((seq, event))
-
-    # Track interrupt IDs so we can match input.respond calls
-    if event.get("method") == "input":
-        params = event.get("params", {})
-        data = params.get("data", {})
-        if data.get("event") == "input-requested":
-            interrupt_id = data.get("id")
-            if interrupt_id:
-                _pending_interrupt_ids[thread_id] = interrupt_id
-            #: Keep the full payload (HITLRequest / Interrupt) so the resume
-            #: path knows how many interrupts need decisions.
-            _hitl_payloads[thread_id] = data.get("value")
-
-    notifier.set()
-
-
-def _extract_decision(response: Any) -> str:
-    """Extract approve/reject decision from a protocol v2 input.respond response.
-
-    Handles both the standard protocol format (plain value or object with
-    ``type``/``decisions``) and the legacy custom format.
-
-    :param response: The raw response from the client.
-    :return: "approve" or "reject".
-    """
-    if isinstance(response, dict):
-        # Standard protocol: {type: "approve"} or {decisions: [{type: "approve"}]}
-        decisions = response.get("decisions")
-        if isinstance(decisions, list) and decisions:
-            first = decisions[0]
-            if isinstance(first, dict):
-                return "approve" if first.get("type") == "approve" else "reject"
-        # Single decision object
-        if "type" in response:
-            return "approve" if response.get("type") == "approve" else "reject"
-        # DeepAgents-style: {approved: true}
-        if "approved" in response:
-            return "approve" if response.get("approved") else "reject"
-    # Plain truthy/falsy value
-    return "approve" if response else "reject"
-
-
-def _interrupt_action_count(value: Any) -> int:
-    """Best-effort count of interrupts represented by a stored payload.
-
-    LangChain's HITL middleware validates one decision per interrupted tool
-    call, so the resume path needs to know how many decisions the client
-    must supply (or have us pad).
-
-    :param value: Raw ``value`` captured from an ``input-requested`` event.
-    :return: Number of pending interrupts (minimum 1).
-    """
-    if isinstance(value, dict):
-        requests = value.get("action_requests")
-        if isinstance(requests, list) and requests:
-            return len(requests)
-        return 1
-    if isinstance(value, list | tuple) and value:
-        return len(value)
-    return 1
-
-
-def _build_resume_value(
-    response: Any, expected_count: int | None = None
-) -> dict[str, Any]:
-    """Normalize an ``input.respond`` payload into a LangChain HITL response.
-
-    Accepted client shapes:
-
-    * ``{"decisions": [{...}, ...]}`` — passed through verbatim
-    * a single decision object ``{"type": "approve"|"edit"|"reject"|"respond"}``
-    * legacy ``{"approved": bool}``
-    * any plain truthy/falsy value
-
-    When *expected_count* is known and fewer decisions are supplied, the
-    last decision is repeated so the middleware's one-decision-per-interrupt
-    validation passes.
-
-    :param response: Raw ``response`` field from the command params.
-    :param expected_count: Pending-interrupt count from the stored payload.
-    :return: ``{"decisions": [...]}`` ready for ``Command(resume=...)``.
-    """
-    decisions: list[Any] | None = None
-    if isinstance(response, dict):
-        raw = response.get("decisions")
-        if (
-            isinstance(raw, list)
-            and raw
-            and all(isinstance(d, dict) and "type" in d for d in raw)
-        ):
-            decisions = list(raw)
-        elif "type" in response:
-            decisions = [response]
-        elif "approved" in response:
-            decisions = [
-                {"type": "approve"}
-                if response["approved"]
-                else {"type": "reject"}
-            ]
-    if decisions is None:
-        decisions = [{"type": "approve" if response else "reject"}]
-    if expected_count and len(decisions) < expected_count:
-        decisions += [decisions[-1]] * (expected_count - len(decisions))
-    return {"decisions": decisions}
-
-
-async def _register_pending_hitl(thread_id: str) -> None:
-    """Mark *thread_id* as paused-on-interrupt when its latest state says so.
-
-    Probes the agent's checkpointer: a non-empty ``snapshot.next`` means a
-    run is suspended awaiting interrupt resolution.  Registration is what
-    makes ``input.respond`` willing to spawn a resume task.
-
-    :param thread_id: Thread whose latest checkpoint should be inspected.
-    :return: None
-    """
-    try:
-        state = await get_agent_async()
-        snapshot = await state.agent.aget_state({
-            "configurable": {"thread_id": thread_id}
-        })
-    except Exception as exc:  # pragma: no cover - defensive probe
-        logger.warning("HITL state probe failed for %s: %s", thread_id, exc)
-        return
-    if getattr(snapshot, "next", None) and thread_id not in _pending_hitl:
-        _pending_hitl[thread_id] = asyncio.Event()
-
-
-async def _resume_run(thread_id: str, resume_value: dict[str, Any]) -> None:
-    """Resume a paused run and stream continuation events into its queue.
-
-    Mirrors the ``run.start`` background task but feeds the human decision
-    back through :func:`translate_resume` (LangGraph ``Command(resume=...)``
-    on the same checkpointer thread).
-
-    :param thread_id: Thread whose run is paused on an interrupt.
-    :param resume_value: Normalised HITL decisions payload.
-    :return: None
-    """
-    try:
-        print(f"[DEBUG] Resuming thread {thread_id} with {resume_value}")
-        state = await get_agent_async()
-        async for event in translate_resume(
-            state.agent, resume_value, thread_id
-        ):
-            _evt_data = event.get("params", {}).get("data", {})
-            print(
-                f"[DEBUG] Resume event: {event.get('method')} "
-                f"{_evt_data.get('event', '')}"
-            )
-            _push_protocol_event(thread_id, event)
-        # The continuation may itself pause again on another interrupt —
-        # re-register so a follow-up input.respond keeps working.
-        await _register_pending_hitl(thread_id)
-        print(f"[DEBUG] Resume stream completed for thread {thread_id}")
-    except asyncio.CancelledError:
-        print(f"[DEBUG] Resume cancelled for thread {thread_id}")
-    except Exception as exc:
-        logger.exception("Resume failed for thread %s: %s", thread_id, exc)
-        _push_protocol_event(
-            thread_id,
-            {
-                "method": "lifecycle",
-                "params": {
-                    "namespace": [],
-                    "data": {"event": "failed", "error": str(exc)},
-                },
-            },
-        )
 
 
 class ProtocolCommand(BaseModel):
@@ -1605,652 +348,6 @@ class ThreadCreatePayload(BaseModel):
     if_exists: str | None = None
 
 
-@app.post("/threads")
-async def create_thread(payload: ThreadCreatePayload) -> dict[str, Any]:
-    """Create a new thread.
-
-    The SDK calls ``client.threads.create()`` before streaming.  We accept an
-    optional client-generated ``thread_id`` (UUIDv7) and return the canonical
-    thread representation the SDK expects.
-
-    :param payload: Thread creation payload.
-    :return: Created thread dict with thread_id, created_at, metadata, values, updated_at.
-    """
-    import datetime
-
-    thread_id = payload.thread_id or uuid.uuid4().hex
-    now = datetime.datetime.now(datetime.UTC).isoformat()
-
-    return {
-        "thread_id": thread_id,
-        "created_at": now,
-        "updated_at": now,
-        "metadata": payload.metadata or {},
-        "values": {},
-    }
-
-
-@app.post("/threads/{thread_id}/commands")
-async def thread_commands(
-    thread_id: str, command: ProtocolCommand
-) -> dict[str, Any]:
-    """Handle a LangGraph protocol v2 command.
-
-    Supported commands:
-    * ``run.start`` — start a new run with the given input
-    * ``input.respond`` — respond to a pending HITL interrupt
-    * ``run.stop`` — cancel a running
-
-    :param thread_id: The thread to execute the command on.
-    :param command: The protocol command to execute.
-    :return: Command result dict.
-    """
-    method = command.method
-    params = command.params or {}
-
-    def _ok(result: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Build a protocol v2 CommandResponse echoing the command id."""
-        return {
-            "type": "success",
-            "id": command.id if command.id is not None else 0,
-            "result": result or {},
-        }
-
-    if method == "run.start":
-        # Extract input from params
-        input_data = params.get("input", {})
-        messages = input_data.get("messages", [])
-        human_msg = next(
-            (m for m in messages if m.get("type") in ("human", "user")), None
-        )
-        text = human_msg.get("content", "") if human_msg else ""
-
-        if not text:
-            return _ok()
-
-        state = await get_agent_async(thread_id or None)
-        effective_thread = thread_id or state.thread_id
-
-        #: Concurrency guard: one run per thread at a time. Overlapping runs
-        #: interleave on the same checkpointer thread and each emits its own
-        #: terminal frame — the first one flips the UI to Idle while the
-        #: other generation keeps running orphaned in the backend.
-        existing = _thread_tasks.get(effective_thread)
-        if existing is not None and not existing.done():
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "A run is already active on this thread. Wait for it to "
-                    "finish or cancel it before sending a new message."
-                ),
-            )
-
-        async def _run():
-            """Background task to drive the agent and push events to the SSE queue.
-
-            :return: None
-            """
-            try:
-                print(
-                    f"[DEBUG] Starting stream for thread {effective_thread}, text: {text[:50]}"
-                )
-                #: Collapse per-token spam: content-block-delta frames are
-                #: counted and reported as one summary line instead of one
-                #: print each, so meaningful lifecycle/tool events stay
-                #: visible in the console.
-                delta_count = 0
-                async for event in translate_stream(
-                    state.agent, text, effective_thread
-                ):
-                    evt_method = event.get("method", "")
-                    _evt_data = event.get("params", {}).get("data", {})
-                    if evt_method == "messages" and _evt_data.get("event") in (
-                        "content-block-delta",
-                        "message-start",
-                        "message-finish",
-                    ):
-                        # Always pushed to the SSE queue — only the console
-                        # print is suppressed for per-token deltas.
-                        _push_protocol_event(effective_thread, event)
-                        if _evt_data.get("event") == "content-block-delta":
-                            delta_count += 1
-                            continue  # no print per token
-                        print(
-                            f"[DEBUG] Pushing event: messages "
-                            f"{_evt_data.get('event')}"
-                        )
-                    else:
-                        print(
-                            f"[DEBUG] Pushing event: {evt_method} "
-                            f"{_evt_data.get('event', '')}"
-                            + (
-                                f" | error: {_evt_data.get('error')}"
-                                if _evt_data.get("error")
-                                else ""
-                            )
-                        )
-                    _push_protocol_event(effective_thread, event)
-                if delta_count:
-                    print(
-                        f"[DEBUG] ({delta_count} streaming deltas suppressed)"
-                    )
-                print(
-                    f"[DEBUG] TERMINAL: stream loop ended for thread "
-                    f"{effective_thread} — if Ollama is still busy after this "
-                    f"line, something ended the graph early."
-                )
-                #: If the run paused on an HITL interrupt, register it so a
-                #: later input.respond can resume this same checkpointer
-                #: thread instead of dead-ending.
-                await _register_pending_hitl(effective_thread)
-            except asyncio.CancelledError:
-                print(f"[DEBUG] Stream cancelled for thread {effective_thread}")
-            except Exception as exc:
-                print(
-                    f"[DEBUG] Stream error for thread {effective_thread}: {exc}"
-                )
-                #: No "seq" here on purpose — _push_protocol_event assigns the
-                #: authoritative per-thread seq, and the SSE endpoint overrides
-                #: the payload seq with it before writing the frame.
-                _push_protocol_event(
-                    effective_thread,
-                    {
-                        "method": "lifecycle",
-                        "params": {
-                            "namespace": [],
-                            "data": {"event": "failed", "error": str(exc)},
-                        },
-                    },
-                )
-
-        task = asyncio.create_task(_run())
-        _thread_tasks[effective_thread] = task
-        return _ok({"run_id": str(uuid.uuid4())})
-
-    elif method == "input.respond":
-        # Standard protocol v2 format:
-        # params: { namespace, interrupt_id, response, update?, goto?, config?, metadata? }
-        response = params.get("response", {})
-        interrupt_id = params.get("interrupt_id")
-
-        # Validate interrupt_id if provided
-        if interrupt_id:
-            expected_id = _pending_interrupt_ids.get(thread_id)
-            if expected_id and expected_id != interrupt_id:
-                return {"status": "error", "error": "interrupt_id mismatch"}
-
-        # Resume is only meaningful when the thread actually sits on an
-        # interrupt; fall back to probing the checkpointer when the
-        # post-stream registration was missed (e.g. restart between pause
-        # and respond).
-        if thread_id not in _pending_hitl:
-            await _register_pending_hitl(thread_id)
-        if thread_id not in _pending_hitl:
-            return {"status": "error", "error": "no pending interrupt"}
-
-        # Build the LangChain HITL payload and let a background task drive
-        # Command(resume=...) through the same protocol translation used by
-        # run.start so the UI keeps receiving normal stream events.
-        payload_value = _hitl_payloads.get(thread_id)
-        resume_value = _build_resume_value(
-            response, _interrupt_action_count(payload_value)
-        )
-        task = asyncio.create_task(_resume_run(thread_id, resume_value))
-        _thread_tasks[thread_id] = task
-
-        # The decision has been consumed — clear per-thread bookkeeping so
-        # stale ids can't validate a second response.
-        _pending_hitl.pop(thread_id, None)
-        _hitl_payloads.pop(thread_id, None)
-        _pending_interrupt_ids.pop(thread_id, None)
-        return _ok()
-
-    elif method == "run.stop":
-        task = _thread_tasks.get(thread_id)
-        if task and not task.done():
-            task.cancel()
-        return _ok()
-
-    return _ok()
-
-
-@app.get("/threads/{thread_id}/stream/events")
-async def thread_stream_events(
-    thread_id: str,
-    channels: str | None = None,
-    since: int | None = None,
-) -> StreamingResponse:
-    """Open a LangGraph protocol v2 SSE event stream.
-
-    Uses GET with query params — compatible with the @langchain/react
-    built-in SSE transport which uses EventSource (GET-only).
-
-    :param thread_id: The thread to stream events for.
-    :param channels: Comma-separated list of channels to subscribe to.
-    :param since: Sequence number to resume from.
-    :return: StreamingResponse with protocol v2 SSE events.
-    """
-    _channels = (
-        channels.split(",")
-        if channels
-        else [
-            "values",
-            "messages",
-            "tools",
-            "lifecycle",
-            "input",
-        ]
-    )
-    _since: int = since or 0
-
-    effective_thread = thread_id
-    queue = _get_or_create_queue(effective_thread)
-    notifier = _get_or_create_notifier(effective_thread)
-
-    async def _event_stream():
-        """Async generator that yields SSE frames for the given thread.
-
-        :yields: SSE-formatted strings in the format "data: {json}\n\n".
-        """
-        nonlocal _since
-        try:
-            # Replay events since the given since value.
-            # NOTE: `since` MUST advance here too — otherwise the first
-            # live-drain below re-yields everything we just replayed,
-            # producing duplicate frames with regressing seq numbers
-            # (which stalls the @langchain/protocol client).
-            for seq, event in queue:
-                if seq > _since:
-                    _since = seq
-                    #: Override the payload seq with the authoritative
-                    #: per-thread queue seq so the wire sequence stays
-                    #: strictly monotonic across multiple runs.
-                    yield _sse(event, seq=seq)
-                else:
-                    # Skip events already seen
-                    pass
-
-            # Stream new events as they arrive
-            while True:
-                await notifier.wait()
-                notifier.clear()
-
-                # Drain any new events
-                for seq, event in queue:
-                    if seq > _since:
-                        _since = seq
-                        yield _sse(event, seq=seq)
-
-                # Small sleep to avoid busy-looping
-                await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            #: Never swallow stream errors silently — a NameError here
-            #: previously killed every SSE connection with no trace.
-            logger.exception(f"protocol v2 event stream failed: {e}")
-
-    return StreamingResponse(
-        _event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-        },
-    )
-
-
-@app.post("/threads/{thread_id}/stream/events")
-async def thread_stream_events_post(
-    thread_id: str, request: ProtocolStreamRequest
-) -> StreamingResponse:
-    """Open a LangGraph protocol v2 SSE event stream via POST.
-
-    The @langchain/langgraph-sdk SSE transport (``openEventStream``)
-    issues a POST with a JSON body (``channels``, ``namespaces``,
-    ``depth``, ``since``) rather than query params. This handler mirrors
-    :func:`thread_stream_events` (GET) but parses the request body so the
-    SDK's built-in transport works without a custom fetch override.
-
-    :param thread_id: The thread to stream events for.
-    :param request: Parsed :class:`ProtocolStreamRequest` body.
-    :return: StreamingResponse with protocol v2 SSE events.
-    """
-    _channels = request.channels or [
-        "values",
-        "messages",
-        "tools",
-        "lifecycle",
-        "input",
-    ]
-    _since: int = request.since or 0
-
-    effective_thread = thread_id
-    queue = _get_or_create_queue(effective_thread)
-    notifier = _get_or_create_notifier(effective_thread)
-
-    async def _event_stream():
-        """Async generator that yields SSE frames for the given thread.
-
-        :yields: SSE-formatted strings in the format "data: {json}\n\n".
-        """
-        nonlocal _since
-        try:
-            # Replay events since the given since value.
-            for seq, event in queue:
-                if seq > _since:
-                    _since = seq
-                    yield _sse(event, seq=seq)
-
-            # Stream new events as they arrive
-            while True:
-                await notifier.wait()
-                notifier.clear()
-
-                for seq, event in queue:
-                    if seq > _since:
-                        _since = seq
-                        yield _sse(event, seq=seq)
-
-                await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            logger.exception(f"protocol v2 event stream failed: {e}")
-
-    return StreamingResponse(
-        _event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-        },
-    )
-
-
-@app.post("/threads/{thread_id}/runs/stream")
-async def thread_runs_stream(
-    thread_id: str,
-    request: dict[str, Any],
-) -> StreamingResponse:
-    """Start a run and stream SSE events.
-
-    This endpoint is called by the SDK's ``client.runs.stream()`` method.
-    It accepts the SDK's stream payload, starts the agent run, and returns
-    an SSE stream with a ``Content-Location`` header that the SDK uses to
-    extract the run ID.
-
-    :param thread_id: The thread to start the run for.
-    :param request: SDK stream payload (input, config, stream_mode, etc.).
-    :return: StreamingResponse with SSE events and Content-Location header.
-    """
-    run_id = str(uuid.uuid4())
-
-    input_data = request.get("input", {})
-    messages = input_data.get("messages", [])
-    human_msg = next(
-        (m for m in messages if m.get("type") in ("human", "user")), None
-    )
-    text = human_msg.get("content", "") if human_msg else ""
-
-    async def _event_stream():
-        """Async generator that yields SSE frames for the run."""
-        if not text:
-            yield _sse({
-                "method": "lifecycle",
-                "params": {
-                    "namespace": [],
-                    "data": {
-                        "event": "failed",
-                        "error": "No message content",
-                    },
-                },
-            })
-            return
-
-        state = await get_agent_async()
-        effective_thread = thread_id
-
-        async def _run():
-            try:
-                async for event in translate_stream(
-                    state.agent, text, effective_thread
-                ):
-                    _push_protocol_event(effective_thread, event)
-            except asyncio.CancelledError:
-                pass
-            except Exception as exc:
-                _push_protocol_event(
-                    effective_thread,
-                    {
-                        "method": "lifecycle",
-                        "params": {
-                            "namespace": [],
-                            "data": {"event": "failed", "error": str(exc)},
-                        },
-                    },
-                )
-
-        task = asyncio.create_task(_run())
-        _thread_tasks[effective_thread] = task
-
-        # Stream events from the queue
-        queue = _get_or_create_queue(effective_thread)
-        notifier = _get_or_create_notifier(effective_thread)
-        seq = 0
-
-        try:
-            while True:
-                await notifier.wait()
-                notifier.clear()
-
-                for qseq, event in queue:
-                    if qseq > seq:
-                        seq = qseq
-                        yield _sse(event, seq=qseq)
-
-                if task.done():
-                    # Drain remaining events
-                    for qseq, event in queue:
-                        if qseq > seq:
-                            seq = qseq
-                            yield _sse(event, seq=qseq)
-                    break
-
-                await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            pass
-
-    return StreamingResponse(
-        _event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Content-Location": f"/threads/{thread_id}/runs/{run_id}",
-        },
-    )
-
-
-@app.get("/threads/{thread_id}/runs/{run_id}/stream")
-async def thread_runs_join_stream(
-    thread_id: str,
-    run_id: str,
-    last_event_id: str | None = Header(None),
-) -> StreamingResponse:
-    """Reconnect to an existing run's SSE event stream.
-
-    This endpoint is called by the SDK's ``client.runs.joinStream()`` method
-    for idle-reconnect. It replays events from the thread's event queue
-    starting after ``last_event_id``.
-
-    :param thread_id: The thread to stream events for.
-    :param run_id: The run ID (unused, but part of the URL).
-    :param last_event_id: The last event ID the client received (from Last-Event-ID header).
-    :return: StreamingResponse with SSE events.
-    """
-    _since = (
-        int(last_event_id) if last_event_id and last_event_id != "-1" else 0
-    )
-
-    queue = _get_or_create_queue(thread_id)
-    notifier = _get_or_create_notifier(thread_id)
-
-    async def _event_stream():
-        nonlocal _since
-        try:
-            # Replay events since the given since value.
-            for seq, event in queue:
-                if seq > _since:
-                    _since = seq
-                    yield _sse(event, seq=seq)
-
-            # Stream new events as they arrive
-            while True:
-                await notifier.wait()
-                notifier.clear()
-
-                for seq, event in queue:
-                    if seq > _since:
-                        _since = seq
-                        yield _sse(event, seq=seq)
-
-                await asyncio.sleep(0.01)
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            logger.exception(f"join stream failed: {e}")
-
-    return StreamingResponse(
-        _event_stream(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-        },
-    )
-
-
-@app.post("/threads/{thread_id}/runs/{run_id}/cancel")
-async def thread_runs_cancel(
-    thread_id: str,
-    run_id: str,
-) -> dict[str, Any]:
-    """Cancel a running task.
-
-    This endpoint is called by the SDK's ``client.runs.cancel()`` method.
-
-    :param thread_id: The thread to cancel the run for.
-    :param run_id: The run ID (unused, but part of the URL).
-    :return: Empty success response.
-    """
-    task = _thread_tasks.get(thread_id)
-    if task and not task.done():
-        task.cancel()
-    return {}
-
-
-@app.post("/threads/{thread_id}/history")
-async def thread_history(
-    thread_id: str,
-    request: dict[str, Any],
-) -> list[dict[str, Any]]:
-    """Get past states for a thread.
-
-    This endpoint is called by the SDK's client.threads.getHistory()
-    method. It returns a list of past thread states (checkpoints) that the
-    SDK uses for history navigation and message reconstruction.
-
-    :param thread_id: The thread to get history for.
-    :param request: History request payload (limit, before, metadata, checkpoint).
-    :return: List of thread state dicts.
-    """
-    state = await get_agent_async()
-    checkpointer = getattr(state.agent, "checkpointer", None)
-    if checkpointer is None:
-        return []
-
-    try:
-        config = {"configurable": {"thread_id": thread_id}}
-        state_data = await checkpointer.aget(config)
-        if not state_data:
-            return []
-
-        messages = state_data.get("messages", [])
-        values = {k: v for k, v in state_data.items() if k != "messages"}
-
-        return [
-            {
-                "values": values,
-                "messages": [
-                    msg.to_dict() if hasattr(msg, "to_dict") else str(msg)
-                    for msg in messages
-                ],
-                "next": [],
-                "tasks": [],
-            }
-        ]
-    except Exception as e:
-        logger.exception(f"Error occurred while fetching thread history: {e}")
-        return []
-
-
-@app.get("/threads/{thread_id}/state")
-async def thread_state(thread_id: str) -> dict[str, Any]:
-    """Get the current state of a thread.
-
-    :param thread_id: The thread to get state for.
-    :return: Current thread state dict.
-    """
-    state = await get_agent_async()
-    checkpointer = getattr(state.agent, "checkpointer", None)
-    if checkpointer is None:
-        return {"values": {}, "next": [], "tasks": []}
-
-    try:
-        config = {"configurable": {"thread_id": thread_id}}
-        state_data = await checkpointer.aget(config)
-        if not state_data:
-            return {"values": {}, "next": [], "tasks": []}
-
-        messages = state_data.get("messages", [])
-        values = {k: v for k, v in state_data.items() if k != "messages"}
-
-        return {
-            "values": values,
-            "messages": [
-                msg.to_dict() if hasattr(msg, "to_dict") else str(msg)
-                for msg in messages
-            ],
-            "next": [],
-            "tasks": [],
-        }
-    except Exception as e:
-        logger.exception(f"Error occurred while fetching thread state: {e}")
-        return {"values": {}, "next": [], "tasks": []}
-
-
-@app.get("/models")
-def list_models_endpoint() -> dict[str, Any]:
-    """Return available models for the dynamic model selector.
-
-    Lists every model declared in the ``providers`` block of
-    ``config/bergagents.jsonc`` via the provider registry. The frontend uses
-    this to populate the model selector dropdown; each entry carries its
-    resolved provider and base_url so selection needs no extra logic.
-
-    :return: ``{"models": [{"provider", "model", "base_url", "display_name", "is_active"}]}
-    """
-    cfg = load_config()
-    models = registry_list_models(cfg)
-    #: The startup default (explicit or first declared) is marked active so
-    #: the dropdown can highlight it before any per-thread switch happens.
-    try:
-        default = resolve_model(cfg.get("default_model") or None, cfg)
-        default_id = default["model"]
-    except KeyError:
-        default_id = None
-    for entry in models:
-        entry["is_active"] = entry["model"] == default_id
-    return {"models": models}
-
-
 class SwitchModelRequest(BaseModel):
     """Body for switching a thread's model.
 
@@ -2265,81 +362,420 @@ class SwitchModelRequest(BaseModel):
     base_url: str | None = None
 
 
+# ---------------------------------------------------------------------------
+# Middleware
+# ---------------------------------------------------------------------------
+
+
+class AuthMiddleware:
+    """Reject requests that lack a valid auth token when one is configured.
+
+    The expected token is read from the ``BERG_AGENT_AUTH_TOKEN`` environment
+    variable and compared against the ``X-CodeAgent-Auth-Token`` header.
+    This provides a simple way to password-protect the web API when exposed
+    to untrusted networks.
+    When no ``BERG_AGENT_AUTH_TOKEN`` is set, the middleware allows all requests.
+
+    Attributes:
+        app: The wrapped ASGI application.
+    """
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = {
+            k.decode().lower(): v.decode() for k, v in scope.get("headers", [])
+        }
+        token = headers.get("x-codeagent-auth-token")
+        expected = get_settings().auth_token
+
+        if expected is not None and token != expected:
+            from fastapi.responses import JSONResponse
+
+            response = JSONResponse(
+                content={"detail": "Unauthorized"}, status_code=401
+            )
+            await response(scope, receive, send)
+            return
+
+        await self.app(scope, receive, send)
+
+
+class RequestLoggingMiddleware:
+    """Log all incoming requests for debugging."""
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] == "http":
+            method = scope.get("method", "?")
+            path = scope.get("path", "?")
+            query = scope.get("query_string", b"").decode(
+                "utf-8", errors="replace"
+            )
+            print(f"[REQ] {method} {path}?{query}")
+        await self.app(scope, receive, send)
+
+
+# ---------------------------------------------------------------------------
+# FastAPI application
+# ---------------------------------------------------------------------------
+
+# noinspection argument-equal-default
+app = FastAPI(
+    title="Berg Agents Web UI",
+    description=(
+        "Web interface for the berg_agents capability layer: list "
+        "capabilities and invoke them through the audited registry."
+    ),
+    version="0.1.0",
+)
+
+if get_settings().auth_token is not None:
+    app.add_middleware(AuthMiddleware)
+
+app.add_middleware(  # type: ignore[arg-type]
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-CodeAgent-Auth-Token"],
+)
+
+app.add_middleware(RequestLoggingMiddleware)
+
+
+# ---------------------------------------------------------------------------
+# Route handlers — every handler delegates to LangGraphChatServer
+# ---------------------------------------------------------------------------
+
+
+@app.get("/providers")
+async def list_providers() -> ProviderListResponse:
+    """Return all configured providers and their available models."""
+    server = get_server()
+    raw = server.list_providers()
+    return ProviderListResponse(providers=[ProviderConfig(**p) for p in raw])
+
+
+@app.get("/providers/active")
+async def get_active_provider() -> ActiveProviderResponse:
+    """Return the currently active provider and model."""
+    server = get_server()
+    raw = server.get_active_provider()
+    return ActiveProviderResponse(**raw)
+
+
+@app.post("/providers/active")
+async def set_active_provider(request: ActiveProviderRequest) -> dict[str, str]:
+    """Switch the active provider and model, reinitializing the agent."""
+    server = get_server()
+
+    #: Validate against the configured provider list
+    error = server.validate_provider(request.provider, request.model)
+    if error:
+        raise HTTPException(status_code=422, detail=error)
+
+    result = await server.set_active_provider(request.provider, request.model)
+
+    if result.get("status") == "error":
+        raise HTTPException(
+            status_code=503,
+            detail=result.get("detail", "provider switch in progress"),
+        )
+
+    return {"status": "ok"}
+
+
+@app.post("/chat/resume")
+async def chat_resume(request: ResumeRequest) -> dict[str, str]:
+    """Deliver an approval/reject decision for a paused HITL interrupt."""
+    server = get_server()
+    try:
+        server.resume_hitl(request.thread_id, request.decision)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"status": "ok"}
+
+
+@app.post("/chat")
+async def chat(request: ChatRequest) -> ChatResponse:
+    """Send a chat message to the agent and return the response (legacy)."""
+    server = get_server()
+    result = server.chat(request.message, request.thread_id)
+    return ChatResponse(**result)
+
+
+@app.post("/chat/stream")
+async def chat_stream(request: ChatRequest) -> StreamingResponse:
+    """Send a chat message to the agent via SSE streaming (legacy)."""
+    server = get_server()
+
+    async def _wrap() -> AsyncGenerator[str, None]:
+        try:
+            async for chunk in server.chat_stream(
+                request.message, request.thread_id
+            ):
+                yield chunk
+        except RuntimeError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return StreamingResponse(
+        _wrap(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Thread-Id": request.thread_id or "",
+        },
+    )
+
+
+@app.post("/chat/cancel")
+async def chat_cancel(request: CancelRequest) -> dict[str, str]:
+    """Cancel a running agent thread."""
+    server = get_server()
+    try:
+        server.cancel_legacy(request.thread_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"status": "cancelled"}
+
+
+@app.get("/chat/history")
+async def chat_history(thread_id: str, limit: int = 20) -> HistoryResponse:
+    """Return the message history for a thread."""
+    server = get_server()
+    messages = await server.chat_history(thread_id, limit)
+    return HistoryResponse(messages=messages)
+
+
+@app.post("/chat/audit")
+async def chat_audit(request: AuditRequest) -> AuditResponse:
+    """Record an audit log entry for a thread."""
+    server = get_server()
+    server.audit_entry(
+        request.thread_id,
+        request.action,
+        request.details,
+        request.timestamp,
+        request.user,
+    )
+    return AuditResponse(status="recorded")
+
+
+@app.get("/chat/audit")
+async def chat_audit_list(thread_id: str) -> AuditListResponse:
+    """List audit log entries for a thread."""
+    server = get_server()
+    entries = server.audit_list(thread_id)
+    return AuditListResponse(entries=entries)
+
+
+# ---------------------------------------------------------------------------
+# LangGraph Protocol v2 endpoints (for useStream frontend SDK)
+# ---------------------------------------------------------------------------
+
+
+@app.post("/threads")
+async def create_thread(payload: ThreadCreatePayload) -> dict[str, Any]:
+    """Create a new thread."""
+    server = get_server()
+    return server.create_thread(
+        payload.thread_id, payload.metadata, payload.if_exists
+    )
+
+
+@app.post("/threads/{thread_id}/commands")
+async def thread_commands(
+    thread_id: str, command: ProtocolCommand
+) -> dict[str, Any]:
+    """Handle a LangGraph protocol v2 command.
+
+    Supported commands: ``run.start``, ``input.respond``, ``run.stop``.
+    """
+    server = get_server()
+    try:
+        return await server.handle_protocol_command(
+            thread_id, command.method, command.params or {}, command.id or 0
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/threads/{thread_id}/stream/events")
+async def thread_stream_events(
+    thread_id: str,
+    channels: str | None = None,
+    since: int | None = None,
+) -> StreamingResponse:
+    """Open a LangGraph protocol v2 SSE event stream (GET with query params)."""
+    server = get_server()
+    _since = since or 0
+
+    async def _event_stream() -> AsyncGenerator[str, None]:
+        async for event in server.thread_stream_events(thread_id, _since):
+            yield _sse(event)
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.post("/threads/{thread_id}/stream/events")
+async def thread_stream_events_post(
+    thread_id: str, request: ProtocolStreamRequest
+) -> StreamingResponse:
+    """Open a LangGraph protocol v2 SSE event stream via POST."""
+    server = get_server()
+    _since = request.since or 0
+
+    async def _event_stream() -> AsyncGenerator[str, None]:
+        async for event in server.thread_stream_events(thread_id, _since):
+            yield _sse(event)
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.post("/threads/{thread_id}/runs/stream")
+async def thread_runs_stream(
+    thread_id: str,
+    request: dict[str, Any],
+) -> StreamingResponse:
+    """Start a run and stream SSE events."""
+    server = get_server()
+
+    input_data = request.get("input", {})
+    messages = input_data.get("messages", [])
+    human_msg = next(
+        (m for m in messages if m.get("type") in ("human", "user")), None
+    )
+    text = human_msg.get("content", "") if human_msg else ""
+
+    async def _event_stream() -> AsyncGenerator[str, None]:
+        if not text:
+            yield _sse({
+                "method": "lifecycle",
+                "params": {
+                    "namespace": [],
+                    "data": {"event": "failed", "error": "No message content"},
+                },
+            })
+            return
+
+        run_id = server.start_background_run(thread_id, text)
+
+        seq = 0
+        try:
+            async for event in server.thread_stream_events(thread_id, 0):
+                params = event.get("params", {})
+                evt_seq = params.get("seq", seq + 1)
+                if evt_seq > seq:
+                    seq = evt_seq
+                    yield _sse(event, seq=evt_seq)
+        except asyncio.CancelledError:
+            pass
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Content-Location": f"/threads/{thread_id}/runs/{uuid.uuid4()}",
+        },
+    )
+
+
+@app.get("/threads/{thread_id}/runs/{run_id}/stream")
+async def thread_runs_join_stream(
+    thread_id: str,
+    run_id: str,
+    last_event_id: str | None = Header(None),
+) -> StreamingResponse:
+    """Reconnect to an existing run's SSE event stream."""
+    server = get_server()
+    _since = (
+        int(last_event_id) if last_event_id and last_event_id != "-1" else 0
+    )
+
+    async def _event_stream() -> AsyncGenerator[str, None]:
+        async for event in server.thread_stream_events(thread_id, _since):
+            params = event.get("params", {})
+            evt_seq = params.get("seq", _since + 1)
+            if evt_seq > _since:
+                _since = evt_seq
+                yield _sse(event, seq=evt_seq)
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.post("/threads/{thread_id}/runs/{run_id}/cancel")
+async def thread_runs_cancel(
+    thread_id: str,
+    run_id: str,
+) -> dict[str, Any]:
+    """Cancel a running task."""
+    server = get_server()
+    server.cancel_run(thread_id)
+    return {}
+
+
+@app.post("/threads/{thread_id}/history")
+async def thread_history(
+    thread_id: str,
+    request: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Get past states for a thread."""
+    server = get_server()
+    return await server.get_thread_history(thread_id)
+
+
+@app.get("/threads/{thread_id}/state")
+async def thread_state(thread_id: str) -> dict[str, Any]:
+    """Get the current state of a thread."""
+    server = get_server()
+    return await server.get_thread_state(thread_id)
+
+
+@app.get("/models")
+def list_models_endpoint() -> dict[str, Any]:
+    """Return available models for the dynamic model selector."""
+    server = get_server()
+    return {"models": server.list_models()}
+
+
 @app.get("/threads/{thread_id}/export")
 async def export_thread(thread_id: str, format: str = "md") -> Any:
-    """Export a thread's conversation as a downloadable file.
+    """Export a thread's conversation as a downloadable file."""
+    from fastapi.responses import Response
 
-    Currently supports ``format=md`` (Markdown transcript with roles,
-    tool calls summarized, and the final todo list). The frontend offers
-    this as a "Export chat" action.
-
-    :param thread_id: The thread to export.
-    :param format: Export format; only ``md`` is supported.
-    :return: Plain-text/markdown response with Content-Disposition header.
-    """
-    if format != "md":
-        raise HTTPException(status_code=400, detail="Unsupported format")
-
-    state = await get_agent_async()
-    checkpointer = getattr(state.agent, "checkpointer", None)
-    lines: list[str] = [f"# CodeAgent chat export — `{thread_id}`", ""]
-
-    if checkpointer is not None:
-        try:
-            config = {"configurable": {"thread_id": thread_id}}
-            data = await checkpointer.aget(config)
-            messages = (data or {}).get("messages", [])
-            todos = (data or {}).get("todos", [])
-
-            for msg in messages:
-                mtype = getattr(msg, "type", "")
-                content = getattr(msg, "content", "")
-                if isinstance(content, list):
-                    content = "\n".join(
-                        b.get("text", "") if isinstance(b, dict) else str(b)
-                        for b in content
-                    )
-                content = (content or "").strip()
-                if mtype == "tool":
-                    name = getattr(msg, "name", "tool")
-                    lines.append(f"**🔧 {name}**")
-                    lines.append("")
-                    lines.append("```")
-                    lines.append(content[:500])
-                    lines.append("```")
-                elif mtype == "human":
-                    lines.append(f"**You:**\n\n{content}")
-                elif mtype == "ai":
-                    # Summarize any tool calls attached to the AI turn.
-                    calls = getattr(msg, "tool_calls", None) or []
-                    for tc in calls:
-                        args = tc.get("args", {})
-                        target = (
-                            args.get("file_path")
-                            or args.get("path")
-                            or args.get("pattern")
-                            or ""
-                        )
-                        lines.append(f"*→ {tc.get('name', 'tool')} {target}*")
-                    if content:
-                        lines.append(f"**Agent:**\n\n{content}")
-                else:
-                    lines.append(f"**{mtype}:** {content}")
-                lines.append("")
-
-            if todos:
-                lines.append("## Todo list at end of run")
-                lines.append("")
-                for t in todos:
-                    mark = "x" if t.get("status") == "completed" else " "
-                    lines.append(f"- [{mark}] {t.get('content', '')}")
-        except Exception as e:
-            logger.exception("Error exporting thread %s: %s", thread_id, e)
-            lines.append("*[export error — partial transcript above]*")
-    else:
-        lines.append("*[no checkpointer — nothing to export]*")
-
-    body = "\n".join(lines)
+    server = get_server()
+    try:
+        body = await server.export_thread(thread_id, format)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return Response(
         content=body,
         media_type="text/markdown; charset=utf-8",
@@ -2355,123 +791,39 @@ async def export_thread(thread_id: str, format: str = "md") -> Any:
 async def switch_thread_model(
     thread_id: str, body: SwitchModelRequest
 ) -> dict[str, Any]:
-    """Switch the model for a given thread.
-
-    Rebuilds the agent with the new model while keeping the same thread_id
-    and checkpointer, so conversation memory is preserved across switches.
-
-    :param thread_id: The thread whose model to switch.
-    :param body: The new model specification.
-    :return: Success dict with the active model info.
-    :raises HTTPException: 409 if the thread has a run currently executing —
-        switching models mid-run rebuilds the agent and orphans the running
-        generation (UI goes Idle while the model keeps working).
-    """
-    from berg_agents.agents.codeagent import build_agent
-
-    #: Guard: never rebuild an agent whose run is still executing.
-    if thread_id in _thread_tasks and not _thread_tasks[thread_id].done():
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Cannot switch model while a run is active on this thread. "
-                "Wait for it to finish or cancel the run first."
-            ),
-        )
-
-    cfg = load_config()
-    provider = body.provider
-    model = body.model
-    base_url = body.base_url
-
-    # Build the new LLM (concrete instance, not proxy)
-    llm = _build_llm_for_model(provider, model, base_url, cfg)
-
-    # Build tools (same as get_agent)
-    from berg_agents.cli import _load_mcp_tools_async
-
-    tools = create_default_tools(root_dir=str(Path.cwd()), llm=llm)
-    tools.extend(await _load_mcp_tools_async(cfg))
-    #: Trim tools per the newly selected model's profile exclusions so a
-    #: thread switching to a small local model loses the heavy toolkit
-    #: (e.g. all MCP servers) without a server restart.
-    from berg_agents.profiles.router import filter_tools_by_exclusions
-
-    tools = filter_tools_by_exclusions(tools, model)
-
-    # Reuse existing checkpointer if present, otherwise build new one
-    existing = _THREAD_AGENTS.get(thread_id)
-    if existing:
-        checkpointer = existing.checkpointer
-    elif _STATE:
-        checkpointer = _STATE.checkpointer
-    else:
-        checkpointer = build_checkpointer(
-            checkpoint_dir=get_settings().checkpoint_dir or None
-        )
-
-    # Build new agent
-    agent = build_agent(llm=llm, tools=tools, checkpointer=checkpointer)
-
-    # Store per-thread agent
-    _THREAD_AGENTS[thread_id] = AgentState(
-        agent=agent,
-        thread_id=thread_id,
-        checkpointer=checkpointer,
-        provider=provider,
-        model=model,
+    """Switch the model for a given thread."""
+    server = get_server()
+    result = await server.set_thread_model(
+        thread_id, body.provider, body.model, body.base_url
     )
-
-    return {
-        "status": "success",
-        "thread_id": thread_id,
-        "provider": provider,
-        "model": model,
-        "message": f"Switched to {provider}:{model}",
-    }
+    if result.get("status") == "error":
+        raise HTTPException(
+            status_code=409, detail=result.get("detail", "Cannot switch model")
+        )
+    return result
 
 
 @app.get("/capabilities")
 def list_capabilities() -> list[dict[str, Any]]:
-    """Return metadata for every registered capability.
-
-    :return: A JSON list of capability metadata dicts (id, intent, risk_class,
-        input_schema) from the shared registry.
-    """
-    return get_registry().discover()
+    """Return metadata for every registered capability."""
+    server = get_server()
+    return server.list_capabilities()
 
 
-@app.post("/invoke")
 @app.post("/invoke")
 def invoke_capability(body: InvokeBody) -> dict[str, Any]:
-    """Dispatch an invocation and return the response plus audit receipt.
-
-    :param body: Parsed request body (capability_id and params).
-
-    :return: A JSON object with ``response`` (the :class:`InvocationResponse`)
-        and ``receipt`` (the audit :class:`Receipt`) fields.
-
-    :raises HTTPException: 400 when the capability is unknown, high-risk, or the
-            params fail validation. 401 when ``BERG_AGENT_AUTH_TOKEN`` is set
-            but the request does not include a matching header.
-    """
-    request = InvocationRequest(
-        request_id=uuid.uuid4().hex,
-        capability_id=body.capability_id,
-        params=body.params,
-        caller="web",
-    )
-    response, receipt = get_registry().dispatch(request)
-    if response.status == "error":
-        raise HTTPException(status_code=400, detail=response.error)
-    return {
-        "response": response.model_dump(),
-        "receipt": receipt.model_dump(),
-    }
+    """Dispatch an invocation and return the response plus audit receipt."""
+    server = get_server()
+    try:
+        return server.invoke_capability(body.capability_id, body.params)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-#: Serve the built React app at the root when it exists. API routes registered
-#: above take precedence, so the SPA only handles paths that are not API calls.
+# ---------------------------------------------------------------------------
+# Static file mount — SPA at root
+# ---------------------------------------------------------------------------
+
 if _DIST_DIR.is_dir():
     from starlette.responses import FileResponse, Response
 
@@ -2483,12 +835,6 @@ if _DIST_DIR.is_dir():
         ) -> FileResponse | Response:
             response = await super().get_response(path, scope)
             if isinstance(response, FileResponse):
-                """Set headers to disable caching for SPA files.
-
-                :param path: The requested file path.
-                :param scope: The ASGI scope.
-                :return: The FileResponse with no-cache headers.
-                """
                 response.headers["Cache-Control"] = (
                     "no-cache, no-store, must-revalidate"
                 )

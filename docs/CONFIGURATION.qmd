@@ -112,11 +112,14 @@ The effective value is `0.5` (environment variable wins).
 
 ## Configuration classes diagrams
 
+```markdown
+![Configuration diagram](../docs/visualizations/png/packages_berg_agents.config.png)
+```
 
-![Configuration diagram](../docs/visualizations/svg/packages_berg_agents.config.svg)
+```markdown
+![Profile diagram](../docs/visualizations/png/packages_berg_agents.profiles.png)
+```
 
-
-![Profile diagram](../docs/visualizations/svg/packages_berg_agents.profiles.svg)
-
-
-![Utils diagram](../docs/visualizations/svg/packages_berg_agents.utils.svg)
+```markdown
+![Utils diagram](../docs/visualizations/png/packages_berg_agents.utils.png)
+```

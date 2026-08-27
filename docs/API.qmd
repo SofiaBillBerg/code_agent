@@ -6,10 +6,10 @@ format: html
 
 # API Reference
 
-CodeAgent API is documented with pydoctor. The full API reference is available
+BergAgents API is documented with pydoctor. The full API reference is available
 at [apidocs](../apidocs/apidocs-help.html).
 
-![CodeAgent overview](../docs/visualizations/svg/packages_berg_agents.svg)
+![BergAgents overview](../docs/visualizations/png/packages_berg_agents.png)
 
 
 ## Tools API
@@ -18,7 +18,7 @@ The `berg_agents.tools` module provides a set of tools for interacting with the 
 tasks. These tools are designed to be used by the DeepAgents harness and can be extended with custom tools. To read more
 about berg_agents.tools, see [Tools API](../apidocs/berg_agents.tools.html).
 
-![Tools diagram](../docs/visualizations/svg/packages_berg_agents.tools.svg)
+![Tools diagram](../docs/visualizations/png/packages_berg_agents.tools.png "Berg Agents tools")
 
 ## CLI API
 
@@ -31,7 +31,7 @@ see [CLI API](../apidocs/berg_agents.cli.html).
 There `berg_agents.core`module contains the core functionality of the BergAgent, including the orchestrator and
 bookkeeper. To read more about berg_agents.core, see [Core API](../apidocs/berg_agents.core.html).
 
-![Core components](../docs/visualizations/svg/packages_berg_agents.core.svg)
+![Core components](../docs/visualizations/png/packages_berg_agents.core.png)
 
 
 ## Agent API
@@ -40,7 +40,7 @@ The `berg_agents.agents` module provides the core functionality of the BergAgent
 logic, tool management, and interaction with the LLM. To read more about berg_agents.agent,
 see [Agent API](../apidocs/berg_agents.agents.html).
 
-![Agents diagram](../docs/visualizations/svg/packages_berg_agents.agents.svg)
+![Agents diagram](../docs/visualizations/png/packages_berg_agents.agents.png)
 
 ## Providers API
 
@@ -49,7 +49,9 @@ Ollama.
 This module allows users to configure and use different LLMs with the BergAgent. To read more about
 berg_agents.providers, see [Providers API](../apidocs/berg_agents.providers.html).
 
-![Providers diagram](../docs/visualizations/svg/packages_berg_agents.providers.svg)
+```markdown
+![Providers diagram](../docs/visualizations/png/packages_berg_agents.providers.png)
+```
 
 ## Capabilities API
 
@@ -57,8 +59,9 @@ The `berg_agents.capabilities` module provides a set of capabilities that can be
 various tasks. These capabilities include code generation, code editing, code analysis, and more. To read more about
 berg_agents.capabilities, see [Capabilities API](../apidocs/berg_agents.capabilities.html).
 
-![Capabilities diagram](../docs/visualizations/svg/packages_berg_agents.capabilities.svg)
-
+```markdown
+![Capabilities diagram](../visualizations/png/packages_berg_agents.capabilities.png)
+```
 
 ## Configuration API
 
@@ -66,7 +69,9 @@ The `berg_agents.config` module provides functionality for managing the configur
 loading configuration files, managing profiles, and handling environment variables. To read more about
 berg_agents.config, see [Configuration API](../apidocs/berg_agents.config.html).
 
-![Configuration diagram](../docs/visualizations/svg/packages_berg_agents.config.svg)
+```markdown
+![Configuration diagram](../docs/visualizations/png/packages_berg_agents.config.png)
+```
 
 ## Profiles API
 
@@ -74,7 +79,9 @@ The `berg_agents.profiles` module provides functionality for managing user profi
 behavior of the BergAgent based on different user preferences. To read more about berg_agents.profiles,
 see [Profiles API](../apidocs/berg_agents.profiles.html).
 
-![Profiles diagram](../docs/visualizations/svg/packages_berg_agents.profiles.svg)
+```markdown
+![Profiles diagram](../docs/visualizations/png/packages_berg_agents.profiles.png)
+```
 
 ## UI API
 
@@ -82,7 +89,9 @@ The `berg_agents.ui` module provides functionality for the web-based user interf
 serving the UI, handling user interactions, and integrating with the backend agent. To read more about berg_agents.ui,
 see [UI API](../apidocs/berg_agents.ui.html).
 
-![UI diagram](../docs/visualizations/svg/packages_berg_agents.ui.svg)
+```markdown
+![UI diagram](../docs/visualizations/png/packages_berg_agents.ui.png)
+```
 
 ## UI Web Frontend API
 
@@ -96,7 +105,9 @@ The `berg_agents.ci` module provides functionality for continuous integration an
 includes running tests, managing test environments, and integrating with CI/CD pipelines. To read more about
 berg_agents.ci, see [CI API](../apidocs/berg_agents.ci.html).
 
-![CI diagram](../docs/visualizations/svg/packages_berg_agents.ci.svg)
+```markdown
+![CI diagram](../docs/visualizations/png/packages_berg_agents.ci.png)
+```
 
 ## Utils API
 
@@ -104,4 +115,6 @@ The `berg_agents.utils` module provides utility functions and classes that are u
 utilities include logging, file handling, and other helper functions. To read more about berg_agents.utils,
 see [Utils API](../apidocs/berg_agents.utils.html).
 
-![Utils diagram](../docs/visualizations/svg/packages_berg_agents.utils.svg)
+```markdown
+![Utils diagram](../docs/visualizations/png/packages_berg_agents.utils.png)
+```

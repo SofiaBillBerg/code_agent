@@ -10,4 +10,17 @@
 @import url("./tokens/spacing.css");
 @import url("./components/base.css");
 @import url("./components/banner.css");
+@import url("components/footer.css");
+
+/* Default: Light Theme (Manual Override) */
 @import url("./presets/light.css");
+
+/* System Preference Detection & Manual Dark Override */
+@media (prefers-color-scheme: dark) {
+    @import url("./presets/dark.css");
+}
+
+/* Explicit Class Override (Highest Priority) */
+[data-berg-preset="light"] {
+    @import url("./presets/light.css");
+}

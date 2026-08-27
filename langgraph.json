@@ -4,8 +4,7 @@
     "."
   ],
   "graphs": {
-    "agent": "code_agent.graph:build_graph"
-  },
+    "agent": "berg_agents.main:create_llm"},
   "pip_installer": "uv",
   "env": "./.env"
 }

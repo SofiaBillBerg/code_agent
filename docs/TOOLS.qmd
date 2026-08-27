@@ -9,7 +9,9 @@ format: html
 `../berg_agents` uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are
 added on top. MCP servers can extend the agent with additional tools at runtime.
 
-![Tools diagram](../docs/visualizations/svg/packages_berg_agents.tools.svg)
+```markdown
+![Tools diagram](../docs/visualizations/png/packages_berg_agents.tools.png)
+```
 
 ## Tool Loading Order
 

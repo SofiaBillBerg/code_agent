@@ -16,6 +16,7 @@ project:
     - "CHANGELOG.qmd"
 website:
   title: "Berg Agents"
+  back-to-top-navigation: true
   llms-txt: true
   navbar:
     left:
@@ -86,7 +87,7 @@ format:
     code-links: true
     author: "Sofia Billger Bergström"
     date-modified: last-modified
-    # embed-resources: true
+    embed-resources: true
     fig-cap-location: bottom
     fig-format: svg
     tbl-cap-location: top
@@ -99,14 +100,16 @@ format:
     touch: true
     search: false
     fig-responsive: true
+    resource-path:
+      - docs/visualizations/
 resources:
-  - docs/
   - LICENSE
-  - docs/visualizations/svg/
+  - docs/visualizations/png/
 #  - apidocs/
 filters:
   - include-code-files
   - inline-svg
+  - lua-env
 extensions:
   badge:
     - key: CodeAgent

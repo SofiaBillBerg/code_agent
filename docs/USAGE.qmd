@@ -8,7 +8,9 @@ format: html
 
 This page shows how to use CodeAgent from the CLI, Python API, and web UI.
 
-![Core components](../docs/visualizations/svg/packages_berg_agents.core.svg)
+```markdown
+![Core components](../docs/visualizations/png/packages_berg_agents.core.png)
+```
 
 ## CLI Commands
 
@@ -90,8 +92,9 @@ Invoke a specific capability:
 code-agent capabilities invoke read-file --params '{"file_path": "README.md"}'
 ```
 
-![Capabilities diagram](../docs/visualizations/svg/packages_berg_agents.capabilities.svg)
-
+```markdown
+![Capabilities diagram](../docs/visualizations/png/packages_berg_agents.capabilities.png)
+```
 
 ## Python API
 
@@ -121,7 +124,9 @@ response = agent.invoke({
 By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the
 working directory at `/workspace/`.
 
-![Agents diagram](../docs/visualizations/svg/packages_berg_agents.agents.svg)
+```markdown
+![Agents diagram](../docs/visualizations/png/packages_berg_agents.agents.png)
+```
 
 ### Stream Responses
 
@@ -148,8 +153,9 @@ for event in agent.stream({"messages": [HumanMessage(content="Hello")]}):
 
 When using the DeepAgents harness (the default), the following built-in filesystem tools are also available:
 
-![Profiles diagram](../docs/visualizations/svg/packages_berg_agents.profiles.svg)
-
+```markdown
+![Profiles diagram](../docs/visualizations/png/packages_berg_agents.profiles.png)
+```
 
 | Tool         | Purpose                                    |
 |--------------|--------------------------------------------|
@@ -161,9 +167,9 @@ When using the DeepAgents harness (the default), the following built-in filesyst
 | `execute`    | Run shell commands (sandbox backends only) |
 | `task`       | Delegate to a subagent                     |
 
-![Tools diagram](../docs/visualizations/svg/packages_berg_agents.tools.svg)
-
-
+```markdown
+![Tools diagram](../docs/visualizations/png/packages_berg_agents.tools.png)
+```
 ## Web UI
 
 The web UI is a React single-page app served by FastAPI. Start it with:
@@ -171,8 +177,9 @@ The web UI is a React single-page app served by FastAPI. Start it with:
 ```bash
 code-agent serve --web
 ```
-
-![UI diagram](../docs/visualizations/svg/packages_berg_agents.ui.svg)
+```markdown
+![UI diagram](../docs/visualizations/png/packages_berg_agents.ui.png)
+```
 
 ### API Endpoints
 
@@ -222,9 +229,9 @@ BERG_AGENT_MCP_SERVERS=mcp.json
 ```
 
 MCP tools are prefixed with `mcp_<server>__<tool>` to avoid name collisions.
-
-![Configuration diagram](../docs/visualizations/svg/packages_berg_agents.config.svg)
-
+```markdown
+![Configuration diagram](../docs/visualizations/png/packages_berg_agents.config.png)
+```
 
 ## Human-in-the-Loop
 

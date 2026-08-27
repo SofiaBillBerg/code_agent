@@ -17,13 +17,10 @@ from fastapi.testclient import TestClient
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from berg_agents.ui.web import (
-    _hitl_decisions,  # ruff: ignore[import-private-name]
-)
-from berg_agents.ui.web import (
-    _pending_hitl,  # ruff: ignore[import-private-name]
-)
 from berg_agents.ui.web import app  # ruff: ignore[import-private-name]
+from berg_agents.ui.web_chat_server import (
+    get_server,  # ruff: ignore[import-private-name]
+)
 
 
 # Tag: Feature: agent-core-enhancement, Property 6: HITL resume signals the pending event
@@ -36,11 +33,12 @@ def reset_hitl_state() -> Generator[None]:
 
     :yield: None
     """
-    _pending_hitl.clear()
-    _hitl_decisions.clear()
+    server = get_server()
+    server._pending_hitl.clear()  # ruff: ignore[private-member-access]
+    server._hitl_decisions.clear()  # ruff: ignore[private-member-access]
     yield
-    _pending_hitl.clear()
-    _hitl_decisions.clear()
+    server._pending_hitl.clear()  # ruff: ignore[private-member-access]
+    server._hitl_decisions.clear()  # ruff: ignore[private-member-access]
 
 
 @pytest.fixture
