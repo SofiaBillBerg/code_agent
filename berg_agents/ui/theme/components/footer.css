@@ -13,7 +13,7 @@
     color: white;
     padding: var(--berg-sp-6) var(--berg-sp-2);
     border-radius: var(--berg-radius);
-    box-shadow: var(--berg-shadow);
+    box-shadow: var(--berg-shadow-md);
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-
 class TaskComplexity(str, Enum):
     """Task complexity levels."""
 

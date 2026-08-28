@@ -37,7 +37,7 @@
   --transition-fast:    0.15s ease;
   --transition-normal:  0.25s ease;
   --shadow-sm:          var(--berg-shadow-sm);
-  --shadow-md:          var(--berg-shadow);
+  --shadow-md:          var(--berg-shadow-md);
   --shadow-lg:          var(--berg-shadow-lg);
 }
 
@@ -121,7 +121,7 @@ button, .btn, .btn-secondary, .input-bar-button {
 button:hover, .btn:hover, .btn-secondary:hover, .input-bar-button:hover {
   background: var(--berg-surface-tint);
   border-color: rgba(125, 2, 156, 0.4);
-  box-shadow: var(--berg-shadow);
+  box-shadow: var(--berg-shadow-md);
   transform: translateY(-1px);
 }
 button:active, .btn:active { transform: translateY(0); }
@@ -229,7 +229,7 @@ button.primary:hover, .btn-primary:hover { filter: brightness(1.08); box-shadow:
   color: white;
   font-weight: var(--berg-fw-semibold);
   font-size: var(--berg-fs-base);
-  box-shadow: var(--berg-shadow);
+  box-shadow: var(--berg-shadow-md);
   white-space: nowrap;
 }
 .input-bar-button:hover, .input-bar button[type="submit"]:hover {
@@ -619,7 +619,7 @@ button.primary:hover, .btn-primary:hover { filter: brightness(1.08); box-shadow:
   color: white;
   font-weight: var(--berg-fw-semibold);
   font-size: var(--berg-fs-base);
-  box-shadow: var(--berg-shadow);
+  box-shadow: var(--berg-shadow-md);
   white-space: nowrap;
 }
 .stop-button:hover { filter: brightness(1.08); box-shadow: var(--berg-shadow-md); }

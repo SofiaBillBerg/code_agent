@@ -38,24 +38,24 @@ function ThemeToggle() {
                 padding: "6px 12px",
                 borderRadius: "var(--radius, 20px)",
                 border: "2px solid var(--berg-border)",
-                background: isDark 
-                    ? "linear-gradient(135deg, #2d323b, #1a1d23)" 
+                background: isDark
+                    ? "linear-gradient(135deg, #2d323b, #1a1d23)"
                     : "linear-gradient(135deg, #fbf7fb, #e8e0f0)",
                 color: "var(--berg-text)",
                 cursor: "pointer",
                 transition: "all 0.3s ease",
-                boxShadow: "var(--berg-shadow-sm)",
+                boxShadow: "var(--berg-shadow-md-sm)",
                 fontSize: "14px",
                 fontWeight: "500",
                 minWidth: "60px",
             }}
             onMouseOver={(e) => {
                 e.currentTarget.style.transform = "scale(1.05)";
-                e.currentTarget.style.boxShadow = "var(--berg-shadow)";
+                e.currentTarget.style.boxShadow = "var(--berg-shadow-md)";
             }}
             onMouseOut={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "var(--berg-shadow-sm)";
+                e.currentTarget.style.boxShadow = "var(--berg-shadow-md-sm)";
             }}
         >
             {isDark ? (
