@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useCustomStream} from "./useCustomStream.js";
+import {useOrchestrator} from "./useOrchestrator.js";
 import ToolCallRow, {toolTarget} from "./components/ToolCallRow";
 import TodoList from "./components/TodoList";
 import SubagentCard from "./components/SubagentCard";
@@ -7,6 +8,10 @@ import SubagentProgress from "./components/SubagentProgress";
 import HitlSurface from "./components/HitlSurface";
 import InputBar from "./components/InputBar";
 import ThemeToggle from "./components/ThemeToggle";
+import AgentPanel from "./components/AgentPanel";
+import SubtaskPanel from "./components/SubtaskPanel";
+import LearningPanel from "./components/LearningPanel";
+import SlashCommandPicker from "./components/SlashCommandPicker";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -15,6 +20,7 @@ const AGENT_URL = import.meta.env.VITE_API_BASE_URL || (typeof window !== "undef
 
 function AppContent() {
     const stream = useCustomStream(AGENT_URL, "berg-agent");
+    const orch = useOrchestrator();
 
     const {
         messages, toolCalls, isLoading, error, interrupt, submit, respond, subagents, todos, stopRun, threadId, newChat,
@@ -24,8 +30,12 @@ function AppContent() {
     const [models, setModels] = useState([]);
     const [activeModel, setActiveModel] = useState(null);
     const [switchingModel, setSwitchingModel] = useState(false);
+    const [mode, setMode] = useState("chat"); // "chat" | "orchestrator"
+    const [showSlashPicker, setShowSlashPicker] = useState(false);
+    const [slashCommands, setSlashCommands] = useState([]);
     const pendingSwitchRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
 
     // Fetch available models on mount
     useEffect(() => {
@@ -131,10 +141,114 @@ function AppContent() {
         }
     }, [messages, toolCalls, interrupt]);
 
+    /**
+     * Process a slash command from the WebUI.
+     * Returns true if the input was a slash command (and was handled).
+     */
+    const processSlashCommand = useCallback(async (text) => {
+        if (!text.startsWith("/")) return false;
+
+        const parts = text.trim().split(/\s+/);
+        const cmd = parts[0].toLowerCase();
+        const args = parts.slice(1).join(" ");
+
+        // Commands that work in both modes
+        const commonCommands = ["/help", "/exit", "/quit", "/clear", "/agents", "/stats", "/health", "/models", "/tools", "/history", "/memory", "/context", "/settings", "/plugins", "/skills", "/mcps"];
+        if (commonCommands.includes(cmd)) {
+            switch (cmd) {
+                case "/help":
+                    alert("Slash commands:\n/agents, /models, /stats, /tools, /health\n/history, /memory, /context, /settings\n/plugins, /skills, /mcps\n/orchestrate <task>, /task <task>\n/clear, /exit");
+                    return true;
+                case "/clear":
+                    newChat();
+                    return true;
+                case "/exit":
+                case "/quit":
+                    // In webui, just clear for now
+                    return true;
+                case "/agents":
+                    alert("Agents:\n" + (orch.agents || []).map((a) => `${a.name} [${a.preferred_model_tier}] - ${a.description}`).join("\n"));
+                    return true;
+                case "/stats":
+                    await orch.fetchLearningStats();
+                    alert("Stats: " + JSON.stringify(orch.learningStats, null, 2));
+                    return true;
+                case "/health":
+                    alert(`Health: OK\nAgents: ${orch.agents?.length || 0}\nMode: ${mode}`);
+                    return true;
+                case "/models":
+                    alert("Models:\n" + (models || []).map((m) => `${m.provider}:${m.model} ${m.is_active ? "(active)" : ""}`).join("\n"));
+                    return true;
+                case "/tools":
+                    alert("Tools: (see TUI for full list)");
+                    return true;
+                case "/history":
+                    alert(`History: ${messages.length} messages`);
+                    return true;
+                case "/memory":
+                    alert("Memory: Session memory active\nLong-term: MemPalace integration pending");
+                    return true;
+                case "/context":
+                    alert(`Context: ${messages.length} messages in history`);
+                    return true;
+                case "/settings":
+                    alert("Settings: (see config)");
+                    return true;
+                case "/plugins":
+                    alert("Plugins: None loaded (pending)");
+                    return true;
+                case "/skills":
+                    alert("Skills: (see config)");
+                    return true;
+                case "/mcps":
+                    alert("MCPs: (see config)");
+                    return true;
+            }
+        }
+
+        // Orchestrator commands
+        if (cmd === "/orchestrate" || cmd === "/task") {
+            if (!args) {
+                alert("Usage: /orchestrate <task description>");
+                return true;
+            }
+            await orch.executeTask(args, "generic");
+            return true;
+        }
+
+        return false;
+    }, [orch, mode, models, messages, newChat]);
+
+    const handleOrchestrate = useCallback(async () => {
+        const message = input.trim();
+        if (!message || orch.isExecuting) return;
+        setInput("");
+        try {
+            await orch.executeTask(message, "generic");
+            orch.fetchLearningStats();
+        } catch (err) {
+            console.error("[DEBUG] orchestrator error:", err);
+        }
+    }, [input, orch]);
+
     const handleSend = useCallback(async () => {
         const message = input.trim();
+        if (!message) return;
+
+        // Check for slash command first
+        const isCommand = await processSlashCommand(message);
+        if (isCommand) {
+            setInput("");
+            return;
+        }
+
+        if (mode === "orchestrator") {
+            setInput("");
+            return handleOrchestrate();
+        }
+
         console.log("[DEBUG] handleSend called:", {message, isLoading, threadId: stream.threadId});
-        if (!message || isLoading) {
+        if (isLoading) {
             console.log("[DEBUG] handleSend aborted");
             return;
         }
@@ -148,7 +262,7 @@ function AppContent() {
         } catch (err) {
             console.error("[DEBUG] submit error:", err);
         }
-    }, [input, isLoading, submit, stream.threadId]);
+    }, [input, isLoading, submit, stream.threadId, mode, handleOrchestrate, processSlashCommand]);
 
     /**
      * Forward a HITL decision from HitlSurface to the backend.
@@ -201,6 +315,14 @@ function AppContent() {
                 <p style={{margin: "0.25rem 0 0 0", fontSize: "0.95rem"}}>The agent that learns with you.</p>
             </div>
             <div className="header-actions" style={{flexWrap: "wrap"}}>
+                {/* Mode toggle: switch between LangGraph chat and multi-agent orchestrator */}
+                <button
+                    className={`btn-secondary ${mode === "orchestrator" ? "active" : ""}`}
+                    onClick={() => setMode(mode === "chat" ? "orchestrator" : "chat")}
+                    title={mode === "chat" ? "Switch to multi-agent orchestrator" : "Switch to chat mode"}
+                >
+                    {mode === "chat" ? "🤖 Orchestrate" : "💬 Chat"}
+                </button>
                 {/* New chat: reset the conversation (fresh thread, empty
                         history) so degraded context from a previous task never
                         bleeds into the next one. */}
@@ -397,18 +519,53 @@ function AppContent() {
             </div>)}
         </div>)}
 
+        {/* Orchestrator mode panels: show agent routing, subtasks, learning stats */}
+        {mode === "orchestrator" && (<>
+            <AgentPanel agents={orch.agents} activeAgent={orch.result?.status} compact />
+            <SubtaskPanel subtasks={orch.subtasks} isPlanning={orch.isExecuting} />
+            {orch.hitlRequest && (
+                <HitlSurface
+                    pending={orch.hitlRequest}
+                    onDecision={(d) => orch.respondToHitl(orch.result?.task_id || "", d.type)}
+                />
+            )}
+            <LearningPanel stats={orch.learningStats} compact />
+        </>)}
+
         <TodoList todos={stream.todos || []} onTodoUpdate={() => {
         }}/>
 
         {interrupt && <HitlSurface pending={interrupt} onDecision={handleDecision}/>}
 
-        <InputBar
-            input={input}
-            setInput={setInput}
-            onSend={handleSend}
-            disabled={isLoading || !!interrupt}
-            onKeyDown={onKeyDown}
-        />
+        {/* Slash command picker — shows when input starts with / */}
+        <div style={{position: "relative"}}>
+            <SlashCommandPicker
+                visible={showSlashPicker}
+                onSelect={(cmd) => {
+                    setInput(cmd + " ");
+                    setShowSlashPicker(false);
+                    inputRef.current?.focus();
+                }}
+            />
+            <InputBar
+                input={input}
+                setInput={(val) => {
+                    setInput(val);
+                    // Show picker when input starts with / and is just the slash
+                    setShowSlashPicker(val === "/" || (val.startsWith("/") && !val.includes(" ")));
+                }}
+                onSend={handleSend}
+                disabled={(mode === "chat" && (isLoading || !!interrupt)) || (mode === "orchestrator" && orch.isExecuting)}
+                onKeyDown={(e) => {
+                    if (showSlashPicker && e.key === "Escape") {
+                        setShowSlashPicker(false);
+                        return;
+                    }
+                    onKeyDown(e);
+                }}
+                placeholder={mode === "orchestrator" ? "Describe a task... (type / for commands)" : "Type a message... (type / for commands)"}
+            />
+        </div>
 
         {isLoading && !interrupt && (
             <button className="stop-button" onClick={stopRun}>

@@ -622,7 +622,9 @@ class LangGraphChatServer:
 
         # Clean up thread_id for display (take first segment, truncate)
         clean_id = (
-            thread_id.split(".", maxsplit=1)[0][:12] if "." in thread_id else thread_id[:12]
+            thread_id.split(".", maxsplit=1)[0][:12]
+            if "." in thread_id
+            else thread_id[:12]
         )
 
         state = await self._get_or_create_agent_async(thread_id)

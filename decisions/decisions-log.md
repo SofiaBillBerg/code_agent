@@ -6,7 +6,7 @@
 `.opencode/context/project-intelligence/decisions-log.md` for project-intelligence routing; keep both files in sync when
 updating decisions.
 
-**Last Updated**: 2026-08-13
+**Last Updated**: 2026-08-28
 
 ## Quick Reference
 
@@ -18,6 +18,9 @@ updating decisions.
 | Date       | Decision                                                                    | Rationale                                                                                                                                                                      | Impact                                                               |
 |------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
 | 2026-08-11 | Use LangChain + LangGraph + DeepAgents                                      | Established agent framework with graph capabilities                                                                                                                            | Foundation for agent architecture                                    |
+| 2026-08-28 | Move AWAY from LangGraph as core — Orchestrator is the spine                | LangGraph-coupled server violated framework-agnostic principle. New Orchestrator is core; LangGraph is optional adapter.                                                       | Core no longer imports LangChain. Backends are optional.             |
+| 2026-08-28 | Web UI talks to Orchestrator, not LangGraph                                 | Prevent drift. React app uses `/api/orchestrator` endpoints. LangGraph streaming kept as legacy mode only.                                                                      | FastAPI routes added for orchestrator. App.jsx has mode toggle.      |
+| 2026-08-28 | BergAgentsPlan.md is north star                                              | Prevent future drifting. All implementation must align with this document. If plan changes, update doc FIRST.                                                                  | Single source of truth for architecture.                             |
 | 2026-08-11 | Provider-agnostic approach                                                  | Flexibility across LLM providers                                                                                                                                               | Reduced vendor lock-in                                               |
 | 2026-08-11 | Human-in-the-loop middleware                                                | Better control and oversight                                                                                                                                                   | Enhanced user experience                                             |
 | 2026-08-11 | Persistent state management                                                 | Session continuity                                                                                                                                                             | Improved user experience                                             |

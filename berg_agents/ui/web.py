@@ -779,7 +779,9 @@ async def export_thread(thread_id: str, format: str = "md") -> Any:
 
     # Clean thread_id for filename (take first segment before dots, truncate)
     clean_id = (
-        thread_id.split(".", maxsplit=1)[0][:8] if "." in thread_id else thread_id[:8]
+        thread_id.split(".", maxsplit=1)[0][:8]
+        if "." in thread_id
+        else thread_id[:8]
     )
     return Response(
         content=body,
@@ -852,3 +854,12 @@ if _DIST_DIR.is_dir():
         NoCacheStaticFiles(directory=str(_DIST_DIR), html=True),
         name="webapp",
     )
+
+    # Include orchestrator routes (new multi-agent system)
+    # Deferred import to avoid circular imports at module level
+    from berg_agents.ui.orchestrator_routes import router as _orch_router
+
+    # include_router doesn't work in this context due to import ordering,
+    # so we append routes directly
+    for _route in _orch_router.routes:
+        app.routes.append(_route)

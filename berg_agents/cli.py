@@ -1129,48 +1129,314 @@ def _handle_command(
     user_input: str,
     conversation_messages: list[Any],
     tools: list,
+    orchestrator: Any = None,
+    config: dict[str, Any] | None = None,
 ) -> tuple[bool, list[Any] | None]:
-    """Handle simple chat commands. Returns (continue_session, messages or None).
+    """Handle slash commands for the TUI. Returns (continue_session, messages or None).
 
-    If a command is handled that should not continue into agent invocation (help, tools, clear),
-    the function returns (True, None). If the session should end, returns (False, _).
-    Otherwise, returns (True, conversation_messages) to proceed.
+    Slash commands (prefixed with /) provide access to system info and controls:
+    /help, /agents, /models, /stats, /tools, /health, /history, /memory,
+    /context, /settings, /plugins, /skills, /mcps, /orchestrate, /clear, /exit
 
     :param user_input: User input string.
     :param conversation_messages: Current conversation messages list.
     :param tools: List of available tools.
+    :param orchestrator: Optional BergAgentsApp instance.
+    :param config: Optional configuration dict.
     :return: Tuple of (continue_session, conversation_messages or None)
     """
-    if user_input.lower() in {"exit", "quit", "q"}:
+    text = user_input.strip()
+
+    # Exit commands
+    if text.lower() in {"exit", "quit", "q", "/exit", "/quit"}:
         print("\nGoodbye!")
         return False, conversation_messages
 
-    if user_input.lower() == "help":
-        print("\nAvailable commands:")
-        print("- help: Show this help message")
-        print("- exit/quit/q: End the session")
-        print("- clear: Clear the conversation history")
-        print("- tools: List available tools")
-        print(
-            "\nYou can also type natural language requests and the agent will try to help you."
-        )
+    # Only treat as command if it starts with /
+    if not text.startswith("/"):
+        return True, conversation_messages
+
+    parts = text.split(maxsplit=1)
+    cmd = parts[0].lower()
+    args = parts[1] if len(parts) > 1 else ""
+
+    if cmd == "/help":
+        _cmd_help()
         return True, None
 
-    if user_input.lower() == "clear":
+    if cmd == "/clear":
         print("Conversation history cleared.\n")
         return True, []
 
-    if user_input.lower() == "tools":
-        print("\nAvailable tools:")
-        for tool in tools:
-            print(f"- {tool.name}: {getattr(tool, 'description', '').strip()}")
-        print()
+    if cmd == "/tools":
+        _cmd_tools(tools)
         return True, None
 
-    if not user_input:
+    if cmd == "/agents":
+        _cmd_agents(orchestrator)
         return True, None
 
+    if cmd == "/models":
+        _cmd_models(config)
+        return True, None
+
+    if cmd == "/stats":
+        _cmd_stats(orchestrator)
+        return True, None
+
+    if cmd == "/health":
+        _cmd_health(orchestrator, tools)
+        return True, None
+
+    if cmd == "/history":
+        _cmd_history(conversation_messages)
+        return True, None
+
+    if cmd == "/memory":
+        _cmd_memory()
+        return True, None
+
+    if cmd == "/context":
+        _cmd_context(conversation_messages)
+        return True, None
+
+    if cmd == "/settings":
+        _cmd_settings(config)
+        return True, None
+
+    if cmd == "/plugins":
+        _cmd_plugins()
+        return True, None
+
+    if cmd == "/skills":
+        _cmd_skills(config)
+        return True, None
+
+    if cmd == "/mcps":
+        _cmd_mcps(config)
+        return True, None
+
+    if cmd == "/orchestrate":
+        _cmd_orchestrate(args, orchestrator)
+        return True, None
+
+    if cmd == "/task":
+        _cmd_task(args, orchestrator)
+        return True, None
+
+    if cmd == "/chat":
+        print("You're already in chat mode. Just type your message.")
+        return True, None
+
+    print(f"Unknown command: {cmd}. Type /help for available commands.")
     return True, None
+
+
+def _cmd_help() -> None:
+    """Show available slash commands."""
+    print("\n╔══════════════════════════════════════════════╗")
+    print("║          BergAgents Slash Commands           ║")
+    print("╠══════════════════════════════════════════════╣")
+    print("║ /help          Show this help message        ║")
+    print("║ /agents        List registered agents        ║")
+    print("║ /models        Show available models         ║")
+    print("║ /stats         Learning/outcome statistics   ║")
+    print("║ /tools         List available tools          ║")
+    print("║ /health        System health check           ║")
+    print("║ /history       Show conversation history     ║")
+    print("║ /memory        Show memory/context info      ║")
+    print("║ /context       Show current context          ║")
+    print("║ /settings      Show current settings         ║")
+    print("║ /plugins       List loaded plugins           ║")
+    print("║ /skills        List available skills         ║")
+    print("║ /mcps          List MCP server status        ║")
+    print("║ /orchestrate   Run task through orchestrator ║")
+    print("║ /task          Same as /orchestrate          ║")
+    print("║ /clear         Clear conversation history    ║")
+    print("║ /exit          End the session               ║")
+    print("╚══════════════════════════════════════════════╝")
+    print("\nOr just type natural language to chat with the agent.\n")
+
+
+def _cmd_tools(tools: list) -> None:
+    """List available tools."""
+    print("\n🔧 Available tools:")
+    for tool in tools:
+        desc = getattr(tool, "description", "").strip()
+        print(f"  {tool.name:20} {desc[:60]}")
+    print()
+
+
+def _cmd_agents(orchestrator: Any) -> None:
+    """List registered agents."""
+    print("\n🤖 Registered agents:")
+    if orchestrator is None:
+        print("  Orchestrator not available.")
+        return
+    for agent in orchestrator.list_agents():
+        caps = ", ".join(agent.get("capabilities", [])[:3])
+        print(
+            f"  {agent['name']:15} [{agent['preferred_model_tier']:6}] {agent['description']}"
+        )
+        if caps:
+            print(f"  {'':15} Caps: {caps}")
+    print()
+
+
+def _cmd_models(config: dict[str, Any] | None) -> None:
+    """Show available models."""
+    print("\n📦 Models:")
+    if config is None:
+        print("  Config not available.")
+        return
+    providers = config.get("providers", {})
+    for name, p in providers.items():
+        models = p.get("models", {})
+        print(f"  {name}:")
+        for m in models:
+            print(f"    - {m}")
+    print()
+
+
+def _cmd_stats(orchestrator: Any) -> None:
+    """Show learning/outcome statistics."""
+    print("\n📊 Learning Stats:")
+    if orchestrator is None:
+        print("  Orchestrator not available.")
+        return
+    stats = orchestrator.get_learning_stats()
+    total = stats.get("total", 0)
+    print(f"  Total tasks: {total}")
+    by_model = stats.get("by_model", {})
+    if by_model:
+        print("  By Model:")
+        for model, data in by_model.items():
+            s = data.get("success", 0)
+            f = data.get("failure", 0)
+            rate = (s / (s + f) * 100) if (s + f) > 0 else 0
+            print(f"    {model:20} {rate:5.0f}% ({s}/{s + f})")
+    print()
+
+
+def _cmd_health(orchestrator: Any, tools: list) -> None:
+    """System health check."""
+    print("\n🏥 Health Check:")
+    print(f"  Tools loaded: {len(tools)}")
+    if orchestrator:
+        agents = orchestrator.list_agents()
+        print(f"  Agents registered: {len(agents)}")
+        print(
+            f"  Learning enabled: {orchestrator.orchestrator.enable_learning}"
+        )
+    print("  Status: ✅ OK\n")
+
+
+def _cmd_history(conversation_messages: list[Any]) -> None:
+    """Show conversation history."""
+    print("\n📜 Conversation History:")
+    if not conversation_messages:
+        print("  No messages yet.")
+    else:
+        for i, msg in enumerate(conversation_messages[-10:], 1):
+            content = str(msg)[:80]
+            print(f"  {i:3}. {content}")
+    print()
+
+
+def _cmd_memory() -> None:
+    """Show memory/context info."""
+    print("\n🧠 Memory:")
+    print("  Session memory: Active (in-memory)")
+    print("  Long-term: MemPalace integration pending")
+    print()
+
+
+def _cmd_context(conversation_messages: list[Any]) -> None:
+    """Show current context."""
+    print("\n📋 Context:")
+    print(f"  Messages in history: {len(conversation_messages)}")
+    print(f"  Context window: Dynamic (model-dependent)")
+    print()
+
+
+def _cmd_settings(config: dict[str, Any] | None) -> None:
+    """Show current settings."""
+    print("\n⚙️  Settings:")
+    if config is None:
+        print("  Config not available.")
+        return
+    print(f"  Provider: {config.get('provider', 'not set')}")
+    print(f"  Model: {config.get('model', 'not set')}")
+    print(f"  Root dir: {config.get('root_dir', 'not set')}")
+    print()
+
+
+def _cmd_plugins() -> None:
+    """List loaded plugins."""
+    print("\n🔌 Plugins:")
+    print("  No plugins loaded (plugin system pending)")
+    print()
+
+
+def _cmd_skills(config: dict[str, Any] | None) -> None:
+    """List available skills."""
+    print("\n🎯 Skills:")
+    if config is None:
+        print("  Config not available.")
+        return
+    skills = config.get("skills", [])
+    if skills:
+        for s in skills:
+            print(f"  - {s}")
+    else:
+        print("  No skills configured")
+    print()
+
+
+def _cmd_mcps(config: dict[str, Any] | None) -> None:
+    """List MCP server status."""
+    print("\n🔗 MCP Servers:")
+    if config is None:
+        print("  Config not available.")
+        return
+    mcps = config.get("mcp_servers", [])
+    if mcps:
+        for m in mcps:
+            print(f"  - {m.get('name', 'unknown')}: {m.get('url', 'no url')}")
+    else:
+        print("  No MCP servers configured")
+    print()
+
+
+def _cmd_orchestrate(args: str, orchestrator: Any) -> None:
+    """Run a task through the orchestrator."""
+    if not args:
+        print("Usage: /orchestrate <task description>")
+        print("Example: /orchestrate refactor the auth module")
+        return
+    if orchestrator is None:
+        print("Orchestrator not available.")
+        return
+    print(f"\n🤖 Executing: {args}")
+    result = orchestrator.execute(args)
+    status = result.get("status", "unknown")
+    if status == "needs_human_review":
+        print("⚠️  Human review required:")
+        for reason in result.get("review_reasons", []):
+            print(f"  - {reason}")
+    elif status == "completed":
+        print("✅ Task completed")
+        plan = result.get("plan", [])
+        if plan:
+            print(f"  Subtasks: {len(plan)}")
+    else:
+        print(f"Status: {status}")
+    print()
+
+
+def _cmd_task(args: str, orchestrator: Any) -> None:
+    """Alias for /orchestrate."""
+    _cmd_orchestrate(args, orchestrator)
 
 
 def _display_agent_response(

@@ -6,7 +6,7 @@ import React, {useRef, useEffect} from "react";
  * Disabled while streaming or HITL pending
  * Auto-resizes based on content (adaptive height)
  */
-function InputBar({input, setInput, onSend, disabled, onKeyDown}) {
+function InputBar({input, setInput, onSend, disabled, onKeyDown, placeholder = "Type a message..."}) {
     const textareaRef = useRef(null);
 
     // Auto-resize textarea based on content
@@ -30,7 +30,7 @@ function InputBar({input, setInput, onSend, disabled, onKeyDown}) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Type a message..."
+                placeholder={placeholder}
                 disabled={disabled}
                 className="input-bar-textarea"
                 style={{overflow: 'hidden', resize: 'none', background: 'var(--berg-surface)', color: 'var(--berg-text)'}}
