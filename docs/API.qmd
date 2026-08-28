@@ -28,19 +28,46 @@ see [CLI API](../apidocs/berg_agents.cli.html).
 
 ## Core API
 
-There `berg_agents.core`module contains the core functionality of the BergAgent, including the orchestrator and
-bookkeeper. To read more about berg_agents.core, see [Core API](../apidocs/berg_agents.core.html).
+The `berg_agents.core` module is the **framework-agnostic spine** — `Orchestrator` (central coordinator), `ModelRouter`
+(complexity → tier), `LearningGate` (adaptive routing), `AbstractAgent` (subagent contract), and `Bookkeeper`.
+No LangChain imports in `core/`. To read more, see [Core API](../apidocs/berg_agents.core.html).
 
 ![Core components](../docs/visualizations/png/packages_berg_agents.core.png)
 
 
-## Agent API
+## App API (BergAgentsApp — Main Entry Point)
 
-The `berg_agents.agents` module provides the core functionality of the BergAgent, including the agent's decision-making
-logic, tool management, and interaction with the LLM. To read more about berg_agents.agent,
-see [Agent API](../apidocs/berg_agents.agents.html).
+The `berg_agents` package exposes `BergAgentsApp` — the framework-agnostic host that wires the Orchestrator, ModelRouter,
+LearningGate, and optional backends. Prefer this over low-level `build_agent`.
+
+```python
+from berg_agents import BergAgentsApp
+app = BergAgentsApp.create()          # reads config/bergagents.jsonc
+app.execute("refactor auth module")   # routes through Guardian → Planner → Implementation
+app.list_agents()
+app.get_learning_stats()
+```
+
+See [App API](../apidocs/berg_agents.app.html).
+
+## Agent API (Subagents)
+
+The `berg_agents.agents` module provides specialized subagents — `Guardian` (HITL), `Planner` (task breakdown),
+`Implementation` (code execution), `Curator` (docs/memory), `Learning` (outcome tracking). Each implements `AbstractAgent`.
+To read more about subagents, see [Agent API](../apidocs/berg_agents.agents.html).
 
 ![Agents diagram](../docs/visualizations/png/packages_berg_agents.agents.png)
+
+## Backend API (Framework Adapters)
+
+The `berg_agents.backends` module provides optional framework adapters. `LangChainAdapter` wraps LangGraph/DeepAgents,
+`NativeAdapter` uses raw HTTP (zero LangChain dependency). The orchestrator works without either.
+See [Backends API](../apidocs/berg_agents.backends.html).
+
+## Learning Gate API
+
+The `berg_agents.core.learning_gate` module is the adaptive layer — records outcomes, generates insights, and stores
+in MemPalace. See [Learning Gate API](../apidocs/berg_agents.core.learning_gate.html).
 
 ## Providers API
 
@@ -73,11 +100,11 @@ berg_agents.config, see [Configuration API](../apidocs/berg_agents.config.html).
 ![Configuration diagram](../docs/visualizations/png/packages_berg_agents.config.png)
 ```
 
-## Profiles API
+## Profiles API (LangGraph Adapter Only)
 
-The `berg_agents.profiles` module provides functionality for managing user profiles, which can be used to customize the
-behavior of the BergAgent based on different user preferences. To read more about berg_agents.profiles,
-see [Profiles API](../apidocs/berg_agents.profiles.html).
+The `berg_agents.profiles` module tunes the **optional** LangGraph/DeepAgents harness (system prompts, tool visibility per
+model). It does NOT affect the core orchestrator (`model_routing`/`hitl_rules` in `bergagents.jsonc` do). See
+[Profiles API](../apidocs/berg_agents.profiles.html).
 
 ```markdown
 ![Profiles diagram](../docs/visualizations/png/packages_berg_agents.profiles.png)

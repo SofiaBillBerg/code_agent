@@ -6,7 +6,11 @@ format: html
 
 # Tools
 
-BergAgents uses the **DeepAgents** harness by default, which provides built-in filesystem tools. Custom tools are added on top. MCP servers can extend the agent with additional tools at runtime.
+BergAgents has two layers:
+
+1. **Orchestrator subagents** (`berg_agents/agents/` — `Guardian`, `Planner`, `Implementation`, `Curator`, `Learning`) that
+   route via `Orchestrator`. Add custom subagents by implementing `AbstractAgent` and `app.register_agent()`.
+2. **Filesystem tools** — the optional DeepAgents harness provides built-in tools; custom tools and MCP servers add on top.
 
 ## Tool Loading Order
 

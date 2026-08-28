@@ -308,12 +308,49 @@ def _translate_interrupt(
     node: str | None,
 ) -> dict[str, Any]:
     """Translate an interrupt → ``input`` channel ``input-requested``."""
+    import logging
+
+    logger = logging.getLogger(__name__)
     data = event.get("data", {})
     output = data.get("output", {})
 
-    # Unwrap LangGraph's interrupt wrapper when present
-    if isinstance(output, dict):
-        output = output.get("__interrupt__", output)
+    # Unwrap LangGraph's interrupt wrapper when present — handle dict, list, and nested Interrupt objects
+    original_output = output
+    if isinstance(output, dict) and "__interrupt__" in output:
+        output = output["__interrupt__"]
+    # DeepAgents/human_in_the_loop sometimes wraps as [{"value": {...}}]
+    if (
+        isinstance(output, list)
+        and len(output) == 1
+        and isinstance(output[0], dict)
+        and "value" in output[0]
+    ):
+        output = output[0]["value"]
+    elif isinstance(output, list) and len(output) > 0:
+        # List of interrupts — keep as list so frontend can flatten
+        pass
+    # Some interrupts arrive as Interrupt objects with .value
+    if hasattr(output, "value"):
+        try:
+            output = output.value  # type: ignore
+        except Exception:
+            pass
+    if (
+        isinstance(output, dict)
+        and "value" in output
+        and isinstance(output["value"], dict)
+        and "action_requests" in output["value"]
+    ):
+        output = output["value"]
+
+    # Fallback: if output is still empty/placeholder, try to surface raw event for debugging
+    if not output or output == "Approval required" or output == {}:
+        logger.debug(
+            "Interrupt output empty/placeholder, original=%r", original_output
+        )
+        # Keep original so frontend can at least see it, but prefer structured if we found one
+        if original_output and original_output != "Approval required":
+            output = original_output
 
     interrupt_id = str(uuid.uuid4())
 

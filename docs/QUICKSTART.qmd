@@ -39,12 +39,12 @@ uv pip install -e .
 
 ## 3. Configuration
 
-BergAgents uses a **provider-centric configuration** pattern. Each model
-belongs to a provider; provider/baseURL/apiKey resolve FROM the model.
+BergAgents uses a **provider-centric configuration** with an **orchestrator** on top. Each model belongs to a provider;
+provider/baseURL/apiKey resolve FROM the model. Model routing, HITL rules, and plugins live in the same file.
 
 Configuration layers (in order of increasing precedence):
 
-1. **Config file**: `config/bergagents.jsonc` — provider-centric with `providers` block
+1. **Config file**: `config/bergagents.jsonc` — `providers` + `orchestrator`/`model_routing`/`hitl_rules`/`plugins`
 2. **`.env` file**: Values referenced from config with `${env:VAR_NAME}`
 3. **Environment variables**: `BERG_AGENT_*` override config and `.env`
 4. **MCP config**: `.mcp.json` for MCP server configuration
@@ -55,18 +55,27 @@ Example `config/bergagents.jsonc`:
 {
   "providers": {
     "ollama": {
-      "options": {
-        "baseURL": "http://localhost:11434",
-        "apiKey": "EMPTY"
-      },
-      "models": {
-        "qwen3.5:9b": {},
-        "gpt-oss:20b": {}
-      }
+      "options": { "baseURL": "http://localhost:11434", "apiKey": "EMPTY" },
+      "models": { "qwen3.5:9b": {}, "gpt-oss:20b": {} }
     }
-  }
+  },
+  // Orchestrator (small models for small tasks, large for complex)
+  "model_routing": {
+    "tiers": {
+      "small": { "models": ["qwen3.5:9b"], "max_tokens": 4096 },
+      "large": { "models": ["gpt-4o"], "max_tokens": 128000 }
+    }
+  },
+  "hitl_rules": {
+    "auto_execute": ["read_file", "list_files"],
+    "ask_before": ["delete_file", "execute_command"]
+  },
+  "plugins": [".opencode"]
 }
 ```
+
+`config/profiles.yaml` is **only** for the optional LangGraph harness (tool visibility, prompts). Core routing lives in
+`bergagents.jsonc`.
 
 Example `.env`:
 
@@ -79,30 +88,33 @@ BERG_AGENT_OLLAMA_BASE_URL=http://localhost:11434
 
 You can now use BergAgents directly from your terminal.
 
-### Interactive Chat
-
-The primary way to use the agent is through the interactive chat session.
+### Interactive Chat (TUI)
 
 ```bash
 berg_agents chat
 ```
 
-You can now give instructions to the agent in plain English:
+Type natural language or slash commands (`/help`, `/agents`, `/orchestrate <task>`, `/stats`). Guardian asks for approval
+on risky actions; Planner breaks complex tasks into subtasks.
+
 > "Create a Python file named 'app.py' and add a simple Flask 'Hello, World!' application to it."
 
-### Web UI
-
-Start the FastAPI + React web UI:
+### Web UI (Chat ↔ Orchestrate)
 
 ```bash
 berg_agents serve --web --web-port 8001
+# → http://127.0.0.1:8001 — toggle Chat / Orchestrate mode, "/" for slash commands
 ```
 
-Then open http://127.0.0.1:8001 in your browser.
+### Python API (BergAgentsApp)
+
+```python
+from berg_agents import BergAgentsApp
+app = BergAgentsApp.create()
+app.execute("refactor auth module", "refactor")
+```
 
 ### Export Conversation
-
-Export the current thread's conversation as markdown:
 
 ```bash
 berg_agents export <thread_id>

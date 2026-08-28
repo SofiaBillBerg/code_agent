@@ -8,27 +8,35 @@ format: html
 
 ## 1. How does the agent remember conversations?
 
-The agent uses **LangGraph checkpointing** to persist conversation state across turns. When running in the CLI or web
-UI, each session gets a unique `thread_id` and the graph state (including message history) is saved to a checkpointer.
-By default, the web UI uses an in-memory checkpointer; you can configure a persistent SQLite checkpointer via
-`BERG_AGENT_CHECKPOINT_DIR`.
+BergAgents has two memory layers:
+
+1. **Short-term (threads)**: LangGraph checkpointing persists per `thread_id` (at `~/.berg_agents/checkpoints/agent.db` by
+   default). Root IDs are short (`f`), sub-agent turns append dotted namespaces (`f.ff33…3967.930f…`). The legacy chat path
+   uses this directly; the new orchestrator path streams via `OrchestratorServer`. Export via
+   `GET /threads/{id}/export` reads `channel_values.messages` (Sqlite) — display truncates to root.
+
+2. **Long-term (learnings)**: `LearningGate` records task → model → outcome and stores insights in **MemPalace** (knowledge
+   graph). `ModelRouter` adapts tier selection based on success rates. Check via `/stats` (TUI) or `GET /api/learning-stats`.
 
 Additionally, the DeepAgents harness can load **memory files** (`AGENTS.md`) that are always injected into the agent's
 context, giving it persistent instructions and preferences across conversations.
 
 ## 2. Can I use a cloud LLM instead of Ollama?
 
-Yes. The agent is provider-agnostic. Set `BERG_AGENT_PROVIDER=openai` (or `anthropic`) and provide the corresponding API
-key:
+Yes. BergAgents is provider-agnostic. Add any OpenAI-compatible endpoint in `config/bergagents.jsonc`:
 
-```dotenv
-BERG_AGENT_PROVIDER=openai
-BERG_AGENT_OPENAI_API_KEY=sk-...
-BERG_AGENT_OPENAI_MODEL=gpt-4o
+```jsonc
+"providers": {
+  "openai": {
+    "options": { "baseURL": "https://api.openai.com/v1", "apiKey": "${env:OPENAI_API_KEY}" },
+    "models": { "gpt-4o": {} }
+  }
+}
 ```
 
-You can also configure multiple providers and switch between them at runtime via the web UI (`POST /providers/active`)
-or by setting `BERG_AGENT_PROVIDER_LIST`.
+Or use env vars: `BERG_AGENT_OPENAI_API_KEY` / `BERG_AGENT_OPENAI_MODEL`. In `bergagents.jsonc`, the provider is
+derived **from the model id** — never from a global `BERG_AGENT_PROVIDER` flag (deprecated). Switch at runtime via
+the web UI model selector or `POST /threads/{id}/model`. See `docs/CONFIGURATION.qmd`.
 
 ## 3. What happens if the LLM server is not running?
 
@@ -37,12 +45,12 @@ invoke the agent. The CLI and web UI will surface the error message so you can d
 
 ## 4. Is it safe to let the agent edit my files?
 
-The agent's filesystem tools are sandboxed to a configured `root_dir` (default: the current working directory). When
-using the DeepAgents harness, the working directory is mounted at `/workspace/` with `virtual_mode=True`, which blocks
-path escapes (`..`, `~`, absolute paths outside the root).
+The `Guardian` subagent implements the **human-AI balance** — it assesses risk × complexity × confidence and decides
+`auto_execute` / `notify_after` / `ask_before` / `human_leads` (configured in `bergagents.jsonc` → `hitl_rules`).
 
-Additionally, mutating tools (`write_file`, `edit_file`, `delete`, `execute`) default to **human-in-the-loop** review:
-the agent pauses before executing them and asks for your approval.
+On the filesystem side, the sandbox is `root_dir` (default: cwd). The DeepAgents harness mounts the working directory at
+`/workspace/` with `virtual_mode=True`, blocking path escapes (`..`, `~`, absolute outside). Mutating tools
+(`write_file`, `edit_file`, `delete`, `execute`) default to HITL review — the agent pauses for your approval.
 
 You can further restrict access with filesystem permissions:
 
@@ -59,10 +67,9 @@ agent = create_deep_agent(
 )
 ```
 
-## 5. How do I add a new tool to the agent?
+## 5. How do I add a new tool or subagent?
 
-Add your tool to `create_default_tools` in [
-`../berg_agents`](../berg_agents/agents/codeagent.py):
+**Tool**: add it to `create_default_tools` in `berg_agents/agents/codeagent.py`:
 
 ```python
 from langchain.tools import tool
@@ -79,8 +86,25 @@ standard_tools = [
 ]
 ```
 
-When using the DeepAgents harness, custom tools are additive. If a custom tool has the same name as a built-in
-filesystem tool, the built-in wins (the custom one is dropped).
+When using DeepAgents, custom tools are additive; built-ins win on name collision.
+
+**Subagent**: implement `AbstractAgent` and register with the orchestrator:
+
+```python
+from berg_agents import BergAgentsApp
+from berg_agents.core import AbstractAgent, AgentResult, TaskContext
+
+class MyAgent(AbstractAgent):
+    name = "my_agent"
+    description = "Does X"
+
+    def can_handle(self, task): return 0.8
+    def execute(self, task, context: TaskContext, model=None) -> AgentResult:
+        return AgentResult(success=True, output="done")
+
+app = BergAgentsApp.create()
+app.register_agent("my_agent", MyAgent())
+```
 
 ## 6. Why does `berg_agents chat` sometimes look empty or delayed?
 
@@ -109,4 +133,20 @@ startup.
 
 ## 8. What Python version do I need?
 
-Python 3.11 or newer. The project uses `uv` for dependency management.
+Python 3.12+. The project uses `uv` for dependency management.
+
+## 9. Do I need LangGraph installed?
+
+No. BergAgents runs without it. `backends/native_adapter.py` talks directly to OpenAI-compatible APIs via stdlib `urllib`.
+Install LangGraph/DeepAgents only if you want the LangGraph harness (`backends/langchain_adapter.py`).
+
+## 10. How does model routing work?
+
+`ModelRouter` estimates complexity from task description × task_type (patterns + keywords) → `trivial`/`standard`/`complex`/`critical` →
+small/medium/large tier (configured in `bergagents.jsonc` → `model_routing`). `LearningGate` then adapts based on observed
+success rates. Check tiers and stats via `GET /api/learning-stats` or `/stats` in TUI.
+
+## 11. Where is the architecture doc?
+
+`.opencode/context/project-intelligence/BERGAGENTS_PLAN.md` is the north star. It is the single source of truth — if the plan
+changes, update that file first.

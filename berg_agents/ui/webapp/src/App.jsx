@@ -535,7 +535,7 @@ function AppContent() {
         <TodoList todos={stream.todos || []} onTodoUpdate={() => {
         }}/>
 
-        {interrupt && <HitlSurface pending={interrupt} onDecision={handleDecision}/>}
+        {interrupt && <HitlSurface pending={interrupt} toolCalls={toolCalls} subagents={subagents} onDecision={handleDecision}/>}
 
         {/* Slash command picker — shows when input starts with / */}
         <div style={{position: "relative"}}>

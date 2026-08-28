@@ -77,6 +77,65 @@ For backward compatibility, flat keys are auto-synthesized into a registry:
 }
 ```
 
+## Orchestrator (Multi-Agent Core)
+
+BergAgents is a **framework-agnostic orchestrator** with specialized subagents — not a LangChain wrapper. The orchestrator coordinates all work and is configured in the same `bergagents.jsonc`:
+
+```jsonc
+{
+  // Orchestrator as host (framework-agnostic core)
+  "orchestrator": {
+    "enable_learning": true,
+    "enable_hitl": true
+  },
+
+  // Model routing — small models for small tasks, large for complex
+  "model_routing": {
+    "tiers": {
+      "small":  { "models": ["qwen3.5:9b"], "max_tokens": 4096 },
+      "medium": { "models": ["gpt-oss:20b"], "max_tokens": 8192 },
+      "large":  { "models": ["gpt-4o"], "max_tokens": 128000 }
+    },
+    "complexity_rules": {
+      "trivial":  { "patterns": ["read_file", "list_files", "search"], "tier": "small" },
+      "standard": { "patterns": ["edit_file", "new_file", "test"], "tier": "small" },
+      "complex":  { "patterns": ["refactor", "architecture", "multi_file"], "tier": "large" },
+      "critical": { "patterns": ["delete", "security", "production"], "tier": "large", "human_review": true }
+    }
+  },
+
+  // HITL rules — Guardian decides when to ask human
+  "hitl_rules": {
+    "auto_execute": ["read_file", "list_files", "search_code"],
+    "notify_after": ["edit_file", "new_file", "generate_test"],
+    "ask_before": ["delete_file", "execute_command", "refactor"],
+    "human_leads": ["security_change", "production_deploy", "data_migration"]
+  },
+
+  // Plugins — optional .opencode paths (BergAgents works without them)
+  "plugins": [".opencode"],
+
+  // Agent overrides — optional per-agent tuning
+  "agents": {
+    "guardian": { "preferred_model_tier": "medium" },
+    "planner":  { "preferred_model_tier": "medium" },
+    "implementation": { "preferred_model_tier": "small" },
+    "curator":  { "preferred_model_tier": "small" },
+    "learning": { "preferred_model_tier": "medium" }
+  }
+}
+```
+
+Loaded via `BergAgentsApp.create()` → `Settings` → `Orchestrator`/`ModelRouter`/`Guardian`.
+
+| Subagent | Role | Default Tier |
+|----------|------|--------------|
+| `Guardian` | HITL decisions, risk assessment | `medium` |
+| `Planner` | Task breakdown, complexity estimation | `medium` |
+| `Implementation` | Code execution, file ops | `small` (matched to complexity) |
+| `Curator` | Docs, memory | `small` |
+| `Learning` | Outcome tracking, routing adaptation | `medium` |
+
 ## `.env` File
 
 Store secrets and defaults in a `.env` file at the project root. Values referenced from the config file with `${env:VAR_NAME}` are resolved from here.
@@ -103,11 +162,11 @@ Common variables:
 | `BERG_AGENT_TEMPERATURE` | Sampling temperature | `0.7` |
 | `BERG_AGENT_CHECKPOINT_DIR` | Checkpoint storage path | `.checkpoints` |
 
-## Profiles
+## Profiles (LangGraph Adapter Only)
 
-DeepAgents harness profiles are loaded automatically from `config/profiles.yaml`. Profiles tune the system prompt, tool visibility, and middleware per model.
+Profiles are for the **optional** LangGraph/DeepAgents backend — not for the core orchestrator. They tune the system prompt, tool visibility, and middleware per model.
 
-Example `config/profiles.yaml`:
+Loaded automatically from `config/profiles.yaml`:
 
 ```yaml
 "ollama":
@@ -122,6 +181,9 @@ Profile keys can be:
 - A `provider:model` pair (e.g. `"openai:gpt-4o"`) for per-model overrides
 
 Note: model identifiers containing `:` (e.g. `qwen3.5:9b`) cannot be used as exact `provider:model` keys — register them under the bare provider key instead.
+
+> Core orchestrator config (`model_routing`, `hitl_rules`, `agents`) belongs in `bergagents.jsonc`.
+> `profiles.yaml` only affects the LangGraph harness.
 
 ## MCP Configuration
 

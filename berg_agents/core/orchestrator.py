@@ -12,10 +12,10 @@ This module does NOT depend on LangGraph, LangChain, or any LLM framework.
 
 from __future__ import annotations
 
-import logging
-import uuid
 from collections.abc import Iterable
+import logging
 from typing import Any
+import uuid
 
 from berg_agents.agents.curator import Curator
 from berg_agents.agents.guardian import Guardian
@@ -24,8 +24,6 @@ from berg_agents.agents.learning import Learning
 from berg_agents.agents.planner import Planner
 from berg_agents.core.interface import (
     AbstractAgent,
-    AgentResult,
-    RiskLevel,
     TaskComplexity,
     TaskContext,
 )
@@ -82,8 +80,31 @@ class Orchestrator:
             "learning": self._learning,
         }
 
-        # Plugin agents (loaded dynamically)
+        # Legacy registry for backwards compat (tests expect orch.registry)
+        self.registry: dict[str, list[dict[str, Any]]] = {
+            "agents": [],
+            "workflows": [],
+        }
+        # Plugin agents (loaded dynamically — legacy registry.json support + new agents)
         self._plugin_agents: dict[str, Any] = {}
+        # Legacy plugin loading: if a plugin dir has registry.json, load it for backwards compat
+        for plugin_path in self._plugins:
+            try:
+                import json
+                from pathlib import Path
+
+                reg_file = Path(plugin_path) / "registry.json"
+                if reg_file.exists():
+                    data = json.loads(reg_file.read_text(encoding="utf-8"))
+                    self.registry["agents"].extend(data.get("agents", []))
+                    self.registry["workflows"].extend(data.get("workflows", []))
+                    for agent_info in data.get("agents", []):
+                        name = agent_info.get("name", "")
+                        if name and name not in self._plugin_agents:
+                            # Store as simple dict agent (legacy shape)
+                            self._plugin_agents[name] = agent_info
+            except Exception:
+                pass
 
     @property
     def agents(self) -> dict[str, AbstractAgent]:
@@ -231,18 +252,35 @@ class Orchestrator:
         }
 
     def route_to_agent(
-        self, agent_name: str, task: dict[str, Any]
-    ) -> AgentResult:
+        self, agent_name: str, task: dict[str, Any] | None = None
+    ) -> Any:
         """Route a task directly to a specific agent.
+
+        Supports legacy call `route_to_agent(name) -> dict` and new call
+        `route_to_agent(name, task) -> AgentResult`.
 
         Args:
             agent_name: Name of the agent.
-            task: Task dictionary.
+            task: Task dictionary (new API). If None, returns legacy dict.
 
         Returns:
-            AgentResult from the agent.
+            AgentResult (new API) or dict (legacy API).
         """
+        # Legacy: stored as plain dict from registry.json
+        legacy = self._plugin_agents.get(agent_name)
+        if isinstance(legacy, dict) and not hasattr(legacy, "can_handle"):
+            if task is None:
+                return legacy
+            # If legacy dict but task provided, return legacy dict anyway
+            return legacy
+
         agent = self.get_agent(agent_name)
+        if task is None:
+            # Legacy compat: return agent info dict
+            if isinstance(agent, dict):
+                return agent
+            return agent.get_info()
+        # New API: need task
         complexity = self.router.estimate_complexity(task)
         risk = self._guardian.assess_risk(task)
         context = TaskContext(

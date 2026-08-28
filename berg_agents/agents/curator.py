@@ -221,7 +221,7 @@ class Curator(AbstractAgent):
                 "step": len(plan) + 1,
                 "action": "append",
                 "target": action["target"],
-                "description": f"Record architecture decision",
+                "description": "Record architecture decision",
             })
 
         for action in knowledge_actions:

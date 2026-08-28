@@ -620,7 +620,6 @@ class LangGraphChatServer:
         if format != "md":
             raise ValueError("Unsupported format")
 
-        # Clean up thread_id for display (take first segment, truncate)
         clean_id = (
             thread_id.split(".", maxsplit=1)[0][:12]
             if "." in thread_id
@@ -636,109 +635,164 @@ class LangGraphChatServer:
         if checkpointer is not None:
             try:
                 config = {"configurable": {"thread_id": thread_id}}
-                data = await checkpointer.aget(config)
+                messages: list = []
+                todos: list = []
+                debug_data = None
 
-                # Handle different data formats
-                if data is None:
-                    lines.append(
-                        "*[No conversation data found for this thread]*"
-                    )
-                elif isinstance(data, dict):
-                    messages = data.get("messages", [])
-                    todos = data.get("todos", [])
+                # 1. Try StateSnapshot via agent.aget_state (handles both backends)
+                try:
+                    snapshot = await state.agent.aget_state(config)  # type: ignore[attr-defined]
+                    if snapshot is not None and hasattr(snapshot, "values"):
+                        vals = getattr(snapshot, "values", {}) or {}
+                        if isinstance(vals, dict):
+                            messages = vals.get("messages", []) or []
+                            todos = vals.get("todos", []) or []
+                            debug_data = vals
+                except Exception:
+                    pass
 
-                    if not messages:
-                        # Try alternative keys
-                        messages = (
-                            data.get("values", {}).get("messages", [])
-                            if isinstance(data.get("values"), dict)
-                            else []
-                        )
+                # 2. Fallback to raw checkpointer
+                if not messages:
+                    try:
+                        data = await checkpointer.aget(config)
+                        debug_data = data
+                        if isinstance(data, dict):
+                            cv = (
+                                data.get("channel_values")
+                                if isinstance(data.get("channel_values"), dict)
+                                else None
+                            )
+                            if cv and cv.get("messages"):
+                                messages = cv.get("messages", []) or []
+                                todos = cv.get("todos", todos) or []
+                            elif data.get("messages"):
+                                messages = data.get("messages", []) or []
+                                todos = data.get("todos", todos) or []
+                            else:
+                                for alt in [
+                                    data.get("values"),
+                                    data.get("checkpoint"),
+                                    cv,
+                                ]:
+                                    if isinstance(alt, dict) and alt.get(
+                                        "messages"
+                                    ):
+                                        messages = alt.get("messages", []) or []
+                                        if not todos and alt.get("todos"):
+                                            todos = alt.get("todos", []) or []
+                                        break
+                    except Exception as e:
+                        logger.debug("checkpointer fallback failed: %s", e)
 
-                    if not messages:
-                        lines.append("*[No messages in conversation]*")
-                        lines.append("")
+                if not messages:
+                    if debug_data is None:
                         lines.append(
-                            "**Raw data keys:** " + ", ".join(data.keys())
+                            "*[No conversation data found for this thread]*"
                         )
                     else:
-                        for msg in messages:
-                            mtype = getattr(msg, "type", "") or msg.get(
-                                "type", ""
+                        lines.append("*[No messages in conversation]*")
+                        lines.append("")
+                        if isinstance(debug_data, dict):
+                            lines.append(
+                                "**Raw data keys:** "
+                                + ", ".join(debug_data.keys())
                             )
-                            content = getattr(msg, "content", "") or msg.get(
-                                "content", ""
-                            )
-                            if isinstance(content, list):
-                                content = "\n".join(
-                                    b.get("text", "")
-                                    if isinstance(b, dict)
-                                    else str(b)
-                                    for b in content
+                            cv = debug_data.get("channel_values")
+                            if isinstance(cv, dict):
+                                lines.append(
+                                    "**Channel values keys:** "
+                                    + ", ".join(cv.keys())
                                 )
-                            content = (content or "").strip()
-                            if mtype == "tool":
-                                name = getattr(msg, "name", "tool") or msg.get(
-                                    "name", "tool"
-                                )
-                                lines.append(f"**🔧 {name}**")
-                                lines.append("")
-                                lines.append("```")
-                                lines.append(content[:500])
-                                lines.append("```")
-                            elif mtype == "human":
-                                lines.append(f"**You:**\n\n{content}")
-                            elif mtype == "ai":
-                                calls = (
-                                    getattr(msg, "tool_calls", None)
-                                    or msg.get("tool_calls", [])
-                                    or []
-                                )
-                                for tc in calls:
-                                    args = (
-                                        tc.get("args", {})
-                                        if isinstance(tc, dict)
-                                        else {}
-                                    )
-                                    target = (
-                                        args.get("file_path")
-                                        or args.get("path")
-                                        or args.get("pattern")
-                                        or ""
-                                    )
+                                if cv.get("messages") is not None:
                                     lines.append(
-                                        f"*→ {tc.get('name', 'tool') if isinstance(tc, dict) else 'tool'} {target}*"
+                                        f"**Messages in channel_values:** {len(cv.get('messages', []))}"
                                     )
-                                if content:
-                                    lines.append(f"**Agent:**\n\n{content}")
-                            else:
-                                lines.append(f"**{mtype}:** {content}")
-                            lines.append("")
-
-                        if todos:
-                            lines.append("## Todo list at end of run")
-                            lines.append("")
-                            for t in todos:
-                                mark = (
-                                    "x"
-                                    if (
-                                        t.get("status") == "completed"
-                                        if isinstance(t, dict)
-                                        else getattr(t, "status", None)
-                                        == "completed"
-                                    )
-                                    else " "
+                            if debug_data.get("messages") is not None:
+                                lines.append(
+                                    f"**Messages top-level:** {len(debug_data.get('messages', []))}"
                                 )
-                                content = (
-                                    t.get("content", "")
-                                    if isinstance(t, dict)
-                                    else getattr(t, "content", "")
-                                )
-                                lines.append(f"- [{mark}] {content}")
                 else:
-                    lines.append(
-                        f"*[Unexpected data type: {type(data).__name__}]*"
-                    )
+                    for msg in messages:
+                        mtype = getattr(msg, "type", "") or (
+                            msg.get("type", "") if isinstance(msg, dict) else ""
+                        )
+                        content = getattr(msg, "content", "") or (
+                            msg.get("content", "")
+                            if isinstance(msg, dict)
+                            else ""
+                        )
+                        if isinstance(content, list):
+                            content = "\n".join(
+                                b.get("text", "")
+                                if isinstance(b, dict)
+                                else str(b)
+                                for b in content
+                            )
+                        content = (content or "").strip()
+                        if mtype == "tool":
+                            name = getattr(msg, "name", "tool") or (
+                                msg.get("name", "tool")
+                                if isinstance(msg, dict)
+                                else "tool"
+                            )
+                            lines.append(f"**🔧 {name}**")
+                            lines.append("")
+                            lines.append("```")
+                            lines.append(content[:500])
+                            lines.append("```")
+                        elif mtype == "human":
+                            lines.append(f"**You:**\n\n{content}")
+                        elif mtype == "ai":
+                            calls = (
+                                getattr(msg, "tool_calls", None)
+                                or (
+                                    msg.get("tool_calls", [])
+                                    if isinstance(msg, dict)
+                                    else []
+                                )
+                                or []
+                            )
+                            for tc in calls:
+                                args = (
+                                    tc.get("args", {})
+                                    if isinstance(tc, dict)
+                                    else {}
+                                )
+                                target = (
+                                    args.get("file_path")
+                                    or args.get("path")
+                                    or args.get("pattern")
+                                    or ""
+                                )
+                                lines.append(
+                                    f"*→ {tc.get('name', 'tool') if isinstance(tc, dict) else 'tool'} {target}*"
+                                )
+                            if content:
+                                lines.append(f"**Agent:**\n\n{content}")
+                        else:
+                            lines.append(f"**{mtype}:** {content}")
+                        lines.append("")
+
+                    if todos:
+                        lines.append("## Todo list at end of run")
+                        lines.append("")
+                        for t in todos:
+                            mark = (
+                                "x"
+                                if (
+                                    t.get("status") == "completed"
+                                    if isinstance(t, dict)
+                                    else getattr(t, "status", None)
+                                    == "completed"
+                                )
+                                else " "
+                            )
+                            content = (
+                                t.get("content", "")
+                                if isinstance(t, dict)
+                                else getattr(t, "content", "")
+                            )
+                            lines.append(f"- [{mark}] {content}")
             except Exception as e:
                 logger.exception("Error exporting thread %s: %s", thread_id, e)
                 lines.append(f"*[export error: {e}]*")
@@ -930,7 +984,7 @@ class LangGraphChatServer:
 
     async def thread_stream_events(
         self, thread_id: str, since: int = 0
-    ) -> AsyncGenerator[dict[str, Any], None]:
+    ) -> AsyncGenerator[dict[str, Any]]:
         """Yield protocol v2 events from the queue (replay + live tail)."""
         queue = self._get_or_create_queue(thread_id)
         notifier = self._get_or_create_notifier(thread_id)
@@ -1017,7 +1071,7 @@ class LangGraphChatServer:
 
     async def chat_stream(
         self, text: str, thread_id: str | None = None
-    ) -> AsyncGenerator[str, None]:
+    ) -> AsyncGenerator[str]:
         """Stream a chat response via SSE frames (legacy endpoint)."""
         settings = get_settings()
         if not settings.stream_enabled:
@@ -1028,7 +1082,7 @@ class LangGraphChatServer:
         state = await self._get_or_create_agent_async()
         effective_thread = thread_id or state.thread_id
 
-        async def _inner() -> AsyncGenerator[str, None]:
+        async def _inner() -> AsyncGenerator[str]:
             try:
                 from berg_agents.ui.protocol import _sse
 
@@ -1043,7 +1097,7 @@ class LangGraphChatServer:
         task = asyncio.create_task(streamer.__anext__())
         self._thread_tasks[effective_thread] = task
 
-        async def _consume() -> AsyncGenerator[str, None]:
+        async def _consume() -> AsyncGenerator[str]:
             try:
                 async for chunk in streamer:
                     yield chunk

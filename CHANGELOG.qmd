@@ -7,18 +7,25 @@ A log of the meaningful changes to the `berg_agents` project.
 
 ## v0.3.0 (Unreleased)
 
-- **DeepAgents Migration**: Continued migration to DeepAgents architecture with middleware support, improving agent
-  coordination and tool routing.
-- **Thread Routing Fixes**: Added `thread_id` support to serve, chat, CI agent invocation, and agent config for proper
-  tool routing.
-- **Webapp Improvements**: Added CORS middleware, retry logic, and Vite proxy for web development; aligned
-  `@vitejs/plugin-react` with Vite 8 and enabled on-demand UI builds.
-- **Testing**: Added deepagents profile and thread accumulation tests to improve coverage.
-- **Code Quality**: Removed duplicated functions and dead code, updated docstrings, normalized imports, and enforced
-  consistent formatting across `berg_agents`.
-- **Documentation**: Relocated changelog to project root and updated references across project context and navigation
-  docs.
-- **Dependencies**: Updated project dependencies to current versions.
+- **Multi-Agent Orchestrator**: New framework-agnostic `Orchestrator` + `AbstractAgent` contract + `ModelRouter` +
+  `LearningGate`. Subagents: `Guardian` (HITL/risk), `Planner` (task breakdown), `Implementation`, `Curator`, `Learning`.
+  `core/` has zero LangChain imports.
+- **Backends**: `LangChainAdapter`/`NativeAdapter` — LangGraph is now an optional adapter, not the spine. `NativeAdapter`
+  uses stdlib `urllib` (no deps). App runs without LangGraph.
+- **BergAgentsApp**: New `BergAgentsApp.create()` factory + `get_app()` singleton. Wires `Orchestrator` + `ModelRouter` +
+  `LearningGate` + plugins from `bergagents.jsonc`. Exported from `berg_agents/__init__.py`.
+- **Config**: Extended `bergagents.jsonc` with `orchestrator`/`model_routing`/`hitl_rules`/`plugins`/`agents` (all optional,
+  backwards-compatible). `Settings` + `BergAgentsApp` read them automatically. `profiles.yaml` is now LangGraph-only.
+- **Slash Commands**: 17 slash commands in TUI + WebUI (`/help`, `/agents`, `/models`, `/stats`, `/tools`, `/health`,
+  `/history`, `/memory`, `/context`, `/settings`, `/plugins`, `/skills`, `/mcps`, `/orchestrate`, `/task`, `/clear`, `/exit`).
+  WebUI has `SlashCommandPicker` + Chat ↔ Orchestrate mode toggle.
+- **Web UI**: New `OrchestratorServer` + `orchestrator_routes` (`/api/agents`, `/api/orchestrate`, `/api/learning-stats`);
+  `AgentPanel`/`SubtaskPanel`/`LearningPanel` components; `useOrchestrator` hook; App.jsx handles both modes.
+- **Docs**: Updated `docs/` + `berg_agents/BERGAGENTS.qmd` to reflect orchestrator, model routing, and new config shape.
+- **DeepAgents Migration**: Continued migration with middleware support (kept as optional backend).
+- **Thread Routing Fixes**: Added `thread_id` support to serve, chat, CI agent invocation, and agent config.
+- **Webapp Improvements**: CORS, retry logic, Vite proxy; aligned `@vitejs/plugin-react` with Vite 8.
+- **Testing**: 149 tests (core agents + backends + learning gate + web/server layers).
 
 ## v0.2.0 (2025-11-10)
 

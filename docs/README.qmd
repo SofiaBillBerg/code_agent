@@ -36,13 +36,14 @@ berg_agents chat
 
 ## Features
 
-- **Provider-agnostic**: Config-driven provider registry — add any OpenAI-compatible endpoint in `config/bergagents.jsonc`, zero code changes
-- **Framework-agnostic core**: `berg_agents/core/` does not depend on LangChain/LangGraph/DeepAgents — frameworks are adapters, not the spine
-- **Agentic coding**: DeepAgents-powered agent with tools for read, write, edit, search, and more
-- **Filesystem access**: Full read/write/edit/create access through dedicated tools
+- **Multi-agent orchestrator**: Framework-agnostic `Orchestrator` coordinates specialized subagents (Guardian, Planner, Implementation, Curator, Learning) — not a LangChain wrapper
+- **Model routing**: Small models for small tasks, large for complex — complexity → tier mapping in `bergagents.jsonc`
+- **Human-AI balance**: Guardian decides when to ask (risk × complexity × confidence), not lazy "AI does everything"
+- **Learning gate**: System adapts from outcomes — records task → model → success, updates routing rules, stores in MemPalace
+- **Provider-agnostic**: Config-driven registry — add any OpenAI-compatible endpoint, zero code changes
+- **Framework-agnostic core**: `berg_agents/core/` has zero LangChain imports — frameworks are adapters (`backends/langchain_adapter.py`, `backends/native_adapter.py`)
 - **MCP integration**: Load tools from external MCP servers (stdio or HTTP)
-- **Human-in-the-loop**: Pause for approval on sensitive operations
-- **Web UI**: FastAPI + React interface for browser-based interaction
+- **Web UI + TUI**: FastAPI + React and interactive terminal — both with slash commands (`/help`, `/agents`, `/orchestrate`, …) and orchestrator/Chat mode toggle
 - **Export conversations**: Export thread history as markdown
 
 See [docs/USAGE.qmd](../docs/USAGE.qmd) for CLI and Python API examples.

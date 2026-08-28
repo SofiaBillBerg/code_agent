@@ -14,18 +14,14 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from berg_agents.core.interface import (
-    AbstractAgent,
-    AgentResult,
-    TaskContext,
-)
+from berg_agents.core.interface import AbstractAgent, AgentResult, TaskContext
 
 logger = logging.getLogger(__name__)
 
 # LangChain availability is determined at import time
 _LANGCHAIN_AVAILABLE = False
 try:
-    import langchain  # noqa: F401
+    import langchain  # ruff: ignore[unused-import]
 
     _LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -115,7 +111,7 @@ class LangChainAdapter:
         *,
         tools: list[Any] | None = None,
         system_prompt: str | None = None,
-    ) -> "LangGraphAgent":
+    ) -> LangGraphAgent:
         """Create a LangGraph-backed AbstractAgent.
 
         Args:

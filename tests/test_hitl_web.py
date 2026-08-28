@@ -99,8 +99,9 @@ class TestResumeEndpoint:
         :return: None
         """
         # Arrange: Create a pending HITL interrupt
+        server = get_server()
         event = asyncio.Event()
-        _pending_hitl[thread_id] = event
+        server._pending_hitl[thread_id] = event  # ruff: ignore[private-member-access]
 
         # Act: Resume the HITL interrupt
         response = client.post(
@@ -113,7 +114,7 @@ class TestResumeEndpoint:
         assert response.json() == {"status": "ok"}
 
         # Assert: Decision was stored
-        assert _hitl_decisions[thread_id] == decision
+        assert server._hitl_decisions[thread_id] == decision  # ruff: ignore[private-member-access]
 
         # Assert: Event was set (SSE stream can resume)
         assert event.is_set()
@@ -170,10 +171,11 @@ class TestResumeEndpoint:
         :return: None
         """
         # Arrange: Event exists but was already set (resolved)
+        server = get_server()
         thread_id = "resolved-thread"
         event = asyncio.Event()
         event.set()  # Already resolved
-        _pending_hitl[thread_id] = event
+        server._pending_hitl[thread_id] = event  # ruff: ignore[private-member-access]
 
         # Act: Try to resume an already-resolved interrupt
         response = client.post(
@@ -203,9 +205,10 @@ def test_resume_approve_continues_stream(client: TestClient) -> None:
     :return: None
     """
     # Arrange
+    server = get_server()
     thread_id = "test-thread-123"
     event = asyncio.Event()
-    _pending_hitl[thread_id] = event
+    server._pending_hitl[thread_id] = event  # ruff: ignore[private-member-access]
 
     # Act: User clicks "Approve" on the HITL surface
     response = client.post(
@@ -215,7 +218,7 @@ def test_resume_approve_continues_stream(client: TestClient) -> None:
 
     # Assert: Stream can now continue with approval
     assert response.status_code == 200
-    assert _hitl_decisions[thread_id] == "approve"
+    assert server._hitl_decisions[thread_id] == "approve"  # ruff: ignore[private-member-access]
     assert event.is_set()
 
 
@@ -232,9 +235,10 @@ def test_resume_reject_blocks_action(client: TestClient) -> None:
     :return: None
     """
     # Arrange
+    server = get_server()
     thread_id = "test-thread-456"
     event = asyncio.Event()
-    _pending_hitl[thread_id] = event
+    server._pending_hitl[thread_id] = event  # ruff: ignore[private-member-access]
 
     # Act: User clicks "Reject" on the HITL surface
     response = client.post(
@@ -244,5 +248,5 @@ def test_resume_reject_blocks_action(client: TestClient) -> None:
 
     # Assert: Stream can now continue with rejection
     assert response.status_code == 200
-    assert _hitl_decisions[thread_id] == "reject"
+    assert server._hitl_decisions[thread_id] == "reject"  # ruff: ignore[private-member-access]
     assert event.is_set()

@@ -9,12 +9,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from berg_agents.core.interface import (
-    AbstractAgent,
-    AgentResult,
-    TaskComplexity,
-    TaskContext,
-)
+from berg_agents.core.interface import AbstractAgent, AgentResult, TaskContext
 from berg_agents.core.model_router import ModelRouter
 
 logger = logging.getLogger(__name__)

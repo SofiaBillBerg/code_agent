@@ -13,15 +13,15 @@ provider (Ollama, OpenAI, Anthropic, custom endpoints) without code changes.
 
 ## Features
 
-- **Provider-agnostic**: Config-driven provider registry — add any OpenAI-compatible endpoint in `config/bergagents.jsonc`, zero code changes
-- **Framework-agnostic core**: `berg_agents/core/` does not depend on LangChain/LangGraph/DeepAgents — frameworks are adapters, not the spine
-- **Agentic coding**: DeepAgents-powered agent with tools for read, write, edit, search, and more
-- **Filesystem access**: Full read/write/edit/create access through dedicated tools
+- **Multi-agent orchestrator**: Framework-agnostic `Orchestrator` coordinates `Guardian`, `Planner`, `Implementation`, `Curator`, `Learning` — LangChain is an optional adapter (`backends/`)
+- **Model routing**: Small models for small tasks, large for complex (configured in `bergagents.jsonc` → `model_routing`)
+- **Human-AI balance**: `Guardian` (risk × complexity × confidence) + `hitl_rules` in config — not lazy "AI does everything"
+- **Learning gate**: Records task → model → outcome, adapts routing, stores in MemPalace (`LearningGate` + `ModelRouter` stats)
+- **Provider-agnostic**: Config-driven registry — add any OpenAI-compatible endpoint, zero code changes
+- **Framework-agnostic core**: `berg_agents/core/` has zero LangChain imports — frameworks are adapters, not the spine
 - **MCP integration**: Load tools from external MCP servers (stdio or HTTP)
-- **Human-in-the-loop**: Pause for approval on sensitive operations
-- **Web UI**: FastAPI + React interface for browser-based interaction
-- **Persistent sessions**: Conversation history saved via LangGraph checkpointing
-- **Export conversations**: Export thread history as markdown
+- **Web UI + TUI**: FastAPI + React and interactive terminal — both with slash commands and Chat ↔ Orchestrate toggle
+- **Persistent sessions**: Conversation history via LangGraph checkpointing + long-term learnings via MemPalace
 - **Typed configuration**: Pydantic Settings with `.env` support, all keys prefixed `BERG_AGENT_`
 
 ## Installation
@@ -49,18 +49,21 @@ npm run build
 ## Quick Start
 
 ```bash
-# Interactive agent session
+# Interactive agent (TUI — slash commands: /help, /agents, /orchestrate <task>)
 python -m berg_agents chat
 
-# Start web UI
+# Web UI — Chat ↔ Orchestrate mode, "/" for slash commands
 python -m berg_agents serve --web --web-port 8001
+
+# Python API (BergAgentsApp)
+python -c "from berg_agents import BergAgentsApp; app = BergAgentsApp.create(); print(app.list_agents())"
 ```
 
 ## Configuration
 
-BergAgents uses a **provider-centric configuration** pattern. Each model
-belongs to a provider; provider/baseURL/apiKey resolve FROM the model —
-never from a single global `BERG_AGENT_PROVIDER` setting.
+BergAgents is **provider-centric + orchestrator-centric**. Each model belongs to a provider; provider/baseURL/apiKey
+resolve FROM the model. The orchestrator (`orchestrator`, `model_routing`, `hitl_rules`, `plugins`, `agents`) lives in
+the same `bergagents.jsonc`.
 
 ### Config File (`config/bergagents.jsonc`)
 
@@ -68,26 +71,22 @@ never from a single global `BERG_AGENT_PROVIDER` setting.
 {
   "providers": {
     "ollama": {
-      "options": {
-        "baseURL": "http://localhost:11434",
-        "apiKey": "EMPTY"
-      },
-      "models": {
-        "qwen3.5:9b": {},
-        "gpt-oss:20b": {}
-      }
-    },
-    "openai": {
-      "options": {
-        "baseURL": "https://api.openai.com/v1",
-        "apiKey": "${env:OPENAI_API_KEY}"
-      },
-      "models": {
-        "gpt-4o": {},
-        "gpt-4o-mini": {}
-      }
+      "options": { "baseURL": "http://localhost:11434", "apiKey": "EMPTY" },
+      "models": { "qwen3.5:9b": {}, "gpt-oss:20b": {} }
     }
-  }
+  },
+  "orchestrator": { "enable_learning": true, "enable_hitl": true },
+  "model_routing": {
+    "tiers": {
+      "small": { "models": ["qwen3.5:9b"], "max_tokens": 4096 },
+      "large": { "models": ["gpt-4o"], "max_tokens": 128000 }
+    }
+  },
+  "hitl_rules": {
+    "auto_execute": ["read_file", "list_files"],
+    "ask_before": ["delete_file", "execute_command"]
+  },
+  "plugins": [".opencode"]
 }
 ```
 
@@ -129,38 +128,39 @@ Values using `${env:VAR_NAME}` are resolved from the `.env` file at startup.
 
 ```
 berg_agents/
-├── core/                  # Framework-agnostic core
-│   ├── orchestrator.py    # Plugin-based orchestrator (accepts plugin paths)
+├── __init__.py            # BergAgentsApp.create() + get_app()
+├── app.py                 # BergAgentsApp (wires Orchestrator + ModelRouter + LearningGate)
+├── core/                  # Framework-agnostic (zero LangChain imports)
+│   ├── orchestrator.py    # Central coordinator (routes → Guardian/Planner/Implementation/Curator/Learning)
+│   ├── interface.py       # AbstractAgent contract
+│   ├── model_router.py    # Complexity → tier
+│   ├── learning_gate.py   # Outcome → insights → MemPalace
 │   ├── bookkeeper.py      # State management
 │   └── chat_server.py     # Chat server abstraction
-├── agents/                # Agent factories
-│   ├── codeagent.py       # Primary: DeepAgents harness (build_agent, build_berg_agents)
-│   ├── model_middleware.py # Model resolution middleware
-│   └── orchestrator.py    # Agent orchestration
+├── agents/                # Subagents (all AbstractAgent)
+│   ├── guardian.py        # HITL/risk
+│   ├── planner.py         # Task breakdown
+│   ├── implementation.py  # Code execution
+│   ├── curator.py         # Docs/memory
+│   ├── learning.py        # Outcome tracking
+│   └── codeagent.py       # LangGraph adapter (build_agent, build_berg_agents)
+├── backends/              # Optional adapters
+│   ├── langchain_adapter.py # LangGraph/DeepAgents
+│   └── native_adapter.py  # Raw HTTP (urllib, no deps)
 ├── config/                # Configuration
-│   ├── bergagents.jsonc   # Main config (provider-centric)
-│   ├── profiles.yaml      # Harness profiles
-│   └── settings.py        # Pydantic settings
-├── providers/             # LLM provider abstraction
-│   ├── provider.py        # Model provider registry
-│   └── base.py            # Base provider interface
+│   ├── bergagents.jsonc   # Providers + orchestrator/model_routing/hitl_rules/plugins/agents
+│   ├── profiles.yaml      # LangGraph harness only (optional)
+│   └── settings.py        # Pydantic Settings
+├── providers/             # LLM registry (resolve_model → build_llm)
 ├── tools/                 # LangChain BaseTool implementations
-│   ├── _io.py             # Atomic file I/O
-│   ├── edit_file_tool.py
-│   ├── read_file_tool.py
-│   ├── new_file_tool.py
-│   ├── search_explain_tool.py
-│   ├── generate_test_tool.py
-│   ├── format_code_tool.py
-│   ├── notebook_tool.py
-│   ├── r_tool.py
-│   └── general_chat_tool.py
-├── ui/                    # Web + CLI UI
+├── ui/                    # Web + CLI
+│   ├── orchestrator_server.py # Wraps Orchestrator for HTTP
+│   ├── orchestrator_routes.py # /api/agents, /api/orchestrate, /api/learning-stats
 │   ├── web.py             # FastAPI server
-│   ├── web_chat_server.py # Web chat server with SSE
+│   ├── web_chat_server.py # Legacy LangGraph server
 │   ├── protocol.py        # SSE protocol v2
-│   └── webapp/            # React frontend
-└── cli.py                 # Typer CLI entry point
+│   └── webapp/            # React (Chat ↔ Orchestrate, slash commands)
+└── cli.py                 # Typer CLI (serve/chat + TUI slash commands)
 ```
 
 ### Provider Registry Pattern
@@ -172,15 +172,19 @@ Config-driven, zero hardcoded providers:
 3. `build_llm(**kwargs)` → `init_chat_model(**kwargs)` verbatim — no `configurable_fields`, no per-provider branches
 4. `api_key` defaults to empty string; `"EMPTY"` placeholder substituted at client construction
 
-### Agent Harness
+### Orchestrator (Primary — Framework-Agnostic)
 
-The primary entry point `build_agent()` uses the DeepAgents harness:
+`BergAgentsApp.create()` → `Orchestrator` coordinates `Guardian` → `Planner` → `Implementation` → `Curator` → `Learning`.
+All decisions (`model_routing`, `hitl_rules`) come from `bergagents.jsonc`. Works without LangGraph (`NativeAdapter`).
+
+### Agent Harness (Optional — LangGraph)
+
+`build_agent()` uses the DeepAgents harness as an **optional** backend:
 
 - Built on `deepagents.create_deep_agent`
 - Virtual filesystem mounted at `/workspace/`
-- Built-in filesystem tools (`ls`, `read_file`, `write_file`, `edit_file`, `glob`, `grep`, `delete`, `execute`, `task`)
-- Permission-based human-in-the-loop review
-- Skills, memory, and subagent support
+- Built-in filesystem tools + permission-based HITL
+- Tuned via `config/profiles.yaml` (LangGraph-only)
 
 ## Testing
 

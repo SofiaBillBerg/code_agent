@@ -3,11 +3,7 @@
 import pytest
 
 from berg_agents.agents.guardian import Guardian
-from berg_agents.core.interface import (
-    RiskLevel,
-    TaskComplexity,
-    TaskContext,
-)
+from berg_agents.core.interface import RiskLevel, TaskComplexity, TaskContext
 
 
 # ── Fixtures ────────────────────────────────────────────────────

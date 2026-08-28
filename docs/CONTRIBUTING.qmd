@@ -28,6 +28,14 @@ documentation, your help is appreciated. Please read the following guidelines to
    uv pip install -e .[dev]
    ```
 
+## Architecture Principles (NEVER DRIFT)
+
+- `berg_agents/core/` has **zero** LangChain/LangGraph imports — frameworks are adapters in `backends/`
+- All tasks route through `Orchestrator`, not directly to agents
+- New agents implement `AbstractAgent` (`can_handle` + `execute`)
+- `.opencode/` is an **optional plugin**, not a structural dependency
+- Read `.opencode/context/project-intelligence/BERGAGENTS_PLAN.md` — it is the north star
+
 ## Code Style & Linting
 
 We use `ruff` for linting and formatting. Before committing your changes, please run the following command to ensure
@@ -55,6 +63,7 @@ The project uses `pytest` for testing.
   ```
 
 Please add tests for any new features or bug fixes to ensure that the codebase remains stable and reliable.
+149+ tests cover core agents, backends, and web/server layers.
 
 ## Submitting a Pull Request
 

@@ -146,7 +146,7 @@ function formatArgsSummary(args) {
     return shown.join(", ") + more;
 }
 
-function HitlSurface({pending, onDecision}) {
+function HitlSurface({pending, toolCalls = [], subagents = null, onDecision}) {
     const [showEdit, setShowEdit] = useState(false);
     const [editedArgs, setEditedArgs] = useState("");
     const [editError, setEditError] = useState(null);
@@ -167,7 +167,7 @@ function HitlSurface({pending, onDecision}) {
         return () => clearInterval(interval);
     }, [pending]);
 
-    // Pre-fill the edit textarea with the first action's current args.
+    // Pre-fill the edit textarea with the first action's current args (or raw value if no actions).
     useEffect(() => {
         if (actions.length > 0) {
             try {
@@ -175,6 +175,15 @@ function HitlSurface({pending, onDecision}) {
             } catch {
                 setEditedArgs(String(actions[0].args));
             }
+        } else if (pending?.value != null) {
+            try {
+                const v = pending.value;
+                setEditedArgs(typeof v === "string" ? v : JSON.stringify(v, null, 2));
+            } catch {
+                setEditedArgs(String(pending.value));
+            }
+        } else {
+            setEditedArgs("");
         }
         setShowEdit(false);
         setEditError(null);
@@ -205,8 +214,21 @@ function HitlSurface({pending, onDecision}) {
     /**
      * Submit edited args for the FIRST action; remaining actions (if any)
      * continue unchanged so the decisions array stays order-aligned.
+     * If no structured actions were parsed, treat edit as approve with a message
+     * (so the user can still proceed via Edit).
      */
     const handleEditSubmit = () => {
+        if (actions.length === 0) {
+            // No structured actions — try to parse as JSON, fall back to approve with text
+            try {
+                const parsed = JSON.parse(editedArgs);
+                onDecision({type: "edit", edited_action: {name: "unknown", args: parsed}});
+            } catch {
+                // If not valid JSON, treat as plain approve (user edited raw text)
+                onDecision({type: "approve"});
+            }
+            return;
+        }
         try {
             const parsedArgs = JSON.parse(editedArgs);
             const first = actions[0];
@@ -355,12 +377,46 @@ function HitlSurface({pending, onDecision}) {
                 );
             })}
 
-            {/* Fallback when the payload carried no parseable actions. */}
-            {actions.length === 0 && (
-                <div style={{padding: "var(--berg-sp-3)", background: "var(--berg-surface)", borderRadius: "var(--berg-radius)", border: "1px solid var(--berg-border)"}}>
-                    <span style={{color: "var(--berg-muted)"}}>Agent is waiting for input…</span>
-                    {pending.value && (
-                        <details style={{marginTop: "var(--berg-sp-2)"}}>
+            {/* Fallback when the payload carried no parseable actions — show last tool call as context. */}
+            {actions.length === 0 && (() => {
+                const rawValue = pending.value;
+                const isString = typeof rawValue === "string";
+                const displayText = isString ? rawValue : (rawValue?.message || rawValue?.description || "");
+                const hasDisplay = displayText && displayText !== "Approval required" && displayText !== "Input required";
+                // Try to surface the last tool call that likely triggered the interrupt
+                const lastTool = toolCalls && toolCalls.length ? toolCalls[toolCalls.length - 1] : null;
+                const subagentList = subagents ? Array.from(subagents instanceof Map ? subagents.values() : subagents) : [];
+                const lastSubagentTool = subagentList.length ? subagentList.flatMap(s => s.toolCalls || []).slice(-1)[0] : null;
+                const relevantTool = lastTool || lastSubagentTool;
+                return (
+                    <div style={{padding: "var(--berg-sp-3)", background: "var(--berg-surface)", borderRadius: "var(--berg-radius)", border: "1px solid var(--berg-border)", display: "flex", flexDirection: "column", gap: "var(--berg-sp-2)"}}>
+                        {relevantTool && (
+                            <div style={{padding: "0.5rem", background: "rgba(125, 2, 156, 0.06)", border: "1px solid var(--berg-border)", borderRadius: "var(--berg-radius)", display: "flex", flexDirection: "column", gap: "0.3rem"}}>
+                                <div style={{fontSize: "var(--berg-fs-xs)", color: "var(--berg-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em"}}>Last tool activity (likely awaiting approval)</div>
+                                <div style={{display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap"}}>
+                                    <span style={{fontFamily: "var(--berg-font-mono)", fontWeight: 600, color: "var(--berg-brand-blue)"}}>{relevantTool.name}</span>
+                                    <code style={{fontSize: "var(--berg-fs-xs)", background: "var(--berg-code-bg)", padding: "0.1rem 0.3rem", borderRadius: "var(--berg-radius-sm)"}}>{formatArgsSummary(relevantTool.input || relevantTool.args)}</code>
+                                </div>
+                                <details>
+                                    <summary style={{cursor: "pointer", fontSize: "var(--berg-fs-xs)", color: "var(--berg-muted)"}}>Show full args</summary>
+                                    <pre style={{margin: "0.4rem 0 0", padding: "0.5rem", background: "var(--berg-surface-tint)", borderRadius: "var(--berg-radius-sm)", fontSize: "var(--berg-fs-xs)", whiteSpace: "pre-wrap"}}>{JSON.stringify(relevantTool.input || relevantTool.args || {}, null, 2)}</pre>
+                                </details>
+                            </div>
+                        )}
+                        {isString && rawValue ? (
+                            <div style={{fontSize: "var(--berg-fs-sm)", color: "var(--berg-text)", lineHeight: 1.5}}>
+                                <span style={{fontWeight: 600}}>Agent says:</span>{" "}
+                                <span style={{whiteSpace: "pre-wrap"}}>{rawValue}</span>
+                            </div>
+                        ) : hasDisplay ? (
+                            <div style={{fontSize: "var(--berg-fs-sm)", color: "var(--berg-text)"}}>{displayText}</div>
+                        ) : !relevantTool && (
+                            <span style={{color: "var(--berg-muted)"}}>Agent is waiting for your decision — no action details were provided.</span>
+                        )}
+                        <span style={{fontSize: "var(--berg-fs-xs)", color: "var(--berg-muted)"}}>
+                            The backend did not send structured action details. Latest tool call shown above (if any) is the likely action awaiting <b>Approve / Reject / Edit</b>.
+                        </span>
+                        <details style={{marginTop: "var(--berg-sp-1)"}}>
                             <summary style={{cursor: "pointer", fontSize: "var(--berg-fs-xs)", color: "var(--berg-muted)"}}>
                                 Show raw interrupt data
                             </summary>
@@ -372,13 +428,15 @@ function HitlSurface({pending, onDecision}) {
                                 fontSize: "var(--berg-fs-xs)",
                                 overflow: "auto",
                                 maxHeight: "150px",
+                                whiteSpace: "pre-wrap",
+                                wordBreak: "break-word",
                             }}>
-{JSON.stringify(pending.value, null, 2)}
+{typeof rawValue === "string" ? rawValue : JSON.stringify(rawValue, null, 2)}
                             </pre>
                         </details>
-                    )}
-                </div>
-            )}
+                    </div>
+                );
+            })()}
 
             {showEdit && actions.length > 0 && (
                 <div style={{display: "flex", flexDirection: "column", gap: "var(--berg-sp-2)"}}>
@@ -419,7 +477,7 @@ function HitlSurface({pending, onDecision}) {
                 </div>
             )}
 
-            <div style={{display: "flex", gap: "var(--berg-sp-3)", marginTop: "var(--berg-sp-3)"}}>
+            <div style={{display: "flex", gap: "var(--berg-sp-2)", marginTop: "var(--berg-sp-3)", flexWrap: "wrap"}}>
                 <button
                     onClick={() => {
                         if (showEdit) {
@@ -430,6 +488,7 @@ function HitlSurface({pending, onDecision}) {
                     }}
                     style={{
                         flex: 1,
+                        minWidth: "110px",
                         padding: "0.6rem 1rem",
                         border: "none",
                         borderRadius: "var(--berg-radius)",
@@ -437,15 +496,17 @@ function HitlSurface({pending, onDecision}) {
                         color: "#fff",
                         fontSize: "var(--berg-fs-sm)",
                         cursor: "pointer",
-                        fontWeight: "500",
+                        fontWeight: "600",
                     }}
+                    title={showEdit ? "Save edited arguments and approve" : "Approve all pending actions"}
                 >
-                    {showEdit ? "Save & Continue" : "Continue"}
+                    {showEdit ? "Save & Approve" : "✓ Approve"}
                 </button>
                 <button
                     onClick={handleReject}
                     style={{
                         flex: 1,
+                        minWidth: "110px",
                         padding: "0.6rem 1rem",
                         border: "none",
                         borderRadius: "var(--berg-radius)",
@@ -453,31 +514,31 @@ function HitlSurface({pending, onDecision}) {
                         color: "#fff",
                         fontSize: "var(--berg-fs-sm)",
                         cursor: "pointer",
+                        fontWeight: "600",
+                    }}
+                    title="Reject all pending actions"
+                >
+                    ✕ Reject
+                </button>
+                <button
+                    onClick={() => {
+                        setShowEdit(!showEdit);
+                        setEditError(null);
+                    }}
+                    style={{
+                        padding: "0.6rem 1rem",
+                        border: "1px solid var(--berg-border)",
+                        borderRadius: "var(--berg-radius)",
+                        background: showEdit ? "var(--berg-surface-tint)" : "transparent",
+                        color: showEdit ? "var(--berg-text)" : "var(--berg-muted)",
+                        fontSize: "var(--berg-fs-sm)",
+                        cursor: "pointer",
                         fontWeight: "500",
                     }}
+                    title={actions.length > 0 ? "Edit arguments before approving (only first action)" : "Edit raw data as JSON (no structured actions detected)"}
                 >
-                    Reject
+                    {showEdit ? "Cancel Edit" : "✎ Edit"}
                 </button>
-                {actions.length > 0 && (
-                    <button
-                        onClick={() => {
-                            setShowEdit(!showEdit);
-                            setEditError(null);
-                        }}
-                        style={{
-                            padding: "0.6rem 1rem",
-                            border: "1px solid var(--berg-border)",
-                            borderRadius: "var(--berg-radius)",
-                            background: "transparent",
-                            color: "var(--berg-muted)",
-                            fontSize: "var(--berg-fs-sm)",
-                            cursor: "pointer",
-                            fontWeight: "500",
-                        }}
-                    >
-                        {showEdit ? "Cancel Edit" : "Edit Args"}
-                    </button>
-                )}
             </div>
         </div>
     );

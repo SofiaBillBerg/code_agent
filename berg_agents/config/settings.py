@@ -461,6 +461,27 @@ class Settings(BaseSettings):
     #: *summarization_trigger*.  Maps to ``BERG_AGENT_SUMMARIZATION_KEEP``.
     summarization_keep: list[Any] | None = None
 
+    #: --- BergAgents Orchestrator (new multi-agent system) -------------------
+    #: Central configuration for the framework-agnostic orchestrator.
+    #: Maps to ``orchestrator`` in bergagents.jsonc.
+    orchestrator: dict[str, Any] | None = None
+
+    #: Model routing: tiers + complexity rules (small for small tasks, large for complex).
+    #: Maps to ``model_routing`` in bergagents.jsonc.
+    model_routing: dict[str, Any] | None = None
+
+    #: HITL rules: when Guardian asks human (auto_execute/notify_after/ask_before/human_leads).
+    #: Maps to ``hitl_rules`` in bergagents.jsonc.
+    hitl_rules: dict[str, Any] | None = None
+
+    #: Plugin paths (e.g. [".opencode"]). BergAgents works without them.
+    #: Maps to ``plugins`` in bergagents.jsonc.
+    plugins: list[str] | None = None
+
+    #: Agent overrides (preferred_model_tier, etc.).
+    #: Maps to ``agents`` in bergagents.jsonc.
+    agents: dict[str, Any] | None = None
+
     @model_validator(mode="after")
     def _split_combined_ollama_host(self) -> Settings:
         """Accept Ollama's combined ``host:port`` form in ``ollama_host``.

@@ -220,8 +220,17 @@ def test_build_berg_agents_summarization_middleware(monkeypatch: Any) -> None:
     assert sm._lc_helper.trigger == ("messages", 50)
     assert sm._lc_helper.keep == ("messages", 20)
 
-    # No trigger -> no SummarizationMiddleware added (harness built-in applies).
-    captured = _build_with(monkeypatch)
+    # No trigger with explicit empty settings -> no SummarizationMiddleware added
+    # (harness built-in applies). Must pass empty settings to avoid the
+    # default bergagents.jsonc summarization_trigger=["messages", 100].
+    captured = _build_with(
+        monkeypatch,
+        settings=Settings(
+            summarization_trigger=None,
+            summarization_keep=None,
+            todos_enabled=True,
+        ),
+    )
     assert not any(
         m.name == "SummarizationMiddleware" for m in captured["middleware"]
     )

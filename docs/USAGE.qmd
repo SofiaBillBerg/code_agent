@@ -10,22 +10,34 @@ This page shows how to use BergAgents from the CLI, Python API, and web UI.
 
 ## CLI Commands
 
-### Interactive Chat
+### Interactive Chat (TUI)
 
-Start an interactive chat session with the agent:
+Start an interactive chat session:
 
 ```bash
 berg_agents chat
 ```
 
-The chat session supports these built-in commands:
+The TUI supports **slash commands** (type `/` to see the picker):
 
-- `help` — show available commands
-- `tools` — list all available tools
-- `clear` — clear conversation history
-- `exit` / `quit` / `q` — end the session
+| Command | Description |
+|---------|-------------|
+| `/help` | Show all slash commands |
+| `/agents` | List registered subagents (Guardian, Planner, …) |
+| `/models` | Show available models |
+| `/stats` | Learning/outcome statistics |
+| `/tools` | List available tools |
+| `/health` | System health check |
+| `/history` | Conversation history |
+| `/memory`, `/context` | Memory and current context |
+| `/settings` | Current settings |
+| `/plugins`, `/skills`, `/mcps` | Plugins, skills, MCP status |
+| `/orchestrate <task>` | Run task through the orchestrator |
+| `/task <task>` | Alias for `/orchestrate` |
+| `/clear` | Clear history |
+| `/exit`, `/quit`, `/q` | End session |
 
-Use `--verbose` / `-v` to show streaming "thinking" output:
+Or just type natural language — it goes to the agent. Use `--verbose` / `-v` for streaming "thinking" output:
 
 ```bash
 berg_agents chat --verbose
@@ -78,11 +90,31 @@ berg_agents export <thread_id>
 
 ## Python API
 
-### Complete Workflow Example
+### BergAgentsApp (Recommended — Multi-Agent)
 
 ```python
-from pathlib import Path
+from berg_agents import BergAgentsApp
 
+# 1. Create the app (reads config/bergagents.jsonc automatically)
+app = BergAgentsApp.create()
+app = BergAgentsApp.create(config={"plugins": [".opencode"]})
+
+# 2. Execute through the orchestrator (routes to the right subagent)
+result = app.execute("refactor the auth module", "refactor")
+# → {"status": "completed", "complexity": "complex", "model_tier": "large", "plan": [...]}
+
+# 3. Inspect agents and learning
+app.list_agents()        # -> [{name: "guardian", ...}, {name: "planner", ...}]
+app.get_learning_stats() # -> {total: 12, by_model: {...}, by_task_type: {...}}
+
+# 4. Register a custom agent
+from berg_agents.core import AbstractAgent
+app.register_agent("my_agent", MyAgent())
+```
+
+### Low-Level (LangGraph/DeepAgents Direct)
+
+```python
 from berg_agents.agents.codeagent import build_agent, create_default_tools
 from berg_agents.main import create_llm, load_config
 from langchain_core.messages import HumanMessage
@@ -101,7 +133,8 @@ response = agent.invoke({
 })
 ```
 
-By default, `build_agent` uses the **DeepAgents** harness, which provides built-in filesystem tools and mounts the working directory at `/workspace/`.
+> `BergAgentsApp` is the framework-agnostic host. `build_agent` is the optional LangGraph adapter.
+> Core (`berg_agents/core/`) has zero LangChain imports.
 
 ### Stream Responses
 
@@ -146,17 +179,30 @@ The web UI is a React single-page app served by FastAPI. Start it with:
 berg_agents serve --web --web-port 8001
 ```
 
+Toggle **Chat** ↔ **Orchestrate** mode in the header. In Orchestrate mode, type `/` to open the slash-command picker (same 17 commands as the TUI). Agent, subtask, and learning panels appear automatically.
+
 ### API Endpoints
 
 | Method | Path                | Purpose                             |
 |--------|---------------------|-------------------------------------|
 | `GET`  | `/`                 | Web UI (React SPA)                  |
+| `GET`  | `/api/agents`       | List orchestrator subagents         |
+| `GET`  | `/api/agents/{name}`| Get single agent info              |
+| `POST` | `/api/orchestrate`  | Execute task (sync)                 |
+| `POST` | `/api/orchestrate/{id}/stream` | Submit + stream task        |
+| `GET`  | `/api/orchestrate/{id}/events` | SSE event stream (orchestrator) |
+| `POST` | `/api/orchestrate/{id}/respond` | Respond to HITL interrupt     |
+| `GET`  | `/api/learning-stats` | Learning/outcome statistics       |
 | `GET`  | `/models`           | List available models               |
 | `POST` | `/threads/{id}/commands` | Get available commands          |
-| `GET`  | `/threads/{id}/stream/events` | SSE event stream            |
+| `GET`  | `/threads/{id}/stream/events` | SSE event stream (LangGraph)  |
 | `POST` | `/threads/{id}/resume` | Resume a paused HITL interrupt    |
 | `GET`  | `/threads/{id}/history` | Get message history for a thread |
 | `POST` | `/threads/{id}/export` | Export thread as markdown        |
+
+> **Thread IDs:** Root threads are short (`f`), sub-agent/checkpoint namespaces are dotted (`f.ff33…3967.930f…`). Export
+> display truncates to the root (`f`) but storage uses the full dotted ID. HITL decisions resume as
+> `{"decisions": [{"type": "approve"}]}` (or `reject`/`edit`) via `Command(resume=…)`.
 
 ### SSE Events
 

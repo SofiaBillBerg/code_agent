@@ -1355,7 +1355,7 @@ def _cmd_context(conversation_messages: list[Any]) -> None:
     """Show current context."""
     print("\n📋 Context:")
     print(f"  Messages in history: {len(conversation_messages)}")
-    print(f"  Context window: Dynamic (model-dependent)")
+    print("  Context window: Dynamic (model-dependent)")
     print()
 
 

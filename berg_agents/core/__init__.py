@@ -59,5 +59,7 @@ if _BACKENDS_AVAILABLE:
     __all__.extend([
         "LangChainAdapter",
         "LangGraphAgent",
+        "NativeAdapter",
+        "NativeAgent",
         "is_langchain_available",
     ])

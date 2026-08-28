@@ -68,22 +68,103 @@ class BergAgentsApp:
                 - enable_learning: bool (default True)
                 - complexity_rules: dict for ModelRouter
                 - tier_config: dict for ModelRouter
+                - plugins: list of plugin paths (from bergagents.jsonc)
 
         Returns:
             Configured BergAgentsApp instance.
         """
-        enable_learning = True
-        router_kwargs = {}
+        from pathlib import Path
 
+        enable_learning = True
+        router_kwargs: dict[str, Any] = {}
+        plugins: list[Any] = []
+        hitl_rules: dict[str, Any] | None = None
+        agent_overrides: dict[str, Any] | None = None
+
+        # 1) Explicit config dict (highest priority)
         if config:
-            enable_learning = config.get("enable_learning", enable_learning)
+            orch_cfg = config.get("orchestrator", {}) or {}
+            enable_learning = orch_cfg.get("enable_learning", enable_learning)
+            # model_routing may be at top-level or nested
+            mr = config.get("model_routing") or {}
+            if mr.get("tiers"):
+                router_kwargs["tier_config"] = mr["tiers"]
+            if mr.get("complexity_rules"):
+                router_kwargs["complexity_rules"] = mr["complexity_rules"]
+            # also support flat keys for backwards compat
             if "complexity_rules" in config:
                 router_kwargs["complexity_rules"] = config["complexity_rules"]
             if "tier_config" in config:
                 router_kwargs["tier_config"] = config["tier_config"]
+            if "hitl_rules" in config:
+                hitl_rules = config["hitl_rules"]
+            if "agents" in config:
+                agent_overrides = config["agents"]
+            if "plugins" in config:
+                for p in config["plugins"]:
+                    plugins.append(Path(p))
 
-        router = ModelRouter(**router_kwargs) if router_kwargs else None
-        return cls(router=router, enable_learning=enable_learning)
+        # 2) Global config (bergagents.jsonc via settings) if not already set
+        try:
+            from berg_agents.config.settings import get_settings
+
+            settings = get_settings()
+            s_dict = settings.model_dump()
+            # orchestrator
+            s_orch = s_dict.get("orchestrator") or {}
+            if not config or "orchestrator" not in (config or {}):
+                enable_learning = s_orch.get("enable_learning", enable_learning)
+            # model_routing
+            s_mr = s_dict.get("model_routing") or {}
+            if not router_kwargs.get("tier_config") and s_mr.get("tiers"):
+                router_kwargs["tier_config"] = s_mr["tiers"]
+            if not router_kwargs.get("complexity_rules") and s_mr.get(
+                "complexity_rules"
+            ):
+                router_kwargs["complexity_rules"] = s_mr["complexity_rules"]
+            # hitl
+            if hitl_rules is None:
+                hitl_rules = s_dict.get("hitl_rules")
+            # agents
+            if agent_overrides is None:
+                agent_overrides = s_dict.get("agents")
+            # plugins
+            if not plugins:
+                cfg_plugins = s_dict.get("plugins") or []
+                for p in cfg_plugins:
+                    plugins.append(Path(p))
+        except Exception:
+            pass
+
+        router = (
+            ModelRouter(**router_kwargs) if router_kwargs else ModelRouter()
+        )
+        orchestrator = Orchestrator(
+            plugins=plugins,
+            router=router,
+            enable_learning=enable_learning,
+        )
+        # Apply hitl/agent overrides if present
+        if hitl_rules and hasattr(orchestrator, "_guardian"):
+            g = orchestrator._guardian
+            g.auto_execute = hitl_rules.get("auto_execute", g.auto_execute)
+            g.notify_after = hitl_rules.get("notify_after", g.notify_after)
+            g.ask_before = hitl_rules.get("ask_before", g.ask_before)
+            g.human_leads = hitl_rules.get("human_leads", g.human_leads)
+        if agent_overrides:
+            for name, ov in agent_overrides.items():
+                try:
+                    agent = orchestrator.get_agent(name)
+                    if "preferred_model_tier" in ov:
+                        agent.preferred_model_tier = ov["preferred_model_tier"]
+                except KeyError:
+                    pass
+
+        return cls(
+            router=orchestrator.router,
+            orchestrator=orchestrator,
+            enable_learning=enable_learning,
+        )
 
     def serve(self, host: str = "0.0.0.0", port: int = 8001) -> None:
         """Start the FastAPI web server.
@@ -92,9 +173,8 @@ class BergAgentsApp:
             host: Host to bind to.
             port: Port to listen on.
         """
-        import uvicorn
-
         from berg_agents.ui.web import app as fastapi_app
+        import uvicorn
 
         logger.info("Starting BergAgents server on %s:%d", host, port)
         uvicorn.run(fastapi_app, host=host, port=port)

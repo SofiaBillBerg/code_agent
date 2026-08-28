@@ -112,5 +112,117 @@
   "defaultModel": "",
   //# MCP server secrets (git-ignored; referenced as ${VAR} in .mcp.json)
   //# "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PERSONAL_ACCESS_TOKEN}",
-  "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
+  "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}",
+  //# ---------------------------------------------------------------------------
+  //# BERGAGENTS ORCHESTRATOR (new multi-agent system — see BERGAGENTS_PLAN.md)
+  //# ---------------------------------------------------------------------------
+
+  // Orchestrator as host (framework-agnostic core)
+  "orchestrator": {
+    "enable_learning": true,
+    "enable_hitl": true
+  },
+  // Model routing: small models for small tasks, large for complex
+  "model_routing": {
+    "tiers": {
+      "small": {
+        "models": [
+          "rafw007/qwen35-claude-coder:9b"
+        ],
+        "max_tokens": 40000
+      },
+      "medium": {
+        "models": [
+          "abdulroqib/qwen3.6-27b-q3-128k:latest"
+        ],
+        "max_tokens": 60000
+      },
+      "large": {
+        "models": [
+          "gpt-oss:120b-cloud"
+        ],
+        "max_tokens": 124000
+      }
+    },
+    "complexity_rules": {
+      "trivial": {
+        "patterns": [
+          "read_file",
+          "list_files",
+          "search"
+        ],
+        "tier": "small"
+      },
+      "standard": {
+        "patterns": [
+          "edit_file",
+          "new_file",
+          "test"
+        ],
+        "tier": "small"
+      },
+      "complex": {
+        "patterns": [
+          "refactor",
+          "architecture",
+          "multi_file"
+        ],
+        "tier": "large"
+      },
+      "critical": {
+        "patterns": [
+          "delete",
+          "security",
+          "production"
+        ],
+        "tier": "large",
+        "human_review": true
+      }
+    }
+  },
+  // HITL rules: Guardian decides when to ask human
+  "hitl_rules": {
+    "auto_execute": [
+      "read_file",
+      "list_files",
+      "search_code"
+    ],
+    "notify_after": [
+      "edit_file",
+      "new_file",
+      "generate_test"
+    ],
+    "ask_before": [
+      "delete_file",
+      "execute_command",
+      "refactor"
+    ],
+    "human_leads": [
+      "security_change",
+      "production_deploy",
+      "data_migration"
+    ]
+  },
+  // Plugins: optional .opencode paths (BergAgents works without them)
+  "plugins": [
+    ".opencode"
+  ],
+  // Agent overrides (optional)
+  "agents": {
+    "guardian": {
+      "preferred_model_tier": "medium"
+    },
+    "planner": {
+      "preferred_model_tier": "medium"
+    },
+    "implementation": {
+      "preferred_model_tier": "small"
+    },
+    "curator": {
+      "preferred_model_tier": "small"
+    },
+    "learning": {
+      "preferred_model_tier": "medium"
+    }
+  }
 }
